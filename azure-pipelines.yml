@@ -1,0 +1,437 @@
+trigger:
+  branches:
+    include:
+      - dev
+      - qa
+      - pre
+      - main
+      - uat
+
+pr:
+  autoCancel: true
+  branches:
+    include:
+      - dev
+      - qa
+      - pre
+      - main
+      - uat
+
+variables:
+  - group: 'azure-aem'
+
+  - name: agentPoolName
+    value: 'P38 CMS AgentPool'
+
+  - name: sonarCloudEndpointName
+    value: 'DevSecOps-Sonar-p84-grscms-eds-inspiration-guide'
+  - name: sonarCloudOrganization
+    value: 'sfcgrupoiberostar'
+  - name: sonarCloudProjectKey
+    value: 'SFCGrupoIberostar_p84-grscms-eds-inspiration-guide'
+  - name: sonarCloudProjectName
+    value: 'p84-grscms-eds-inspiration-guide'
+
+  - name: CM_TRIGGER_PIPELINE
+    value: 'true'
+
+  - name: azureSubscription
+    value: 'AEM PRE'
+
+  - name: storageAccountUat
+    value: 'ibhcmsuatsa'
+  - name: storageAccountQa
+    value: 'ibhcmsqassa'
+  - name: storageAccountPre
+    value: 'ibhcmspresa'
+  - name: storageAccountPro
+    value: 'ibhcmsprosa'
+
+  - name: storageContainer
+    value: 'api-files'
+  - name: targetFolder
+    value: 'p84-grscms-eds-inspiration-guide'
+  - name: sourceFolder
+    value: '$(System.DefaultWorkingDirectory)/dist'
+
+pool:
+  name: $(agentPoolName)
+
+stages:
+  - stage: SonarCloud
+    displayName: 'Sonar Cloud Analysis'
+    condition: eq(variables['Build.Reason'], 'PullRequest')
+    jobs:
+      - job: Sonar_Cloud_Analysis
+        displayName: 'Sonar Cloud Analysis'
+        pool:
+          vmImage: ubuntu-latest
+        steps:
+          - checkout: self
+            fetchDepth: 0
+
+          - task: SonarCloudPrepare@4.1.0
+            displayName: 'Prepare SonarCloud'
+            inputs:
+              SonarCloud: '$(sonarCloudEndpointName)'
+              organization: '$(sonarCloudOrganization)'
+              scannerMode: 'cli'
+              configMode: 'manual'
+              cliProjectKey: '$(sonarCloudProjectKey)'
+              cliProjectName: '$(sonarCloudProjectName)'
+              cliSources: '.'
+              extraProperties: |
+                sonar.inclusions=**/*.cls,**/*.page,**/*.js
+                sonar.exclusions=**/*.java
+                sonar.qualitygate.wait=true
+            continueOnError: true
+
+          - task: SonarCloudAnalyze@4.1.0
+            displayName: 'Analyze SonarCloud'
+
+          - task: SonarCloudPublish@4.1.0
+            displayName: 'Publish SonarCloud'
+            continueOnError: true
+            inputs:
+              pollingTimeoutSec: '900'
+
+  - stage: Approval_SonarCloud
+    displayName: 'Approval SonarCloud'
+    dependsOn:
+      - SonarCloud
+    condition: and(in(dependencies.SonarCloud.result, 'SucceededWithIssues'), in(variables['Build.SourceBranchName'], 'main'))
+    jobs:
+      - deployment: Approval_SonarCloud
+        displayName: 'Approval SonarCloud'
+        environment: 'sonarcloud'
+        strategy:
+          runOnce:
+            deploy:
+              steps:
+                - checkout: self
+
+  - stage: Build_Backup_And_Deploy_Merge
+    displayName: 'Build, Backup and Deploy on merge'
+    dependsOn: []
+    condition: >-
+      and(
+        ne(variables['Build.Reason'], 'PullRequest'),
+        or(
+          eq(variables['Build.SourceBranch'], 'refs/heads/uat'),
+          eq(variables['Build.SourceBranch'], 'refs/heads/qa'),
+          eq(variables['Build.SourceBranch'], 'refs/heads/pre'),
+          eq(variables['Build.SourceBranch'], 'refs/heads/main')
+        )
+      )
+    jobs:
+      - job: Build_Backup_And_Deploy_Merge
+        displayName: 'Build, Backup, Delete and Upload on merge'
+        steps:
+          - checkout: self
+
+          - bash: |
+              set -euo pipefail
+
+              BRANCH="$(Build.SourceBranchName)"
+
+              case "$BRANCH" in
+                uat)
+                  STORAGE_ACCOUNT="$(storageAccountUat)"
+                  ;;
+                qa)
+                  STORAGE_ACCOUNT="$(storageAccountQa)"
+                  ;;
+                pre)
+                  STORAGE_ACCOUNT="$(storageAccountPre)"
+                  ;;
+                main)
+                  STORAGE_ACCOUNT="$(storageAccountPro)"
+                  ;;
+                *)
+                  echo "Rama no soportada para deploy: $BRANCH"
+                  exit 1
+                  ;;
+              esac
+
+              echo "Rama destino: $BRANCH"
+              echo "Storage account seleccionado: $STORAGE_ACCOUNT"
+
+              echo "##vso[task.setvariable variable=selectedStorageAccount]$STORAGE_ACCOUNT"
+            displayName: 'Select storage account by branch'
+
+          - task: UseNode@1
+            displayName: 'Use Node 22'
+            inputs:
+              version: '22.x'
+
+          - task: npmAuthenticate@0
+            displayName: 'Authenticate to Azure Artifacts'
+            inputs:
+              workingFile: .npmrc
+
+          - script: |
+              set -euo pipefail
+
+              corepack enable
+              yarn --version
+              yarn install
+              yarn build:pre
+            displayName: 'Install and build'
+            workingDirectory: '$(System.DefaultWorkingDirectory)'
+            env:
+              AZURE_ARTIFACTS_PAT: $(System.AccessToken)
+
+          - script: |
+              echo "Contenido raíz:"
+              ls -la
+              echo ""
+              echo "Contenido dist:"
+              ls -la "$(sourceFolder)" || true
+              echo ""
+              echo "Contenido recursivo dist:"
+              ls -laR "$(sourceFolder)" || true
+            displayName: 'Check generated files'
+
+          - script: |
+              if [ ! -d "$(sourceFolder)" ]; then
+                echo "ERROR: No existe la carpeta $(sourceFolder)"
+                exit 1
+              fi
+
+              if [ -z "$(ls -A "$(sourceFolder)" 2>/dev/null)" ]; then
+                echo "ERROR: La carpeta $(sourceFolder) está vacía"
+                exit 1
+              fi
+
+              for REQUIRED_FILE in index.html manifest.json; do
+                if [ ! -f "$(sourceFolder)/${REQUIRED_FILE}" ]; then
+                  echo "ERROR: Falta el fichero $(sourceFolder)/${REQUIRED_FILE}"
+                  exit 1
+                fi
+              done
+            displayName: 'Validate dist'
+
+          - task: AzureCLI@2
+            displayName: 'Create backup in storage'
+            inputs:
+              azureSubscription: '$(azureSubscription)'
+              scriptType: bash
+              scriptLocation: inlineScript
+              inlineScript: |
+                set -e
+
+                BRANCH="$(Build.SourceBranchName)"
+                TIMESTAMP="$(date +%Y%m%d-%H%M%S)"
+                BACKUP_FOLDER="backup/$(targetFolder)/merge-${BRANCH}-${TIMESTAMP}"
+
+                echo "Storage account: $(selectedStorageAccount)"
+                echo "Backup folder: ${BACKUP_FOLDER}"
+
+                EXISTING_COUNT=$(az storage blob list \
+                  --account-name "$(selectedStorageAccount)" \
+                  --container-name "$(storageContainer)" \
+                  --prefix "$(targetFolder)/" \
+                  --auth-mode login \
+                  --query "length([])" \
+                  -o tsv)
+
+                if [ "${EXISTING_COUNT}" = "0" ]; then
+                  echo "No hay contenido previo. Se omite backup."
+                else
+                  az storage blob copy start-batch \
+                    --account-name "$(selectedStorageAccount)" \
+                    --destination-container "$(storageContainer)" \
+                    --destination-path "${BACKUP_FOLDER}" \
+                    --source-account-name "$(selectedStorageAccount)" \
+                    --source-container "$(storageContainer)" \
+                    --pattern "$(targetFolder)/*" \
+                    --auth-mode login
+
+                  echo "Backup creado correctamente"
+                fi
+
+          - task: AzureCLI@2
+            displayName: 'Delete current target files'
+            inputs:
+              azureSubscription: '$(azureSubscription)'
+              scriptType: bash
+              scriptLocation: inlineScript
+              inlineScript: |
+                set -e
+
+                az storage blob delete-batch \
+                  --account-name "$(selectedStorageAccount)" \
+                  --source "$(storageContainer)" \
+                  --pattern "$(targetFolder)/*" \
+                  --auth-mode login || true
+
+                echo "Contenido anterior eliminado"
+
+          - task: AzureCLI@2
+            displayName: 'Upload new files to storage'
+            inputs:
+              azureSubscription: '$(azureSubscription)'
+              scriptType: bash
+              scriptLocation: inlineScript
+              inlineScript: |
+                set -e
+
+                az storage blob upload-batch \
+                  --account-name "$(selectedStorageAccount)" \
+                  --destination "$(storageContainer)" \
+                  --destination-path "$(targetFolder)" \
+                  --source "$(sourceFolder)" \
+                  --auth-mode login \
+                  --overwrite true
+
+                echo "Nuevo contenido subido"
+
+          - task: AzureCLI@2
+            displayName: 'List uploaded files'
+            inputs:
+              azureSubscription: '$(azureSubscription)'
+              scriptType: bash
+              scriptLocation: inlineScript
+              inlineScript: |
+                az storage blob list \
+                  --account-name "$(selectedStorageAccount)" \
+                  --container-name "$(storageContainer)" \
+                  --prefix "$(targetFolder)/" \
+                  --auth-mode login \
+                  --output table
+
+  - stage: Trigger_CloudManager
+    displayName: 'SPA Cache Invalidation — inspiration-guide'
+    dependsOn: Build_Backup_And_Deploy_Merge
+    condition: >-
+      and(
+      succeeded(),
+      ne(variables['Build.Reason'], 'PullRequest'),
+      eq(variables['CM_TRIGGER_PIPELINE'], 'true'),
+      or(
+        eq(variables['Build.SourceBranch'], 'refs/heads/uat'),
+        eq(variables['Build.SourceBranch'], 'refs/heads/qa'),
+        eq(variables['Build.SourceBranch'], 'refs/heads/pre'),
+        eq(variables['Build.SourceBranch'], 'refs/heads/main'),
+        eq(variables['Build.SourceBranch'], 'refs/heads/dev')
+      )
+      )
+    jobs:
+      - job: Invalidate_SPA_Cache
+        displayName: 'Invalidar caché SPA inspiration-guide'
+        steps:
+          - checkout: self
+
+          - task: DownloadSecureFile@1
+            name: credDev
+            displayName: 'Descargar service-credential-dev.json'
+            inputs:
+              secureFile: 'service-credential-dev.json'
+
+          - task: DownloadSecureFile@1
+            name: credQa
+            displayName: 'Descargar service-credential-qa.json'
+            inputs:
+              secureFile: 'service-credential-qa.json'
+
+          - task: DownloadSecureFile@1
+            name: credStage
+            displayName: 'Descargar service-credential-stage.json'
+            inputs:
+              secureFile: 'service-credential-stage.json'
+
+          - task: DownloadSecureFile@1
+            name: credPro
+            displayName: 'Descargar service-credential-pro.json'
+            inputs:
+              secureFile: 'service-credential-pro.json'
+
+          - bash: |
+              set -euo pipefail
+
+              BRANCH="$(Build.SourceBranchName)"
+              echo "Rama detectada: $BRANCH"
+
+              case "$BRANCH" in
+                dev)
+                  AUTHOR_URL="$(AEM_AUTHOR_URL_DEV)"
+                  HMAC_SECRET="$(HMAC_SECRET_DEV)"
+                  CRED_FILE_PATH="$(credDev.secureFilePath)"
+                  ;;
+                qa)
+                  AUTHOR_URL="$(AEM_AUTHOR_URL_QA)"
+                  HMAC_SECRET="$(HMAC_SECRET_QA)"
+                  CRED_FILE_PATH="$(credQa.secureFilePath)"
+                  ;;
+                pre)
+                  AUTHOR_URL="$(AEM_AUTHOR_URL_STAGE)"
+                  HMAC_SECRET="$(HMAC_SECRET_STAGE)"
+                  CRED_FILE_PATH="$(credStage.secureFilePath)"
+                  ;;
+                uat)
+                  AUTHOR_URL="$(AEM_AUTHOR_URL_STAGE)"
+                  HMAC_SECRET="$(HMAC_SECRET_STAGE)"
+                  CRED_FILE_PATH="$(credStage.secureFilePath)"
+                  ;;
+                main)
+                  AUTHOR_URL="$(AEM_AUTHOR_URL_PRO)"
+                  HMAC_SECRET="$(HMAC_SECRET_PRO)"
+                  CRED_FILE_PATH="$(credPro.secureFilePath)"
+                  ;;
+                *)
+                  echo "ERROR: Rama no soportada: $BRANCH"
+                  exit 1
+                  ;;
+              esac
+
+              echo "AEM Author URL: $AUTHOR_URL"
+              echo "Credentials file: $CRED_FILE_PATH"
+
+              echo "##vso[task.setvariable variable=aemAuthorUrl]$AUTHOR_URL"
+              echo "##vso[task.setvariable variable=hmacSecret;issecret=true]$HMAC_SECRET"
+              echo "##vso[task.setvariable variable=credFilePath]$CRED_FILE_PATH"
+            displayName: 'Seleccionar variables por entorno'
+            env:
+              AEM_AUTHOR_URL_DEV: $(AEM_AUTHOR_URL_DEV)
+              HMAC_SECRET_DEV: $(HMAC_SECRET_DEV)
+              AEM_AUTHOR_URL_QA: $(AEM_AUTHOR_URL_QA)
+              AEM_AUTHOR_URL_STAGE: $(AEM_AUTHOR_URL_STAGE)
+              AEM_AUTHOR_URL_PRO: $(AEM_AUTHOR_URL_PRO)
+              HMAC_SECRET_QA: $(HMAC_SECRET_QA)
+              HMAC_SECRET_STAGE: $(HMAC_SECRET_STAGE)
+              HMAC_SECRET_PRO: $(HMAC_SECRET_PRO)
+
+          - task: UseNode@1
+            displayName: 'Usar Node.js 20'
+            inputs:
+              version: '20.x'
+
+          - bash: |
+              set -euo pipefail
+
+              SCRIPT_DIR="$(System.DefaultWorkingDirectory)/deploy"
+              TEMP_DIR="$(Agent.TempDirectory)/aem-cache-scripts"
+
+              echo "Copiando scripts a directorio temporal..."
+              mkdir -p "$TEMP_DIR"
+              cp "$SCRIPT_DIR/run-external-spa-cache-invalidation.sh" "$TEMP_DIR/"
+              cp "$SCRIPT_DIR/get-aem-access-token.js" "$TEMP_DIR/"
+              cp "$SCRIPT_DIR/invalidate-external-spa-cache.js" "$TEMP_DIR/"
+
+              chmod +x "$TEMP_DIR/run-external-spa-cache-invalidation.sh"
+
+              cd "$TEMP_DIR"
+
+              echo "Lanzando invalidación de caché para: inspiration-guide"
+
+              ./run-external-spa-cache-invalidation.sh \
+                --target inspiration-guide \
+                --author-url "$(aemAuthorUrl)" \
+                --hmac-secret "$(hmacSecret)" \
+                --auth-mode technical-account-jwt \
+                --credentials-file "$(credFilePath)"
+
+              echo "Cache invalidation completada correctamente."
+            displayName: 'Invalidar caché: inspiration-guide'
+            env:
+              hmacSecret: $(hmacSecret)
