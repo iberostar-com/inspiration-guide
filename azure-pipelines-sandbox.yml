@@ -1,10 +1,7 @@
 trigger:
   branches:
     include:
-      - develop
-      - qa
-      - stage
-      - prod
+      - sandbox
 
 pr: none
 
@@ -29,7 +26,7 @@ pool:
 stages:
   - stage: SonarCloud
     displayName: 'Sonar Cloud Analysis'
-    condition: in(variables['Build.SourceBranchName'], 'main', 'stage', 'qa', 'develop')
+    condition: in(variables['Build.SourceBranchName'], 'sandbox')
     jobs:
       - job: Sonar_Cloud_Analysis
         displayName: 'Sonar Cloud Analysis'
@@ -103,15 +100,15 @@ stages:
                   ;;
               esac
 
-              if [ -z "${CM_GIT_USERNAME:-}" ] || [ -z "${CM_GIT_PASSWORD:-}" ] || [ -z "${CM_GIT_REPO_URL_IS-SANDBOX:-}" ]; then
-                echo "Faltan variables: CM_GIT_USERNAME / CM_GIT_PASSWORD / CM_GIT_REPO_URL_IS-SANDBOX"
+              if [ -z "${CM_GIT_USERNAME:-}" ] || [ -z "${CM_GIT_PASSWORD:-}" ] || [ -z "${CM_GIT_REPO_URL_IS_SANDBOX:-}" ]; then
+                echo "Faltan variables: CM_GIT_USERNAME / CM_GIT_PASSWORD / CM_GIT_REPO_URL_IS_SANDBOX"
                 exit 1
               fi
 
-              REPO_URL="${CM_GIT_REPO_URL_IS-SANDBOX%/}"
+              REPO_URL="${CM_GIT_REPO_URL_IS_SANDBOX%/}"
 
               if [[ "$REPO_URL" != https://* ]]; then
-                echo "CM_GIT_REPO_URL_IS-SANDBOX debe empezar por https://"
+                echo "CM_GIT_REPO_URL_IS_SANDBOX debe empezar por https://"
                 exit 1
               fi
 
@@ -140,4 +137,4 @@ stages:
             env:
               CM_GIT_USERNAME: $(CM_GIT_USERNAME)
               CM_GIT_PASSWORD: $(CM_GIT_PASSWORD)
-              CM_GIT_REPO_URL_IS-SANDBOX: $(CM_GIT_REPO_URL_IS-SANDBOX)
+              CM_GIT_REPO_URL_IS_SANDBOX: $(CM_GIT_REPO_URL_IS_SANDBOX)
