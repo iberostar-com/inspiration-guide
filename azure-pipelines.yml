@@ -29,7 +29,7 @@ pool:
 stages:
   - stage: SonarCloud
     displayName: 'Sonar Cloud Analysis'
-    condition: eq(variables['Build.Reason'], 'PullRequest')
+    condition: in(variables['Build.SourceBranchName'], 'main', 'stage', 'qa', 'develop')
     jobs:
       - job: Sonar_Cloud_Analysis
         displayName: 'Sonar Cloud Analysis'
@@ -103,15 +103,15 @@ stages:
                   ;;
               esac
 
-              if [ -z "${CM_GIT_USERNAME:-}" ] || [ -z "${CM_GIT_PASSWORD:-}" ] || [ -z "${CM_GIT_REPO_URL_IBE:-}" ]; then
-                echo "Faltan variables: CM_GIT_USERNAME / CM_GIT_PASSWORD / CM_GIT_REPO_URL_IBE"
+              if [ -z "${CM_GIT_USERNAME:-}" ] || [ -z "${CM_GIT_PASSWORD:-}" ] || [ -z "${CM_GIT_REPO_URL_IS:-}" ]; then
+                echo "Faltan variables: CM_GIT_USERNAME / CM_GIT_PASSWORD / CM_GIT_REPO_URL_IS"
                 exit 1
               fi
 
-              REPO_URL="${CM_GIT_REPO_URL_IBE%/}"
+              REPO_URL="${CM_GIT_REPO_URL_IS%/}"
 
               if [[ "$REPO_URL" != https://* ]]; then
-                echo "CM_GIT_REPO_URL_IBE debe empezar por https://"
+                echo "CM_GIT_REPO_URL_IS debe empezar por https://"
                 exit 1
               fi
 
