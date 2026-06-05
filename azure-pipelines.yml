@@ -103,15 +103,15 @@ stages:
                   ;;
               esac
 
-              if [ -z "${CM_GIT_USERNAME:-}" ] || [ -z "${CM_GIT_PASSWORD:-}" ] || [ -z "${CM_GIT_REPO_URL_IS:-}" ]; then
-                echo "Faltan variables: CM_GIT_USERNAME / CM_GIT_PASSWORD / CM_GIT_REPO_URL_IS"
+              if [ -z "${CM_GIT_USERNAME:-}" ] || [ -z "${CM_GIT_PASSWORD:-}" ] || [ -z "${CM_GIT_REPO_URL_IS-SANDBOX:-}" ]; then
+                echo "Faltan variables: CM_GIT_USERNAME / CM_GIT_PASSWORD / CM_GIT_REPO_URL_IS-SANDBOX"
                 exit 1
               fi
 
-              REPO_URL="${CM_GIT_REPO_URL_IS%/}"
+              REPO_URL="${CM_GIT_REPO_URL_IS-SANDBOX%/}"
 
               if [[ "$REPO_URL" != https://* ]]; then
-                echo "CM_GIT_REPO_URL_IS debe empezar por https://"
+                echo "CM_GIT_REPO_URL_IS-SANDBOX debe empezar por https://"
                 exit 1
               fi
 
@@ -140,4 +140,4 @@ stages:
             env:
               CM_GIT_USERNAME: $(CM_GIT_USERNAME)
               CM_GIT_PASSWORD: $(CM_GIT_PASSWORD)
-              CM_GIT_REPO_URL_IS: $(CM_GIT_REPO_URL_IS)
+              CM_GIT_REPO_URL_IS-SANDBOX: $(CM_GIT_REPO_URL_IS-SANDBOX)
