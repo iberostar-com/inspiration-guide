@@ -1,0 +1,241 @@
+trigger: none
+pr: none
+
+parameters:
+  - name: deployedCode
+    displayName: "Deployed code"
+    type: string
+    default: "fullstack"
+    values:
+      - fullstack
+      - dispatcher
+      - cdn
+
+variables:
+  - group: "azure-aem"
+
+  - name: agentPoolName
+    value: "P38 CMS AgentPool"
+
+pool:
+  name: $(agentPoolName)
+
+stages:
+  - stage: Trigger_CloudManager
+    displayName: "Lanzar pipeline en Cloud Manager"
+    jobs:
+      - job: Trigger
+        displayName: "Trigger pipeline Cloud Manager"
+        steps:
+          - task: NodeTool@0
+            displayName: "Usar Node.js 20"
+            inputs:
+              versionSpec: "20.x"
+
+          - bash: |
+              set -euo pipefail
+
+              SOURCE_BRANCH="${AZDO_SOURCE_BRANCH}"
+              SOURCE_BRANCH_NAME="${AZDO_SOURCE_BRANCH_NAME}"
+              DEPLOYED_CODE="${{ parameters.deployedCode }}"
+
+              echo "Branch/ref seleccionado: $SOURCE_BRANCH"
+              echo "Branch name seleccionado: $SOURCE_BRANCH_NAME"
+              echo "Deployed code seleccionado: $DEPLOYED_CODE"
+
+              case "$SOURCE_BRANCH_NAME" in
+                dev)
+                  TARGET_ENV="dev"
+                  ;;
+                qa)
+                  TARGET_ENV="qa"
+                  ;;
+                stage)
+                  TARGET_ENV="stage"
+                  ;;
+                prod)
+                  TARGET_ENV="prod"
+                  ;;
+                *)
+                  echo "La rama '$SOURCE_BRANCH_NAME' no está soportada para despliegue."
+                  echo "Ramas permitidas: dev, qa, stage, prod"
+                  exit 1
+                  ;;
+              esac
+
+              echo "Entorno calculado automáticamente: $TARGET_ENV"
+
+              case "$TARGET_ENV-$DEPLOYED_CODE" in
+                dev-fullstack)
+                  PIPELINE_ID="${CM_PIPELINE_ID_DEV_FULLSTACK}"
+                  ;;
+                dev-dispatcher)
+                  PIPELINE_ID="${CM_PIPELINE_ID_DEV_DISPATCHER}"
+                  ;;
+                dev-cdn)
+                  echo "No existe pipeline CDN para DEV"
+                  exit 1
+                  ;;
+
+                qa-fullstack)
+                  PIPELINE_ID="${CM_PIPELINE_ID_QA_FULLSTACK}"
+                  ;;
+                qa-dispatcher)
+                  PIPELINE_ID="${CM_PIPELINE_ID_QA_DISPATCHER}"
+                  ;;
+                qa-cdn)
+                  PIPELINE_ID="${CM_PIPELINE_ID_QA_CDN}"
+                  ;;
+
+                stage-fullstack)
+                  PIPELINE_ID="${CM_PIPELINE_ID_STAGE_FULLSTACK}"
+                  ;;
+                stage-dispatcher)
+                  echo "No existe pipeline Dispatcher para STAGE"
+                  exit 1
+                  ;;
+                stage-cdn)
+                  echo "No existe pipeline CDN para STAGE"
+                  exit 1
+                  ;;
+
+                prod-fullstack)
+                  PIPELINE_ID="${CM_PIPELINE_ID_PROD_FULLSTACK}"
+                  ;;
+                prod-dispatcher)
+                  echo "No existe pipeline Dispatcher para PROD"
+                  exit 1
+                  ;;
+                prod-cdn)
+                  echo "No existe pipeline CDN para PROD"
+                  exit 1
+                  ;;
+
+                *)
+                  echo "Combinación no soportada: $TARGET_ENV-$DEPLOYED_CODE"
+                  exit 1
+                  ;;
+              esac
+
+              if [ -z "${PIPELINE_ID:-}" ]; then
+                echo "No hay pipeline ID configurado para $TARGET_ENV con deployed code $DEPLOYED_CODE"
+                exit 1
+              fi
+
+              echo "Pipeline ID seleccionado: $PIPELINE_ID"
+
+              export CM_PIPELINE_ID="$PIPELINE_ID"
+
+              mkdir -p cm-trigger
+              cd cm-trigger
+
+              node -v
+              npm -v
+
+              npm init -y >/dev/null 2>&1
+              npm install @adobe/aio-lib-cloudmanager
+
+              cat > trigger-cloudmanager.js <<'EOF'
+              const https = require('https');
+              const sdk = require('@adobe/aio-lib-cloudmanager');
+
+              function getAccessToken({ clientId, clientSecret, scopes }) {
+                return new Promise((resolve, reject) => {
+                  const body = new URLSearchParams({
+                    grant_type: 'client_credentials',
+                    client_id: clientId,
+                    client_secret: clientSecret,
+                    scope: scopes
+                  }).toString();
+
+                  const req = https.request({
+                    hostname: 'ims-na1.adobelogin.com',
+                    path: '/ims/token/v3',
+                    method: 'POST',
+                    headers: {
+                      'Content-Type': 'application/x-www-form-urlencoded',
+                      'Content-Length': Buffer.byteLength(body)
+                    }
+                  }, (res) => {
+                    let data = '';
+
+                    res.on('data', chunk => data += chunk);
+
+                    res.on('end', () => {
+                      if (res.statusCode < 200 || res.statusCode >= 300) {
+                        return reject(new Error(`IMS token error ${res.statusCode}: ${data}`));
+                      }
+
+                      const parsed = JSON.parse(data);
+
+                      if (!parsed.access_token) {
+                        return reject(new Error(`La respuesta de IMS no trae access_token: ${data}`));
+                      }
+
+                      resolve(parsed.access_token);
+                    });
+                  });
+
+                  req.on('error', reject);
+                  req.write(body);
+                  req.end();
+                });
+              }
+
+              async function main() {
+                const clientId = process.env.CM_CLIENT_ID;
+                const clientSecret = process.env.CM_CLIENT_SECRET;
+                const scopes = process.env.CM_SCOPES;
+                const imsOrgId = process.env.CM_IMS_ORG_ID;
+                const programId = process.env.CM_PROGRAM_ID;
+                const pipelineId = process.env.CM_PIPELINE_ID;
+                const executionMode = process.env.CM_EXECUTION_MODE || 'NORMAL';
+
+                if (!clientId || !clientSecret || !scopes || !imsOrgId || !programId || !pipelineId) {
+                  throw new Error(
+                    `Faltan variables obligatorias. ` +
+                    `CM_CLIENT_ID=${!!clientId}, ` +
+                    `CM_CLIENT_SECRET=${!!clientSecret}, ` +
+                    `CM_SCOPES=${!!scopes}, ` +
+                    `CM_IMS_ORG_ID=${!!imsOrgId}, ` +
+                    `CM_PROGRAM_ID=${!!programId}, ` +
+                    `CM_PIPELINE_ID=${!!pipelineId}`
+                  );
+                }
+
+                const accessToken = await getAccessToken({ clientId, clientSecret, scopes });
+                const api = await sdk.init(imsOrgId, clientId, accessToken);
+
+                const execution = await api.createExecution(programId, pipelineId, executionMode);
+
+                console.log('Ejecución creada correctamente.');
+                console.log(JSON.stringify(execution, null, 2));
+              }
+
+              main().catch(err => {
+                console.error('ERROR EN TRIGGER CLOUD MANAGER:');
+                console.error(err && err.stack ? err.stack : err);
+                process.exit(1);
+              });
+              EOF
+
+              node trigger-cloudmanager.js
+            displayName: "Crear ejecución Cloud Manager"
+            env:
+              AZDO_SOURCE_BRANCH: $(Build.SourceBranch)
+              AZDO_SOURCE_BRANCH_NAME: $(Build.SourceBranchName)
+
+              CM_CLIENT_ID: $(CM_CLIENT_ID)
+              CM_CLIENT_SECRET: $(CM_CLIENT_SECRET)
+              CM_SCOPES: $(CM_SCOPES)
+              CM_IMS_ORG_ID: $(CM_IMS_ORG_ID)
+              CM_PROGRAM_ID: $(CM_PROGRAM_ID)
+              CM_EXECUTION_MODE: $(CM_EXECUTION_MODE)
+
+              CM_PIPELINE_ID_DEV_DISPATCHER: $(CM_PIPELINE_ID_DEV_DISPATCHER)
+              CM_PIPELINE_ID_DEV_FULLSTACK: $(CM_PIPELINE_ID_DEV_FULLSTACK)
+              CM_PIPELINE_ID_QA_CDN: $(CM_PIPELINE_ID_QA_CDN)
+              CM_PIPELINE_ID_QA_DISPATCHER: $(CM_PIPELINE_ID_QA_DISPATCHER)
+              CM_PIPELINE_ID_QA_FULLSTACK: $(CM_PIPELINE_ID_QA_FULLSTACK)
+              CM_PIPELINE_ID_STAGE_FULLSTACK: $(CM_PIPELINE_ID_STAGE_FULLSTACK)
+              CM_PIPELINE_ID_PROD_FULLSTACK: $(CM_PIPELINE_ID_PROD_FULLSTACK)
