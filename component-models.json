@@ -180,6 +180,10 @@
     ]
   },
   {
+    "id": "column",
+    "fields": []
+  },
+  {
     "id": "fragment",
     "fields": [
       {
