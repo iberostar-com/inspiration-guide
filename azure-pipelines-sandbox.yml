@@ -1,0 +1,156 @@
+trigger:
+  branches:
+    include:
+      - develop
+      - qa
+      - stage
+      - main
+
+pr: none
+
+variables:
+  - group: 'azure-aem'
+
+  - name: agentPoolName
+    value: 'P38 CMS AgentPool'
+
+  - name: sonarCloudEndpointName
+    value: 'DevSecOps-Sonar-p84-grscms-eds-inspiration-guide'
+  - name: sonarCloudOrganization
+    value: 'sfcgrupoiberostar'
+  - name: sonarCloudProjectKey
+    value: 'SFCGrupoIberostar_p84-grscms-eds-inspiration-guide'
+  - name: sonarCloudProjectName
+    value: 'p84-grscms-eds-inspiration-guide'
+
+pool:
+  name: $(agentPoolName)
+
+stages:
+  - stage: SonarCloud
+    displayName: 'Sonar Cloud Analysis'
+    condition: in(variables['Build.SourceBranchName'], 'main', 'stage', 'qa', 'develop')
+    jobs:
+      - job: Sonar_Cloud_Analysis
+        displayName: 'Sonar Cloud Analysis'
+        pool:
+          vmImage: ubuntu-latest
+        steps:
+          - checkout: self
+            fetchDepth: 0
+
+          - task: SonarCloudPrepare@4.1.0
+            displayName: 'Prepare SonarCloud'
+            inputs:
+              SonarCloud: '$(sonarCloudEndpointName)'
+              organization: '$(sonarCloudOrganization)'
+              scannerMode: 'cli'
+              configMode: 'manual'
+              cliProjectKey: '$(sonarCloudProjectKey)'
+              cliProjectName: '$(sonarCloudProjectName)'
+              cliSources: '.'
+              extraProperties: |
+                sonar.inclusions=**/*.cls,**/*.page,**/*.js
+                sonar.exclusions=**/*.java
+                sonar.qualitygate.wait=true
+            continueOnError: true
+
+          - task: SonarCloudAnalyze@4.1.0
+            displayName: 'Analyze SonarCloud'
+
+          - task: SonarCloudPublish@4.1.0
+            displayName: 'Publish SonarCloud'
+            continueOnError: true
+            inputs:
+              pollingTimeoutSec: '900'
+
+  - stage: MirrorPush_CloudManager_Merge
+    displayName: 'Push a Cloud Manager Git (Merge)'
+    condition: >
+      and(
+        succeeded(),
+        ne(variables['Build.Reason'], 'PullRequest'),
+        or(
+        eq(variables['Build.SourceBranch'], 'refs/heads/develop'),
+        eq(variables['Build.SourceBranch'], 'refs/heads/qa'),
+        eq(variables['Build.SourceBranch'], 'refs/heads/stage'),
+        eq(variables['Build.SourceBranch'], 'refs/heads/main')
+        )
+      )
+    jobs:
+      - job: PushMerge
+        displayName: 'Push a Cloud Manager en merge'
+        steps:
+          - checkout: self
+            fetchDepth: 0
+            persistCredentials: false
+
+          - bash: |
+              set -euo pipefail
+
+              CM_BRANCH="$(Build.SourceBranchName)"
+
+              echo "Merge detectado."
+              echo "Rama Azure: $CM_BRANCH"
+
+              case "$CM_BRANCH" in
+                develop)
+                  TARGET_BRANCH="dev"
+                  echo "Rama válida para Cloud Manager: $CM_BRANCH -> $TARGET_BRANCH"
+                  ;;
+                qa)
+                  TARGET_BRANCH="qa"
+                  echo "Rama válida para Cloud Manager: $CM_BRANCH -> $TARGET_BRANCH"
+                  ;;
+                stage)
+                  TARGET_BRANCH="stage"
+                  echo "Rama válida para Cloud Manager: $CM_BRANCH -> $TARGET_BRANCH"
+                  ;;
+                main)
+                  TARGET_BRANCH="main"
+                  echo "Rama válida para Cloud Manager: $CM_BRANCH -> $TARGET_BRANCH"
+                  ;;
+                *)
+                  echo "La rama '$CM_BRANCH' no es promocionable. No se hace push a Cloud Manager."
+                  exit 0
+                  ;;
+              esac
+
+              if [ -z "${CM_GIT_USERNAME:-}" ] || [ -z "${CM_GIT_PASSWORD:-}" ] || [ -z "${CM_GIT_REPO_URL_IS_SANDBOX:-}" ]; then
+                echo "Faltan variables: CM_GIT_USERNAME / CM_GIT_PASSWORD / CM_GIT_REPO_URL_IS_SANDBOX"
+                exit 1
+              fi
+
+              REPO_URL="${CM_GIT_REPO_URL_IS_SANDBOX%/}"
+
+              if [[ "$REPO_URL" != https://* ]]; then
+                echo "CM_GIT_REPO_URL_IS_SANDBOX debe empezar por https://"
+                exit 1
+              fi
+
+              ENC_USER="$(python3 -c "import os, urllib.parse; print(urllib.parse.quote(os.environ['CM_GIT_USERNAME'], safe=''))")"
+              ENC_PASS="$(python3 -c "import os, urllib.parse; print(urllib.parse.quote(os.environ['CM_GIT_PASSWORD'], safe=''))")"
+              AUTH_URL="$(printf '%s' "$REPO_URL" | sed "s#^https://#https://${ENC_USER}:${ENC_PASS}@#")"
+
+              git config user.email "azure-pipeline@local"
+              git config user.name "azure-pipeline"
+
+              git remote remove cloudmanager 2>/dev/null || true
+              git remote add cloudmanager "$AUTH_URL"
+
+              REMOTE_REF="refs/heads/${TARGET_BRANCH}"
+
+              if git ls-remote --exit-code --heads cloudmanager "$TARGET_BRANCH" >/dev/null 2>&1; then
+                echo "La rama '$TARGET_BRANCH' ya existe en Cloud Manager."
+              else
+                echo "La rama '$TARGET_BRANCH' no existe en Cloud Manager. Se creará."
+              fi
+
+              git push --force cloudmanager "HEAD:${REMOTE_REF}"
+
+              echo "OK: Push completado a Cloud Manager (${REMOTE_REF})"
+            displayName: 'git push -> Cloud Manager (merge)'
+            env:
+              CM_GIT_USERNAME: $(CM_GIT_USERNAME)
+              CM_GIT_PASSWORD: $(CM_GIT_PASSWORD)
+              CM_GIT_REPO_URL_IS_SANDBOX: $(CM_GIT_REPO_URL_IS_SANDBOX)
