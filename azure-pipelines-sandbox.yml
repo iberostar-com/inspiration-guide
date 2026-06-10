@@ -67,12 +67,7 @@ stages:
       and(
         succeeded(),
         ne(variables['Build.Reason'], 'PullRequest'),
-        or(
-          eq(variables['Build.SourceBranch'], 'refs/heads/develop'),
-          eq(variables['Build.SourceBranch'], 'refs/heads/qa'),
-          eq(variables['Build.SourceBranch'], 'refs/heads/stage'),
-          eq(variables['Build.SourceBranch'], 'refs/heads/prod')
-        )
+        eq(variables['Build.SourceBranch'], 'refs/heads/sandbox')
       )
     jobs:
       - job: PushMerge
@@ -91,8 +86,9 @@ stages:
               echo "Rama Azure: $CM_BRANCH"
 
               case "$CM_BRANCH" in
-                dev|qa|stage|prod)
-                  echo "Rama válida para Cloud Manager: $CM_BRANCH"
+                sandbox)
+                  TARGET_BRANCH="main"
+                  echo "Rama válida para Cloud Manager: $CM_BRANCH -> $TARGET_BRANCH"
                   ;;
                 *)
                   echo "La rama '$CM_BRANCH' no es promocionable. No se hace push a Cloud Manager."
@@ -122,12 +118,12 @@ stages:
               git remote remove cloudmanager 2>/dev/null || true
               git remote add cloudmanager "$AUTH_URL"
 
-              REMOTE_REF="refs/heads/${CM_BRANCH}"
+              REMOTE_REF="refs/heads/${TARGET_BRANCH}"
 
-              if git ls-remote --exit-code --heads cloudmanager "$CM_BRANCH" >/dev/null 2>&1; then
-                echo "La rama '$CM_BRANCH' ya existe en Cloud Manager."
+              if git ls-remote --exit-code --heads cloudmanager "$TARGET_BRANCH" >/dev/null 2>&1; then
+                echo "La rama '$TARGET_BRANCH' ya existe en Cloud Manager."
               else
-                echo "La rama '$CM_BRANCH' no existe en Cloud Manager. Se creará."
+                echo "La rama '$TARGET_BRANCH' no existe en Cloud Manager. Se creará."
               fi
 
               git push --force cloudmanager "HEAD:${REMOTE_REF}"
