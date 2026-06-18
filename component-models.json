@@ -701,6 +701,47 @@
     ]
   },
   {
+    "id": "lead-subscription-form",
+    "fields": [
+      {
+        "component": "text",
+        "valueType": "string",
+        "name": "title",
+        "label": "Title",
+        "value": "Suscríbete a nuestra Newsletter"
+      },
+      {
+        "component": "text",
+        "valueType": "string",
+        "name": "description",
+        "label": "Description",
+        "value": ""
+      },
+      {
+        "component": "richtext",
+        "name": "legal",
+        "label": "Legal text (checkbox)",
+        "value": ""
+      },
+      {
+        "component": "select",
+        "name": "background",
+        "label": "Background",
+        "options": [
+          {
+            "name": "White",
+            "value": "white"
+          },
+          {
+            "name": "Grey",
+            "value": "grey"
+          }
+        ],
+        "value": "grey"
+      }
+    ]
+  },
+  {
     "id": "recommended-hotels-grid",
     "fields": [
       {
