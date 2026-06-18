@@ -59,5 +59,11 @@
     "components": [
       "grid-category-gallery-card"
     ]
+  },
+  {
+    "id": "nav-language",
+    "components": [
+      "nav-language-option"
+    ]
   }
 ]

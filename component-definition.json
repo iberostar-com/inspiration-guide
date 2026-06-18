@@ -404,6 +404,66 @@
           }
         },
         {
+          "title": "Nav Hotels Link",
+          "id": "nav-hotels",
+          "plugins": {
+            "xwalk": {
+              "page": {
+                "resourceType": "core/franklin/components/block/v1/block",
+                "template": {
+                  "name": "Nav Hotels Link",
+                  "model": "nav-hotels"
+                }
+              }
+            }
+          }
+        },
+        {
+          "title": "Nav Language Selector",
+          "id": "nav-language",
+          "plugins": {
+            "xwalk": {
+              "page": {
+                "resourceType": "core/franklin/components/block/v1/block",
+                "template": {
+                  "name": "Nav Language Selector",
+                  "filter": "nav-language"
+                }
+              }
+            }
+          }
+        },
+        {
+          "title": "Nav Language Option",
+          "id": "nav-language-option",
+          "plugins": {
+            "xwalk": {
+              "page": {
+                "resourceType": "core/franklin/components/block/v1/block/item",
+                "template": {
+                  "name": "Option",
+                  "model": "nav-language-option"
+                }
+              }
+            }
+          }
+        },
+        {
+          "title": "Nav Search Link",
+          "id": "nav-search",
+          "plugins": {
+            "xwalk": {
+              "page": {
+                "resourceType": "core/franklin/components/block/v1/block",
+                "template": {
+                  "name": "Nav Search Link",
+                  "model": "nav-search"
+                }
+              }
+            }
+          }
+        },
+        {
           "title": "Recommended Hotels Grid",
           "id": "recommended-hotels-grid",
           "plugins": {

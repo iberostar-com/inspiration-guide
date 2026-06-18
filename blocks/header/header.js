@@ -124,17 +124,21 @@ export default async function decorate(block) {
   nav.id = 'nav';
   while (fragment.firstElementChild) nav.append(fragment.firstElementChild);
 
-  const classes = ['brand', 'sections', 'tools'];
+  // only brand and sections are plain default-content sections; nav-hotels,
+  // nav-language and nav-search are atomic blocks, already decorated by
+  // loadFragment() (decorateMain + loadSections runs the full page pipeline)
+  const classes = ['brand', 'sections'];
   classes.forEach((c, i) => {
     const section = nav.children[i];
     if (section) section.classList.add(`nav-${c}`);
   });
 
   const navBrand = nav.querySelector('.nav-brand');
-  const brandLink = navBrand.querySelector('.button');
+  const brandLink = navBrand.querySelector('a');
   if (brandLink) {
     brandLink.className = '';
-    brandLink.closest('.button-container').className = '';
+    const buttonWrapper = brandLink.closest('.button-wrapper');
+    if (buttonWrapper) buttonWrapper.className = '';
   }
 
   const navSections = nav.querySelector('.nav-sections');
@@ -150,6 +154,14 @@ export default async function decorate(block) {
       });
     });
   }
+
+  // group hotels link, language selector and search into a single tools area
+  const navTools = document.createElement('div');
+  navTools.className = 'nav-tools';
+  nav.querySelectorAll('.nav-hotels, .nav-language, .nav-search').forEach((tool) => {
+    navTools.append(tool);
+  });
+  nav.append(navTools);
 
   // hamburger for mobile
   const hamburger = document.createElement('div');

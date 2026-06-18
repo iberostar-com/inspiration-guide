@@ -742,6 +742,75 @@
     ]
   },
   {
+    "id": "nav-hotels",
+    "fields": [
+      {
+        "component": "text",
+        "valueType": "string",
+        "name": "linkText",
+        "label": "Link Text",
+        "value": "Reservar Hoteles"
+      },
+      {
+        "component": "text",
+        "valueType": "string",
+        "name": "link",
+        "label": "Link URL",
+        "value": ""
+      }
+    ]
+  },
+  {
+    "id": "nav-language",
+    "fields": [
+      {
+        "component": "text",
+        "valueType": "string",
+        "name": "label",
+        "label": "Current Language Label",
+        "value": "ESP"
+      }
+    ]
+  },
+  {
+    "id": "nav-language-option",
+    "fields": [
+      {
+        "component": "text",
+        "valueType": "string",
+        "name": "label",
+        "label": "Language Label",
+        "value": ""
+      },
+      {
+        "component": "text",
+        "valueType": "string",
+        "name": "link",
+        "label": "Link URL",
+        "value": ""
+      }
+    ]
+  },
+  {
+    "id": "nav-search",
+    "fields": [
+      {
+        "component": "text",
+        "valueType": "string",
+        "name": "linkText",
+        "label": "Link Text",
+        "value": "Buscar"
+      },
+      {
+        "component": "text",
+        "valueType": "string",
+        "name": "link",
+        "label": "Link URL",
+        "value": "/search"
+      }
+    ]
+  },
+  {
     "id": "recommended-hotels-grid",
     "fields": [
       {
