@@ -34,6 +34,12 @@
     ]
   },
   {
+    "id": "carousel-category-gallery",
+    "components": [
+      "carousel-category-gallery-card"
+    ]
+  },
+  {
     "id": "columns",
     "components": [
       "column"
@@ -46,6 +52,12 @@
       "image",
       "button",
       "title"
+    ]
+  },
+  {
+    "id": "grid-category-gallery",
+    "components": [
+      "grid-category-gallery-card"
     ]
   }
 ]
