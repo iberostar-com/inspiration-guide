@@ -1,0 +1,51 @@
+{
+  "definitions": [
+    {
+      "title": "Article",
+      "id": "article",
+      "plugins": {
+        "xwalk": {
+          "page": {
+            "resourceType": "core/franklin/components/reference/v1/reference",
+            "template": {}
+          }
+        }
+      }
+    }
+  ],
+  "models": [
+    {
+      "id": "article",
+      "fields": [
+        {
+          "component": "text",
+          "name": "title",
+          "label": "Title",
+          "value": "",
+          "required": true
+        },
+        {
+          "component": "textarea",
+          "name": "summary",
+          "label": "Summary",
+          "value": "",
+          "required": true
+        },
+        {
+          "component": "reference",
+          "name": "image",
+          "label": "Featured Image",
+          "value": "",
+          "valueType": "string"
+        },
+        {
+          "component": "reference",
+          "name": "author",
+          "label": "Author",
+          "value": "",
+          "valueType": "string"
+        }
+      ]
+    }
+  ]
+}

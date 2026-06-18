@@ -142,6 +142,64 @@
     ]
   },
   {
+    "id": "author",
+    "fields": [
+      {
+        "component": "text",
+        "name": "name",
+        "label": "Name",
+        "value": "",
+        "required": true
+      },
+      {
+        "component": "textarea",
+        "name": "bio",
+        "label": "Bio",
+        "value": ""
+      },
+      {
+        "component": "reference",
+        "name": "avatar",
+        "label": "Avatar Image",
+        "value": "",
+        "valueType": "string"
+      }
+    ]
+  },
+  {
+    "id": "article",
+    "fields": [
+      {
+        "component": "text",
+        "name": "title",
+        "label": "Title",
+        "value": "",
+        "required": true
+      },
+      {
+        "component": "textarea",
+        "name": "summary",
+        "label": "Summary",
+        "value": "",
+        "required": true
+      },
+      {
+        "component": "reference",
+        "name": "image",
+        "label": "Featured Image",
+        "value": "",
+        "valueType": "string"
+      },
+      {
+        "component": "reference",
+        "name": "author",
+        "label": "Author",
+        "value": "",
+        "valueType": "string"
+      }
+    ]
+  },
+  {
     "id": "card",
     "fields": [
       {
@@ -156,6 +214,13 @@
         "name": "text",
         "value": "",
         "label": "Text",
+        "valueType": "string"
+      },
+      {
+        "component": "text",
+        "name": "link",
+        "label": "Link URL",
+        "value": "",
         "valueType": "string"
       }
     ]
@@ -180,6 +245,39 @@
     ]
   },
   {
+    "id": "form",
+    "fields": [
+      {
+        "component": "select",
+        "name": "variant",
+        "label": "Form Variant",
+        "options": [
+          {
+            "name": "Default",
+            "value": "default"
+          },
+          {
+            "name": "Newsletter",
+            "value": "newsletter"
+          }
+        ],
+        "value": "default"
+      },
+      {
+        "component": "text",
+        "name": "method",
+        "label": "Form Method",
+        "value": "POST"
+      },
+      {
+        "component": "text",
+        "name": "action",
+        "label": "Form Action URL",
+        "value": ""
+      }
+    ]
+  },
+  {
     "id": "fragment",
     "fields": [
       {
@@ -193,6 +291,31 @@
     "id": "hero",
     "fields": [
       {
+        "component": "select",
+        "name": "variant",
+        "label": "Hero Variant",
+        "options": [
+          {
+            "name": "Default",
+            "value": "default"
+          },
+          {
+            "name": "Tag",
+            "value": "tag"
+          },
+          {
+            "name": "Article",
+            "value": "article"
+          },
+          {
+            "name": "Blog",
+            "value": "blog"
+          }
+        ],
+        "required": true,
+        "value": "default"
+      },
+      {
         "component": "reference",
         "valueType": "string",
         "name": "image",
@@ -203,15 +326,62 @@
         "component": "text",
         "valueType": "string",
         "name": "imageAlt",
-        "label": "Alt",
+        "label": "Alt Text",
         "value": ""
       },
       {
         "component": "richtext",
         "name": "text",
         "value": "",
-        "label": "Text",
-        "valueType": "string"
+        "label": "Text / Title",
+        "valueType": "string",
+        "required": true
+      },
+      {
+        "component": "textarea",
+        "name": "subtitle",
+        "label": "Subtitle (optional)",
+        "value": ""
+      }
+    ]
+  },
+  {
+    "id": "topic-tag-cloud",
+    "fields": [
+      {
+        "component": "text",
+        "name": "title",
+        "label": "Section Title",
+        "value": "Topics",
+        "required": false
+      },
+      {
+        "component": "select",
+        "name": "mode",
+        "label": "Tag Generation Mode",
+        "options": [
+          {
+            "name": "Manual",
+            "value": "manual"
+          },
+          {
+            "name": "Auto (Category)",
+            "value": "auto-category"
+          },
+          {
+            "name": "Auto (Frequency)",
+            "value": "auto-frequency"
+          }
+        ],
+        "value": "manual",
+        "required": true
+      },
+      {
+        "component": "number",
+        "name": "maxTags",
+        "label": "Maximum Tags",
+        "value": 20,
+        "required": false
       }
     ]
   }
