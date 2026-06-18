@@ -1,0 +1,66 @@
+/*
+ * UIkit @font-face declarations, extracted from styles/core.css so they load
+ * through scripts.js's loadFonts() (deferred, session-cached) instead of
+ * blocking the critical CSS import chain in styles/styles.css.
+ */
+
+@font-face {
+  font-family: 'Noe Display';
+  font-style: normal;
+  font-weight: 400;
+  src:
+    url('fonts/NoeDisplay-Regular.woff2') format('woff2'),
+    url('fonts/NoeDisplay-Regular.woff') format('woff');
+}
+
+@font-face {
+  font-family: 'Noe Display';
+  font-style: normal;
+  font-weight: 500;
+  src:
+    url('fonts/NoeDisplay-Medium.woff2') format('woff2'),
+    url('fonts/NoeDisplay-Medium.woff') format('woff');
+}
+
+@font-face {
+  font-family: 'PP Woodland';
+  font-style: normal;
+  font-weight: 400;
+  src:
+    url('fonts/PPWoodland-Regular.woff2') format('woff2'),
+    url('fonts/PPWoodland-Regular.woff') format('woff');
+}
+
+@font-face {
+  font-family: 'F37 Bergman';
+  font-style: normal;
+  font-weight: 400;
+  src:
+    url('fonts/F37Bergman-Regular.woff2') format('woff2'),
+    url('fonts/F37Bergman-Regular.woff') format('woff');
+}
+
+@font-face {
+  font-family: Inter;
+  font-style: normal;
+  font-weight: 400;
+  src:
+    url('fonts/Inter-Regular.woff2') format('woff2'),
+    url('fonts/Inter-Regular.woff') format('woff');
+}
+
+@font-face {
+  font-family: Inter;
+  font-style: normal;
+  font-weight: 500;
+  src:
+    url('fonts/Inter-Medium.woff2') format('woff2'),
+    url('fonts/Inter-Medium.woff') format('woff');
+}
+
+@font-face {
+  font-family: ibh-icons;
+  src:
+    url('fonts/ibh-icons.woff2?d9bb1f57ff4a1facb1a9fdaa8c043578') format('woff2'),
+    url('fonts/ibh-icons.woff?d9bb1f57ff4a1facb1a9fdaa8c043578') format('woff');
+}

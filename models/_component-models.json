@@ -18,6 +18,12 @@
     "...": "./_section.json#/models"
   },
   {
+    "...": "./_author.json#/models"
+  },
+  {
+    "...": "./_article.json#/models"
+  },
+  {
     "...": "../blocks/*/_*.json#/models"
   }
 ]

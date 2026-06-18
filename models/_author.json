@@ -1,0 +1,43 @@
+{
+  "definitions": [
+    {
+      "title": "Author",
+      "id": "author",
+      "plugins": {
+        "xwalk": {
+          "page": {
+            "resourceType": "core/franklin/components/reference/v1/reference",
+            "template": {}
+          }
+        }
+      }
+    }
+  ],
+  "models": [
+    {
+      "id": "author",
+      "fields": [
+        {
+          "component": "text",
+          "name": "name",
+          "label": "Name",
+          "value": "",
+          "required": true
+        },
+        {
+          "component": "textarea",
+          "name": "bio",
+          "label": "Bio",
+          "value": ""
+        },
+        {
+          "component": "reference",
+          "name": "avatar",
+          "label": "Avatar Image",
+          "value": "",
+          "valueType": "string"
+        }
+      ]
+    }
+  ]
+}

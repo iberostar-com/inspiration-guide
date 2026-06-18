@@ -142,6 +142,97 @@
     ]
   },
   {
+    "id": "author",
+    "fields": [
+      {
+        "component": "text",
+        "name": "name",
+        "label": "Name",
+        "value": "",
+        "required": true
+      },
+      {
+        "component": "textarea",
+        "name": "bio",
+        "label": "Bio",
+        "value": ""
+      },
+      {
+        "component": "reference",
+        "name": "avatar",
+        "label": "Avatar Image",
+        "value": "",
+        "valueType": "string"
+      }
+    ]
+  },
+  {
+    "id": "article",
+    "fields": [
+      {
+        "component": "text",
+        "name": "title",
+        "label": "Title",
+        "value": "",
+        "required": true
+      },
+      {
+        "component": "textarea",
+        "name": "summary",
+        "label": "Summary",
+        "value": "",
+        "required": true
+      },
+      {
+        "component": "reference",
+        "name": "image",
+        "label": "Featured Image",
+        "value": "",
+        "valueType": "string"
+      },
+      {
+        "component": "reference",
+        "name": "author",
+        "label": "Author",
+        "value": "",
+        "valueType": "string"
+      }
+    ]
+  },
+  {
+    "id": "blog-split-list",
+    "fields": [
+      {
+        "component": "text",
+        "name": "title",
+        "label": "Section Title",
+        "value": "Latest from the blog"
+      },
+      {
+        "component": "select",
+        "name": "mode",
+        "label": "Data Mode",
+        "options": [
+          {
+            "name": "Manual",
+            "value": "manual"
+          },
+          {
+            "name": "Auto by Category",
+            "value": "auto-category"
+          }
+        ],
+        "value": "manual"
+      },
+      {
+        "component": "number",
+        "name": "maxItems",
+        "label": "Maximum Items",
+        "value": 5
+      }
+    ]
+  },
+  {
     "id": "card",
     "fields": [
       {
@@ -156,6 +247,13 @@
         "name": "text",
         "value": "",
         "label": "Text",
+        "valueType": "string"
+      },
+      {
+        "component": "text",
+        "name": "link",
+        "label": "Link URL",
+        "value": "",
         "valueType": "string"
       }
     ]
@@ -180,6 +278,179 @@
     ]
   },
   {
+    "id": "editorial-article-content",
+    "fields": [
+      {
+        "component": "text",
+        "name": "title",
+        "label": "Section Title",
+        "value": "Article content"
+      },
+      {
+        "component": "select",
+        "name": "layout",
+        "label": "Layout",
+        "options": [
+          {
+            "name": "Default",
+            "value": "default"
+          },
+          {
+            "name": "Narrow",
+            "value": "narrow"
+          }
+        ],
+        "value": "default"
+      }
+    ]
+  },
+  {
+    "id": "editorial-article-grid",
+    "fields": [
+      {
+        "component": "select",
+        "name": "mode",
+        "label": "Mode",
+        "options": [
+          {
+            "name": "Manual",
+            "value": "manual"
+          },
+          {
+            "name": "Auto by Tag",
+            "value": "auto-tag"
+          },
+          {
+            "name": "Auto by Category",
+            "value": "auto-category"
+          }
+        ],
+        "value": "manual"
+      },
+      {
+        "component": "select",
+        "name": "sort",
+        "label": "Sort",
+        "options": [
+          {
+            "name": "Latest",
+            "value": "latest"
+          },
+          {
+            "name": "Reading Time",
+            "value": "reading-time"
+          }
+        ],
+        "value": "latest"
+      },
+      {
+        "component": "number",
+        "name": "maxItems",
+        "label": "Maximum Items",
+        "value": 8
+      }
+    ]
+  },
+  {
+    "id": "editorial-highlight-grid",
+    "fields": [
+      {
+        "component": "select",
+        "name": "source",
+        "label": "Source",
+        "options": [
+          {
+            "name": "Manual",
+            "value": "manual"
+          },
+          {
+            "name": "Auto by Tag",
+            "value": "auto-tag"
+          },
+          {
+            "name": "Auto by Category",
+            "value": "auto-category"
+          }
+        ],
+        "value": "manual"
+      },
+      {
+        "component": "number",
+        "name": "pageSize",
+        "label": "Page Size",
+        "value": 4
+      },
+      {
+        "component": "text",
+        "name": "ctaLabel",
+        "label": "Load More Label",
+        "value": "Load more"
+      }
+    ]
+  },
+  {
+    "id": "editorial-split-article",
+    "fields": [
+      {
+        "component": "text",
+        "name": "eyebrow",
+        "label": "Eyebrow",
+        "value": "Featured"
+      },
+      {
+        "component": "text",
+        "name": "title",
+        "label": "Title",
+        "value": ""
+      },
+      {
+        "component": "textarea",
+        "name": "summary",
+        "label": "Summary",
+        "value": ""
+      },
+      {
+        "component": "text",
+        "name": "link",
+        "label": "Article Link",
+        "value": ""
+      }
+    ]
+  },
+  {
+    "id": "form",
+    "fields": [
+      {
+        "component": "select",
+        "name": "variant",
+        "label": "Form Variant",
+        "options": [
+          {
+            "name": "Default",
+            "value": "default"
+          },
+          {
+            "name": "Newsletter",
+            "value": "newsletter"
+          }
+        ],
+        "value": "default"
+      },
+      {
+        "component": "text",
+        "name": "method",
+        "label": "Form Method",
+        "value": "POST"
+      },
+      {
+        "component": "text",
+        "name": "action",
+        "label": "Form Action URL",
+        "value": ""
+      }
+    ]
+  },
+  {
     "id": "fragment",
     "fields": [
       {
@@ -193,6 +464,31 @@
     "id": "hero",
     "fields": [
       {
+        "component": "select",
+        "name": "variant",
+        "label": "Hero Variant",
+        "options": [
+          {
+            "name": "Default",
+            "value": "default"
+          },
+          {
+            "name": "Tag",
+            "value": "tag"
+          },
+          {
+            "name": "Article",
+            "value": "article"
+          },
+          {
+            "name": "Blog",
+            "value": "blog"
+          }
+        ],
+        "required": true,
+        "value": "default"
+      },
+      {
         "component": "reference",
         "valueType": "string",
         "name": "image",
@@ -203,15 +499,124 @@
         "component": "text",
         "valueType": "string",
         "name": "imageAlt",
-        "label": "Alt",
+        "label": "Alt Text",
         "value": ""
       },
       {
         "component": "richtext",
         "name": "text",
         "value": "",
-        "label": "Text",
-        "valueType": "string"
+        "label": "Text / Title",
+        "valueType": "string",
+        "required": true
+      },
+      {
+        "component": "textarea",
+        "name": "subtitle",
+        "label": "Subtitle (optional)",
+        "value": ""
+      }
+    ]
+  },
+  {
+    "id": "hotel-mini-card",
+    "fields": [
+      {
+        "component": "text",
+        "name": "hotelName",
+        "label": "Hotel Name",
+        "value": ""
+      },
+      {
+        "component": "text",
+        "name": "location",
+        "label": "Location",
+        "value": ""
+      },
+      {
+        "component": "text",
+        "name": "priceFrom",
+        "label": "Price From",
+        "value": ""
+      },
+      {
+        "component": "text",
+        "name": "link",
+        "label": "Link",
+        "value": ""
+      }
+    ]
+  },
+  {
+    "id": "recommended-hotels-grid",
+    "fields": [
+      {
+        "component": "text",
+        "name": "title",
+        "label": "Section Title",
+        "value": "Recommended Hotels"
+      },
+      {
+        "component": "select",
+        "name": "mode",
+        "label": "Mode",
+        "options": [
+          {
+            "name": "Manual",
+            "value": "manual"
+          },
+          {
+            "name": "Auto by Destination",
+            "value": "auto-destination"
+          }
+        ],
+        "value": "manual"
+      },
+      {
+        "component": "number",
+        "name": "maxItems",
+        "label": "Maximum Items",
+        "value": 12
+      }
+    ]
+  },
+  {
+    "id": "topic-tag-cloud",
+    "fields": [
+      {
+        "component": "text",
+        "name": "title",
+        "label": "Section Title",
+        "value": "Topics",
+        "required": false
+      },
+      {
+        "component": "select",
+        "name": "mode",
+        "label": "Tag Generation Mode",
+        "options": [
+          {
+            "name": "Manual",
+            "value": "manual"
+          },
+          {
+            "name": "Auto (Category)",
+            "value": "auto-category"
+          },
+          {
+            "name": "Auto (Frequency)",
+            "value": "auto-frequency"
+          }
+        ],
+        "value": "manual",
+        "required": true
+      },
+      {
+        "component": "number",
+        "name": "maxTags",
+        "label": "Maximum Tags",
+        "value": 20,
+        "required": false
       }
     ]
   }

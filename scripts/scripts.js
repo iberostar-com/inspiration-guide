@@ -49,7 +49,10 @@ export function moveInstrumentation(from, to) {
  * load fonts.css and set a session storage flag
  */
 async function loadFonts() {
-  await loadCSS(`${window.hlx.codeBasePath}/styles/fonts.css`);
+  await Promise.all([
+    loadCSS(`${window.hlx.codeBasePath}/styles/fonts.css`),
+    loadCSS(`${window.hlx.codeBasePath}/styles/uikit/fonts.css`),
+  ]);
   try {
     if (!window.location.hostname.includes('localhost')) sessionStorage.setItem('fonts-loaded', 'true');
   } catch (e) {
