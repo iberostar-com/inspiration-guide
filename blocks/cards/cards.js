@@ -1,5 +1,6 @@
 import { createOptimizedPicture } from '../../scripts/aem.js';
 import { moveInstrumentation } from '../../scripts/scripts.js';
+import { getArticles } from '../../scripts/inspiration-data.js';
 
 /**
  * Optimize images
@@ -16,10 +17,15 @@ function optimizeImage(container) {
  * Default highlight variant - image + text grid
  */
 function decorateHighlight(block) {
+  const authoredRows = [...block.children];
+  if (authoredRows.length === 0) {
+    return;
+  }
+
   block.classList.add('cards-highlight');
   const ul = document.createElement('ul');
 
-  [...block.children].forEach((row) => {
+  authoredRows.forEach((row) => {
     const li = document.createElement('li');
     const card = document.createElement('div');
     card.className = 'cards-card';
@@ -63,6 +69,49 @@ function decorateHighlight(block) {
     }
 
     li.appendChild(card);
+    ul.append(li);
+  });
+
+  block.replaceChildren(ul);
+}
+
+function renderHighlightFromMock(block, articles) {
+  block.classList.add('cards-highlight');
+  const ul = document.createElement('ul');
+
+  articles.forEach((article) => {
+    const li = document.createElement('li');
+    const card = document.createElement('article');
+    card.className = 'cards-card';
+
+    const imageDiv = document.createElement('div');
+    imageDiv.className = 'cards-card-image';
+    imageDiv.append(
+      createOptimizedPicture(
+        article.image,
+        article.title,
+        false,
+        [{ width: '750' }],
+      ),
+    );
+
+    const bodyDiv = document.createElement('div');
+    bodyDiv.className = 'cards-card-body';
+
+    const title = document.createElement('h3');
+    title.textContent = article.title;
+
+    const summary = document.createElement('p');
+    summary.textContent = article.summary;
+
+    const link = document.createElement('a');
+    link.className = 'cards-card-link';
+    link.href = `/article/${article.id}`;
+    link.textContent = 'Read more';
+
+    bodyDiv.append(title, summary, link);
+    card.append(imageDiv, bodyDiv);
+    li.append(card);
     ul.append(li);
   });
 
@@ -150,8 +199,15 @@ function decorateBanner(block) {
   block.replaceChildren(ul);
 }
 
-export default function decorate(block) {
+export default async function decorate(block) {
   const variant = block.getAttribute('data-variant') || 'highlight';
+  const rows = [...block.children];
+
+  if (variant === 'highlight' && rows.length === 0) {
+    const mockArticles = (await getArticles()).slice(0, 6);
+    renderHighlightFromMock(block, mockArticles);
+    return;
+  }
 
   switch (variant) {
     case 'overlay':

@@ -5,6 +5,8 @@
  * @param {Element} block The block element
  */
 
+import { getTagCloud } from '../../scripts/inspiration-data.js';
+
 /**
  * Extract tags from manually contributed rows
  * Expected structure from AEM: each row is a tag name
@@ -20,14 +22,10 @@ function extractManualTags(block) {
  * Generate tags auto (placeholder - requires Fetch from CF)
  * Real implementation in Fase 5 (lógica de datos)
  */
-async function generateAutoTags(mode) {
-  // Placeholder: return empty array
-  // Real impl: fetch from /api/tags?mode=category&max=20
-  // eslint-disable-next-line no-console
-  console.warn(
-    `[topic-tag-cloud] Auto mode '${mode}' not yet implemented. Use manual mode for now.`,
-  );
-  return [];
+async function generateAutoTags(mode, maxTags) {
+  const strategy = mode === 'category' ? 'category' : 'frequency';
+  const cloud = await getTagCloud(strategy, maxTags);
+  return cloud.map(({ tag }) => tag);
 }
 
 export default async function decorate(block) {
@@ -57,11 +55,9 @@ export default async function decorate(block) {
       tags = extractManualTags(block);
       break;
     case 'auto-category':
-      // eslint-disable-next-line no-await-in-loop
       tags = await generateAutoTags('category', maxTags);
       break;
     case 'auto-frequency':
-      // eslint-disable-next-line no-await-in-loop
       tags = await generateAutoTags('frequency', maxTags);
       break;
     default:
