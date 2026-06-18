@@ -68,6 +68,7 @@ The repository provides the basic structure, blocks, and configuration needed to
   - Bad: `.item-list`
   - Good: `.{blockname} .item-list`   
 - Avoid classes `{blockname}-container` and `{blockname}-wrapper` as those are used on sections and could be confusing.
+- UIkit `@font-face` declarations must live in `styles/uikit/fonts.css`, not in `styles/uikit/styles/core.css` or `styles/uikit/styles/foundations.css`. Those two files are `@import`ed eagerly into the critical-path `styles/styles.css`, so fonts declared there block render; `styles/uikit/fonts.css` is loaded lazily via `loadFonts()` in `scripts/scripts.js` instead.
 
 ### HTML
 - Use semantic HTML5 elements
