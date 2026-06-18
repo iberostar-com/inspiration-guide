@@ -13,9 +13,18 @@
       "button",
       "title",
       "hero",
+      "form",
       "cards",
       "columns",
-      "fragment"
+      "fragment",
+      "topic-tag-cloud",
+      "blog-split-list",
+      "editorial-highlight-grid",
+      "editorial-split-article",
+      "editorial-article-grid",
+      "editorial-article-content",
+      "hotel-mini-card",
+      "recommended-hotels-grid"
     ]
   },
   {
