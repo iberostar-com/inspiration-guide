@@ -180,12 +180,278 @@
     ]
   },
   {
+    "id": "featured-articles",
+    "fields": [
+      {
+        "component": "text",
+        "valueType": "string",
+        "name": "featured_heading",
+        "label": "Featured Title",
+        "value": ""
+      },
+      {
+        "component": "select",
+        "name": "featured_headingLevel",
+        "label": "Featured Title Heading",
+        "value": "h2",
+        "options": [
+          {
+            "name": "h2",
+            "value": "h2"
+          },
+          {
+            "name": "h3",
+            "value": "h3"
+          },
+          {
+            "name": "h4",
+            "value": "h4"
+          }
+        ]
+      },
+      {
+        "component": "text",
+        "valueType": "string",
+        "name": "latest_heading",
+        "label": "Latest Title",
+        "value": ""
+      },
+      {
+        "component": "select",
+        "name": "latest_headingLevel",
+        "label": "Latest Title Heading",
+        "value": "h2",
+        "options": [
+          {
+            "name": "h2",
+            "value": "h2"
+          },
+          {
+            "name": "h3",
+            "value": "h3"
+          },
+          {
+            "name": "h4",
+            "value": "h4"
+          }
+        ]
+      },
+      {
+        "component": "text",
+        "valueType": "string",
+        "name": "display_badge",
+        "label": "Featured Badge Text",
+        "value": ""
+      },
+      {
+        "component": "select",
+        "name": "display_articleHeading",
+        "label": "Article Title Heading",
+        "value": "h3",
+        "options": [
+          {
+            "name": "h2",
+            "value": "h2"
+          },
+          {
+            "name": "h3",
+            "value": "h3"
+          },
+          {
+            "name": "h4",
+            "value": "h4"
+          },
+          {
+            "name": "h5",
+            "value": "h5"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "featured-article",
+    "fields": [
+      {
+        "component": "select",
+        "name": "article_placement",
+        "label": "Placement",
+        "value": "latest",
+        "options": [
+          {
+            "name": "Featured",
+            "value": "featured"
+          },
+          {
+            "name": "Latest",
+            "value": "latest"
+          }
+        ]
+      },
+      {
+        "component": "text",
+        "valueType": "string",
+        "name": "article_title",
+        "label": "Title",
+        "value": ""
+      },
+      {
+        "component": "text",
+        "valueType": "string",
+        "name": "article_description",
+        "label": "Description",
+        "value": ""
+      },
+      {
+        "component": "reference",
+        "valueType": "string",
+        "name": "article_image",
+        "label": "Image",
+        "multi": false
+      },
+      {
+        "component": "text",
+        "valueType": "string",
+        "name": "article_imageAlt",
+        "label": "Image Alt",
+        "value": ""
+      },
+      {
+        "component": "text",
+        "valueType": "string",
+        "name": "article_category",
+        "label": "Category",
+        "value": ""
+      },
+      {
+        "component": "aem-content",
+        "name": "article_categoryUrl",
+        "label": "Category URL"
+      },
+      {
+        "component": "text",
+        "valueType": "string",
+        "name": "article_publicationDate",
+        "label": "Publication Date",
+        "value": ""
+      },
+      {
+        "component": "text",
+        "valueType": "string",
+        "name": "article_readTime",
+        "label": "Read Time",
+        "value": ""
+      },
+      {
+        "component": "text",
+        "valueType": "string",
+        "name": "article_authorName",
+        "label": "Author Name",
+        "value": ""
+      },
+      {
+        "component": "aem-content",
+        "name": "article_url",
+        "label": "Article URL"
+      },
+      {
+        "component": "text",
+        "valueType": "string",
+        "name": "article_cta",
+        "label": "CTA Text",
+        "value": ""
+      }
+    ]
+  },
+  {
     "id": "fragment",
     "fields": [
       {
         "component": "aem-content",
         "name": "reference",
         "label": "Reference"
+      }
+    ]
+  },
+  {
+    "id": "hero-blog",
+    "fields": [
+      {
+        "component": "reference",
+        "valueType": "string",
+        "name": "hero_icon",
+        "label": "Icon",
+        "multi": false
+      },
+      {
+        "component": "text",
+        "valueType": "string",
+        "name": "hero_title",
+        "label": "Title",
+        "value": ""
+      },
+      {
+        "component": "select",
+        "name": "hero_titleHeading",
+        "label": "Title Heading",
+        "value": "h1",
+        "options": [
+          {
+            "name": "h1",
+            "value": "h1"
+          },
+          {
+            "name": "h2",
+            "value": "h2"
+          },
+          {
+            "name": "h3",
+            "value": "h3"
+          },
+          {
+            "name": "h4",
+            "value": "h4"
+          },
+          {
+            "name": "h5",
+            "value": "h5"
+          },
+          {
+            "name": "h6",
+            "value": "h6"
+          }
+        ]
+      },
+      {
+        "component": "richtext",
+        "name": "hero_subtitle",
+        "value": "",
+        "label": "Subtitle",
+        "valueType": "string"
+      },
+      {
+        "component": "select",
+        "name": "hero_subtitleHeading",
+        "label": "Subtitle Element",
+        "value": "p",
+        "options": [
+          {
+            "name": "Paragraph",
+            "value": "p"
+          },
+          {
+            "name": "Heading 2",
+            "value": "h2"
+          },
+          {
+            "name": "Heading 3",
+            "value": "h3"
+          },
+          {
+            "name": "Heading 4",
+            "value": "h4"
+          }
+        ]
       }
     ]
   },
@@ -212,6 +478,95 @@
         "value": "",
         "label": "Text",
         "valueType": "string"
+      }
+    ]
+  },
+  {
+    "id": "topic-tag-cloud",
+    "fields": [
+      {
+        "component": "text",
+        "valueType": "string",
+        "name": "cloud_title",
+        "label": "Title",
+        "value": ""
+      },
+      {
+        "component": "select",
+        "name": "cloud_titleHeading",
+        "label": "Title Heading",
+        "value": "h2",
+        "options": [
+          {
+            "name": "h1",
+            "value": "h1"
+          },
+          {
+            "name": "h2",
+            "value": "h2"
+          },
+          {
+            "name": "h3",
+            "value": "h3"
+          },
+          {
+            "name": "h4",
+            "value": "h4"
+          }
+        ]
+      },
+      {
+        "component": "select",
+        "name": "cloud_tagHeading",
+        "label": "Tag List Heading",
+        "value": "h3",
+        "options": [
+          {
+            "name": "h2",
+            "value": "h2"
+          },
+          {
+            "name": "h3",
+            "value": "h3"
+          },
+          {
+            "name": "h4",
+            "value": "h4"
+          }
+        ]
+      },
+      {
+        "component": "select",
+        "name": "cloud_classes",
+        "label": "Variant",
+        "value": "",
+        "options": [
+          {
+            "name": "Default",
+            "value": ""
+          },
+          {
+            "name": "Compact",
+            "value": "compact"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "topic-tag",
+    "fields": [
+      {
+        "component": "text",
+        "valueType": "string",
+        "name": "tag_label",
+        "label": "Label",
+        "value": ""
+      },
+      {
+        "component": "aem-content",
+        "name": "tag_url",
+        "label": "URL"
       }
     ]
   }

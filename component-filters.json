@@ -38,5 +38,17 @@
       "button",
       "title"
     ]
+  },
+  {
+    "id": "featured-articles",
+    "components": [
+      "featured-article"
+    ]
+  },
+  {
+    "id": "topic-tag-cloud",
+    "components": [
+      "topic-tag"
+    ]
   }
 ]
