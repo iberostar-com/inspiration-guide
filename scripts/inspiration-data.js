@@ -1,0 +1,278 @@
+const MOCK_ARTICLES = [
+  {
+    id: 'article-001',
+    title: 'Guia de playas secretas del Caribe',
+    summary: 'Recorre arenales poco conocidos y rutas para disfrutar del Caribe sin masificaciones.',
+    image: 'https://picsum.photos/seed/article-001/1200/800',
+    author: 'author-001',
+    category: 'destinos',
+    subcategory: 'playas',
+    publishDate: '2026-06-01',
+    readingTime: 5,
+    tags: ['travel', 'nature'],
+  },
+  {
+    id: 'article-002',
+    title: 'Gastronomia caribena: sabores autenticos',
+    summary: 'Mercados, platos tradicionales y productos locales de la cocina caribena.',
+    image: 'https://picsum.photos/seed/article-002/1200/800',
+    author: 'author-002',
+    category: 'destinos',
+    subcategory: 'playas',
+    publishDate: '2026-06-05',
+    readingTime: 7,
+    tags: ['food', 'travel'],
+  },
+  {
+    id: 'article-003',
+    title: 'Alpinismo en los Pirineos',
+    summary: 'Etapas, equipo basico y recomendaciones de seguridad para una travesia de montana.',
+    image: 'https://picsum.photos/seed/article-003/1200/800',
+    author: 'author-001',
+    category: 'destinos',
+    subcategory: 'montana',
+    publishDate: '2026-06-08',
+    readingTime: 6,
+    tags: ['adventure', 'nature'],
+  },
+  {
+    id: 'article-004',
+    title: 'Ciudades europeas para tu proximo viaje',
+    summary: 'Escapadas urbanas con propuestas culturales, gastronomicas y de barrio.',
+    image: 'https://picsum.photos/seed/article-004/1200/800',
+    author: 'author-002',
+    category: 'destinos',
+    subcategory: 'ciudad',
+    publishDate: '2026-06-10',
+    readingTime: 4,
+    tags: ['travel', 'culture'],
+  },
+  {
+    id: 'article-005',
+    title: 'Senderismo en la ruta del Inca',
+    summary: 'Planifica el recorrido con tiempos realistas, aclimatacion y puntos clave.',
+    image: 'https://picsum.photos/seed/article-005/1200/800',
+    author: 'author-001',
+    category: 'destinos',
+    subcategory: 'montana',
+    publishDate: '2026-06-12',
+    readingTime: 8,
+    tags: ['adventure', 'culture'],
+  },
+  {
+    id: 'article-006',
+    title: 'Los mejores mercados de abastos del mundo',
+    summary: 'Mercados emblematicos para descubrir cultura local a traves de sus productos.',
+    image: 'https://picsum.photos/seed/article-006/1200/800',
+    author: 'author-002',
+    category: 'destinos',
+    subcategory: 'ciudad',
+    publishDate: '2026-06-14',
+    readingTime: 5,
+    tags: ['food', 'lifestyle'],
+  },
+];
+
+const AEM_REQUEST_CACHE = new Map();
+
+function isLocalhost() {
+  return window.location.hostname.includes('localhost');
+}
+
+function normalizeTag(tag) {
+  return String(tag || '').trim().toLowerCase();
+}
+
+function getMetaContent(name) {
+  return document.querySelector(`meta[name="${name}"]`)?.content?.trim() || '';
+}
+
+function toArray(value) {
+  if (Array.isArray(value)) return value;
+  return [];
+}
+
+function normalizeTags(value) {
+  if (Array.isArray(value)) {
+    return value
+      .map((item) => normalizeTag(item?.tag || item?.title || item?.name || item))
+      .filter(Boolean);
+  }
+
+  if (typeof value === 'string') {
+    return value
+      .split(/[|,;]/)
+      .map((item) => normalizeTag(item))
+      .filter(Boolean);
+  }
+
+  return [];
+}
+
+function firstDefined(...values) {
+  return values.find((value) => value !== undefined && value !== null && `${value}`.trim() !== '');
+}
+
+function normalizeArticle(raw, index) {
+  const id = firstDefined(raw.id, raw.articleId, raw.slug, raw.path, `aem-article-${index + 1}`);
+  const title = firstDefined(raw.title, raw.name, raw.headline, raw.articleTitle, 'Untitled');
+  const summary = firstDefined(raw.summary, raw.description, raw.excerpt, raw.teaser, '');
+  const image = firstDefined(
+    raw.image,
+    raw.imagePath,
+    raw.featuredImage,
+    raw.heroImage,
+    '',
+  );
+  const author = firstDefined(
+    raw.author?.name,
+    raw.authorName,
+    raw.authorId,
+    raw.author,
+    '',
+  );
+  const category = firstDefined(raw.category, raw.categorySlug, raw.mainCategory, '');
+  const subcategory = firstDefined(raw.subcategory, raw.subCategory, raw.subcategorySlug, '');
+  const publishDate = firstDefined(raw.publishDate, raw.publishedAt, raw.date, '');
+  const readingTimeRaw = firstDefined(raw.readingTime, raw.readTime, raw.minutesToRead, 0);
+  const readingTime = Number.parseInt(readingTimeRaw, 10) || 0;
+  const tags = normalizeTags(firstDefined(raw.tags, raw.tagList, raw.keywords, []));
+
+  return {
+    id: String(id),
+    title: String(title),
+    summary: String(summary),
+    image: String(image),
+    author: String(author),
+    category: String(category),
+    subcategory: String(subcategory),
+    publishDate: String(publishDate),
+    readingTime,
+    tags,
+  };
+}
+
+function pickArticlesCollection(payload) {
+  const candidates = [
+    toArray(payload?.items),
+    toArray(payload?.data),
+    toArray(payload?.articles),
+    toArray(payload?.results),
+  ];
+  return candidates.find((list) => list.length > 0) || [];
+}
+
+function resolveAemDataUrl() {
+  const params = new URLSearchParams(window.location.search);
+  const fromQuery = params.get('aem-data-url');
+  if (fromQuery) {
+    return fromQuery;
+  }
+
+  const fromMeta = getMetaContent('inspiration-aem-data-url');
+  if (fromMeta) {
+    return fromMeta;
+  }
+
+  // Project default: configurable endpoint for article listing in AEM/EDS.
+  return '/inspiration-guide-data.json';
+}
+
+async function fetchJson(url) {
+  if (AEM_REQUEST_CACHE.has(url)) {
+    return AEM_REQUEST_CACHE.get(url);
+  }
+
+  const response = await fetch(url, {
+    method: 'GET',
+    headers: {
+      Accept: 'application/json',
+    },
+    credentials: 'same-origin',
+  });
+
+  if (!response.ok) {
+    throw new Error(`AEM data fetch failed (${response.status}) for ${url}`);
+  }
+
+  const payload = await response.json();
+  AEM_REQUEST_CACHE.set(url, payload);
+  return payload;
+}
+
+function buildTagFrequency(articles) {
+  const frequency = new Map();
+  articles.forEach((article) => {
+    (article.tags || []).forEach((tag) => {
+      const key = normalizeTag(tag);
+      if (!key) return;
+      frequency.set(key, (frequency.get(key) || 0) + 1);
+    });
+  });
+  return frequency;
+}
+
+async function getAemArticles() {
+  const url = resolveAemDataUrl();
+
+  try {
+    const payload = await fetchJson(url);
+    const collection = pickArticlesCollection(payload);
+
+    return collection
+      .map((article, index) => normalizeArticle(article, index))
+      .filter((article) => article.title && article.id);
+  } catch (error) {
+    // eslint-disable-next-line no-console
+    console.warn('[inspiration-data] Failed to load AEM data:', error);
+    return [];
+  }
+}
+
+export function getDataMode() {
+  const params = new URLSearchParams(window.location.search);
+  const modeFromQuery = params.get('data-mode');
+  if (modeFromQuery === 'mock' || modeFromQuery === 'aem') {
+    return modeFromQuery;
+  }
+
+  const metaMode = document.querySelector('meta[name="inspiration-data-mode"]')?.content;
+  if (metaMode === 'mock' || metaMode === 'aem') {
+    return metaMode;
+  }
+
+  return 'mock';
+}
+
+export async function getArticles() {
+  const mode = getDataMode();
+
+  if (mode === 'aem') {
+    const aemArticles = await getAemArticles();
+    if (aemArticles.length > 0) {
+      return aemArticles;
+    }
+    if (!isLocalhost()) {
+      return [];
+    }
+  }
+
+  return MOCK_ARTICLES;
+}
+
+export async function getTagCloud(strategy = 'frequency', limit = 20) {
+  const articles = await getArticles();
+  const frequency = buildTagFrequency(articles);
+
+  if (strategy === 'category') {
+    return Array.from(frequency.keys())
+      .sort((a, b) => a.localeCompare(b))
+      .slice(0, limit)
+      .map((tag) => ({ tag, count: frequency.get(tag) || 0 }));
+  }
+
+  return Array.from(frequency.entries())
+    .sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0]))
+    .slice(0, limit)
+    .map(([tag, count]) => ({ tag, count }));
+}

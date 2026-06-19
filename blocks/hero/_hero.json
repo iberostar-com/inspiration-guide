@@ -10,7 +10,29 @@
             "template": {
               "name": "Hero",
               "model": "hero"
-            }
+            },
+            "variants": [
+              {
+                "name": "Default",
+                "value": "default",
+                "description": "Standard hero with image, alt, and rich text"
+              },
+              {
+                "name": "Tag",
+                "value": "tag",
+                "description": "Hero for tag pages - H1 title only, no image"
+              },
+              {
+                "name": "Article",
+                "value": "article",
+                "description": "Hero for article detail - metadata + featured image"
+              },
+              {
+                "name": "Blog",
+                "value": "blog",
+                "description": "Hero for blog category - navigation subcategories"
+              }
+            ]
           }
         }
       }
@@ -20,6 +42,19 @@
     {
       "id": "hero",
       "fields": [
+        {
+          "component": "select",
+          "name": "variant",
+          "label": "Hero Variant",
+          "options": [
+            { "name": "Default", "value": "default" },
+            { "name": "Tag", "value": "tag" },
+            { "name": "Article", "value": "article" },
+            { "name": "Blog", "value": "blog" }
+          ],
+          "required": true,
+          "value": "default"
+        },
         {
           "component": "reference",
           "valueType": "string",
@@ -31,15 +66,22 @@
           "component": "text",
           "valueType": "string",
           "name": "imageAlt",
-          "label": "Alt",
+          "label": "Alt Text",
           "value": ""
         },
         {
           "component": "richtext",
           "name": "text",
           "value": "",
-          "label": "Text",
-          "valueType": "string"
+          "label": "Text / Title",
+          "valueType": "string",
+          "required": true
+        },
+        {
+          "component": "textarea",
+          "name": "subtitle",
+          "label": "Subtitle (optional)",
+          "value": ""
         }
       ]
     }

@@ -153,6 +153,14 @@ header nav .nav-brand img {
   height: auto;
 }
 
+/* tools (hotels link + language selector + search blocks) */
+header nav .nav-tools {
+  grid-area: tools;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
 /* sections */
 header nav .nav-sections {
   grid-area: sections;
@@ -264,9 +272,4 @@ header nav .nav-sections ul > li > ul > li {
   header nav .nav-sections .default-content-wrapper > ul > li > ul > li {
     padding: 8px 0;
   }
-}
-
-/* tools */
-header nav .nav-tools {
-  grid-area: tools;
 }

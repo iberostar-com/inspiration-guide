@@ -83,6 +83,21 @@
       "id": "blocks",
       "components": [
         {
+          "title": "Blog Split List",
+          "id": "blog-split-list",
+          "plugins": {
+            "xwalk": {
+              "page": {
+                "resourceType": "core/franklin/components/block/v1/block",
+                "template": {
+                  "name": "Blog Split List",
+                  "model": "blog-split-list"
+                }
+              }
+            }
+          }
+        },
+        {
           "title": "Cards",
           "id": "cards",
           "plugins": {
@@ -92,7 +107,24 @@
                 "template": {
                   "name": "Cards",
                   "filter": "cards"
-                }
+                },
+                "variants": [
+                  {
+                    "name": "Highlight",
+                    "value": "highlight",
+                    "description": "Large featured cards - image + text, responsive grid"
+                  },
+                  {
+                    "name": "Overlay",
+                    "value": "overlay",
+                    "description": "Image with text overlay on hover"
+                  },
+                  {
+                    "name": "Banner",
+                    "value": "banner",
+                    "description": "Horizontal cards - side-by-side on desktop"
+                  }
+                ]
               }
             }
           }
@@ -113,6 +145,36 @@
           }
         },
         {
+          "title": "Carousel Category Gallery",
+          "id": "carousel-category-gallery",
+          "plugins": {
+            "xwalk": {
+              "page": {
+                "resourceType": "core/franklin/components/block/v1/block",
+                "template": {
+                  "name": "Carousel Category Gallery",
+                  "filter": "carousel-category-gallery"
+                }
+              }
+            }
+          }
+        },
+        {
+          "title": "Carousel Category Gallery Card",
+          "id": "carousel-category-gallery-card",
+          "plugins": {
+            "xwalk": {
+              "page": {
+                "resourceType": "core/franklin/components/block/v1/block/item",
+                "template": {
+                  "name": "Card",
+                  "model": "carousel-category-gallery-card"
+                }
+              }
+            }
+          }
+        },
+        {
           "title": "Columns",
           "id": "columns",
           "plugins": {
@@ -122,6 +184,81 @@
                 "template": {
                   "columns": "2",
                   "rows": "1"
+                }
+              }
+            }
+          }
+        },
+        {
+          "title": "Editorial Article Banner",
+          "id": "editorial-article-banner",
+          "plugins": {
+            "xwalk": {
+              "page": {
+                "resourceType": "core/franklin/components/block/v1/block",
+                "template": {
+                  "name": "Editorial Article Banner",
+                  "model": "editorial-article-banner"
+                }
+              }
+            }
+          }
+        },
+        {
+          "title": "Editorial Article Content",
+          "id": "editorial-article-content",
+          "plugins": {
+            "xwalk": {
+              "page": {
+                "resourceType": "core/franklin/components/block/v1/block",
+                "template": {
+                  "name": "Editorial Article Content",
+                  "model": "editorial-article-content"
+                }
+              }
+            }
+          }
+        },
+        {
+          "title": "Editorial Article Grid",
+          "id": "editorial-article-grid",
+          "plugins": {
+            "xwalk": {
+              "page": {
+                "resourceType": "core/franklin/components/block/v1/block",
+                "template": {
+                  "name": "Editorial Article Grid",
+                  "model": "editorial-article-grid"
+                }
+              }
+            }
+          }
+        },
+        {
+          "title": "Editorial Highlight Grid",
+          "id": "editorial-highlight-grid",
+          "plugins": {
+            "xwalk": {
+              "page": {
+                "resourceType": "core/franklin/components/block/v1/block",
+                "template": {
+                  "name": "Editorial Highlight Grid",
+                  "model": "editorial-highlight-grid"
+                }
+              }
+            }
+          }
+        },
+        {
+          "title": "Editorial Split Article",
+          "id": "editorial-split-article",
+          "plugins": {
+            "xwalk": {
+              "page": {
+                "resourceType": "core/franklin/components/block/v1/block",
+                "template": {
+                  "name": "Editorial Split Article",
+                  "model": "editorial-split-article"
                 }
               }
             }
@@ -159,6 +296,33 @@
           }
         },
         {
+          "title": "Form",
+          "id": "form",
+          "plugins": {
+            "xwalk": {
+              "page": {
+                "resourceType": "core/franklin/components/block/v1/block",
+                "template": {
+                  "name": "Form",
+                  "model": "form"
+                },
+                "variants": [
+                  {
+                    "name": "Default",
+                    "value": "default",
+                    "description": "Standard form"
+                  },
+                  {
+                    "name": "Newsletter",
+                    "value": "newsletter",
+                    "description": "Newsletter subscription - email + legal checkbox + gray background"
+                  }
+                ]
+              }
+            }
+          }
+        },
+        {
           "title": "Fragment",
           "id": "fragment",
           "plugins": {
@@ -168,6 +332,36 @@
                 "template": {
                   "name": "Fragment",
                   "model": "fragment"
+                }
+              }
+            }
+          }
+        },
+        {
+          "title": "Grid Category Gallery",
+          "id": "grid-category-gallery",
+          "plugins": {
+            "xwalk": {
+              "page": {
+                "resourceType": "core/franklin/components/block/v1/block",
+                "template": {
+                  "name": "Grid Category Gallery",
+                  "filter": "grid-category-gallery"
+                }
+              }
+            }
+          }
+        },
+        {
+          "title": "Grid Category Gallery Card",
+          "id": "grid-category-gallery-card",
+          "plugins": {
+            "xwalk": {
+              "page": {
+                "resourceType": "core/franklin/components/block/v1/block/item",
+                "template": {
+                  "name": "Card",
+                  "model": "grid-category-gallery-card"
                 }
               }
             }
@@ -198,6 +392,133 @@
                 "template": {
                   "name": "Hero",
                   "model": "hero"
+                },
+                "variants": [
+                  {
+                    "name": "Default",
+                    "value": "default",
+                    "description": "Standard hero with image, alt, and rich text"
+                  },
+                  {
+                    "name": "Tag",
+                    "value": "tag",
+                    "description": "Hero for tag pages - H1 title only, no image"
+                  },
+                  {
+                    "name": "Article",
+                    "value": "article",
+                    "description": "Hero for article detail - metadata + featured image"
+                  },
+                  {
+                    "name": "Blog",
+                    "value": "blog",
+                    "description": "Hero for blog category - navigation subcategories"
+                  }
+                ]
+              }
+            }
+          }
+        },
+        {
+          "title": "Hotel Mini Card",
+          "id": "hotel-mini-card",
+          "plugins": {
+            "xwalk": {
+              "page": {
+                "resourceType": "core/franklin/components/block/v1/block",
+                "template": {
+                  "name": "Hotel Mini Card",
+                  "model": "hotel-mini-card"
+                }
+              }
+            }
+          }
+        },
+        {
+          "title": "Lead Subscription Form",
+          "id": "lead-subscription-form",
+          "plugins": {
+            "xwalk": {
+              "page": {
+                "resourceType": "core/franklin/components/block/v1/block",
+                "template": {
+                  "name": "Lead Subscription Form",
+                  "model": "lead-subscription-form"
+                }
+              }
+            }
+          }
+        },
+        {
+          "title": "Nav Hotels Link",
+          "id": "nav-hotels",
+          "plugins": {
+            "xwalk": {
+              "page": {
+                "resourceType": "core/franklin/components/block/v1/block",
+                "template": {
+                  "name": "Nav Hotels Link",
+                  "model": "nav-hotels"
+                }
+              }
+            }
+          }
+        },
+        {
+          "title": "Nav Language Selector",
+          "id": "nav-language",
+          "plugins": {
+            "xwalk": {
+              "page": {
+                "resourceType": "core/franklin/components/block/v1/block",
+                "template": {
+                  "name": "Nav Language Selector",
+                  "filter": "nav-language"
+                }
+              }
+            }
+          }
+        },
+        {
+          "title": "Nav Language Option",
+          "id": "nav-language-option",
+          "plugins": {
+            "xwalk": {
+              "page": {
+                "resourceType": "core/franklin/components/block/v1/block/item",
+                "template": {
+                  "name": "Option",
+                  "model": "nav-language-option"
+                }
+              }
+            }
+          }
+        },
+        {
+          "title": "Nav Search Link",
+          "id": "nav-search",
+          "plugins": {
+            "xwalk": {
+              "page": {
+                "resourceType": "core/franklin/components/block/v1/block",
+                "template": {
+                  "name": "Nav Search Link",
+                  "model": "nav-search"
+                }
+              }
+            }
+          }
+        },
+        {
+          "title": "Recommended Hotels Grid",
+          "id": "recommended-hotels-grid",
+          "plugins": {
+            "xwalk": {
+              "page": {
+                "resourceType": "core/franklin/components/block/v1/block",
+                "template": {
+                  "name": "Recommended Hotels Grid",
+                  "model": "recommended-hotels-grid"
                 }
               }
             }
@@ -212,23 +533,7 @@
                 "resourceType": "core/franklin/components/block/v1/block",
                 "template": {
                   "name": "Topic Tag Cloud",
-                  "model": "topic-tag-cloud",
-                  "filter": "topic-tag-cloud"
-                }
-              }
-            }
-          }
-        },
-        {
-          "title": "Tag",
-          "id": "topic-tag",
-          "plugins": {
-            "xwalk": {
-              "page": {
-                "resourceType": "core/franklin/components/block/v1/block/item",
-                "template": {
-                  "name": "Tag",
-                  "model": "topic-tag"
+                  "model": "topic-tag-cloud"
                 }
               }
             }

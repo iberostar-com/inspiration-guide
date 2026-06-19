@@ -1,0 +1,19 @@
+main .editorial-article-content {
+  display: grid;
+  gap: 1.5rem;
+}
+
+main .editorial-article-content .editorial-article-content-body {
+  display: grid;
+  gap: 1rem;
+}
+
+main .editorial-article-content .editorial-article-content-section {
+  display: grid;
+  gap: 0.5rem;
+}
+
+main .editorial-article-content.narrow {
+  max-width: 760px;
+  margin: 0 auto;
+}

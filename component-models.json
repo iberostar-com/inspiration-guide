@@ -142,6 +142,39 @@
     ]
   },
   {
+    "id": "blog-split-list",
+    "fields": [
+      {
+        "component": "text",
+        "name": "title",
+        "label": "Section Title",
+        "value": "Latest from the blog"
+      },
+      {
+        "component": "select",
+        "name": "mode",
+        "label": "Data Mode",
+        "options": [
+          {
+            "name": "Manual",
+            "value": "manual"
+          },
+          {
+            "name": "Auto by Category",
+            "value": "auto-category"
+          }
+        ],
+        "value": "manual"
+      },
+      {
+        "component": "number",
+        "name": "maxItems",
+        "label": "Maximum Items",
+        "value": 5
+      }
+    ]
+  },
+  {
     "id": "card",
     "fields": [
       {
@@ -157,6 +190,69 @@
         "value": "",
         "label": "Text",
         "valueType": "string"
+      },
+      {
+        "component": "text",
+        "name": "link",
+        "label": "Link URL",
+        "value": "",
+        "valueType": "string"
+      }
+    ]
+  },
+  {
+    "id": "carousel-category-gallery",
+    "fields": [
+      {
+        "component": "text",
+        "name": "title",
+        "label": "Title",
+        "value": ""
+      },
+      {
+        "component": "text",
+        "name": "subtitle",
+        "label": "Subtitle",
+        "value": ""
+      },
+      {
+        "component": "number",
+        "name": "maxItems",
+        "label": "Maximum Cards",
+        "value": 9
+      }
+    ]
+  },
+  {
+    "id": "carousel-category-gallery-card",
+    "fields": [
+      {
+        "component": "text",
+        "valueType": "string",
+        "name": "icon",
+        "label": "Icon Name",
+        "value": ""
+      },
+      {
+        "component": "reference",
+        "valueType": "string",
+        "name": "image",
+        "label": "Image",
+        "multi": false
+      },
+      {
+        "component": "text",
+        "valueType": "string",
+        "name": "title",
+        "label": "Title",
+        "value": ""
+      },
+      {
+        "component": "text",
+        "valueType": "string",
+        "name": "link",
+        "label": "Link URL",
+        "value": ""
       }
     ]
   },
@@ -176,6 +272,175 @@
         "name": "rows",
         "value": "",
         "label": "Rows"
+      }
+    ]
+  },
+  {
+    "id": "editorial-article-banner",
+    "fields": [
+      {
+        "component": "text",
+        "name": "title",
+        "label": "Title",
+        "value": ""
+      },
+      {
+        "component": "textarea",
+        "name": "description",
+        "label": "Description",
+        "value": ""
+      },
+      {
+        "component": "text",
+        "name": "linkText",
+        "label": "Link Text",
+        "value": ""
+      },
+      {
+        "component": "text",
+        "name": "link",
+        "label": "Link URL",
+        "value": ""
+      }
+    ]
+  },
+  {
+    "id": "editorial-article-content",
+    "fields": [
+      {
+        "component": "text",
+        "name": "title",
+        "label": "Section Title",
+        "value": "Article content"
+      },
+      {
+        "component": "select",
+        "name": "layout",
+        "label": "Layout",
+        "options": [
+          {
+            "name": "Default",
+            "value": "default"
+          },
+          {
+            "name": "Narrow",
+            "value": "narrow"
+          }
+        ],
+        "value": "default"
+      }
+    ]
+  },
+  {
+    "id": "editorial-article-grid",
+    "fields": [
+      {
+        "component": "select",
+        "name": "mode",
+        "label": "Mode",
+        "options": [
+          {
+            "name": "Manual",
+            "value": "manual"
+          },
+          {
+            "name": "Auto by Tag",
+            "value": "auto-tag"
+          },
+          {
+            "name": "Auto by Category",
+            "value": "auto-category"
+          }
+        ],
+        "value": "manual"
+      },
+      {
+        "component": "select",
+        "name": "sort",
+        "label": "Sort",
+        "options": [
+          {
+            "name": "Latest",
+            "value": "latest"
+          },
+          {
+            "name": "Reading Time",
+            "value": "reading-time"
+          }
+        ],
+        "value": "latest"
+      },
+      {
+        "component": "number",
+        "name": "maxItems",
+        "label": "Maximum Items",
+        "value": 8
+      }
+    ]
+  },
+  {
+    "id": "editorial-highlight-grid",
+    "fields": [
+      {
+        "component": "select",
+        "name": "source",
+        "label": "Source",
+        "options": [
+          {
+            "name": "Manual",
+            "value": "manual"
+          },
+          {
+            "name": "Auto by Tag",
+            "value": "auto-tag"
+          },
+          {
+            "name": "Auto by Category",
+            "value": "auto-category"
+          }
+        ],
+        "value": "manual"
+      },
+      {
+        "component": "number",
+        "name": "pageSize",
+        "label": "Page Size",
+        "value": 4
+      },
+      {
+        "component": "text",
+        "name": "ctaLabel",
+        "label": "Load More Label",
+        "value": "Load more"
+      }
+    ]
+  },
+  {
+    "id": "editorial-split-article",
+    "fields": [
+      {
+        "component": "text",
+        "name": "eyebrow",
+        "label": "Eyebrow",
+        "value": "Featured"
+      },
+      {
+        "component": "text",
+        "name": "title",
+        "label": "Title",
+        "value": ""
+      },
+      {
+        "component": "textarea",
+        "name": "summary",
+        "label": "Summary",
+        "value": ""
+      },
+      {
+        "component": "text",
+        "name": "link",
+        "label": "Article Link",
+        "value": ""
       }
     ]
   },
@@ -364,12 +629,113 @@
     ]
   },
   {
+    "id": "form",
+    "fields": [
+      {
+        "component": "select",
+        "name": "variant",
+        "label": "Form Variant",
+        "options": [
+          {
+            "name": "Default",
+            "value": "default"
+          },
+          {
+            "name": "Newsletter",
+            "value": "newsletter"
+          }
+        ],
+        "value": "default"
+      },
+      {
+        "component": "text",
+        "name": "method",
+        "label": "Form Method",
+        "value": "POST"
+      },
+      {
+        "component": "text",
+        "name": "action",
+        "label": "Form Action URL",
+        "value": ""
+      }
+    ]
+  },
+  {
     "id": "fragment",
     "fields": [
       {
         "component": "aem-content",
         "name": "reference",
         "label": "Reference"
+      }
+    ]
+  },
+  {
+    "id": "grid-category-gallery",
+    "fields": [
+      {
+        "component": "text",
+        "name": "title",
+        "label": "Title",
+        "value": ""
+      },
+      {
+        "component": "text",
+        "name": "subtitle",
+        "label": "Subtitle",
+        "value": ""
+      },
+      {
+        "component": "text",
+        "name": "ctaText",
+        "label": "\"View All\" Link Text",
+        "value": ""
+      },
+      {
+        "component": "text",
+        "name": "cta",
+        "label": "\"View All\" Link URL",
+        "value": ""
+      },
+      {
+        "component": "number",
+        "name": "maxItems",
+        "label": "Maximum Cards",
+        "value": 4
+      }
+    ]
+  },
+  {
+    "id": "grid-category-gallery-card",
+    "fields": [
+      {
+        "component": "reference",
+        "valueType": "string",
+        "name": "image",
+        "label": "Image",
+        "multi": false
+      },
+      {
+        "component": "text",
+        "valueType": "string",
+        "name": "title",
+        "label": "Title",
+        "value": ""
+      },
+      {
+        "component": "text",
+        "valueType": "string",
+        "name": "subtitle",
+        "label": "Subtitle",
+        "value": ""
+      },
+      {
+        "component": "text",
+        "valueType": "string",
+        "name": "link",
+        "label": "Link URL",
+        "value": ""
       }
     ]
   },
@@ -459,6 +825,31 @@
     "id": "hero",
     "fields": [
       {
+        "component": "select",
+        "name": "variant",
+        "label": "Hero Variant",
+        "options": [
+          {
+            "name": "Default",
+            "value": "default"
+          },
+          {
+            "name": "Tag",
+            "value": "tag"
+          },
+          {
+            "name": "Article",
+            "value": "article"
+          },
+          {
+            "name": "Blog",
+            "value": "blog"
+          }
+        ],
+        "required": true,
+        "value": "default"
+      },
+      {
         "component": "reference",
         "valueType": "string",
         "name": "image",
@@ -469,15 +860,194 @@
         "component": "text",
         "valueType": "string",
         "name": "imageAlt",
-        "label": "Alt",
+        "label": "Alt Text",
         "value": ""
       },
       {
         "component": "richtext",
         "name": "text",
         "value": "",
-        "label": "Text",
-        "valueType": "string"
+        "label": "Text / Title",
+        "valueType": "string",
+        "required": true
+      },
+      {
+        "component": "textarea",
+        "name": "subtitle",
+        "label": "Subtitle (optional)",
+        "value": ""
+      }
+    ]
+  },
+  {
+    "id": "hotel-mini-card",
+    "fields": [
+      {
+        "component": "text",
+        "name": "hotelName",
+        "label": "Hotel Name",
+        "value": ""
+      },
+      {
+        "component": "text",
+        "name": "location",
+        "label": "Location",
+        "value": ""
+      },
+      {
+        "component": "text",
+        "name": "priceFrom",
+        "label": "Price From",
+        "value": ""
+      },
+      {
+        "component": "text",
+        "name": "link",
+        "label": "Link",
+        "value": ""
+      }
+    ]
+  },
+  {
+    "id": "lead-subscription-form",
+    "fields": [
+      {
+        "component": "text",
+        "valueType": "string",
+        "name": "title",
+        "label": "Title",
+        "value": "Suscríbete a nuestra Newsletter"
+      },
+      {
+        "component": "text",
+        "valueType": "string",
+        "name": "description",
+        "label": "Description",
+        "value": ""
+      },
+      {
+        "component": "richtext",
+        "name": "legal",
+        "label": "Legal text (checkbox)",
+        "value": ""
+      },
+      {
+        "component": "select",
+        "name": "background",
+        "label": "Background",
+        "options": [
+          {
+            "name": "White",
+            "value": "white"
+          },
+          {
+            "name": "Grey",
+            "value": "grey"
+          }
+        ],
+        "value": "grey"
+      }
+    ]
+  },
+  {
+    "id": "nav-hotels",
+    "fields": [
+      {
+        "component": "text",
+        "valueType": "string",
+        "name": "linkText",
+        "label": "Link Text",
+        "value": "Reservar Hoteles"
+      },
+      {
+        "component": "text",
+        "valueType": "string",
+        "name": "link",
+        "label": "Link URL",
+        "value": ""
+      }
+    ]
+  },
+  {
+    "id": "nav-language",
+    "fields": [
+      {
+        "component": "text",
+        "valueType": "string",
+        "name": "label",
+        "label": "Current Language Label",
+        "value": "ESP"
+      }
+    ]
+  },
+  {
+    "id": "nav-language-option",
+    "fields": [
+      {
+        "component": "text",
+        "valueType": "string",
+        "name": "label",
+        "label": "Language Label",
+        "value": ""
+      },
+      {
+        "component": "text",
+        "valueType": "string",
+        "name": "link",
+        "label": "Link URL",
+        "value": ""
+      }
+    ]
+  },
+  {
+    "id": "nav-search",
+    "fields": [
+      {
+        "component": "text",
+        "valueType": "string",
+        "name": "linkText",
+        "label": "Link Text",
+        "value": "Buscar"
+      },
+      {
+        "component": "text",
+        "valueType": "string",
+        "name": "link",
+        "label": "Link URL",
+        "value": "/search"
+      }
+    ]
+  },
+  {
+    "id": "recommended-hotels-grid",
+    "fields": [
+      {
+        "component": "text",
+        "name": "title",
+        "label": "Section Title",
+        "value": "Recommended Hotels"
+      },
+      {
+        "component": "select",
+        "name": "mode",
+        "label": "Mode",
+        "options": [
+          {
+            "name": "Manual",
+            "value": "manual"
+          },
+          {
+            "name": "Auto by Destination",
+            "value": "auto-destination"
+          }
+        ],
+        "value": "manual"
+      },
+      {
+        "component": "number",
+        "name": "maxItems",
+        "label": "Maximum Items",
+        "value": 12
       }
     ]
   },
@@ -486,87 +1056,38 @@
     "fields": [
       {
         "component": "text",
-        "valueType": "string",
-        "name": "cloud_title",
-        "label": "Title",
-        "value": ""
+        "name": "title",
+        "label": "Section Title",
+        "value": "Topics",
+        "required": false
       },
       {
         "component": "select",
-        "name": "cloud_titleHeading",
-        "label": "Title Heading",
-        "value": "h2",
+        "name": "mode",
+        "label": "Tag Generation Mode",
         "options": [
           {
-            "name": "h1",
-            "value": "h1"
+            "name": "Manual",
+            "value": "manual"
           },
           {
-            "name": "h2",
-            "value": "h2"
+            "name": "Auto (Category)",
+            "value": "auto-category"
           },
           {
-            "name": "h3",
-            "value": "h3"
-          },
-          {
-            "name": "h4",
-            "value": "h4"
+            "name": "Auto (Frequency)",
+            "value": "auto-frequency"
           }
-        ]
+        ],
+        "value": "manual",
+        "required": true
       },
       {
-        "component": "select",
-        "name": "cloud_tagHeading",
-        "label": "Tag List Heading",
-        "value": "h3",
-        "options": [
-          {
-            "name": "h2",
-            "value": "h2"
-          },
-          {
-            "name": "h3",
-            "value": "h3"
-          },
-          {
-            "name": "h4",
-            "value": "h4"
-          }
-        ]
-      },
-      {
-        "component": "select",
-        "name": "cloud_classes",
-        "label": "Variant",
-        "value": "",
-        "options": [
-          {
-            "name": "Default",
-            "value": ""
-          },
-          {
-            "name": "Compact",
-            "value": "compact"
-          }
-        ]
-      }
-    ]
-  },
-  {
-    "id": "topic-tag",
-    "fields": [
-      {
-        "component": "text",
-        "valueType": "string",
-        "name": "tag_label",
-        "label": "Label",
-        "value": ""
-      },
-      {
-        "component": "aem-content",
-        "name": "tag_url",
-        "label": "URL"
+        "component": "number",
+        "name": "maxTags",
+        "label": "Maximum Tags",
+        "value": 20,
+        "required": false
       }
     ]
   }

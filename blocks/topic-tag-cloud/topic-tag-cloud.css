@@ -1,69 +1,55 @@
+/* Topic Tag Cloud Block */
+
 .topic-tag-cloud {
-  padding: 24px;
-  border: 1px solid #d6e2e7;
+  margin: 2rem 0;
+}
+
+.topic-tag-cloud-title {
+  font-size: 1.25rem;
+  font-weight: bold;
+  margin: 0 0 1.5rem;
+  color: var(--text-color);
+}
+
+.topic-tag-cloud-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+}
+
+.tag-chip {
+  display: inline-block;
+  padding: 0.5rem 1rem;
+  background: var(--light-color);
+  border: 1px solid #ccc;
   border-radius: 20px;
-  background: linear-gradient(180deg, #fff 0%, #f4f8fa 100%);
-}
-
-.topic-tag-cloud .topic-tag-cloud-title {
-  margin: 0;
-}
-
-.topic-tag-cloud .topic-tag-cloud-list-heading {
-  position: absolute;
-  width: 1px;
-  height: 1px;
-  margin: -1px;
-  padding: 0;
-  border: 0;
-  overflow: hidden;
-  clip-path: inset(50%);
+  font-size: 0.9rem;
+  color: var(--text-color);
+  text-decoration: none;
+  cursor: pointer;
+  transition: all 0.2s ease;
   white-space: nowrap;
 }
 
-.topic-tag-cloud .topic-tag-cloud-list {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 12px;
-  margin: 20px 0 0;
-  padding: 0;
-  list-style: none;
-}
-
-.topic-tag-cloud .topic-tag-cloud-item {
-  margin: 0;
-}
-
-.topic-tag-cloud .topic-tag-cloud-tag {
-  display: inline-flex;
-  align-items: center;
-  min-height: 44px;
-  padding: 0 18px;
-  border-radius: 999px;
-  background-color: #dff2f5;
-  color: #08314d;
-  font-size: var(--body-font-size-xs);
-  font-weight: 500;
+.tag-chip:hover {
+  background: var(--link-color);
+  color: white;
+  border-color: var(--link-color);
   text-decoration: none;
 }
 
-.topic-tag-cloud .topic-tag-cloud-tag:hover,
-.topic-tag-cloud .topic-tag-cloud-tag:focus-visible {
-  background-color: #c4e8ee;
-  color: #06253a;
-  text-decoration: none;
+.tag-chip:focus {
+  outline: 2px solid var(--link-color);
+  outline-offset: 2px;
 }
 
-.topic-tag-cloud.compact {
-  padding: 20px;
-}
+@media (width <= 600px) {
+  .topic-tag-cloud-list {
+    gap: 0.5rem;
+  }
 
-.topic-tag-cloud.compact .topic-tag-cloud-list {
-  gap: 10px;
-  margin-top: 16px;
-}
-
-.topic-tag-cloud.compact .topic-tag-cloud-tag {
-  min-height: 38px;
-  padding: 0 14px;
+  .tag-chip {
+    font-size: 0.85rem;
+    padding: 0.4rem 0.8rem;
+  }
 }
