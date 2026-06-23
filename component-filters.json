@@ -13,7 +13,6 @@
       "button",
       "title",
       "hero",
-      "hero-blog",
       "cards",
       "columns",
       "fragment"
@@ -56,6 +55,12 @@
     "id": "grid-category-gallery",
     "components": [
       "grid-category-gallery-card"
+    ]
+  },
+  {
+    "id": "section",
+    "components": [
+      "hero-blog"
     ]
   },
   {
