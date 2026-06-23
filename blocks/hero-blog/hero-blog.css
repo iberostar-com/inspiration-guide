@@ -4,54 +4,90 @@
 }
 
 .hero-blog {
-  padding: 48px 24px;
-  border-radius: 24px;
-  background:
-    radial-gradient(circle at top right, rgb(255 255 255 / 22%), transparent 32%),
-    linear-gradient(135deg, #08314d 0%, #0d6078 52%, #1b8b90 100%);
-  color: #fff;
+  padding: 72px 24px 56px;
+  border-bottom: 1px solid #e5e5e5;
+  background: #fff;
+  color: #1b2d4f;
+  text-align: center;
 }
 
 .hero-blog .hero-blog-content {
-  max-width: 860px;
+  max-width: 1180px;
   margin: 0 auto;
 }
 
+.hero-blog .hero-blog-heading-row {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 32px;
+}
+
 .hero-blog .hero-blog-icon {
-  width: fit-content;
-  margin-bottom: 20px;
+  flex: 0 0 auto;
+  width: 96px;
 }
 
 .hero-blog .hero-blog-icon picture,
 .hero-blog .hero-blog-icon img,
 .hero-blog .hero-blog-icon svg {
   display: block;
-  max-width: 72px;
+  width: 100%;
+  max-width: 96px;
   height: auto;
 }
 
 .hero-blog .hero-blog-title {
   margin: 0;
-  color: inherit;
+  color: #17294b;
+  font-family: var(--heading-font-family);
+  font-size: clamp(48px, 7vw, 86px);
+  font-weight: 500;
+  line-height: 0.95;
+  letter-spacing: -0.04em;
 }
 
 .hero-blog .hero-blog-subtitle {
-  max-width: 58ch;
-  margin: 16px 0 0;
-  font-size: var(--body-font-size-s);
-  line-height: 1.7;
+  margin: 28px 0 0;
+  color: #2ba494;
+  font-family: var(--body-font-family);
+  font-size: clamp(18px, 2vw, 24px);
+  font-weight: 500;
+  line-height: 1.3;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
 }
 
 .hero-blog .hero-blog-subtitle :is(a:any-link) {
   color: inherit;
 }
 
-@media (width >= 900px) {
+@media (width < 768px) {
   .hero-blog {
-    padding: 72px 48px;
+    padding: 48px 20px 40px;
+  }
+
+  .hero-blog .hero-blog-heading-row {
+    flex-direction: column;
+    gap: 20px;
+  }
+
+  .hero-blog .hero-blog-icon {
+    width: 72px;
+  }
+
+  .hero-blog .hero-blog-icon picture,
+  .hero-blog .hero-blog-icon img,
+  .hero-blog .hero-blog-icon svg {
+    max-width: 72px;
+  }
+
+  .hero-blog .hero-blog-title {
+    font-size: clamp(40px, 12vw, 56px);
   }
 
   .hero-blog .hero-blog-subtitle {
-    font-size: var(--body-font-size-m);
+    margin-top: 20px;
+    font-size: 16px;
   }
 }
