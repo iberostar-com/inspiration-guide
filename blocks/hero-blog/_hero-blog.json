@@ -100,12 +100,5 @@
       ]
     }
   ],
-  "filters": [
-    {
-      "id": "section",
-      "components": [
-        "hero-blog"
-      ]
-    }
-  ]
+  "filters": []
 }
