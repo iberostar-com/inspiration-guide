@@ -26,6 +26,16 @@ function getRichText(cell) {
   return semanticChild ? semanticChild.innerHTML.trim() : cell.innerHTML.trim();
 }
 
+function copyInstrumentation(source, target) {
+  if (!source || !target) return;
+
+  [...source.attributes].forEach(({ name, value }) => {
+    if (name.startsWith('data-aue-') || name.startsWith('data-richtext')) {
+      target.setAttribute(name, value);
+    }
+  });
+}
+
 function getIconElement(iconCell) {
   if (!iconCell) return null;
 
@@ -84,6 +94,7 @@ export default function decorate(block) {
   if (icon) {
     const iconWrapper = document.createElement('div');
     iconWrapper.className = 'hero-blog-icon';
+    copyInstrumentation(iconCell, iconWrapper);
     iconWrapper.append(icon);
     headingRow.append(iconWrapper);
   }
@@ -92,6 +103,7 @@ export default function decorate(block) {
     const title = document.createElement(titleTag);
     title.className = 'hero-blog-title';
     title.textContent = titleText;
+    copyInstrumentation(titleCell, title);
     headingRow.append(title);
   }
 
@@ -103,6 +115,7 @@ export default function decorate(block) {
     const subtitle = document.createElement(subtitleTag);
     subtitle.className = 'hero-blog-subtitle';
     subtitle.innerHTML = subtitleHtml;
+    copyInstrumentation(subtitleCell, subtitle);
     content.append(subtitle);
   }
 
