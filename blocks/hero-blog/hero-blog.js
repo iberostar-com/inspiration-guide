@@ -11,37 +11,42 @@ function sanitizeTag(tagName, fallback) {
   return HEADING_TAGS.has(normalizedTag) ? normalizedTag : fallback;
 }
 
-function getRows(block) {
-  return [...block.children];
+function getSourceArea(block) {
+  return [...block.children].filter((child) => !child.classList.contains('hero-blog-content'));
 }
 
-function getCellValue(row) {
-  if (!row) return '';
-  const cell = row.children?.[1] || row.children?.[0] || row;
-  return cell?.textContent?.trim() || '';
+function getPropElement(block, propName) {
+  const sourceArea = getSourceArea(block);
+
+  for (const source of sourceArea) {
+    const prop = source.querySelector(`[data-aue-prop="${propName}"]`);
+    if (prop) return prop;
+  }
+
+  return null;
 }
 
-function getCellElement(row) {
-  if (!row) return null;
-  return row.children?.[1] || row.children?.[0] || row;
+function getPropText(block, propName) {
+  const prop = getPropElement(block, propName);
+  return prop?.textContent?.trim() || '';
 }
 
-function getRichTextValue(row) {
-  const cell = getCellElement(row);
-  if (!cell) return '';
+function getPropHtml(block, propName) {
+  const prop = getPropElement(block, propName);
+  if (!prop) return '';
 
-  const semanticChild = cell.querySelector('p, h1, h2, h3, h4, h5, h6');
-  return semanticChild ? semanticChild.innerHTML.trim() : cell.innerHTML.trim();
+  const semanticChild = prop.querySelector('p, h1, h2, h3, h4, h5, h6');
+  return semanticChild ? semanticChild.innerHTML.trim() : prop.innerHTML.trim();
 }
 
-function getIconElement(row) {
-  const cell = getCellElement(row);
-  if (!cell) return null;
+function getPropMedia(block, propName) {
+  const prop = getPropElement(block, propName);
+  if (!prop) return null;
 
-  const media = cell.querySelector('picture, img, svg');
+  const media = prop.querySelector('picture, img, svg');
   if (media) return media.cloneNode(true);
 
-  const link = cell.querySelector('a');
+  const link = prop.querySelector('a');
   const href = link?.getAttribute('href');
 
   if (href && /\.(svg|png|jpe?g|webp)$/i.test(href)) {
@@ -52,7 +57,8 @@ function getIconElement(row) {
     return img;
   }
 
-  const text = cell.textContent?.trim();
+  const text = prop.textContent?.trim();
+
   if (text && /\.(svg|png|jpe?g|webp)$/i.test(text)) {
     const img = document.createElement('img');
     img.src = text;
@@ -64,27 +70,30 @@ function getIconElement(row) {
   return null;
 }
 
+function hideSourceRows(block) {
+  getSourceArea(block).forEach((source) => {
+    source.classList.add('hero-blog-source');
+  });
+}
+
 export default function decorate(block) {
-  const rows = getRows(block);
+  const existingContent = block.querySelector(':scope > .hero-blog-content');
+  if (existingContent) existingContent.remove();
 
-  const iconRow = rows[0];
-  const titleRow = rows[1];
-  const titleHeadingRow = rows[2];
-  const subtitleRow = rows[3];
-  const subtitleHeadingRow = rows[4];
+  const icon = getPropMedia(block, 'hero_icon');
+  const titleText = getPropText(block, 'hero_title');
+  const titleTag = sanitizeTag(getPropText(block, 'hero_titleHeading'), 'h1');
+  const subtitleHtml = getPropHtml(block, 'hero_subtitle');
+  const subtitleTag = sanitizeTag(getPropText(block, 'hero_subtitleHeading'), 'p');
 
-  const titleText = getCellValue(titleRow);
-  const titleTag = sanitizeTag(getCellValue(titleHeadingRow), 'h1');
-  const subtitleHtml = getRichTextValue(subtitleRow);
-  const subtitleTag = sanitizeTag(getCellValue(subtitleHeadingRow), 'p');
+  hideSourceRows(block);
 
-  const wrapper = document.createElement('div');
-  wrapper.className = 'hero-blog-content';
+  const content = document.createElement('div');
+  content.className = 'hero-blog-content';
 
   const topRow = document.createElement('div');
   topRow.className = 'hero-blog-top-row';
 
-  const icon = getIconElement(iconRow);
   if (icon) {
     const iconWrapper = document.createElement('div');
     iconWrapper.className = 'hero-blog-icon';
@@ -93,21 +102,22 @@ export default function decorate(block) {
   }
 
   if (titleText) {
-    const titleEl = document.createElement(titleTag);
-    titleEl.className = 'hero-blog-title';
-    titleEl.textContent = titleText;
-    topRow.append(titleEl);
+    const title = document.createElement(titleTag);
+    title.className = 'hero-blog-title';
+    title.textContent = titleText;
+    topRow.append(title);
   }
 
-  wrapper.append(topRow);
+  if (topRow.childNodes.length) {
+    content.append(topRow);
+  }
 
   if (subtitleHtml) {
-    const subtitleEl = document.createElement(subtitleTag);
-    subtitleEl.className = 'hero-blog-subtitle';
-    subtitleEl.innerHTML = subtitleHtml;
-    wrapper.append(subtitleEl);
+    const subtitle = document.createElement(subtitleTag);
+    subtitle.className = 'hero-blog-subtitle';
+    subtitle.innerHTML = subtitleHtml;
+    content.append(subtitle);
   }
 
-  block.textContent = '';
-  block.append(wrapper);
+  block.append(content);
 }

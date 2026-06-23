@@ -4,10 +4,15 @@
 }
 
 .hero-blog {
+  padding: 56px 24px 48px;
   background: #fff;
   border-bottom: 1px solid #e6e6e6;
-  padding: 56px 24px 48px;
+  color: #1e2d59;
   text-align: center;
+}
+
+.hero-blog .hero-blog-source {
+  display: none;
 }
 
 .hero-blog .hero-blog-content {
@@ -50,7 +55,7 @@
 
 .hero-blog .hero-blog-subtitle {
   margin: 0;
-  color: #67b4a6;
+  color: #2ba494;
   font-family: var(--body-font-family);
   font-size: clamp(18px, 2vw, 24px);
   font-weight: 500;
