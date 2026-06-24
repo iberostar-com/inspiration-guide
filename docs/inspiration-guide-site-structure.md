@@ -93,17 +93,25 @@ Important when authoring `/nav` and `/footer`:
 
 Recommended content shape for `/inspiration-guide/footer`:
 
-1. Brand / intro section
-   - logo
-   - descriptive copy
-2. Footer links section
-   - legal links
-   - corporate links
-   - editorial/microsite links
-3. Meta section
-   - copyright
-   - locale/language notes
-   - optional social links
+1. Brand section
+   - logo image or brand text link
+2. Hotels column
+   - title in the first paragraph
+   - link list in one `ul`
+3. Mundo Iberostar column
+   - title in the first paragraph
+   - link list in one `ul`
+4. Help column
+   - title in the first paragraph
+   - link list in one `ul`
+5. Legal/meta row
+   - one `ul` with inline links
+
+Important:
+
+- the footer block treats the first section as brand
+- the last section as the legal/meta row
+- every section in between is rendered as a link column
 
 ## Required Repo Files
 
