@@ -51,6 +51,25 @@ function getCellFromRow(row) {
   return cells[0] || row;
 }
 
+function getFallbackFields(block) {
+  const rows = getSourceRows(block);
+  const directFields = rows.map(getCellFromRow).filter(Boolean);
+
+  if (directFields.length >= Object.keys(FIELD_INDEX).length) {
+    return directFields;
+  }
+
+  if (directFields.length === 1) {
+    const nestedFields = [...directFields[0].children];
+
+    if (nestedFields.length >= Object.keys(FIELD_INDEX).length) {
+      return nestedFields;
+    }
+  }
+
+  return directFields;
+}
+
 function getPropFromSource(block, propName) {
   const selector = `[data-aue-prop="${propName}"]`;
 
@@ -69,9 +88,7 @@ function getFieldElement(block, propName) {
   const byProp = getPropFromSource(block, propName);
   if (byProp) return byProp;
 
-  const row = getSourceRows(block)[FIELD_INDEX[propName]];
-
-  return getCellFromRow(row);
+  return getFallbackFields(block)[FIELD_INDEX[propName]] || null;
 }
 
 function getText(block, propName) {
@@ -89,28 +106,43 @@ function createImage(src) {
   return img;
 }
 
+function prepareMedia(media) {
+  const clone = media.cloneNode(true);
+  const images = clone.matches('img') ? [clone] : [...clone.querySelectorAll('img')];
+
+  images.forEach((image) => {
+    image.loading = 'eager';
+
+    if (!image.hasAttribute('alt')) {
+      image.alt = '';
+    }
+  });
+
+  return clone;
+}
+
 function getMedia(block, propName) {
   const el = getFieldElement(block, propName);
   if (!el) return null;
 
   if (el.matches?.('picture, svg')) {
-    return el.cloneNode(true);
+    return prepareMedia(el);
   }
 
   if (el.matches?.('img')) {
     return el.parentElement?.tagName?.toLowerCase() === 'picture'
-      ? el.parentElement.cloneNode(true)
-      : el.cloneNode(true);
+      ? prepareMedia(el.parentElement)
+      : prepareMedia(el);
   }
 
   const media = el.querySelector('picture, img, svg');
 
   if (media) {
     if (media.matches('img') && media.parentElement?.tagName?.toLowerCase() === 'picture') {
-      return media.parentElement.cloneNode(true);
+      return prepareMedia(media.parentElement);
     }
 
-    return media.cloneNode(true);
+    return prepareMedia(media);
   }
 
   const href = el.querySelector('a')?.getAttribute('href');
