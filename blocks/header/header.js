@@ -1,7 +1,7 @@
 import { getMetadata } from '../../scripts/aem.js';
 import { loadFragment } from '../fragment/fragment.js';
 
-const DEFAULT_NAV_PATH = '/inspiration-guide/nav';
+const DEFAULT_NAV_PATH = '/nav';
 const DESKTOP_MEDIA = window.matchMedia('(width >= 900px)');
 
 function normalizePath(path) {
@@ -15,9 +15,22 @@ function normalizePath(path) {
   }
 }
 
+function normalizeFragmentPath(path) {
+  if (!path) return '';
+
+  const { pathname } = new URL(path, window.location);
+
+  if (!pathname.startsWith('/content/')) {
+    return pathname;
+  }
+
+  const [, , , ...sitePath] = pathname.split('/');
+  return sitePath.length ? `/${sitePath.join('/')}` : '/';
+}
+
 function resolveFragmentPath(metaName, fallbackPath) {
   const metaValue = getMetadata(metaName);
-  return metaValue ? new URL(metaValue, window.location).pathname : fallbackPath;
+  return metaValue ? normalizeFragmentPath(metaValue) : fallbackPath;
 }
 
 function setSectionExpanded(section, expanded) {

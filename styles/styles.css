@@ -88,13 +88,13 @@ header {
   height: var(--nav-height);
 }
 
-header .header,
-footer .footer {
+header .header.block,
+footer .footer.block {
   visibility: hidden;
 }
 
-header .header[data-block-status="loaded"],
-footer .footer[data-block-status="loaded"] {
+header .header.block[data-block-status="loaded"],
+footer .footer.block[data-block-status="loaded"] {
   visibility: visible;
 }
 

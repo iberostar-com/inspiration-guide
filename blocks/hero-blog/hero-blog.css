@@ -90,6 +90,5 @@
   .hero-blog .hero-blog-title {
     font-size: clamp(42px, 6vw, 80px);
     text-align: left;
-    background: green;
   }
 }

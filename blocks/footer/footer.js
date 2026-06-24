@@ -1,11 +1,24 @@
 import { getMetadata } from '../../scripts/aem.js';
 import { loadFragment } from '../fragment/fragment.js';
 
-const DEFAULT_FOOTER_PATH = '/inspiration-guide/footer';
+const DEFAULT_FOOTER_PATH = '/footer';
+
+function normalizeFragmentPath(path) {
+  if (!path) return '';
+
+  const { pathname } = new URL(path, window.location);
+
+  if (!pathname.startsWith('/content/')) {
+    return pathname;
+  }
+
+  const [, , , ...sitePath] = pathname.split('/');
+  return sitePath.length ? `/${sitePath.join('/')}` : '/';
+}
 
 function resolveFooterPath() {
   const footerMeta = getMetadata('footer');
-  return footerMeta ? new URL(footerMeta, window.location).pathname : DEFAULT_FOOTER_PATH;
+  return footerMeta ? normalizeFragmentPath(footerMeta) : DEFAULT_FOOTER_PATH;
 }
 
 function decorateFooterSections(footer) {
