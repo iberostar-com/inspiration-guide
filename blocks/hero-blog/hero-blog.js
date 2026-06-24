@@ -9,8 +9,24 @@ const FIELD_INDEX = {
   hero_subtitleHeading: 4,
 };
 
+function normalizeTagValue(value, fallback) {
+  const normalized = `${value || fallback}`.trim().toLowerCase();
+
+  const labelMap = {
+    paragraph: 'p',
+    'heading 1': 'h1',
+    'heading 2': 'h2',
+    'heading 3': 'h3',
+    'heading 4': 'h4',
+    'heading 5': 'h5',
+    'heading 6': 'h6',
+  };
+
+  return labelMap[normalized] || normalized;
+}
+
 function sanitizeTag(tagName, fallback) {
-  const normalized = `${tagName || fallback}`.trim().toLowerCase();
+  const normalized = normalizeTagValue(tagName, fallback);
 
   if (fallback === 'p') {
     return COPY_TAGS.has(normalized) ? normalized : 'p';
@@ -37,26 +53,23 @@ function getCellFromRow(row) {
 
 function getPropFromSource(block, propName) {
   const selector = `[data-aue-prop="${propName}"]`;
-  const sourceRows = getSourceRows(block);
 
-  for (const row of sourceRows) {
-    if (row.matches?.(selector)) {
-      return row;
-    }
+  return getSourceRows(block)
+    .map((row) => {
+      if (row.matches?.(selector)) {
+        return row;
+      }
 
-    const found = row.querySelector?.(selector);
-    if (found) return found;
-  }
-
-  return null;
+      return row.querySelector?.(selector) || null;
+    })
+    .find(Boolean) || null;
 }
 
 function getFieldElement(block, propName) {
   const byProp = getPropFromSource(block, propName);
   if (byProp) return byProp;
 
-  const rows = getSourceRows(block);
-  const row = rows[FIELD_INDEX[propName]];
+  const row = getSourceRows(block)[FIELD_INDEX[propName]];
 
   return getCellFromRow(row);
 }
@@ -71,7 +84,18 @@ function getHtml(block, propName) {
   if (!el) return '';
 
   const semantic = el.querySelector('p, h1, h2, h3, h4, h5, h6');
+
   return semantic ? semantic.innerHTML.trim() : el.innerHTML.trim();
+}
+
+function createImage(src) {
+  const img = document.createElement('img');
+
+  img.src = src;
+  img.alt = '';
+  img.loading = 'eager';
+
+  return img;
 }
 
 function getMedia(block, propName) {
@@ -89,6 +113,7 @@ function getMedia(block, propName) {
   }
 
   const media = el.querySelector('picture, img, svg');
+
   if (media) {
     if (media.matches('img') && media.parentElement?.tagName?.toLowerCase() === 'picture') {
       return media.parentElement.cloneNode(true);
@@ -97,25 +122,16 @@ function getMedia(block, propName) {
     return media.cloneNode(true);
   }
 
-  const link = el.querySelector('a');
-  const href = link?.getAttribute('href');
+  const href = el.querySelector('a')?.getAttribute('href');
 
   if (href && /\.(svg|png|jpe?g|webp)$/i.test(href)) {
-    const img = document.createElement('img');
-    img.src = href;
-    img.alt = '';
-    img.loading = 'eager';
-    return img;
+    return createImage(href);
   }
 
   const text = el.textContent?.trim();
 
   if (text && /\.(svg|png|jpe?g|webp)$/i.test(text)) {
-    const img = document.createElement('img');
-    img.src = text;
-    img.alt = '';
-    img.loading = 'eager';
-    return img;
+    return createImage(text);
   }
 
   return null;
@@ -135,6 +151,7 @@ export default function decorate(block) {
   const icon = getMedia(block, 'hero_icon');
   const titleText = getText(block, 'hero_title');
   const titleTag = sanitizeTag(getText(block, 'hero_titleHeading'), 'h1');
+
   const subtitleHtml = getHtml(block, 'hero_subtitle');
   const subtitleTag = sanitizeTag(getText(block, 'hero_subtitleHeading'), 'p');
 
@@ -148,6 +165,7 @@ export default function decorate(block) {
 
   if (icon) {
     const iconWrapper = document.createElement('div');
+
     iconWrapper.className = 'hero-blog-icon';
     iconWrapper.append(icon);
     topRow.append(iconWrapper);
@@ -155,6 +173,7 @@ export default function decorate(block) {
 
   if (titleText) {
     const title = document.createElement(titleTag);
+
     title.className = 'hero-blog-title';
     title.textContent = titleText;
     topRow.append(title);
@@ -166,6 +185,7 @@ export default function decorate(block) {
 
   if (subtitleHtml) {
     const subtitle = document.createElement(subtitleTag);
+
     subtitle.className = 'hero-blog-subtitle';
     subtitle.innerHTML = subtitleHtml;
     content.append(subtitle);
