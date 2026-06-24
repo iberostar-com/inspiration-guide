@@ -1,20 +1,38 @@
 import { getMetadata } from '../../scripts/aem.js';
 import { loadFragment } from '../fragment/fragment.js';
 
-/**
- * loads and decorates the footer
- * @param {Element} block The footer block element
- */
-export default async function decorate(block) {
-  // load footer as fragment
+const DEFAULT_FOOTER_PATH = '/inspiration-guide/footer';
+
+function resolveFooterPath() {
   const footerMeta = getMetadata('footer');
-  const footerPath = footerMeta ? new URL(footerMeta, window.location).pathname : '/footer';
+  return footerMeta ? new URL(footerMeta, window.location).pathname : DEFAULT_FOOTER_PATH;
+}
+
+function decorateFooterSections(footer) {
+  const sections = [...footer.children];
+  const sectionNames = ['footer-brand', 'footer-links', 'footer-meta'];
+
+  sections.forEach((section, index) => {
+    section.classList.add('footer-section');
+    section.classList.add(sectionNames[index] || `footer-section-${index + 1}`);
+  });
+}
+
+export default async function decorate(block) {
+  const footerPath = resolveFooterPath();
   const fragment = await loadFragment(footerPath);
 
-  // decorate footer DOM
-  block.textContent = '';
-  const footer = document.createElement('div');
-  while (fragment.firstElementChild) footer.append(fragment.firstElementChild);
+  if (!fragment) return;
 
+  block.textContent = '';
+
+  const footer = document.createElement('div');
+  footer.className = 'footer';
+
+  while (fragment.firstElementChild) {
+    footer.append(fragment.firstElementChild);
+  }
+
+  decorateFooterSections(footer);
   block.append(footer);
 }

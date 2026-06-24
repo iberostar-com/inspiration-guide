@@ -109,6 +109,17 @@ export function decorateButtons(main) {
   });
 }
 
+function applyPageMetadataState() {
+  const pageType = document.querySelector('meta[name="page-type"]')?.content?.trim();
+
+  if (!pageType || pageType === 'default') {
+    return;
+  }
+
+  document.body.dataset.pageType = pageType;
+  document.body.classList.add(`page-${pageType}`);
+}
+
 /**
  * Decorates the main element.
  * @param {Element} main The main element
@@ -129,6 +140,7 @@ export function decorateMain(main) {
 async function loadEager(doc) {
   document.documentElement.lang = 'en';
   decorateTemplateAndTheme();
+  applyPageMetadataState();
   const main = doc.querySelector('main');
   if (main) {
     decorateMain(main);

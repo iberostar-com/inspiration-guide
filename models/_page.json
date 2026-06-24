@@ -21,6 +21,66 @@
           "name": "keywords",
           "multi": true,
           "label": "Keywords"
+        },
+        {
+          "component": "aem-content",
+          "name": "nav",
+          "label": "Header Fragment Path"
+        },
+        {
+          "component": "aem-content",
+          "name": "footer",
+          "label": "Footer Fragment Path"
+        },
+        {
+          "component": "select",
+          "name": "page-type",
+          "label": "Page Type",
+          "value": "default",
+          "options": [
+            {
+              "name": "Default",
+              "value": "default"
+            },
+            {
+              "name": "Home",
+              "value": "home"
+            },
+            {
+              "name": "Category",
+              "value": "category"
+            },
+            {
+              "name": "Tag",
+              "value": "tag"
+            },
+            {
+              "name": "Article",
+              "value": "article"
+            }
+          ]
+        },
+        {
+          "component": "select",
+          "name": "inspiration-data-mode",
+          "label": "Inspiration Data Mode",
+          "value": "mock",
+          "options": [
+            {
+              "name": "Mock",
+              "value": "mock"
+            },
+            {
+              "name": "AEM",
+              "value": "aem"
+            }
+          ]
+        },
+        {
+          "component": "text",
+          "valueType": "string",
+          "name": "inspiration-aem-data-url",
+          "label": "Inspiration Data URL"
         }
       ]
     }
