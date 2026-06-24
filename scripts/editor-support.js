@@ -6,6 +6,7 @@ import {
   loadBlock,
   loadSections,
 } from './aem.js';
+import { decorateRichtext } from './editor-support-rte.js';
 // eslint-disable-next-line import/no-cycle
 import { decorateButtons } from './scripts.js';
 
@@ -38,6 +39,7 @@ async function applyChanges(event) {
           newBlock.setAttribute('data-block-name', existingBlock.dataset.blockName);
           newBlock.setAttribute('data-block-status', 'initialized');
           existingBlock.insertAdjacentElement('afterend', newBlock);
+          decorateRichtext(newBlock);
           decorateButtons(newBlock);
           decorateIcons(newBlock);
           decorateBlock(newBlock);
@@ -53,6 +55,7 @@ async function applyChanges(event) {
       if (elementParent) {
         const parentEl = elementParent.parentElement;
         elementParent.insertAdjacentElement('afterend', element);
+        decorateRichtext(element);
         decorateButtons(element);
         decorateIcons(element);
         decorateSections(parentEl);

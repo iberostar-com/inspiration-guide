@@ -10,6 +10,7 @@ import {
   loadSections,
   loadCSS,
 } from './aem.js';
+import { decorateRichtext } from './editor-support-rte.js';
 
 /**
  * Moves all the attributes from a given elmenet to another given element.
@@ -131,6 +132,7 @@ function getPageType() {
 // eslint-disable-next-line import/prefer-default-export
 export function decorateMain(main) {
   decorateIcons(main);
+  decorateRichtext(main);
   buildAutoBlocks(main);
   decorateSections(main);
   decorateBlocks(main);

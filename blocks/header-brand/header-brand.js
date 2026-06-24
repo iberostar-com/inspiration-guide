@@ -9,6 +9,37 @@ function getSourceRows(block) {
   return [...block.children].filter((child) => !child.classList.contains('header-brand-content'));
 }
 
+function getCellFromRow(row) {
+  if (!row) return null;
+
+  const cells = [...row.children];
+
+  if (cells.length > 1) {
+    return cells[cells.length - 1];
+  }
+
+  return cells[0] || row;
+}
+
+function getFallbackFields(block) {
+  const rows = getSourceRows(block);
+  const directFields = rows.map(getCellFromRow).filter(Boolean);
+
+  if (directFields.length >= Object.keys(FIELD_INDEX).length) {
+    return directFields;
+  }
+
+  if (directFields.length === 1) {
+    const nestedFields = [...directFields[0].children];
+
+    if (nestedFields.length >= Object.keys(FIELD_INDEX).length) {
+      return nestedFields;
+    }
+  }
+
+  return directFields;
+}
+
 function getFieldElement(block, propName) {
   const selector = `[data-aue-prop="${propName}"]`;
   const rows = getSourceRows(block);
@@ -21,7 +52,7 @@ function getFieldElement(block, propName) {
     return byProp;
   }
 
-  return rows[FIELD_INDEX[propName]] || null;
+  return getFallbackFields(block)[FIELD_INDEX[propName]] || null;
 }
 
 function getText(block, propName, fallback = '') {
@@ -32,6 +63,14 @@ function getLogo(block) {
   const element = getFieldElement(block, 'logo');
   if (!element) return null;
 
+  if (element.matches?.('picture')) {
+    return element.cloneNode(true);
+  }
+
+  if (element.matches?.('img')) {
+    return element.cloneNode(true);
+  }
+
   const picture = element.querySelector('picture');
   if (picture) {
     return picture.cloneNode(true);
@@ -40,6 +79,20 @@ function getLogo(block) {
   const image = element.querySelector('img');
   if (image) {
     return image.cloneNode(true);
+  }
+
+  const href = element.querySelector('a')?.getAttribute('href');
+  if (href && /\.(svg|png|jpe?g|webp)$/i.test(href)) {
+    const fallbackImage = document.createElement('img');
+    fallbackImage.src = href;
+    return fallbackImage;
+  }
+
+  const text = element.textContent?.trim();
+  if (text && /\.(svg|png|jpe?g|webp)$/i.test(text)) {
+    const fallbackImage = document.createElement('img');
+    fallbackImage.src = text;
+    return fallbackImage;
   }
 
   return null;
