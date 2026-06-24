@@ -40,38 +40,20 @@
           "label": "Title Heading",
           "value": "h1",
           "options": [
-            {
-              "name": "h1",
-              "value": "h1"
-            },
-            {
-              "name": "h2",
-              "value": "h2"
-            },
-            {
-              "name": "h3",
-              "value": "h3"
-            },
-            {
-              "name": "h4",
-              "value": "h4"
-            },
-            {
-              "name": "h5",
-              "value": "h5"
-            },
-            {
-              "name": "h6",
-              "value": "h6"
-            }
+            { "name": "h1", "value": "h1" },
+            { "name": "h2", "value": "h2" },
+            { "name": "h3", "value": "h3" },
+            { "name": "h4", "value": "h4" },
+            { "name": "h5", "value": "h5" },
+            { "name": "h6", "value": "h6" }
           ]
         },
         {
-          "component": "richtext",
+          "component": "textarea",
+          "valueType": "string",
           "name": "hero_subtitle",
-          "value": "",
           "label": "Subtitle",
-          "valueType": "string"
+          "value": ""
         },
         {
           "component": "select",
@@ -79,22 +61,10 @@
           "label": "Subtitle Element",
           "value": "p",
           "options": [
-            {
-              "name": "Paragraph",
-              "value": "p"
-            },
-            {
-              "name": "Heading 2",
-              "value": "h2"
-            },
-            {
-              "name": "Heading 3",
-              "value": "h3"
-            },
-            {
-              "name": "Heading 4",
-              "value": "h4"
-            }
+            { "name": "Paragraph", "value": "p" },
+            { "name": "Heading 2", "value": "h2" },
+            { "name": "Heading 3", "value": "h3" },
+            { "name": "Heading 4", "value": "h4" }
           ]
         }
       ]

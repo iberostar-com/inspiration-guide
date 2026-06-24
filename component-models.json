@@ -789,11 +789,11 @@
         ]
       },
       {
-        "component": "richtext",
+        "component": "textarea",
+        "valueType": "string",
         "name": "hero_subtitle",
-        "value": "",
         "label": "Subtitle",
-        "valueType": "string"
+        "value": ""
       },
       {
         "component": "select",
