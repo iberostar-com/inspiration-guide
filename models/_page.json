@@ -57,6 +57,10 @@
             {
               "name": "Article",
               "value": "article"
+            },
+            {
+              "name": "Fragment",
+              "value": "fragment"
             }
           ]
         },

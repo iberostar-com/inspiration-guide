@@ -50,7 +50,7 @@ Each microsite page should expose these metadata values:
 - `footer`
   - recommended value: `/inspiration-guide/footer`
 - `page-type`
-  - one of: `home`, `category`, `tag`, `article`
+  - one of: `home`, `category`, `tag`, `article`, `fragment`
 - `inspiration-data-mode`
   - `mock` during scaffold/prototype
   - `aem` when JSON/index endpoints are ready
@@ -64,7 +64,12 @@ These fields are now available in [`models/_page.json`](/Users/josuerodriguez/ae
 Recommended content shape for `/inspiration-guide/nav`:
 
 1. Brand section
-   - logo link to the microsite home
+   - add one `header-brand` block
+   - fields:
+     - logo
+     - logo alt
+     - link
+     - fallback label
 2. Main navigation section
    - one top-level `ul`
    - each top-level item may contain:
@@ -78,6 +83,11 @@ Recommended content shape for `/inspiration-guide/nav`:
      - current language + language options
    - `nav-search`
      - optional, only if search is part of the microsite scope
+
+Important when authoring `/nav` and `/footer`:
+
+- set `page-type = fragment`
+- this prevents the global `header` and `footer` shell from being loaded while you edit the fragment page itself
 
 ## Footer Fragment Authoring Shape
 

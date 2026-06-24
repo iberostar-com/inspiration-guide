@@ -49,6 +49,10 @@
         "title",
         "hero",
         "hero-blog",
+        "header-brand",
+        "nav-hotels",
+        "nav-language",
+        "nav-search",
         "cards",
         "columns",
         "fragment"
