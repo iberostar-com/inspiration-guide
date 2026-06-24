@@ -1,52 +1,103 @@
 const HEADING_TAGS = new Set(['h1', 'h2', 'h3', 'h4', 'h5', 'h6']);
 const COPY_TAGS = new Set(['p', 'h2', 'h3', 'h4']);
 
+const FIELD_INDEX = {
+  hero_icon: 0,
+  hero_title: 1,
+  hero_titleHeading: 2,
+  hero_subtitle: 3,
+  hero_subtitleHeading: 4,
+};
+
 function sanitizeTag(tagName, fallback) {
-  const normalizedTag = `${tagName || fallback}`.trim().toLowerCase();
+  const normalized = `${tagName || fallback}`.trim().toLowerCase();
 
   if (fallback === 'p') {
-    return COPY_TAGS.has(normalizedTag) ? normalizedTag : 'p';
+    return COPY_TAGS.has(normalized) ? normalized : 'p';
   }
 
-  return HEADING_TAGS.has(normalizedTag) ? normalizedTag : fallback;
+  return HEADING_TAGS.has(normalized) ? normalized : fallback;
 }
 
-function getSourceArea(block) {
+function getSourceRows(block) {
   return [...block.children].filter((child) => !child.classList.contains('hero-blog-content'));
 }
 
-function getPropElement(block, propName) {
-  const sourceArea = getSourceArea(block);
+function getCellFromRow(row) {
+  if (!row) return null;
 
-  for (const source of sourceArea) {
-    const prop = source.querySelector(`[data-aue-prop="${propName}"]`);
-    if (prop) return prop;
+  const cells = [...row.children];
+
+  if (cells.length > 1) {
+    return cells[cells.length - 1];
+  }
+
+  return cells[0] || row;
+}
+
+function getPropFromSource(block, propName) {
+  const selector = `[data-aue-prop="${propName}"]`;
+  const sourceRows = getSourceRows(block);
+
+  for (const row of sourceRows) {
+    if (row.matches?.(selector)) {
+      return row;
+    }
+
+    const found = row.querySelector?.(selector);
+    if (found) return found;
   }
 
   return null;
 }
 
-function getPropText(block, propName) {
-  const prop = getPropElement(block, propName);
-  return prop?.textContent?.trim() || '';
+function getFieldElement(block, propName) {
+  const byProp = getPropFromSource(block, propName);
+  if (byProp) return byProp;
+
+  const rows = getSourceRows(block);
+  const row = rows[FIELD_INDEX[propName]];
+
+  return getCellFromRow(row);
 }
 
-function getPropHtml(block, propName) {
-  const prop = getPropElement(block, propName);
-  if (!prop) return '';
-
-  const semanticChild = prop.querySelector('p, h1, h2, h3, h4, h5, h6');
-  return semanticChild ? semanticChild.innerHTML.trim() : prop.innerHTML.trim();
+function getText(block, propName) {
+  const el = getFieldElement(block, propName);
+  return el?.textContent?.trim() || '';
 }
 
-function getPropMedia(block, propName) {
-  const prop = getPropElement(block, propName);
-  if (!prop) return null;
+function getHtml(block, propName) {
+  const el = getFieldElement(block, propName);
+  if (!el) return '';
 
-  const media = prop.querySelector('picture, img, svg');
-  if (media) return media.cloneNode(true);
+  const semantic = el.querySelector('p, h1, h2, h3, h4, h5, h6');
+  return semantic ? semantic.innerHTML.trim() : el.innerHTML.trim();
+}
 
-  const link = prop.querySelector('a');
+function getMedia(block, propName) {
+  const el = getFieldElement(block, propName);
+  if (!el) return null;
+
+  if (el.matches?.('picture, svg')) {
+    return el.cloneNode(true);
+  }
+
+  if (el.matches?.('img')) {
+    return el.parentElement?.tagName?.toLowerCase() === 'picture'
+      ? el.parentElement.cloneNode(true)
+      : el.cloneNode(true);
+  }
+
+  const media = el.querySelector('picture, img, svg');
+  if (media) {
+    if (media.matches('img') && media.parentElement?.tagName?.toLowerCase() === 'picture') {
+      return media.parentElement.cloneNode(true);
+    }
+
+    return media.cloneNode(true);
+  }
+
+  const link = el.querySelector('a');
   const href = link?.getAttribute('href');
 
   if (href && /\.(svg|png|jpe?g|webp)$/i.test(href)) {
@@ -57,7 +108,7 @@ function getPropMedia(block, propName) {
     return img;
   }
 
-  const text = prop.textContent?.trim();
+  const text = el.textContent?.trim();
 
   if (text && /\.(svg|png|jpe?g|webp)$/i.test(text)) {
     const img = document.createElement('img');
@@ -70,23 +121,24 @@ function getPropMedia(block, propName) {
   return null;
 }
 
-function hideSourceRows(block) {
-  getSourceArea(block).forEach((source) => {
-    source.classList.add('hero-blog-source');
+function hideSource(block) {
+  getSourceRows(block).forEach((row) => {
+    row.classList.add('hero-blog-source');
+    row.setAttribute('aria-hidden', 'true');
   });
 }
 
 export default function decorate(block) {
-  const existingContent = block.querySelector(':scope > .hero-blog-content');
-  if (existingContent) existingContent.remove();
+  const existing = block.querySelector(':scope > .hero-blog-content');
+  if (existing) existing.remove();
 
-  const icon = getPropMedia(block, 'hero_icon');
-  const titleText = getPropText(block, 'hero_title');
-  const titleTag = sanitizeTag(getPropText(block, 'hero_titleHeading'), 'h1');
-  const subtitleHtml = getPropHtml(block, 'hero_subtitle');
-  const subtitleTag = sanitizeTag(getPropText(block, 'hero_subtitleHeading'), 'p');
+  const icon = getMedia(block, 'hero_icon');
+  const titleText = getText(block, 'hero_title');
+  const titleTag = sanitizeTag(getText(block, 'hero_titleHeading'), 'h1');
+  const subtitleHtml = getHtml(block, 'hero_subtitle');
+  const subtitleTag = sanitizeTag(getText(block, 'hero_subtitleHeading'), 'p');
 
-  hideSourceRows(block);
+  hideSource(block);
 
   const content = document.createElement('div');
   content.className = 'hero-blog-content';
