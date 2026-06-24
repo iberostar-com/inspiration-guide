@@ -13,6 +13,7 @@
       "button",
       "title",
       "hero",
+      "hero-blog",
       "cards",
       "columns",
       "fragment"
@@ -22,6 +23,12 @@
     "id": "cards",
     "components": [
       "card"
+    ]
+  },
+  {
+    "id": "carousel-category-gallery",
+    "components": [
+      "carousel-category-gallery-card"
     ]
   },
   {
@@ -46,9 +53,15 @@
     ]
   },
   {
-    "id": "topic-tag-cloud",
+    "id": "grid-category-gallery",
     "components": [
-      "topic-tag"
+      "grid-category-gallery-card"
+    ]
+  },
+  {
+    "id": "nav-language",
+    "components": [
+      "nav-language-option"
     ]
   }
 ]

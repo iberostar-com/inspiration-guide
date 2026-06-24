@@ -1,0 +1,11 @@
+.nav-search a {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  text-decoration: none;
+}
+
+.nav-search-icon {
+  width: 16px;
+  height: 16px;
+}

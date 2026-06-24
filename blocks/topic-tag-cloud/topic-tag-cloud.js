@@ -1,95 +1,79 @@
-import { toClassName } from '../../scripts/aem.js';
-import { buildUrl } from '../../scripts/iberostar/url-builder.js';
+/**
+ * Topic Tag Cloud block
+ * Renders tags as chips/pills
+ * Supports manual contribution or auto-generation
+ * @param {Element} block The block element
+ */
 
-const HEADING_TAGS = new Set(['h1', 'h2', 'h3', 'h4', 'h5', 'h6']);
+import { getTagCloud } from '../../scripts/inspiration-data.js';
 
-function getRows(block) {
-  return [...block.children];
+/**
+ * Extract tags from manually contributed rows
+ * Expected structure from AEM: each row is a tag name
+ */
+function extractManualTags(block) {
+  const rows = Array.from(block.querySelectorAll(':scope > div > div'));
+  return rows
+    .map((row) => row.textContent?.trim())
+    .filter((tag) => tag && tag.length > 0);
 }
 
-function getCells(row) {
-  return row.children.length ? [...row.children] : [row];
+/**
+ * Generate tags auto (placeholder - requires Fetch from CF)
+ * Real implementation in Fase 5 (lógica de datos)
+ */
+async function generateAutoTags(mode, maxTags) {
+  const strategy = mode === 'category' ? 'category' : 'frequency';
+  const cloud = await getTagCloud(strategy, maxTags);
+  return cloud.map(({ tag }) => tag);
 }
 
-function sanitizeHeadingTag(tagName, fallback = 'h2') {
-  const normalizedTag = `${tagName || fallback}`.trim().toLowerCase();
-  return HEADING_TAGS.has(normalizedTag) ? normalizedTag : fallback;
-}
+export default async function decorate(block) {
+  const mode = block.getAttribute('data-mode') || 'manual';
+  const maxTags = parseInt(block.getAttribute('data-max-tags') || '20', 10);
+  const title = block.getAttribute('data-title') || 'Topics';
 
-function parseConfigRow(row) {
-  const cells = getCells(row);
-  if (cells.length < 3) return null;
+  const wrapper = document.createElement('div');
+  wrapper.className = 'topic-tag-cloud';
 
-  return {
-    classes: (cells[3]?.textContent || '')
-      .split(',')
-      .map((className) => toClassName(className))
-      .filter(Boolean),
-    tagHeading: sanitizeHeadingTag(cells[2]?.textContent, 'h3'),
-    title: cells[0]?.textContent.trim() || '',
-    titleHeading: sanitizeHeadingTag(cells[1]?.textContent, 'h2'),
-  };
-}
-
-function parseTagRow(row) {
-  const cells = getCells(row);
-  const label = cells[0]?.textContent.trim() || cells[1]?.querySelector('a')?.textContent.trim() || '';
-  const rawUrl = cells[1]?.querySelector('a')?.href || cells[1]?.textContent.trim() || '';
-
-  if (!label && !rawUrl) return null;
-
-  return {
-    label,
-    url: buildUrl(rawUrl),
-  };
-}
-
-export default function decorate(block) {
-  const rows = getRows(block);
-  const firstRowConfig = parseConfigRow(rows[0]);
-  const config = firstRowConfig || {
-    classes: [],
-    tagHeading: 'h3',
-    title: block.querySelector('h1, h2, h3, h4, h5, h6')?.textContent.trim() || '',
-    titleHeading: block.querySelector('h1, h2, h3, h4, h5, h6')?.tagName.toLowerCase() || 'h2',
-  };
-  const tagRows = firstRowConfig ? rows.slice(1) : rows;
-  const tags = tagRows.map(parseTagRow).filter(Boolean);
-
-  if (!tags.length) return;
-
-  config.classes.forEach((className) => block.classList.add(className));
-
-  const fragment = document.createDocumentFragment();
-
-  if (config.title) {
-    const heading = document.createElement(config.titleHeading);
-    heading.className = 'topic-tag-cloud-title';
-    heading.textContent = config.title;
-    fragment.append(heading);
+  // Title
+  if (title) {
+    const h2 = document.createElement('h2');
+    h2.textContent = title;
+    h2.className = 'topic-tag-cloud-title';
+    wrapper.appendChild(h2);
   }
 
-  const listHeading = document.createElement(config.tagHeading);
-  listHeading.className = 'topic-tag-cloud-list-heading';
-  listHeading.textContent = 'Topics';
-  fragment.append(listHeading);
+  // Tag list
+  const tagList = document.createElement('div');
+  tagList.className = 'topic-tag-cloud-list';
 
-  const list = document.createElement('ul');
-  list.className = 'topic-tag-cloud-list';
+  let tags = [];
 
-  tags.forEach((tag) => {
-    const item = document.createElement('li');
-    item.className = 'topic-tag-cloud-item';
+  switch (mode) {
+    case 'manual':
+      tags = extractManualTags(block);
+      break;
+    case 'auto-category':
+      tags = await generateAutoTags('category', maxTags);
+      break;
+    case 'auto-frequency':
+      tags = await generateAutoTags('frequency', maxTags);
+      break;
+    default:
+      tags = extractManualTags(block);
+  }
 
-    const tagElement = tag.url ? document.createElement('a') : document.createElement('span');
-    tagElement.className = 'topic-tag-cloud-tag';
-    tagElement.textContent = tag.label || tag.url;
-    if (tag.url && tagElement instanceof HTMLAnchorElement) tagElement.href = tag.url;
-
-    item.append(tagElement);
-    list.append(item);
+  // Render tags
+  tags.slice(0, maxTags).forEach((tag) => {
+    const chip = document.createElement('a');
+    chip.href = `/tag/${encodeURIComponent(tag.toLowerCase())}`;
+    chip.className = 'tag-chip';
+    chip.textContent = tag;
+    chip.setAttribute('aria-label', `Filter by tag: ${tag}`);
+    tagList.appendChild(chip);
   });
 
-  fragment.append(list);
-  block.replaceChildren(fragment);
+  wrapper.appendChild(tagList);
+  block.replaceChildren(wrapper);
 }

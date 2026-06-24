@@ -1,0 +1,52 @@
+.nav-language {
+  position: relative;
+}
+
+.nav-language-trigger {
+  position: relative;
+  padding: 0 16px 0 0;
+  border: 0;
+  background: none;
+  cursor: pointer;
+  font: inherit;
+  color: inherit;
+}
+
+.nav-language-trigger::after {
+  content: '';
+  display: inline-block;
+  position: absolute;
+  top: 0.4em;
+  right: 2px;
+  width: 6px;
+  height: 6px;
+  border: 2px solid currentcolor;
+  border-radius: 0 1px 0 0;
+  border-width: 2px 2px 0 0;
+  transform: rotate(135deg);
+}
+
+.nav-language-trigger[aria-expanded='true']::after {
+  transform: rotate(315deg);
+}
+
+.nav-language-menu {
+  display: none;
+  position: absolute;
+  right: 0;
+  top: 150%;
+  width: 120px;
+  margin: 0;
+  padding: 16px;
+  list-style: none;
+  background-color: var(--light-color);
+  white-space: nowrap;
+}
+
+.nav-language-trigger[aria-expanded='true'] + .nav-language-menu {
+  display: block;
+}
+
+.nav-language-menu-item {
+  padding: 8px 0;
+}

@@ -1,0 +1,41 @@
+{
+  "definitions": [
+    {
+      "title": "Nav Search Link",
+      "id": "nav-search",
+      "plugins": {
+        "xwalk": {
+          "page": {
+            "resourceType": "core/franklin/components/block/v1/block",
+            "template": {
+              "name": "Nav Search Link",
+              "model": "nav-search"
+            }
+          }
+        }
+      }
+    }
+  ],
+  "models": [
+    {
+      "id": "nav-search",
+      "fields": [
+        {
+          "component": "text",
+          "valueType": "string",
+          "name": "linkText",
+          "label": "Link Text",
+          "value": "Buscar"
+        },
+        {
+          "component": "text",
+          "valueType": "string",
+          "name": "link",
+          "label": "Link URL",
+          "value": "/search"
+        }
+      ]
+    }
+  ],
+  "filters": []
+}

@@ -1,3 +1,5 @@
+/* Hero Block - 4 Variants */
+
 .hero-container .hero-wrapper {
   max-width: unset;
   padding: 0;
@@ -33,5 +35,249 @@
 @media (width >= 900px) {
   .hero {
     padding: 40px 32px;
+  }
+}
+
+/* VARIANT: Default */
+.hero-default {
+  display: grid;
+  gap: 1rem;
+  grid-template-columns: 1fr;
+}
+
+.hero-default h1 {
+  font-size: 2rem;
+  margin: 1rem 0 0.5rem;
+  line-height: 1.2;
+  max-width: 100%;
+}
+
+@media (width >= 600px) {
+  .hero-default h1 {
+    font-size: 2.5rem;
+  }
+}
+
+@media (width >= 900px) {
+  .hero-default h1 {
+    font-size: 3rem;
+  }
+}
+
+/* VARIANT: Tag */
+.hero-tag {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 200px;
+  padding: 3rem 1rem;
+  background: var(--background-color);
+}
+
+.hero-tag h1 {
+  font-size: 2rem;
+  text-align: center;
+  margin: 0;
+  color: var(--text-color);
+  font-weight: bold;
+}
+
+@media (width >= 600px) {
+  .hero-tag h1 {
+    font-size: 2.5rem;
+  }
+}
+
+@media (width >= 900px) {
+  .hero-tag h1 {
+    font-size: 3rem;
+  }
+}
+
+/* VARIANT: Article */
+.hero-article {
+  display: grid;
+  gap: 1.5rem;
+  grid-template-columns: 1fr;
+}
+
+.hero-article .hero-image {
+  width: 100%;
+  height: auto;
+  overflow: hidden;
+}
+
+.hero-article .hero-image img {
+  width: 100%;
+  height: auto;
+  display: block;
+}
+
+.hero-article .hero-metadata {
+  font-size: 0.9rem;
+  color: var(--dark-color);
+  display: flex;
+  gap: 1rem;
+  flex-wrap: wrap;
+  margin: 0;
+}
+
+.hero-article .hero-metadata span {
+  display: inline-block;
+}
+
+.hero-article .hero-title {
+  font-size: 1.75rem;
+  margin: 0;
+  color: var(--text-color);
+  font-weight: bold;
+  line-height: 1.3;
+}
+
+.hero-article .hero-subtitle {
+  font-size: 1.05rem;
+  line-height: 1.6;
+  margin: 0;
+  color: var(--dark-color);
+}
+
+@media (width >= 600px) {
+  .hero-article .hero-title {
+    font-size: 2rem;
+  }
+}
+
+@media (width >= 900px) {
+  .hero-article .hero-title {
+    font-size: 2.25rem;
+  }
+}
+
+/* VARIANT: Blog */
+.hero-blog {
+  display: grid;
+  gap: 1.5rem;
+  grid-template-columns: 1fr;
+  position: relative;
+}
+
+.hero-blog .hero-image {
+  grid-column: 1;
+  grid-row: 1;
+  width: 100%;
+  height: 250px;
+  overflow: hidden;
+  border-radius: 4px;
+}
+
+.hero-blog .hero-image img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.hero-blog .hero-title,
+.hero-blog .hero-subtitle,
+.hero-blog .hero-nav {
+  grid-column: 1;
+  position: relative;
+  z-index: 1;
+  background: rgb(255 255 255 / 98%);
+  padding: 1.5rem;
+  border-radius: 4px;
+}
+
+.hero-blog .hero-title {
+  font-size: 1.5rem;
+  margin: 0;
+  color: var(--text-color);
+  font-weight: bold;
+  line-height: 1.3;
+}
+
+.hero-blog .hero-subtitle {
+  font-size: 0.95rem;
+  margin: 0;
+  color: var(--dark-color);
+  line-height: 1.5;
+}
+
+.hero-blog .hero-nav {
+  margin: 0;
+  padding: 1rem 1.5rem;
+}
+
+.hero-blog .hero-nav ul {
+  display: flex;
+  gap: 0.5rem;
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  overflow-x: auto;
+  flex-wrap: wrap;
+}
+
+.hero-blog .hero-nav li {
+  white-space: nowrap;
+}
+
+.hero-blog .hero-nav a {
+  display: inline-block;
+  padding: 0.5rem 1rem;
+  border: 1px solid var(--link-color);
+  border-radius: 2px;
+  text-decoration: none;
+  color: var(--link-color);
+  font-size: 0.9rem;
+  transition: all 0.2s ease;
+}
+
+.hero-blog .hero-nav a:hover {
+  background: var(--link-color);
+  color: white;
+  text-decoration: none;
+}
+
+.hero-blog .hero-nav a:focus {
+  outline: 2px solid var(--link-color);
+  outline-offset: 2px;
+}
+
+@media (width >= 600px) {
+  .hero-blog .hero-image {
+    height: 300px;
+  }
+
+  .hero-blog .hero-title {
+    font-size: 1.75rem;
+  }
+}
+
+@media (width >= 900px) {
+  .hero-blog {
+    grid-template-columns: 2fr 1fr;
+    gap: 2rem;
+  }
+
+  .hero-blog .hero-image {
+    grid-column: 1;
+    grid-row: 1 / 5;
+    height: 400px;
+  }
+
+  .hero-blog .hero-title {
+    grid-column: 2;
+    grid-row: 1;
+    font-size: 2rem;
+  }
+
+  .hero-blog .hero-subtitle {
+    grid-column: 2;
+    grid-row: 2;
+  }
+
+  .hero-blog .hero-nav {
+    grid-column: 2;
+    grid-row: 3;
   }
 }

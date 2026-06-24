@@ -1,0 +1,30 @@
+main .editorial-split-article {
+  display: grid;
+  gap: 1rem;
+  border: 1px solid var(--light-color);
+  background-color: var(--background-color);
+}
+
+main .editorial-split-article .editorial-split-media picture,
+main .editorial-split-article .editorial-split-media img {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+
+main .editorial-split-article .editorial-split-body {
+  padding: 1rem;
+}
+
+main .editorial-split-article .editorial-split-eyebrow {
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  font-size: var(--body-font-size-xs);
+}
+
+@media (width >= 900px) {
+  main .editorial-split-article {
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+    align-items: stretch;
+  }
+}
