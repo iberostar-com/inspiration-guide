@@ -1,6 +1,6 @@
 export default {
   imageServer: '',
   company: '',
-  damRoot: '/content/dam',
+  damRoot: '/content/dam/iberostar-com',
   stripExtension: true,
 };

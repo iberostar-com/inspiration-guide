@@ -23,11 +23,13 @@ function getInspirationGuideRoot(pathname = window.location.pathname) {
     return '';
   }
 
-  return normalizedPath.slice(0, segmentIndex + INSPIRATION_GUIDE_SEGMENT.length);
+  return normalizeFragmentPath(
+    normalizedPath.slice(0, segmentIndex + INSPIRATION_GUIDE_SEGMENT.length),
+  );
 }
 
 function isFragmentPath(rootPath, fragmentName) {
-  const normalizedPath = window.location.pathname.replace(/\/$/, '');
+  const normalizedPath = normalizeFragmentPath(window.location.pathname).replace(/\/$/, '');
   return normalizedPath === `${rootPath}/${fragmentName}`;
 }
 
