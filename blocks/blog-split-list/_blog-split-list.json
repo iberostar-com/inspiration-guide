@@ -50,14 +50,39 @@
         },
         {
           "component": "aem-content",
+          "valueType": "string",
           "name": "featuredArticlePath",
-          "label": "Featured Article Path"
+          "label": "Featured Article Page"
         },
         {
-          "component": "text",
+          "component": "aem-tag",
           "valueType": "string",
-          "name": "filterTags",
-          "label": "Filter Tags"
+          "name": "filter_tag1",
+          "label": "Filter Tag 1"
+        },
+        {
+          "component": "aem-tag",
+          "valueType": "string",
+          "name": "filter_tag2",
+          "label": "Filter Tag 2"
+        },
+        {
+          "component": "aem-tag",
+          "valueType": "string",
+          "name": "filter_tag3",
+          "label": "Filter Tag 3"
+        },
+        {
+          "component": "aem-tag",
+          "valueType": "string",
+          "name": "filter_tag4",
+          "label": "Filter Tag 4"
+        },
+        {
+          "component": "aem-tag",
+          "valueType": "string",
+          "name": "filter_tag5",
+          "label": "Filter Tag 5"
         }
       ]
     },

@@ -7,6 +7,11 @@ const RESERVED_PROPS = new Set([
   'featuredBadge',
   'featuredLabel',
   'filterCategory',
+  'filter_tag1',
+  'filter_tag2',
+  'filter_tag3',
+  'filter_tag4',
+  'filter_tag5',
   'filterTags',
   'latestLabel',
   'maxItems',
@@ -133,6 +138,17 @@ function normalizeList(value) {
     .split(/[|,;]/)
     .map((item) => item.trim().toLowerCase())
     .filter(Boolean);
+}
+
+function getConfiguredTags(block) {
+  const explicitTags = ['filter_tag1', 'filter_tag2', 'filter_tag3', 'filter_tag4', 'filter_tag5']
+    .map((propName) => getTextValue(block, propName, ''))
+    .filter(Boolean);
+
+  return [
+    ...explicitTags,
+    ...normalizeList(getTextValue(block, 'filterTags', '')),
+  ];
 }
 
 function normalizeSlug(value) {
@@ -280,7 +296,7 @@ function fromManualRows(block) {
 
 function filterArticles(articles, block, mode) {
   const configuredCategory = normalizeSlug(getTextValue(block, 'filterCategory', ''));
-  const configuredTags = normalizeList(getTextValue(block, 'filterTags', ''));
+  const configuredTags = getConfiguredTags(block);
   const contextCategory = normalizeSlug(getCurrentPathSegment('category'));
   const contextTag = normalizeSlug(getCurrentPathSegment('tag'));
 
