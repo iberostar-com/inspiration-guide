@@ -29,8 +29,7 @@ function createCard(row) {
     const optimizedPic = createResponsiveImage(
       picture.querySelector('img')?.src,
       title,
-      false,
-      [{ width: '300' }],
+      { preset: 'category-carousel' },
     );
     media.append(optimizedPic);
     card.append(media);

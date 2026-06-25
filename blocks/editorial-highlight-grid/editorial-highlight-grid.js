@@ -64,7 +64,7 @@ function createCard(item) {
   if (item.image) {
     const media = document.createElement('div');
     media.className = 'editorial-highlight-media';
-    media.append(createResponsiveImage(item.image, item.title, false, [{ width: '750' }]));
+    media.append(createResponsiveImage(item.image, item.title, { preset: 'article-card' }));
     article.append(media);
   }
 

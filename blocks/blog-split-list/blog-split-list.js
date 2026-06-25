@@ -360,7 +360,7 @@ function createCta(href, label, className) {
   return cta;
 }
 
-function appendImage(parent, item, eagerImage, widths) {
+function appendImage(parent, item, imageOptions) {
   if (!item.image) return;
 
   const imageLink = document.createElement('a');
@@ -370,8 +370,7 @@ function appendImage(parent, item, eagerImage, widths) {
   imageLink.append(createResponsiveImage(
     item.image,
     item.imageAlt || item.title,
-    eagerImage,
-    widths,
+    imageOptions,
   ));
 
   parent.append(imageLink);
@@ -436,7 +435,10 @@ function createFeatured(item, ctaLabel, badgeLabel) {
   if (item.image) {
     const media = document.createElement('div');
     media.className = 'blog-split-media';
-    appendImage(media, item, true, [{ media: '(min-width: 900px)', width: '1200' }, { width: '750' }]);
+    appendImage(media, item, {
+      eager: true,
+      preset: 'blog-split-list-featured',
+    });
 
     if (badgeLabel) {
       const badge = document.createElement('span');
@@ -483,7 +485,9 @@ function createListItem(item, ctaLabel) {
   if (item.image) {
     const media = document.createElement('div');
     media.className = 'blog-split-item-media';
-    appendImage(media, item, false, [{ width: '600' }]);
+    appendImage(media, item, {
+      preset: 'blog-split-list-item',
+    });
     article.append(media);
   }
 

@@ -7,7 +7,7 @@ import { getArticles } from '../../scripts/inspiration-data.js';
  */
 function optimizeImage(container) {
   container.querySelectorAll('picture > img').forEach((img) => {
-    const optimizedImage = createResponsiveImage(img.src, img.alt, false, [{ width: '750' }]);
+    const optimizedImage = createResponsiveImage(img.src, img.alt, { preset: 'cards-highlight' });
     moveInstrumentation(img, optimizedImage.querySelector?.('img') || optimizedImage);
     img.closest('picture').replaceWith(optimizedImage);
   });
@@ -90,8 +90,7 @@ function renderHighlightFromMock(block, articles) {
       createResponsiveImage(
         article.image,
         article.title,
-        false,
-        [{ width: '750' }],
+        { preset: 'cards-highlight' },
       ),
     );
 

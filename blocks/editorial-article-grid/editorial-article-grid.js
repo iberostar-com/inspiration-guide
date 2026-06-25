@@ -51,7 +51,7 @@ function makeCard(item) {
   if (item.image) {
     const media = document.createElement('div');
     media.className = 'editorial-article-grid-media';
-    media.append(createResponsiveImage(item.image, item.title, false, [{ width: '750' }]));
+    media.append(createResponsiveImage(item.image, item.title, { preset: 'article-card' }));
     li.append(media);
   }
 

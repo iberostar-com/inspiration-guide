@@ -21,7 +21,7 @@ export default function decorate(block) {
   if (image) {
     const media = document.createElement('div');
     media.className = 'editorial-split-media';
-    media.append(createResponsiveImage(image, title, false, [{ width: '750' }]));
+    media.append(createResponsiveImage(image, title, { preset: 'editorial-split' }));
     wrapper.append(media);
   }
 

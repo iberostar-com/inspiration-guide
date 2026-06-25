@@ -87,8 +87,10 @@ export function createArticleCard(
     const picture = createResponsiveImage(
       data.image,
       data.imageAlt || data.title,
-      eagerImage,
-      [{ media: '(min-width: 900px)', width: featured ? '1200' : '750' }, { width: '600' }],
+      {
+        eager: eagerImage,
+        preset: featured ? 'article-card-featured' : 'article-card',
+      },
     );
 
     if (data.url) {

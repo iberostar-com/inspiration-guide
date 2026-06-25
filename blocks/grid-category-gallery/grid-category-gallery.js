@@ -21,8 +21,7 @@ function createCard(row) {
     media.append(createResponsiveImage(
       picture.querySelector('img')?.src,
       title,
-      false,
-      [{ width: '600' }],
+      { preset: 'category-card' },
     ));
     card.append(media);
   }

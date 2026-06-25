@@ -76,7 +76,7 @@ function createHotelCard(hotel) {
   if (hotel.image) {
     const media = document.createElement('div');
     media.className = 'recommended-hotel-media';
-    media.append(createResponsiveImage(hotel.image, hotel.name, false, [{ width: '750' }]));
+    media.append(createResponsiveImage(hotel.image, hotel.name, { preset: 'hotel-card' }));
     article.append(media);
   }
 

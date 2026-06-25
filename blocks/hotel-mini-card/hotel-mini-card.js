@@ -21,7 +21,7 @@ export default function decorate(block) {
     if (image) {
       const media = document.createElement('div');
       media.className = 'hotel-mini-card-media';
-      media.append(createResponsiveImage(image, hotelName, false, [{ width: '750' }]));
+      media.append(createResponsiveImage(image, hotelName, { preset: 'hotel-card' }));
       article.append(media);
     }
 
