@@ -17,7 +17,7 @@ export function normalizeFragmentPath(path) {
 
 function getInspirationGuideRoot(pathname = window.location.pathname) {
   const normalizedPath = pathname.replace(/\/$/, '');
-  const segmentIndex = normalizedPath.indexOf(INSPIRATION_GUIDE_SEGMENT);
+  const segmentIndex = normalizedPath.lastIndexOf(INSPIRATION_GUIDE_SEGMENT);
 
   if (segmentIndex < 0) {
     return '';
