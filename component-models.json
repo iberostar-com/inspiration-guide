@@ -78,12 +78,6 @@
       {
         "component": "text",
         "valueType": "string",
-        "name": "inspiration-aem-data-url",
-        "label": "Inspiration Data URL"
-      },
-      {
-        "component": "text",
-        "valueType": "string",
         "name": "article-internal-name",
         "label": "Article Internal Name"
       },
@@ -120,8 +114,7 @@
         "component": "aem-tag",
         "valueType": "string",
         "name": "article-tags",
-        "label": "Article Tags",
-        "multi": true
+        "label": "Article Tags"
       },
       {
         "component": "date-time",
