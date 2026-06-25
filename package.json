@@ -4,7 +4,7 @@
   "version": "1.3.0",
   "description": "Starter project for Adobe Helix",
   "scripts": {
-    "dev": "npx @adobe/aem-cli up --url https://main--inspiration-guide--iberostar-com.aem.page",
+    "dev": "npx @adobe/aem-cli up --url https://main--inspiration-guide--iberostar-com.aem.page/es-es/inspiration-guide/home.html",
     "lint:js": "eslint . --ext .json,.js,.mjs",
     "lint:css": "stylelint \"blocks/**/*.css\" \"styles/*.css\"",
     "lint": "npm run lint:js && npm run lint:css",
