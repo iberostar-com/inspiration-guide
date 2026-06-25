@@ -1,24 +1,10 @@
-import { getMetadata } from '../../scripts/aem.js';
+import { resolveFragmentPath } from '../../scripts/iberostar/fragments.js';
 import { loadFragment } from '../fragment/fragment.js';
 
 const DEFAULT_FOOTER_PATH = '/footer';
 
-function normalizeFragmentPath(path) {
-  if (!path) return '';
-
-  const { pathname } = new URL(path, window.location);
-
-  if (!pathname.startsWith('/content/')) {
-    return pathname;
-  }
-
-  const [, , , ...sitePath] = pathname.split('/');
-  return sitePath.length ? `/${sitePath.join('/')}` : '/';
-}
-
 function resolveFooterPath() {
-  const footerMeta = getMetadata('footer');
-  return footerMeta ? normalizeFragmentPath(footerMeta) : DEFAULT_FOOTER_PATH;
+  return resolveFragmentPath('footer', DEFAULT_FOOTER_PATH);
 }
 
 function classifySections(sections) {

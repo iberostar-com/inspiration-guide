@@ -1,4 +1,4 @@
-import { getMetadata } from '../../scripts/aem.js';
+import { resolveFragmentPath } from '../../scripts/iberostar/fragments.js';
 import { loadFragment } from '../fragment/fragment.js';
 
 const DEFAULT_NAV_PATH = '/nav';
@@ -13,24 +13,6 @@ function normalizePath(path) {
   } catch (error) {
     return '';
   }
-}
-
-function normalizeFragmentPath(path) {
-  if (!path) return '';
-
-  const { pathname } = new URL(path, window.location);
-
-  if (!pathname.startsWith('/content/')) {
-    return pathname;
-  }
-
-  const [, , , ...sitePath] = pathname.split('/');
-  return sitePath.length ? `/${sitePath.join('/')}` : '/';
-}
-
-function resolveFragmentPath(metaName, fallbackPath) {
-  const metaValue = getMetadata(metaName);
-  return metaValue ? normalizeFragmentPath(metaValue) : fallbackPath;
 }
 
 function setSectionExpanded(section, expanded) {
