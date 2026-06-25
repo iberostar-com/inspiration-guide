@@ -15,4 +15,4 @@ helix-importer-ui
 .codex/*
 .vscode/*
 .github/*
-drafts/*
+.vscode/settings.json

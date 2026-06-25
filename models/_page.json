@@ -108,9 +108,11 @@
           "label": "Article Author"
         },
         {
-          "component": "aem-content",
+          "component": "reference",
+          "valueType": "string",
           "name": "article-author-image",
-          "label": "Article Author Image"
+          "label": "Article Author Image",
+          "multi": false
         },
         {
           "component": "aem-tag",
