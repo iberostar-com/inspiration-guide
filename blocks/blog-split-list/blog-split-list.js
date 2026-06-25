@@ -1,4 +1,6 @@
 import { createResponsiveImage } from '../../scripts/iberostar/media.js';
+import formatLocalizedDate, { hasValidDate } from '../../scripts/iberostar/date-format.js';
+import { getPlaceholder } from '../../scripts/iberostar/placeholders.js';
 import { getArticles } from '../../scripts/inspiration-data.js';
 
 const RESERVED_PROPS = new Set([
@@ -200,19 +202,20 @@ function toPublicContentPath(value) {
   return path;
 }
 
-function hasValidDate(value) {
-  return !Number.isNaN(Date.parse(value));
+function getCurrentLocale() {
+  const segments = window.location.pathname.split('/').filter(Boolean);
+  const locale = segments.find((segment) => /^[a-z]{2}-[a-z]{2}$/i.test(segment));
+  return locale || document.documentElement.lang || 'en';
 }
 
 function formatDate(value) {
   if (!value) return '';
   if (!hasValidDate(value)) return value;
 
-  return new Intl.DateTimeFormat('es-ES', {
-    day: 'numeric',
-    month: 'long',
-    year: 'numeric',
-  }).format(new Date(value));
+  return formatLocalizedDate(value, {
+    locale: getCurrentLocale(),
+    dateStyle: 'long',
+  });
 }
 
 function getCurrentPathSegment(kind) {
@@ -465,7 +468,7 @@ function appendAuthor(parent, item) {
   const author = document.createElement('div');
   author.className = 'blog-split-author';
 
-  if (item.authorImage) {
+  if (item.authorImage && item.authorImage !== 'undefined') {
     const avatar = document.createElement('img');
     avatar.src = item.authorImage;
     avatar.alt = item.authorName || '';
@@ -580,8 +583,10 @@ export default async function decorate(block) {
   const maxItems = getConfiguredMaxItems(block);
   const featuredTitle = getTextValue(block, 'featuredLabel', 'En portada');
   const latestTitle = getTextValue(block, 'latestLabel', 'Últimas publicaciones');
-  const featuredBadge = getTextValue(block, 'featuredBadge', 'Artículo destacado');
-  const ctaLabel = getTextValue(block, 'ctaLabel', 'Leer artículo');
+  const featuredBadge = getTextValue(block, 'featuredBadge', '')
+    || await getPlaceholder('featuredArticle', 'Artículo destacado');
+  const ctaLabel = getTextValue(block, 'ctaLabel', '')
+    || await getPlaceholder('readArticle', 'Leer artículo');
   const items = mode === 'manual'
     ? splitManualItems(fromManualRows(block), maxItems)
     : await getAutoItems(block, mode, maxItems);

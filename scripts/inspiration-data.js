@@ -155,7 +155,8 @@ function normalizeReadTime(value) {
 }
 
 function firstDefined(...values) {
-  return values.find((value) => value !== undefined && value !== null && `${value}`.trim() !== '');
+  const value = values.find((item) => item !== undefined && item !== null && `${item}`.trim() !== '');
+  return value === undefined ? '' : value;
 }
 
 function normalizeArticle(raw, index) {
