@@ -83,6 +83,14 @@ function normalizeTag(tag) {
   return String(tag || '').trim().toLowerCase();
 }
 
+function normalizeSlug(value) {
+  return normalizeTag(value)
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/^-|-$/g, '');
+}
+
 function getMetaContent(name) {
   return document.querySelector(`meta[name="${name}"]`)?.content?.trim() || '';
 }
@@ -109,6 +117,20 @@ function normalizeTags(value) {
   return [];
 }
 
+function isVisible(value) {
+  const normalized = `${value || ''}`.trim().toLowerCase();
+  return !['false', '0', 'no', 'hidden'].includes(normalized);
+}
+
+function normalizeReadTime(value) {
+  const text = `${value || ''}`.trim();
+  if (!text) return '';
+  if (/\bmin\b/i.test(text)) return text;
+
+  const minutes = Number.parseInt(text, 10);
+  return minutes > 0 ? `${minutes} min` : text;
+}
+
 function firstDefined(...values) {
   return values.find((value) => value !== undefined && value !== null && `${value}`.trim() !== '');
 }
@@ -117,6 +139,7 @@ function normalizeArticle(raw, index) {
   const id = firstDefined(raw.id, raw.articleId, raw.slug, raw.path, `aem-article-${index + 1}`);
   const title = firstDefined(raw.title, raw.name, raw.headline, raw.articleTitle, 'Untitled');
   const summary = firstDefined(raw.summary, raw.description, raw.excerpt, raw.teaser, '');
+  const path = firstDefined(raw.path, raw.url, raw.href, raw.articleUrl, '');
   const image = firstDefined(
     raw.image,
     raw.imagePath,
@@ -132,23 +155,41 @@ function normalizeArticle(raw, index) {
     '',
   );
   const category = firstDefined(raw.category, raw.categorySlug, raw.mainCategory, '');
+  const categorySlug = firstDefined(raw.categorySlug, raw.categoryId, normalizeSlug(category));
+  const categoryUrl = firstDefined(raw.categoryUrl, raw.categoryPath, categorySlug ? `/inspiration-guide/category/${categorySlug}` : '');
   const subcategory = firstDefined(raw.subcategory, raw.subCategory, raw.subcategorySlug, '');
-  const publishDate = firstDefined(raw.publishDate, raw.publishedAt, raw.date, '');
+  const publishDate = firstDefined(raw.publishDate, raw.publicationDate, raw.publishedAt, raw.date, '');
+  const updateDate = firstDefined(raw.updateDate, raw.updatedAt, '');
   const readingTimeRaw = firstDefined(raw.readingTime, raw.readTime, raw.minutesToRead, 0);
   const readingTime = Number.parseInt(readingTimeRaw, 10) || 0;
+  const readTime = normalizeReadTime(firstDefined(raw.readTime, raw.readingTime, raw.minutesToRead, ''));
   const tags = normalizeTags(firstDefined(raw.tags, raw.tagList, raw.keywords, []));
+  const url = firstDefined(raw.url, raw.href, raw.path, path ? String(path) : `/inspiration-guide/article/${id}`);
 
   return {
     id: String(id),
     title: String(title),
     summary: String(summary),
+    description: String(summary),
     image: String(image),
+    imageAlt: String(firstDefined(raw.imageAlt, raw.alt, title, '')),
     author: String(author),
+    authorName: String(author),
+    authorImage: String(firstDefined(raw.authorImage, raw.author?.image, '')),
     category: String(category),
+    categorySlug: String(categorySlug),
+    categoryUrl: String(categoryUrl),
     subcategory: String(subcategory),
     publishDate: String(publishDate),
+    publicationDate: String(publishDate),
+    updateDate: String(updateDate),
     readingTime,
+    readTime,
     tags,
+    path: String(path || url),
+    href: String(url),
+    url: String(url),
+    visible: isVisible(raw.visible),
   };
 }
 
@@ -174,8 +215,14 @@ function resolveAemDataUrl() {
     return fromMeta;
   }
 
-  // Project default: configurable endpoint for article listing in AEM/EDS.
-  return '/inspiration-guide-data.json';
+  const segments = window.location.pathname.split('/').filter(Boolean);
+  const guideIndex = segments.indexOf('inspiration-guide');
+
+  if (guideIndex > 0) {
+    return `/${segments[guideIndex - 1]}/inspiration-guide/articles-index.json`;
+  }
+
+  return '/inspiration-guide/articles-index.json';
 }
 
 async function fetchJson(url) {
@@ -221,7 +268,7 @@ async function getAemArticles() {
 
     return collection
       .map((article, index) => normalizeArticle(article, index))
-      .filter((article) => article.title && article.id);
+      .filter((article) => article.title && article.id && article.visible);
   } catch (error) {
     // eslint-disable-next-line no-console
     console.warn('[inspiration-data] Failed to load AEM data:', error);
@@ -237,24 +284,22 @@ export function getDataMode() {
   }
 
   const metaMode = document.querySelector('meta[name="inspiration-data-mode"]')?.content;
-  if (metaMode === 'mock' || metaMode === 'aem') {
+  if (metaMode === 'mock' && isLocalhost()) {
     return metaMode;
   }
 
-  return 'mock';
+  if (metaMode === 'aem') {
+    return metaMode;
+  }
+
+  return 'aem';
 }
 
 export async function getArticles() {
   const mode = getDataMode();
 
   if (mode === 'aem') {
-    const aemArticles = await getAemArticles();
-    if (aemArticles.length > 0) {
-      return aemArticles;
-    }
-    if (!isLocalhost()) {
-      return [];
-    }
+    return getAemArticles();
   }
 
   return MOCK_ARTICLES;

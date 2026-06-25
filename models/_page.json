@@ -68,12 +68,8 @@
           "component": "select",
           "name": "inspiration-data-mode",
           "label": "Inspiration Data Mode",
-          "value": "mock",
+          "value": "aem",
           "options": [
-            {
-              "name": "Mock",
-              "value": "mock"
-            },
             {
               "name": "AEM",
               "value": "aem"
@@ -85,6 +81,86 @@
           "valueType": "string",
           "name": "inspiration-aem-data-url",
           "label": "Inspiration Data URL"
+        },
+        {
+          "component": "text",
+          "valueType": "string",
+          "name": "article-internal-name",
+          "label": "Article Internal Name"
+        },
+        {
+          "component": "text",
+          "valueType": "string",
+          "name": "article-image-alt",
+          "label": "Article Image Alt"
+        },
+        {
+          "component": "text",
+          "valueType": "string",
+          "name": "article-author-name",
+          "label": "Article Author Name"
+        },
+        {
+          "component": "aem-content",
+          "name": "article-author-image",
+          "label": "Article Author Image"
+        },
+        {
+          "component": "text",
+          "valueType": "string",
+          "name": "article-category",
+          "label": "Article Category"
+        },
+        {
+          "component": "text",
+          "valueType": "string",
+          "name": "article-category-slug",
+          "label": "Article Category Slug"
+        },
+        {
+          "component": "aem-content",
+          "name": "article-category-url",
+          "label": "Article Category URL"
+        },
+        {
+          "component": "text",
+          "valueType": "string",
+          "name": "article-tags",
+          "label": "Article Tags"
+        },
+        {
+          "component": "text",
+          "valueType": "string",
+          "name": "article-publication-date",
+          "label": "Article Publication Date"
+        },
+        {
+          "component": "text",
+          "valueType": "string",
+          "name": "article-update-date",
+          "label": "Article Update Date"
+        },
+        {
+          "component": "text",
+          "valueType": "string",
+          "name": "article-read-time",
+          "label": "Article Read Time"
+        },
+        {
+          "component": "select",
+          "name": "article-visible",
+          "label": "Article Visible",
+          "value": "true",
+          "options": [
+            {
+              "name": "Visible",
+              "value": "true"
+            },
+            {
+              "name": "Hidden",
+              "value": "false"
+            }
+          ]
         }
       ]
     }

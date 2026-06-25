@@ -25,6 +25,12 @@
     ]
   },
   {
+    "id": "blog-split-list",
+    "components": [
+      "blog-split-list-article"
+    ]
+  },
+  {
     "id": "cards",
     "components": [
       "card"

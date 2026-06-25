@@ -9,7 +9,23 @@
             "resourceType": "core/franklin/components/block/v1/block",
             "template": {
               "name": "Blog Split List",
-              "model": "blog-split-list"
+              "model": "blog-split-list",
+              "filter": "blog-split-list"
+            }
+          }
+        }
+      }
+    },
+    {
+      "title": "Blog Split List Article",
+      "id": "blog-split-list-article",
+      "plugins": {
+        "xwalk": {
+          "page": {
+            "resourceType": "core/franklin/components/block/v1/block/item",
+            "template": {
+              "name": "Article",
+              "model": "blog-split-list-article"
             }
           }
         }
@@ -30,26 +46,116 @@
           "component": "text",
           "name": "latestLabel",
           "label": "Latest Column Title",
-          "value": "Ultimas publicaciones"
+          "value": "Últimas publicaciones"
         },
+        {
+          "component": "aem-content",
+          "name": "featuredArticlePath",
+          "label": "Featured Article Path"
+        },
+        {
+          "component": "text",
+          "valueType": "string",
+          "name": "filterTags",
+          "label": "Filter Tags"
+        }
+      ]
+    },
+    {
+      "id": "blog-split-list-article",
+      "fields": [
         {
           "component": "select",
-          "name": "mode",
-          "label": "Data Mode",
+          "name": "article_placement",
+          "label": "Placement",
+          "value": "latest",
           "options": [
-            { "name": "Manual", "value": "manual" },
-            { "name": "Auto by Category", "value": "auto-category" }
-          ],
-          "value": "manual"
+            { "name": "Featured", "value": "featured" },
+            { "name": "Latest", "value": "latest" }
+          ]
         },
         {
-          "component": "number",
-          "name": "maxItems",
-          "label": "Maximum Items",
-          "value": 5
+          "component": "text",
+          "valueType": "string",
+          "name": "article_title",
+          "label": "Title",
+          "value": ""
+        },
+        {
+          "component": "text",
+          "valueType": "string",
+          "name": "article_description",
+          "label": "Description",
+          "value": ""
+        },
+        {
+          "component": "reference",
+          "valueType": "string",
+          "name": "article_image",
+          "label": "Image",
+          "multi": false
+        },
+        {
+          "component": "text",
+          "valueType": "string",
+          "name": "article_imageAlt",
+          "label": "Image Alt",
+          "value": ""
+        },
+        {
+          "component": "text",
+          "valueType": "string",
+          "name": "article_category",
+          "label": "Category",
+          "value": ""
+        },
+        {
+          "component": "aem-content",
+          "name": "article_categoryUrl",
+          "label": "Category URL"
+        },
+        {
+          "component": "text",
+          "valueType": "string",
+          "name": "article_publicationDate",
+          "label": "Publication Date",
+          "value": ""
+        },
+        {
+          "component": "text",
+          "valueType": "string",
+          "name": "article_readTime",
+          "label": "Read Time",
+          "value": ""
+        },
+        {
+          "component": "text",
+          "valueType": "string",
+          "name": "article_authorName",
+          "label": "Author Name",
+          "value": ""
+        },
+        {
+          "component": "reference",
+          "valueType": "string",
+          "name": "article_authorImage",
+          "label": "Author Image",
+          "multi": false
+        },
+        {
+          "component": "aem-content",
+          "name": "article_url",
+          "label": "Article URL"
         }
       ]
     }
   ],
-  "filters": []
+  "filters": [
+    {
+      "id": "blog-split-list",
+      "components": [
+        "blog-split-list-article"
+      ]
+    }
+  ]
 }

@@ -14,3 +14,59 @@ indices:
       robots:
         select: head > meta[name="robots"]
         value: attribute(el, "content")
+  inspirationArticles:
+    include:
+      - '/es-es/inspiration-guide/articles/**'
+      - '/es-es/inspiration-guide/article/**'
+    exclude:
+      - '/**.json'
+    target: /es-es/inspiration-guide/articles-index.json
+    properties:
+      path:
+        select: none
+        value: path
+      title:
+        select: head > meta[property="og:title"]
+        value: attribute(el, "content")
+      description:
+        select: head > meta[name="description"]
+        value: attribute(el, "content")
+      image:
+        select: head > meta[property="og:image"]
+        value: attribute(el, "content")
+      imageAlt:
+        select: head > meta[name="article-image-alt"]
+        value: attribute(el, "content")
+      authorName:
+        select: head > meta[name="article-author-name"]
+        value: attribute(el, "content")
+      authorImage:
+        select: head > meta[name="article-author-image"]
+        value: attribute(el, "content")
+      category:
+        select: head > meta[name="article-category"]
+        value: attribute(el, "content")
+      categorySlug:
+        select: head > meta[name="article-category-slug"]
+        value: attribute(el, "content")
+      categoryUrl:
+        select: head > meta[name="article-category-url"]
+        value: attribute(el, "content")
+      tags:
+        select: head > meta[name="article-tags"]
+        value: attribute(el, "content")
+      publicationDate:
+        select: head > meta[name="article-publication-date"]
+        value: attribute(el, "content")
+      publicationTimestamp:
+        select: head > meta[name="article-publication-date"]
+        value: parseTimestamp(attribute(el, "content"), "YYYY-MM-DD")
+      updateDate:
+        select: head > meta[name="article-update-date"]
+        value: attribute(el, "content")
+      readTime:
+        select: head > meta[name="article-read-time"]
+        value: attribute(el, "content")
+      visible:
+        select: head > meta[name="article-visible"]
+        value: attribute(el, "content")
