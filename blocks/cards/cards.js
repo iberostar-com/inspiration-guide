@@ -1,4 +1,4 @@
-import { createOptimizedPicture } from '../../scripts/aem.js';
+import { createResponsiveImage } from '../../scripts/iberostar/media.js';
 import { moveInstrumentation } from '../../scripts/scripts.js';
 import { getArticles } from '../../scripts/inspiration-data.js';
 
@@ -7,9 +7,9 @@ import { getArticles } from '../../scripts/inspiration-data.js';
  */
 function optimizeImage(container) {
   container.querySelectorAll('picture > img').forEach((img) => {
-    const optimizedPic = createOptimizedPicture(img.src, img.alt, false, [{ width: '750' }]);
-    moveInstrumentation(img, optimizedPic.querySelector('img'));
-    img.closest('picture').replaceWith(optimizedPic);
+    const optimizedImage = createResponsiveImage(img.src, img.alt, false, [{ width: '750' }]);
+    moveInstrumentation(img, optimizedImage.querySelector?.('img') || optimizedImage);
+    img.closest('picture').replaceWith(optimizedImage);
   });
 }
 
@@ -87,7 +87,7 @@ function renderHighlightFromMock(block, articles) {
     const imageDiv = document.createElement('div');
     imageDiv.className = 'cards-card-image';
     imageDiv.append(
-      createOptimizedPicture(
+      createResponsiveImage(
         article.image,
         article.title,
         false,

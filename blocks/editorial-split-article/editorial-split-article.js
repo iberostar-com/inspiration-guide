@@ -1,4 +1,4 @@
-import { createOptimizedPicture } from '../../scripts/aem.js';
+import { createResponsiveImage } from '../../scripts/iberostar/media.js';
 
 function findImage(block) {
   return block.querySelector('img')?.src || '';
@@ -21,7 +21,7 @@ export default function decorate(block) {
   if (image) {
     const media = document.createElement('div');
     media.className = 'editorial-split-media';
-    media.append(createOptimizedPicture(image, title, false, [{ width: '750' }]));
+    media.append(createResponsiveImage(image, title, false, [{ width: '750' }]));
     wrapper.append(media);
   }
 

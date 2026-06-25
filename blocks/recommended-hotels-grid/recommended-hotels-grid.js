@@ -1,4 +1,4 @@
-import { createOptimizedPicture } from '../../scripts/aem.js';
+import { createResponsiveImage } from '../../scripts/iberostar/media.js';
 
 const MOCK_HOTELS = [
   {
@@ -76,7 +76,7 @@ function createHotelCard(hotel) {
   if (hotel.image) {
     const media = document.createElement('div');
     media.className = 'recommended-hotel-media';
-    media.append(createOptimizedPicture(hotel.image, hotel.name, false, [{ width: '750' }]));
+    media.append(createResponsiveImage(hotel.image, hotel.name, false, [{ width: '750' }]));
     article.append(media);
   }
 

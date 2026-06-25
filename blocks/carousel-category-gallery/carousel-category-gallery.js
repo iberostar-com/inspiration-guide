@@ -1,4 +1,5 @@
-import { createOptimizedPicture, decorateIcons } from '../../scripts/aem.js';
+import { decorateIcons } from '../../scripts/aem.js';
+import { createResponsiveImage } from '../../scripts/iberostar/media.js';
 import { moveInstrumentation } from '../../scripts/scripts.js';
 
 function createCard(row) {
@@ -25,7 +26,7 @@ function createCard(row) {
   if (picture) {
     const media = document.createElement('div');
     media.className = 'carousel-category-gallery-media';
-    const optimizedPic = createOptimizedPicture(
+    const optimizedPic = createResponsiveImage(
       picture.querySelector('img')?.src,
       title,
       false,

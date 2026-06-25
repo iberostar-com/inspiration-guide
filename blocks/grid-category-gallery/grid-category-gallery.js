@@ -1,4 +1,4 @@
-import { createOptimizedPicture } from '../../scripts/aem.js';
+import { createResponsiveImage } from '../../scripts/iberostar/media.js';
 import { moveInstrumentation } from '../../scripts/scripts.js';
 
 function createCard(row) {
@@ -18,7 +18,12 @@ function createCard(row) {
   if (picture) {
     const media = document.createElement('div');
     media.className = 'grid-category-gallery-media';
-    media.append(createOptimizedPicture(picture.querySelector('img')?.src, title, false, [{ width: '600' }]));
+    media.append(createResponsiveImage(
+      picture.querySelector('img')?.src,
+      title,
+      false,
+      [{ width: '600' }],
+    ));
     card.append(media);
   }
 

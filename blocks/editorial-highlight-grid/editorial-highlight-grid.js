@@ -1,4 +1,4 @@
-import { createOptimizedPicture } from '../../scripts/aem.js';
+import { createResponsiveImage } from '../../scripts/iberostar/media.js';
 import { getArticles } from '../../scripts/inspiration-data.js';
 
 function getContextTag() {
@@ -64,7 +64,7 @@ function createCard(item) {
   if (item.image) {
     const media = document.createElement('div');
     media.className = 'editorial-highlight-media';
-    media.append(createOptimizedPicture(item.image, item.title, false, [{ width: '750' }]));
+    media.append(createResponsiveImage(item.image, item.title, false, [{ width: '750' }]));
     article.append(media);
   }
 

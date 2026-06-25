@@ -1,4 +1,4 @@
-import { createOptimizedPicture } from '../../scripts/aem.js';
+import { createResponsiveImage } from '../../scripts/iberostar/media.js';
 import { getArticles } from '../../scripts/inspiration-data.js';
 
 function getContext(kind) {
@@ -51,7 +51,7 @@ function makeCard(item) {
   if (item.image) {
     const media = document.createElement('div');
     media.className = 'editorial-article-grid-media';
-    media.append(createOptimizedPicture(item.image, item.title, false, [{ width: '750' }]));
+    media.append(createResponsiveImage(item.image, item.title, false, [{ width: '750' }]));
     li.append(media);
   }
 

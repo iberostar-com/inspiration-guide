@@ -1,4 +1,4 @@
-import { createOptimizedPicture } from '../../scripts/aem.js';
+import { createResponsiveImage } from '../../scripts/iberostar/media.js';
 
 export default function decorate(block) {
   const list = document.createElement('ul');
@@ -21,7 +21,7 @@ export default function decorate(block) {
     if (image) {
       const media = document.createElement('div');
       media.className = 'hotel-mini-card-media';
-      media.append(createOptimizedPicture(image, hotelName, false, [{ width: '750' }]));
+      media.append(createResponsiveImage(image, hotelName, false, [{ width: '750' }]));
       article.append(media);
     }
 

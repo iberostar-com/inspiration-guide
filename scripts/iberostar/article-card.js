@@ -1,5 +1,5 @@
-import { createOptimizedPicture } from '../aem.js';
 import { formatDate, hasValidDate } from './date-format.js';
+import { createResponsiveImage } from './media.js';
 import { buildUrl } from './url-builder.js';
 
 const ALLOWED_HEADING_TAGS = new Set(['h2', 'h3', 'h4', 'h5', 'h6']);
@@ -84,7 +84,7 @@ export function createArticleCard(
     const media = document.createElement('div');
     media.className = 'article-card-media';
 
-    const picture = createOptimizedPicture(
+    const picture = createResponsiveImage(
       data.image,
       data.imageAlt || data.title,
       eagerImage,
