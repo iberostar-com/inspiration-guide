@@ -140,14 +140,30 @@ function normalizeList(value) {
     .filter(Boolean);
 }
 
+function getListValues(el) {
+  const items = [...(el?.querySelectorAll?.('li') || [])]
+    .map((item) => item.textContent?.trim())
+    .filter(Boolean);
+
+  return items.length ? items : normalizeList(el?.textContent || '');
+}
+
 function getConfiguredTags(block) {
   const explicitTags = ['filter_tag1', 'filter_tag2', 'filter_tag3', 'filter_tag4', 'filter_tag5']
     .map((propName) => getTextValue(block, propName, ''))
     .filter(Boolean);
+  const filterTagsField = getFieldByProp(block, 'filterTags');
+  const positionalTagsField = !filterTagsField
+    && !hasAuthoredProps(block)
+    && hasPositionalConfig(block)
+    ? getSourceRows(block)[3]
+    : null;
 
   return [
     ...explicitTags,
-    ...normalizeList(getTextValue(block, 'filterTags', '')),
+    ...getListValues(filterTagsField),
+    ...getListValues(positionalTagsField),
+    ...(!filterTagsField && !positionalTagsField ? normalizeList(getTextValue(block, 'filterTags', '')) : []),
   ];
 }
 
@@ -169,6 +185,19 @@ function samePath(a, b) {
   const left = normalizeUrl(a).replace(/\/$/, '');
   const right = normalizeUrl(b).replace(/\/$/, '');
   return !!left && !!right && left === right;
+}
+
+function toPublicContentPath(value) {
+  const path = normalizeUrl(value)
+    .replace(/^https?:\/\/[^/]+/, '')
+    .replace(/\.html$/, '');
+  const guideIndex = path.indexOf('/inspiration-guide/');
+
+  if (guideIndex > -1 && path.startsWith('/content/')) {
+    return path.slice(guideIndex);
+  }
+
+  return path;
 }
 
 function hasValidDate(value) {
@@ -337,18 +366,27 @@ function sortArticles(items) {
 
 async function getAutoItems(block, mode, maxItems) {
   const articles = (await getArticles()).map(normalizeArticle);
-  const featuredPath = getHrefFromElement(getFieldByProp(block, 'featuredArticlePath'));
+  const featuredPath = toPublicContentPath(
+    getHrefFromElement(getFieldByProp(block, 'featuredArticlePath'))
+      || getTextValue(block, 'featuredArticlePath', ''),
+  );
+  const sortedArticles = sortArticles(articles);
   const filtered = sortArticles(filterArticles(articles, block, mode));
-  const featured = filtered.find((article) => (
-    samePath(article.href, featuredPath)
-    || samePath(article.path, featuredPath)
+  const featured = sortedArticles.find((article) => (
+    samePath(toPublicContentPath(article.href), featuredPath)
+    || samePath(toPublicContentPath(article.path), featuredPath)
     || article.id === featuredPath
-  )) || filtered[0];
+  )) || filtered[0] || sortedArticles[0];
 
   if (!featured) return [];
 
   const latest = filtered
-    .filter((article) => article !== featured)
+    .filter((article) => (
+      article !== featured
+      && !samePath(toPublicContentPath(article.href), toPublicContentPath(featured.href))
+      && !samePath(toPublicContentPath(article.path), toPublicContentPath(featured.path))
+      && article.id !== featured.id
+    ))
     .slice(0, Math.max(maxItems - 1, 0));
 
   return [featured, ...latest];

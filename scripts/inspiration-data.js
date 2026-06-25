@@ -247,6 +247,24 @@ function pickArticlesCollection(payload) {
   return candidates.find((list) => list.length > 0) || [];
 }
 
+function getIndexRows(payload) {
+  return toArray(payload?.data);
+}
+
+function getMetaFromDocument(doc, name) {
+  return doc.querySelector(`meta[name="${name}"]`)?.content?.trim()
+    || doc.querySelector(`meta[property="${name}"]`)?.content?.trim()
+    || '';
+}
+
+function normalizePagePath(path) {
+  return `/${String(path || '').replace(/^\/+|\/+$/g, '')}`;
+}
+
+function isArticlePath(path) {
+  return /\/inspiration-guide\/articles?\//.test(normalizePagePath(path));
+}
+
 function resolveAemDataUrl() {
   const params = new URLSearchParams(window.location.search);
   const fromQuery = params.get('aem-data-url');
@@ -269,6 +287,10 @@ function resolveAemDataUrl() {
   return '/inspiration-guide/articles-index.json';
 }
 
+function resolvePageIndexUrl() {
+  return '/query-index.json';
+}
+
 async function fetchJson(url) {
   if (AEM_REQUEST_CACHE.has(url)) {
     return AEM_REQUEST_CACHE.get(url);
@@ -289,6 +311,50 @@ async function fetchJson(url) {
   const payload = await response.json();
   AEM_REQUEST_CACHE.set(url, payload);
   return payload;
+}
+
+async function fetchArticleMetadata(path) {
+  const articlePath = normalizePagePath(path);
+  const response = await fetch(articlePath, {
+    method: 'GET',
+    headers: {
+      Accept: 'text/html',
+    },
+    credentials: 'same-origin',
+  });
+
+  if (!response.ok) {
+    throw new Error(`Article metadata fetch failed (${response.status}) for ${articlePath}`);
+  }
+
+  const html = await response.text();
+  const doc = new DOMParser().parseFromString(html, 'text/html');
+
+  return {
+    path: articlePath,
+    url: articlePath,
+    title: getMetaFromDocument(doc, 'og:title') || doc.querySelector('title')?.textContent?.trim(),
+    description: getMetaFromDocument(doc, 'description') || getMetaFromDocument(doc, 'og:description'),
+    image: getMetaFromDocument(doc, 'article-image'),
+    ogImage: getMetaFromDocument(doc, 'og:image'),
+    imageAlt: getMetaFromDocument(doc, 'article-image-alt'),
+    authorName: getMetaFromDocument(doc, 'article-author-name'),
+    author: getMetaFromDocument(doc, 'article-author'),
+    authorImage: getMetaFromDocument(doc, 'article-author-image'),
+    category: getMetaFromDocument(doc, 'article-category'),
+    tags: getMetaFromDocument(doc, 'article-tags'),
+    publicationDate: getMetaFromDocument(doc, 'article-publication-date'),
+    updateDate: getMetaFromDocument(doc, 'article-update-date'),
+    readTime: getMetaFromDocument(doc, 'article-read-time'),
+    visible: getMetaFromDocument(doc, 'article-visible'),
+  };
+}
+
+async function getArticlesFromPageIndex() {
+  const payload = await fetchJson(resolvePageIndexUrl());
+  const articleRows = getIndexRows(payload).filter((row) => isArticlePath(row.path));
+  const articles = await Promise.all(articleRows.map((row) => fetchArticleMetadata(row.path)));
+  return articles;
 }
 
 function buildTagFrequency(articles) {
@@ -316,6 +382,17 @@ async function getAemArticles() {
   } catch (error) {
     // eslint-disable-next-line no-console
     console.warn('[inspiration-data] Failed to load AEM data:', error);
+  }
+
+  try {
+    const collection = await getArticlesFromPageIndex();
+
+    return collection
+      .map((article, index) => normalizeArticle(article, index))
+      .filter((article) => article.title && article.id && article.visible);
+  } catch (error) {
+    // eslint-disable-next-line no-console
+    console.warn('[inspiration-data] Failed to load fallback article data:', error);
     return [];
   }
 }
