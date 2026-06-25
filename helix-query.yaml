@@ -40,17 +40,14 @@ indices:
       authorName:
         select: head > meta[name="article-author-name"]
         value: attribute(el, "content")
+      author:
+        select: head > meta[name="article-author"]
+        value: attribute(el, "content")
       authorImage:
         select: head > meta[name="article-author-image"]
         value: attribute(el, "content")
       category:
         select: head > meta[name="article-category"]
-        value: attribute(el, "content")
-      categorySlug:
-        select: head > meta[name="article-category-slug"]
-        value: attribute(el, "content")
-      categoryUrl:
-        select: head > meta[name="article-category-url"]
         value: attribute(el, "content")
       tags:
         select: head > meta[name="article-tags"]

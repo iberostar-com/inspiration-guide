@@ -91,6 +91,29 @@ function normalizeSlug(value) {
     .replace(/^-|-$/g, '');
 }
 
+function getCurrentLanguageRoot() {
+  const segments = window.location.pathname.split('/').filter(Boolean);
+  const guideIndex = segments.indexOf('inspiration-guide');
+  return guideIndex > 0 ? `/${segments[guideIndex - 1]}` : '';
+}
+
+function normalizeTagPath(value) {
+  const tag = `${value || ''}`.trim().toLowerCase();
+  const withoutNamespace = tag.includes(':') ? tag.split(':').slice(1).join(':') : tag;
+
+  return withoutNamespace
+    .split('/')
+    .map(normalizeSlug)
+    .filter(Boolean)
+    .join('/');
+}
+
+function tagLabel(value) {
+  const path = normalizeTagPath(value);
+  const parts = path.split('/').filter(Boolean);
+  return parts[parts.length - 1] || `${value || ''}`.trim();
+}
+
 function getMetaContent(name) {
   return document.querySelector(`meta[name="${name}"]`)?.content?.trim() || '';
 }
@@ -147,16 +170,24 @@ function normalizeArticle(raw, index) {
     raw.heroImage,
     '',
   );
+  const authorPath = firstDefined(raw.author, raw.authorPath, raw.articleAuthor, '');
   const author = firstDefined(
     raw.author?.name,
     raw.authorName,
     raw.authorId,
-    raw.author,
+    tagLabel(authorPath),
     '',
   );
-  const category = firstDefined(raw.category, raw.categorySlug, raw.mainCategory, '');
-  const categorySlug = firstDefined(raw.categorySlug, raw.categoryId, normalizeSlug(category));
-  const categoryUrl = firstDefined(raw.categoryUrl, raw.categoryPath, categorySlug ? `/inspiration-guide/category/${categorySlug}` : '');
+  const categoryTag = firstDefined(raw.category, raw.categoryTag, raw.mainCategory, '');
+  const categorySlug = normalizeTagPath(
+    firstDefined(raw.categorySlug, raw.categoryId, categoryTag),
+  );
+  const category = firstDefined(raw.categoryTitle, raw.categoryName, tagLabel(categoryTag));
+  const categoryUrl = firstDefined(
+    raw.categoryUrl,
+    raw.categoryPath,
+    categorySlug ? `${getCurrentLanguageRoot()}/inspiration-guide/category/${categorySlug}` : '',
+  );
   const subcategory = firstDefined(raw.subcategory, raw.subCategory, raw.subcategorySlug, '');
   const publishDate = firstDefined(raw.publishDate, raw.publicationDate, raw.publishedAt, raw.date, '');
   const updateDate = firstDefined(raw.updateDate, raw.updatedAt, '');
@@ -174,6 +205,7 @@ function normalizeArticle(raw, index) {
     image: String(image),
     imageAlt: String(firstDefined(raw.imageAlt, raw.alt, title, '')),
     author: String(author),
+    authorPath: String(authorPath),
     authorName: String(author),
     authorImage: String(firstDefined(raw.authorImage, raw.author?.image, '')),
     category: String(category),

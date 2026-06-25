@@ -101,41 +101,37 @@
       },
       {
         "component": "aem-content",
+        "valueType": "string",
+        "name": "article-author",
+        "label": "Article Author"
+      },
+      {
+        "component": "aem-content",
         "name": "article-author-image",
         "label": "Article Author Image"
       },
       {
-        "component": "text",
+        "component": "aem-tag",
         "valueType": "string",
         "name": "article-category",
-        "label": "Article Category"
+        "label": "Article Primary Category"
       },
       {
-        "component": "text",
-        "valueType": "string",
-        "name": "article-category-slug",
-        "label": "Article Category Slug"
-      },
-      {
-        "component": "aem-content",
-        "name": "article-category-url",
-        "label": "Article Category URL"
-      },
-      {
-        "component": "text",
+        "component": "aem-tag",
         "valueType": "string",
         "name": "article-tags",
-        "label": "Article Tags"
+        "label": "Article Tags",
+        "multi": true
       },
       {
-        "component": "text",
-        "valueType": "string",
+        "component": "date-time",
+        "valueType": "date",
         "name": "article-publication-date",
         "label": "Article Publication Date"
       },
       {
-        "component": "text",
-        "valueType": "string",
+        "component": "date-time",
+        "valueType": "date",
         "name": "article-update-date",
         "label": "Article Update Date"
       },
@@ -146,20 +142,11 @@
         "label": "Article Read Time"
       },
       {
-        "component": "select",
+        "component": "boolean",
+        "valueType": "boolean",
         "name": "article-visible",
         "label": "Article Visible",
-        "value": "true",
-        "options": [
-          {
-            "name": "Visible",
-            "value": "true"
-          },
-          {
-            "name": "Hidden",
-            "value": "false"
-          }
-        ]
+        "value": true
       }
     ]
   },
