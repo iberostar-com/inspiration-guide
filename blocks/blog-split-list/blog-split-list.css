@@ -1,6 +1,26 @@
-main .blog-split-list {
+main .blog-split-list .blog-split-list-source {
+  display: none;
+}
+
+main .blog-split-list .blog-split-list-rendered {
   display: grid;
   gap: 1.5rem;
+}
+
+main .blog-split-list .blog-split-list-eyebrow {
+  margin: 0;
+  color: #1b2828;
+  font-family: var(--body-font-family);
+  font-size: 12px;
+  font-weight: 500;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+}
+
+main .blog-split-list .blog-split-list-featured-column,
+main .blog-split-list .blog-split-list-latest-column {
+  display: grid;
+  gap: 1.25rem;
 }
 
 main .blog-split-list .blog-split-featured {
@@ -17,6 +37,39 @@ main .blog-split-list .blog-split-media img {
 
 main .blog-split-list .blog-split-body {
   padding: 1rem;
+  display: grid;
+  gap: 0.9rem;
+}
+
+main .blog-split-list .blog-split-featured h2 {
+  margin: 0;
+  font-family: var(--heading-font-family);
+  font-size: clamp(1.7rem, 3vw, 2rem);
+  font-weight: 400;
+  line-height: 1.2;
+}
+
+main .blog-split-list .blog-split-featured p {
+  margin: 0;
+}
+
+main .blog-split-list .blog-split-featured-link,
+main .blog-split-list .blog-split-featured-cta,
+main .blog-split-list .blog-split-item-link {
+  color: inherit;
+  text-decoration: none;
+}
+
+main .blog-split-list .blog-split-featured-cta,
+main .blog-split-list .blog-split-item-cta {
+  display: inline-flex;
+  width: fit-content;
+  align-items: center;
+  gap: 0.3rem;
+  border-bottom: 1px solid currentcolor;
+  font-family: var(--body-font-family);
+  font-size: 1rem;
+  font-weight: 500;
 }
 
 main .blog-split-list .blog-split-side-list {
@@ -30,16 +83,41 @@ main .blog-split-list .blog-split-side-list {
 main .blog-split-list .blog-split-item {
   border-bottom: 1px solid var(--light-color);
   padding-bottom: 0.75rem;
+  display: grid;
+  gap: 0.75rem;
+}
+
+main .blog-split-list .blog-split-item-link {
+  display: grid;
+  gap: 0.75rem;
+}
+
+main .blog-split-list .blog-split-item-pretitle {
+  margin: 0;
+  color: #757575;
+  font-family: var(--body-font-family);
+  font-size: 12px;
+  font-weight: 500;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
 }
 
 main .blog-split-list .blog-split-item h3 {
   margin: 0;
-  font-size: var(--heading-font-size-xs);
+  font-size: 1.125rem;
+  font-family: var(--body-font-family);
+  font-weight: 500;
+  line-height: 1.4;
+}
+
+main .blog-split-list .blog-split-item-summary {
+  margin: 0;
 }
 
 @media (width >= 900px) {
-  main .blog-split-list {
+  main .blog-split-list .blog-split-list-rendered {
     grid-template-columns: minmax(0, 2fr) minmax(0, 1fr);
     align-items: start;
+    gap: 4.625rem;
   }
 }

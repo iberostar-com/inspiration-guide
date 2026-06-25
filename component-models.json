@@ -210,9 +210,15 @@
     "fields": [
       {
         "component": "text",
-        "name": "title",
-        "label": "Section Title",
-        "value": "Latest from the blog"
+        "name": "featuredLabel",
+        "label": "Featured Column Title",
+        "value": "En portada"
+      },
+      {
+        "component": "text",
+        "name": "latestLabel",
+        "label": "Latest Column Title",
+        "value": "Ultimas publicaciones"
       },
       {
         "component": "select",
