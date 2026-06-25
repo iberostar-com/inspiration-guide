@@ -32,10 +32,22 @@ indices:
         select: head > meta[name="description"]
         value: attribute(el, "content")
       image:
+        select: head > meta[name="article-image"]
+        value: attribute(el, "content")
+      ogImage:
         select: head > meta[property="og:image"]
         value: attribute(el, "content")
       imageAlt:
         select: head > meta[name="article-image-alt"]
+        value: attribute(el, "content")
+      imageAltEs:
+        select: head > meta[name="alt_es"]
+        value: attribute(el, "content")
+      imageDcDescription:
+        select: head > meta[name="dc:description"]
+        value: attribute(el, "content")
+      imageAutogenDescription:
+        select: head > meta[name="autogen:description"]
         value: attribute(el, "content")
       authorName:
         select: head > meta[name="article-author-name"]

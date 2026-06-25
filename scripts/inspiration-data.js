@@ -168,6 +168,7 @@ function normalizeArticle(raw, index) {
     raw.imagePath,
     raw.featuredImage,
     raw.heroImage,
+    raw.ogImage,
     '',
   );
   const authorPath = firstDefined(raw.author, raw.authorPath, raw.articleAuthor, '');
@@ -203,7 +204,18 @@ function normalizeArticle(raw, index) {
     summary: String(summary),
     description: String(summary),
     image: String(image),
-    imageAlt: String(firstDefined(raw.imageAlt, raw.alt, title, '')),
+    imageAlt: String(firstDefined(
+      raw.imageAlt,
+      raw.altEs,
+      raw.imageAltEs,
+      raw.dcDescription,
+      raw.imageDcDescription,
+      raw.autogenDescription,
+      raw.imageAutogenDescription,
+      raw.alt,
+      title,
+      '',
+    )),
     author: String(author),
     authorPath: String(authorPath),
     authorName: String(author),

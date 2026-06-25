@@ -83,6 +83,13 @@
           "label": "Article Internal Name"
         },
         {
+          "component": "reference",
+          "valueType": "string",
+          "name": "article-image",
+          "label": "Article Image",
+          "multi": false
+        },
+        {
           "component": "text",
           "valueType": "string",
           "name": "article-image-alt",
