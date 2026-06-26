@@ -245,6 +245,13 @@ function normalizeArticle(raw, index) {
   };
 }
 
+function isCompleteArticle(article) {
+  return article.title
+    && article.title.toLowerCase() !== 'untitled'
+    && article.id
+    && article.visible;
+}
+
 function pickArticlesCollection(payload) {
   const candidates = [
     toArray(payload?.items),
@@ -433,7 +440,7 @@ async function getAemArticles() {
         .filter((article) => article.id && article.visible);
 
       const enriched = await enrichSparseArticles(normalized);
-      const results = enriched.filter((article) => article.title && article.id && article.visible);
+      const results = enriched.filter(isCompleteArticle);
 
       if (results.length > 0) {
         // eslint-disable-next-line no-console
@@ -456,7 +463,7 @@ async function getAemArticles() {
 
     return collection
       .map((article, index) => normalizeArticle(article, index))
-      .filter((article) => article.title && article.id && article.visible);
+      .filter(isCompleteArticle);
   } catch (error) {
     // eslint-disable-next-line no-console
     console.warn('[inspiration-data] Failed to load fallback article data:', error);

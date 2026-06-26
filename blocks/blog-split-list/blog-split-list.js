@@ -245,11 +245,13 @@ function getCurrentPathSegment(kind) {
 
 function getManualRows(block) {
   const rows = getSourceRows(block);
+  const contentRows = rows.slice(hasPositionalConfig(block) ? 4 : 0);
+
   if (!hasAuthoredProps(block)) {
-    return rows.slice(hasPositionalConfig(block) ? 4 : 0);
+    return contentRows;
   }
 
-  return rows.filter((row) => !rowContainsReservedProp(row));
+  return contentRows.filter((row) => !rowContainsReservedProp(row));
 }
 
 function getConfiguredMode(block) {
@@ -389,8 +391,15 @@ function sortArticles(items) {
   });
 }
 
+function isRenderableArticle(article) {
+  const item = normalizeArticle(article);
+  return Boolean(item.title && item.title.toLowerCase() !== 'untitled' && item.href && item.href !== '#');
+}
+
 async function getAutoItems(block, mode, maxItems) {
-  const articles = (await getArticles()).map(normalizeArticle);
+  const articles = (await getArticles())
+    .map(normalizeArticle)
+    .filter(isRenderableArticle);
   const featuredPath = toPublicContentPath(
     getHrefFromElement(getFieldByProp(block, 'featuredArticlePath'))
       || getTextValue(block, 'featuredArticlePath', ''),

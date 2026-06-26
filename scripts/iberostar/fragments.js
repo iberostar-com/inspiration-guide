@@ -45,11 +45,27 @@ function getLocaleFallbackPath(fragmentName) {
   return `/${localeMatch[1].toLowerCase()}${INSPIRATION_GUIDE_SEGMENT}/${fragmentName}`;
 }
 
+function normalizeMicrositeFragmentPath(path, fragmentName) {
+  const normalizedPath = normalizeFragmentPath(path).replace(/\/$/, '');
+  const inspirationGuideRoot = getInspirationGuideRoot();
+
+  if (!normalizedPath || !inspirationGuideRoot) {
+    return normalizedPath;
+  }
+
+  const fragmentPattern = new RegExp(`^/(?:[a-z]{2}-[a-z]{2}/)?${fragmentName}$`, 'i');
+  if (fragmentPattern.test(normalizedPath)) {
+    return `${inspirationGuideRoot}/${fragmentName}`;
+  }
+
+  return normalizedPath;
+}
+
 export function resolveFragmentPath(metaName, fallbackPath) {
   const metaValue = getMetadata(metaName);
 
   if (metaValue) {
-    return normalizeFragmentPath(metaValue);
+    return normalizeMicrositeFragmentPath(metaValue, metaName);
   }
 
   const inspirationGuideRoot = getInspirationGuideRoot();
