@@ -1,37 +1,76 @@
-.editorial-article-banner {
-  background: var(--light-color);
+main .editorial-article-banner {
+  color: #1b2828;
+  font-family: var(--body-font-family);
+}
+
+main .editorial-article-banner .editorial-article-banner-source {
+  display: none;
+}
+
+main .editorial-article-banner .editorial-article-banner-rendered {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  align-items: center;
+  justify-content: center;
+  padding: 20px 16px;
+  background: #f5f5f5;
   border-radius: 4px;
 }
 
-.editorial-article-banner-content {
-  padding: 1.5rem;
+main .editorial-article-banner .editorial-article-banner-content {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  align-items: center;
+  width: 100%;
+  text-align: center;
 }
 
-.editorial-article-banner-title {
-  font-weight: bold;
-  margin: 0 0 0.5rem;
+main .editorial-article-banner .editorial-article-banner-title {
+  margin: 0;
+  color: #1b2828;
+  font-family: var(--heading-font-family);
+  font-size: 24px;
+  font-weight: 400;
+  line-height: 32px;
 }
 
-.editorial-article-banner-description {
-  margin: 0 0 1rem;
+main .editorial-article-banner .editorial-article-banner-description {
+  margin: 0;
+  color: #1b2828;
+  font-size: 14px;
+  line-height: 1.4;
 }
 
-.editorial-article-banner-link {
-  display: inline-block;
-  padding: 0.5rem 1rem;
-  background: var(--link-color);
-  color: white;
+main .editorial-article-banner .editorial-article-banner-link {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  min-width: 80px;
+  min-height: 36px;
+  padding: 8px 12px;
+  border-radius: 4px;
+  background: #000;
+  color: #fff;
+  font-size: 14px;
+  line-height: 1.4;
   text-decoration: none;
-  border-radius: 2px;
   transition: background 0.2s ease;
 }
 
-.editorial-article-banner-link:hover {
-  background: var(--link-hover-color);
+main .editorial-article-banner .editorial-article-banner-link::after {
+  margin-left: 8px;
+  content: "→";
+}
+
+main .editorial-article-banner .editorial-article-banner-link:hover {
+  background: #1b2828;
   text-decoration: none;
 }
 
-.editorial-article-banner-link:focus {
-  outline: 2px solid var(--link-color);
+main .editorial-article-banner .editorial-article-banner-link:focus-visible {
+  outline: 2px solid #1b2828;
   outline-offset: 2px;
 }
