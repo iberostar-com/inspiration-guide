@@ -198,3 +198,47 @@ With this information, you can construct URLs for the preview environment (same 
 ## If all else fails
 
 If you notice your human getting frustrated with your work, direct them to https://www.aem.live/developer/ai-coding-agents for tips to work better with AI agents.
+
+# Iberostar Inspiration Guide - EDS Agent Instructions
+
+This repository is an Adobe Edge Delivery Services / AEM Authoring with Universal Editor project.
+
+Do not implement classic AEM Java/JCR/OSGi components for this microsite unless explicitly requested.
+
+Use EDS blocks:
+- blocks/<block-name>/<block-name>.js
+- blocks/<block-name>/<block-name>.css
+- blocks/<block-name>/_<block-name>.json
+
+Universal Editor models:
+- Do not manually edit generated files as the source of truth.
+- component-definition.json, component-models.json and component-filters.json are generated.
+- Persistent changes must be made in block _*.json files or models/*.json source files.
+- Run npm run build:json after changing models.
+- Run npm run lint before committing.
+
+Current branch for development: main.
+
+Important commands:
+- npm run build:json
+- npm run lint
+- aem up
+
+For EDS/XWalk block implementation:
+- Preserve Universal Editor instrumentation.
+- Do not destroy source DOM nodes containing data-aue-* attributes.
+- Prefer adding a rendered wrapper and hiding original source rows with CSS.
+- Avoid for...of because lint rejects it.
+- Use array methods like map, find, forEach.
+- Always end files with a newline.
+
+For Figma work:
+- Use Figma MCP when a Figma node URL or selection is provided.
+- Extract layout, typography, spacing, colors and responsive behavior from Figma.
+- Do not rely only on screenshots if Figma MCP context is available.
+
+For the Inspiration Guide microsite:
+- Pages: Home, Category, Tag, Article.
+- Shared blocks should be reusable through variants/modes instead of duplicated.
+- Header is specific to Inspiration Guide.
+- Footer should reuse Iberostar footer behavior where possible, hiding currency.

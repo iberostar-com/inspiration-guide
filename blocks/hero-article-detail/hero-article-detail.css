@@ -4,9 +4,15 @@
 }
 
 .hero-article-detail {
-  padding: 40px 0 16px;
-  border-bottom: 1px solid #dedede;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 40px;
+  padding: 64px 141px 32px;
+  background: #FFF;
   color: #1b2828;
+  border-bottom: 1px solid #dedede;
+  width: 100%;
 }
 
 .hero-article-detail .hero-article-detail-source {
@@ -16,6 +22,8 @@
 .hero-article-detail .hero-article-detail-content {
   display: grid;
   gap: 40px;
+  width: 100%;
+  align-self: stretch;
 }
 
 .hero-article-detail .hero-article-detail-media {
@@ -39,24 +47,25 @@
 .hero-article-detail .hero-article-detail-title {
   margin: 0;
   color: #1b2828;
-  font-family: var(--heading-font-family);
-  font-size: clamp(2.2rem, 6vw, 3rem);
+  font-family: "Noe Display", serif;
+  font-size: 48px;
   font-weight: 400;
-  line-height: 1.15;
+  line-height: 64px;
+  letter-spacing: 0;
 }
 
 .hero-article-detail .hero-article-detail-subtitle {
   margin: 0;
   color: #1b2828;
-  font-family: var(--body-font-family);
-  font-size: 1.125rem;
+  font-family: Inter, sans-serif;
+  font-size: 18px;
   font-weight: 400;
   line-height: 1.4;
 }
 
 .hero-article-detail .hero-article-detail-info {
   display: grid;
-  gap: 2rem;
+  gap: 56px;
 }
 
 .hero-article-detail .hero-article-detail-author {
@@ -80,8 +89,8 @@
 .hero-article-detail .hero-article-detail-author-name {
   margin: 0;
   color: #1b2828;
-  font-family: var(--body-font-family);
-  font-size: 1rem;
+  font-family: Inter, sans-serif;
+  font-size: 16px;
   font-weight: 500;
   line-height: 1.4;
 }
@@ -89,8 +98,8 @@
 .hero-article-detail .hero-article-detail-author-description {
   margin: 0;
   color: #636363;
-  font-family: var(--body-font-family);
-  font-size: 0.875rem;
+  font-family: Inter, sans-serif;
+  font-size: 14px;
   font-weight: 400;
   line-height: 1.4;
 }
@@ -106,7 +115,7 @@
   display: flex;
   flex-wrap: wrap;
   align-items: center;
-  gap: 12px 20px;
+  gap: 24px;
 }
 
 .hero-article-detail .hero-article-detail-chip {
@@ -120,8 +129,8 @@
   background: #f5f5f5;
   padding: 4px 16px;
   color: #1b2828;
-  font-family: var(--body-font-family);
-  font-size: 0.875rem;
+  font-family: Inter, sans-serif;
+  font-size: 14px;
   font-weight: 400;
   line-height: 1.4;
 }
@@ -129,11 +138,11 @@
 .hero-article-detail .hero-article-detail-date,
 .hero-article-detail .hero-article-detail-reading-time {
   color: #757575;
-  font-family: var(--body-font-family);
-  font-size: 0.75rem;
+  font-family: Inter, sans-serif;
+  font-size: 12px;
   font-weight: 500;
   line-height: 1.4;
-  letter-spacing: 0.02em;
+  letter-spacing: 0.24px;
   text-transform: uppercase;
 }
 

@@ -101,10 +101,10 @@
         "label": "Article Author Name"
       },
       {
-        "component": "aem-content",
+        "component": "text",
         "valueType": "string",
-        "name": "article-author",
-        "label": "Article Author"
+        "name": "article-author-description",
+        "label": "Article Author Description"
       },
       {
         "component": "reference",

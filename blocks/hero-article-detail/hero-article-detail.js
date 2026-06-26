@@ -161,8 +161,7 @@ export default function decorate(block) {
     || '';
 
   const authorName = getMetaValue('article-author-name');
-  const authorDescriptionMeta = getMetaValue('article-author');
-  const authorDescription = authorDescriptionMeta.includes('/') ? '' : authorDescriptionMeta;
+  const authorDescription = getMetaValue('article-author-description');
   const authorImage = getMetaValue('article-author-image');
   const category = toCategoryLabel(getMetaValue('article-category'));
   const publicationDate = toDisplayDate(getMetaValue('article-publication-date'));
