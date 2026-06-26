@@ -5,6 +5,7 @@ const DEFAULT_CONFIG = {
     company: '',
     damRoot: '/content/dam',
     stripExtension: true,
+    assetHost: 'https://publish-p179213-e1898042.adobeaemcloud.com',
   },
 };
 
@@ -16,6 +17,7 @@ const ENVIRONMENT_CONFIG = {
       company: 'BALEARDEINVERSIONESFINANCIERASSL',
       damRoot: '/content/dam',
       stripExtension: true,
+      assetHost: 'https://publish-p179213-e1898042.adobeaemcloud.com',
     },
   },
   author: {
@@ -25,6 +27,7 @@ const ENVIRONMENT_CONFIG = {
       company: 'BALEARDEINVERSIONESFINANCIERASSL',
       damRoot: '/content/dam',
       stripExtension: true,
+      assetHost: 'https://publish-p179213-e1898042.adobeaemcloud.com',
     },
   },
   preview: {
@@ -34,6 +37,7 @@ const ENVIRONMENT_CONFIG = {
       company: 'BALEARDEINVERSIONESFINANCIERASSL',
       damRoot: '/content/dam',
       stripExtension: true,
+      assetHost: 'https://publish-p179213-e1898042.adobeaemcloud.com',
     },
   },
   live: {
@@ -43,6 +47,7 @@ const ENVIRONMENT_CONFIG = {
       company: 'BALEARDEINVERSIONESFINANCIERASSL',
       damRoot: '/content/dam',
       stripExtension: true,
+      assetHost: 'https://publish-p179213-e1898042.adobeaemcloud.com',
     },
   },
 };

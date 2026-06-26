@@ -93,8 +93,8 @@ function normalizeSlug(value) {
 
 function getCurrentLanguageRoot() {
   const segments = window.location.pathname.split('/').filter(Boolean);
-  const guideIndex = segments.indexOf('inspiration-guide');
-  return guideIndex > 0 ? `/${segments[guideIndex - 1]}` : '';
+  const locale = segments.find((segment) => /^[a-z]{2}-[a-z]{2}$/i.test(segment));
+  return locale ? `/${locale.toLowerCase()}` : '';
 }
 
 function normalizeTagPath(value) {
@@ -279,10 +279,10 @@ function resolveAemDataUrl() {
   }
 
   const segments = window.location.pathname.split('/').filter(Boolean);
-  const guideIndex = segments.indexOf('inspiration-guide');
+  const locale = segments.find((segment) => /^[a-z]{2}-[a-z]{2}$/i.test(segment));
 
-  if (guideIndex > 0) {
-    return `/${segments[guideIndex - 1]}/inspiration-guide/articles-index.json`;
+  if (locale) {
+    return `/${locale.toLowerCase()}/inspiration-guide/articles-index.json`;
   }
 
   return '/inspiration-guide/articles-index.json';

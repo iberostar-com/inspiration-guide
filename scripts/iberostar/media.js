@@ -120,7 +120,23 @@ function getDynamicMediaConfig() {
         environmentDynamicMedia.stripExtension ?? DYNAMIC_MEDIA_CONFIG.stripExtension,
       ),
     ),
+    assetHost: getMetaContent('aem-assets-host')
+      || window.hlx?.aemAssetsHost
+      || environmentDynamicMedia.assetHost
+      || '',
   };
+}
+
+function resolveDamAssetUrl(src, config) {
+  const normalized = normalizeSource(src);
+  if (!normalized || !isDamAssetPath(normalized)) return normalized;
+
+  if (isRemoteImage(normalized)) return normalized;
+
+  const assetHost = `${config.assetHost || ''}`.replace(/\/$/, '');
+  if (!assetHost) return normalized;
+
+  return `${assetHost}${normalized}`;
 }
 
 export function isDynamicMediaImage(src = '') {
@@ -248,6 +264,7 @@ export function createResponsiveImage(src, alt, eagerOrOptions, breakpoints) {
     || preset.fallbackBreakpoints
     || DEFAULT_BREAKPOINTS;
   const dynamicMediaConfig = getDynamicMediaConfig();
+  const resolvedSrc = resolveDamAssetUrl(normalizedSrc, dynamicMediaConfig);
 
   if (!normalizedSrc) {
     const placeholder = document.createElement('span');
@@ -257,7 +274,7 @@ export function createResponsiveImage(src, alt, eagerOrOptions, breakpoints) {
 
   if (dynamicMediaConfig.enabled) {
     const dynamicMediaPicture = createDynamicMediaPicture(
-      normalizedSrc,
+      resolvedSrc,
       imageAlt,
       options,
       preset,
@@ -268,14 +285,14 @@ export function createResponsiveImage(src, alt, eagerOrOptions, breakpoints) {
     }
   }
 
-  if (isRemoteImage(normalizedSrc) || isDamAssetPath(normalizedSrc)) {
-    const image = createImage(normalizedSrc, imageAlt, options.eager);
+  if (isRemoteImage(resolvedSrc) || isDamAssetPath(resolvedSrc)) {
+    const image = createImage(resolvedSrc, imageAlt, options.eager);
     attachImageFallback(image, '');
     return image;
   }
 
   const optimizedPicture = createOptimizedPicture(
-    normalizedSrc,
+    resolvedSrc,
     imageAlt,
     options.eager,
     fallbackBreakpoints,
@@ -291,7 +308,7 @@ export function createResponsiveImage(src, alt, eagerOrOptions, breakpoints) {
 
       optimizedImage.dataset.optimizedFallbackApplied = 'true';
       optimizedPicture.querySelectorAll('source').forEach((source) => source.remove());
-      optimizedImage.src = normalizedSrc;
+      optimizedImage.src = resolvedSrc;
     });
   }
 

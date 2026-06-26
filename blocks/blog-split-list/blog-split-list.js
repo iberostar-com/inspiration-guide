@@ -199,10 +199,19 @@ function toPublicContentPath(value) {
   const path = normalizeUrl(value)
     .replace(/^https?:\/\/[^/]+/, '')
     .replace(/\.html$/, '');
-  const guideIndex = path.indexOf('/inspiration-guide/');
+  const authoredPathMatch = path.match(/^\/content\/inspiration-guide\/([a-z]{2}-[a-z]{2})\/inspiration-guide\/(.*)$/i);
 
+  if (authoredPathMatch) {
+    const [, locale, remainder] = authoredPathMatch;
+    return `/${locale.toLowerCase()}/inspiration-guide/${remainder}`;
+  }
+
+  const guideIndex = path.indexOf('/inspiration-guide/');
   if (guideIndex > -1 && path.startsWith('/content/')) {
-    return path.slice(guideIndex);
+    const possibleLocale = path.slice(guideIndex + '/inspiration-guide/'.length).split('/')[0];
+    if (/^[a-z]{2}-[a-z]{2}$/i.test(possibleLocale)) {
+      return path.slice(guideIndex);
+    }
   }
 
   return path;

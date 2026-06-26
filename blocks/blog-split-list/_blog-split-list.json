@@ -52,10 +52,7 @@
           "component": "aem-content",
           "valueType": "string",
           "name": "featuredArticlePath",
-          "label": "Featured Article Page",
-          "validation": {
-            "rootPath": "/content"
-          }
+          "label": "Featured Article Page"
         },
         {
           "component": "aem-tag",

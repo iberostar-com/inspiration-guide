@@ -1,4 +1,5 @@
 import { getMetadata } from '../../scripts/aem.js';
+import { createResponsiveImage } from '../../scripts/iberostar/media.js';
 
 function getSourceRows(block) {
   return Array.from(block.children).filter((child) => !child.classList.contains('hero-article-detail-content'));
@@ -160,12 +161,16 @@ export default function decorate(block) {
     author.className = 'hero-article-detail-author';
 
     if (authorImage) {
-      const image = document.createElement('img');
-      image.className = 'hero-article-detail-author-image';
-      image.src = authorImage;
-      image.alt = authorName ? `Foto de ${authorName}` : '';
-      image.loading = 'eager';
-      author.append(image);
+      const authorMedia = createResponsiveImage(
+        authorImage,
+        authorName ? `Foto de ${authorName}` : '',
+        {
+          eager: true,
+          breakpoints: [{ width: '96' }],
+        },
+      );
+      authorMedia.classList.add('hero-article-detail-author-image');
+      author.append(authorMedia);
     }
 
     const authorText = document.createElement('div');
