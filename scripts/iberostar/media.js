@@ -42,6 +42,17 @@ function createImage(src, alt, eager) {
   return image;
 }
 
+function attachImageFallback(image, fallbackSrc) {
+  if (!fallbackSrc) return;
+
+  image.addEventListener('error', () => {
+    if (image.dataset.imageFallbackApplied === 'true') return;
+
+    image.dataset.imageFallbackApplied = 'true';
+    image.src = fallbackSrc;
+  });
+}
+
 function getDynamicMediaConfig() {
   return {
     imageServer: getMetaContent('dynamic-media-image-server')
@@ -164,6 +175,7 @@ function createDynamicMediaPicture(src, alt, options, preset) {
     alt,
     options.eager,
   );
+  attachImageFallback(image, src);
   image.addEventListener('error', () => {
     if (image.dataset.dynamicMediaFallback === 'true') return;
 
@@ -193,5 +205,23 @@ export function createResponsiveImage(src, alt, eagerOrOptions, breakpoints) {
     return createImage(src, imageAlt, options.eager);
   }
 
-  return createOptimizedPicture(src, imageAlt, options.eager, fallbackBreakpoints);
+  const optimizedPicture = createOptimizedPicture(
+    src,
+    imageAlt,
+    options.eager,
+    fallbackBreakpoints,
+  );
+  const optimizedImage = optimizedPicture.querySelector('img');
+
+  if (optimizedImage) {
+    optimizedImage.addEventListener('error', () => {
+      if (optimizedImage.dataset.optimizedFallbackApplied === 'true') return;
+
+      optimizedImage.dataset.optimizedFallbackApplied = 'true';
+      optimizedPicture.querySelectorAll('source').forEach((source) => source.remove());
+      optimizedImage.src = src;
+    });
+  }
+
+  return optimizedPicture;
 }
