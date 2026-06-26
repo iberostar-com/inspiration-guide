@@ -273,6 +273,10 @@ function isArticlePath(path) {
   return /\/inspiration-guide\/articles?\//.test(normalizePagePath(path));
 }
 
+function isAuthorContext() {
+  return window.location.hostname?.includes('author-') || window.location.pathname?.includes('/content/');
+}
+
 function resolveAemDataUrl() {
   const params = new URLSearchParams(window.location.search);
   const fromQuery = params.get('aem-data-url');
@@ -408,22 +412,44 @@ async function enrichSparseArticles(articles = []) {
 }
 
 async function getAemArticles() {
-  const url = resolveAemDataUrl();
+  const primaryUrl = resolveAemDataUrl();
+  const isAuthor = isAuthorContext();
+  const fallbackUrls = isAuthor ? [
+    '/query-index.json',
+    '/en-us/inspiration-guide/articles-index.json',
+    '/inspiration-guide/articles-index.json',
+  ] : [];
+  const urlsToTry = [primaryUrl, ...fallbackUrls];
 
-  try {
-    const payload = await fetchJson(url);
-    const collection = pickArticlesCollection(payload);
-    const normalized = collection
-      .map((article, index) => normalizeArticle(article, index))
-      .filter((article) => article.id && article.visible);
+  const tryLoadArticles = async (urls) => {
+    if (!urls.length) return null;
+    const [currentUrl, ...remainingUrls] = urls;
 
-    const enriched = await enrichSparseArticles(normalized);
+    try {
+      const payload = await fetchJson(currentUrl);
+      const collection = pickArticlesCollection(payload);
+      const normalized = collection
+        .map((article, index) => normalizeArticle(article, index))
+        .filter((article) => article.id && article.visible);
 
-    return enriched.filter((article) => article.title && article.id && article.visible);
-  } catch (error) {
-    // eslint-disable-next-line no-console
-    console.warn('[inspiration-data] Failed to load AEM data:', error);
-  }
+      const enriched = await enrichSparseArticles(normalized);
+      const results = enriched.filter((article) => article.title && article.id && article.visible);
+
+      if (results.length > 0) {
+        // eslint-disable-next-line no-console
+        console.log(`[inspiration-data] Loaded ${results.length} articles from ${currentUrl}`);
+        return results;
+      }
+    } catch (error) {
+      // eslint-disable-next-line no-console
+      console.debug(`[inspiration-data] Failed to load from ${currentUrl}:`, error);
+    }
+
+    return tryLoadArticles(remainingUrls);
+  };
+
+  const articles = await tryLoadArticles(urlsToTry);
+  if (articles) return articles;
 
   try {
     const collection = await getArticlesFromPageIndex();
