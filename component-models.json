@@ -995,6 +995,25 @@
     ]
   },
   {
+    "id": "hero-article-detail",
+    "fields": [
+      {
+        "component": "reference",
+        "valueType": "string",
+        "name": "image",
+        "label": "Image Override",
+        "multi": false
+      },
+      {
+        "component": "text",
+        "valueType": "string",
+        "name": "imageAlt",
+        "label": "Image Alt Override",
+        "value": ""
+      }
+    ]
+  },
+  {
     "id": "hero-blog",
     "fields": [
       {
