@@ -39,7 +39,6 @@
           "valueType": "string",
           "name": "linkText",
           "label": "Link Text",
-          "description": "Optional. If empty, the block uses the editorialArticleBannerCta placeholder/i18n value.",
           "value": ""
         },
         {

@@ -1,6 +1,3 @@
-import { getTranslation } from '../../scripts/iberostar/i18n.js';
-import { getPlaceholder } from '../../scripts/iberostar/placeholders.js';
-
 const FIELD_ORDER = ['title', 'description', 'linkText', 'link'];
 
 function getSourceRows(block) {
@@ -46,6 +43,17 @@ function getHrefValue(block, propName, legacyAttr = '') {
     || '';
 }
 
+function getLinkText(block) {
+  const linkText = getTextValue(block, 'linkText', 'data-link-text');
+  if (linkText) return linkText;
+
+  const linkField = getPropElement(block, 'link') || getPositionalField(block, 'link');
+  const linkAnchorText = linkField?.querySelector?.('a[href]')?.textContent?.trim();
+  if (linkAnchorText) return linkAnchorText;
+
+  return linkField?.textContent?.trim() || '';
+}
+
 function hideSource(block) {
   getSourceRows(block).forEach((row) => {
     row.classList.add('editorial-article-banner-source');
@@ -66,13 +74,7 @@ export default async function decorate(block) {
   const title = getTextValue(block, 'title', 'data-title');
   const description = getTextValue(block, 'description', 'data-description');
   const linkUrl = getHrefValue(block, 'link', 'data-link');
-  const linkText = getTextValue(
-    block,
-    'linkText',
-    'data-link-text',
-    await getTranslation('editorialArticleBannerCta', 'Ver hoteles')
-      || await getPlaceholder('editorialArticleBannerCta', 'Ver hoteles'),
-  );
+  const linkText = getLinkText(block);
 
   const wrapper = document.createElement('div');
   wrapper.className = 'editorial-article-banner-rendered';
@@ -92,7 +94,7 @@ export default async function decorate(block) {
     wrapper.append(content);
   }
 
-  if (linkUrl) {
+  if (linkUrl && linkText) {
     const link = document.createElement('a');
     link.className = 'editorial-article-banner-link';
     link.href = linkUrl;
