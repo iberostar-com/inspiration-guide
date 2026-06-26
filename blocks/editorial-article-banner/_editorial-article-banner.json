@@ -46,6 +46,23 @@
           "valueType": "string",
           "name": "link",
           "label": "Link URL"
+        },
+        {
+          "component": "select",
+          "valueType": "string",
+          "name": "linkTarget",
+          "label": "Link Target",
+          "value": "_self",
+          "options": [
+            {
+              "name": "Same tab",
+              "value": "_self"
+            },
+            {
+              "name": "New tab",
+              "value": "_blank"
+            }
+          ]
         }
       ]
     }

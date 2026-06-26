@@ -578,6 +578,23 @@
         "valueType": "string",
         "name": "link",
         "label": "Link URL"
+      },
+      {
+        "component": "select",
+        "valueType": "string",
+        "name": "linkTarget",
+        "label": "Link Target",
+        "value": "_self",
+        "options": [
+          {
+            "name": "Same tab",
+            "value": "_self"
+          },
+          {
+            "name": "New tab",
+            "value": "_blank"
+          }
+        ]
       }
     ]
   },
@@ -585,26 +602,11 @@
     "id": "editorial-article-content",
     "fields": [
       {
-        "component": "text",
-        "name": "title",
-        "label": "Section Title",
-        "value": "Article content"
-      },
-      {
-        "component": "select",
-        "name": "layout",
-        "label": "Layout",
-        "options": [
-          {
-            "name": "Default",
-            "value": "default"
-          },
-          {
-            "name": "Narrow",
-            "value": "narrow"
-          }
-        ],
-        "value": "default"
+        "component": "richtext",
+        "valueType": "string",
+        "name": "text",
+        "label": "Text",
+        "value": ""
       }
     ]
   },

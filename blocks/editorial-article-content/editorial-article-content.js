@@ -1,28 +1,55 @@
+function getSourceRows(block) {
+  return [...block.children].filter((child) => !child.classList.contains('editorial-article-content-rendered'));
+}
+
+function getRichTextElement(block) {
+  return getSourceRows(block)
+    .map((row) => (row.matches?.('[data-aue-prop="text"]') ? row : row.querySelector?.('[data-aue-prop="text"]')))
+    .find(Boolean) || null;
+}
+
+function cloneChildren(source, target) {
+  [...source.childNodes].forEach((child) => target.append(child.cloneNode(true)));
+}
+
+function appendCellContent(row, target) {
+  [...row.children].forEach((cell) => {
+    if (cell.children.length) {
+      cloneChildren(cell, target);
+      return;
+    }
+
+    const text = cell.textContent?.trim();
+    if (text) {
+      const paragraph = document.createElement('p');
+      paragraph.textContent = text;
+      target.append(paragraph);
+    }
+  });
+}
+
+function hideSource(block) {
+  getSourceRows(block).forEach((row) => {
+    row.classList.add('editorial-article-content-source');
+    row.setAttribute('aria-hidden', 'true');
+  });
+}
+
 export default function decorate(block) {
-  const layout = block.getAttribute('data-layout') || 'default';
-  const title = block.getAttribute('data-title') || '';
+  block.querySelector(':scope > .editorial-article-content-rendered')?.remove();
 
   const article = document.createElement('article');
-  article.className = `editorial-article-content ${layout}`;
+  article.className = 'editorial-article-content-rendered';
 
-  if (title) {
-    const h2 = document.createElement('h2');
-    h2.textContent = title;
-    article.append(h2);
+  const richText = getRichTextElement(block);
+  if (richText) {
+    cloneChildren(richText, article);
+  } else {
+    getSourceRows(block).forEach((row) => appendCellContent(row, article));
   }
 
-  const content = document.createElement('div');
-  content.className = 'editorial-article-content-body';
+  if (!article.children.length) return;
 
-  [...block.children].forEach((row) => {
-    const section = document.createElement('section');
-    section.className = 'editorial-article-content-section';
-    [...row.children].forEach((cell) => {
-      section.append(...cell.childNodes);
-    });
-    content.append(section);
-  });
-
-  article.append(content);
-  block.replaceChildren(article);
+  hideSource(block);
+  block.append(article);
 }

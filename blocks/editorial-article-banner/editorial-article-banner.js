@@ -1,4 +1,4 @@
-const FIELD_ORDER = ['title', 'description', 'linkText', 'link'];
+const FIELD_ORDER = ['title', 'description', 'linkText', 'link', 'linkTarget'];
 
 function getSourceRows(block) {
   return [...block.children].filter((child) => !child.classList.contains('editorial-article-banner-rendered'));
@@ -51,7 +51,12 @@ function getLinkText(block) {
   const linkAnchorText = linkField?.querySelector?.('a[href]')?.textContent?.trim();
   if (linkAnchorText) return linkAnchorText;
 
-  return linkField?.textContent?.trim() || '';
+  return linkField?.textContent?.trim() || getHrefValue(block, 'link', 'data-link');
+}
+
+function getLinkTarget(block) {
+  const value = getTextValue(block, 'linkTarget', 'data-link-target', '_self').toLowerCase();
+  return value === '_blank' ? '_blank' : '_self';
 }
 
 function hideSource(block) {
@@ -75,6 +80,7 @@ export default async function decorate(block) {
   const description = getTextValue(block, 'description', 'data-description');
   const linkUrl = getHrefValue(block, 'link', 'data-link');
   const linkText = getLinkText(block);
+  const linkTarget = getLinkTarget(block);
 
   const wrapper = document.createElement('div');
   wrapper.className = 'editorial-article-banner-rendered';
@@ -94,11 +100,15 @@ export default async function decorate(block) {
     wrapper.append(content);
   }
 
-  if (linkUrl && linkText) {
+  if (linkUrl) {
     const link = document.createElement('a');
     link.className = 'editorial-article-banner-link';
     link.href = linkUrl;
-    link.textContent = linkText;
+    link.textContent = linkText || linkUrl;
+    if (linkTarget === '_blank') {
+      link.target = '_blank';
+      link.rel = 'noopener noreferrer';
+    }
     wrapper.append(link);
   }
 
