@@ -1,6 +1,7 @@
 import { createResponsiveImage } from '../../scripts/iberostar/media.js';
 import formatLocalizedDate, { hasValidDate } from '../../scripts/iberostar/date-format.js';
 import { getPlaceholder } from '../../scripts/iberostar/placeholders.js';
+import { getTranslation } from '../../scripts/iberostar/i18n.js';
 import { getArticles } from '../../scripts/inspiration-data.js';
 
 const RESERVED_PROPS = new Set([
@@ -595,17 +596,26 @@ export default async function decorate(block) {
 
   const mode = getConfiguredMode(block);
   const maxItems = getConfiguredMaxItems(block);
-  const featuredTitle = getTextValue(block, 'featuredLabel', 'En portada');
-  const latestTitle = getTextValue(block, 'latestLabel', 'Últimas publicaciones');
+  const featuredTitle = getTextValue(block, 'featuredLabel', '')
+    || await getTranslation('featuredColumnTitle', 'En portada')
+    || await getPlaceholder('featuredColumnTitle', 'En portada');
+  const latestTitle = getTextValue(block, 'latestLabel', '')
+    || await getTranslation('latestColumnTitle', 'Últimas publicaciones')
+    || await getPlaceholder('latestColumnTitle', 'Últimas publicaciones');
   const featuredBadge = getTextValue(block, 'featuredBadge', '')
+    || await getTranslation('featuredArticle', 'Artículo destacado')
     || await getPlaceholder('featuredArticle', 'Artículo destacado');
   const ctaLabel = getTextValue(block, 'ctaLabel', '')
+    || await getTranslation('readArticle', 'Leer artículo')
     || await getPlaceholder('readArticle', 'Leer artículo');
   const items = mode === 'manual'
     ? splitManualItems(fromManualRows(block), maxItems)
     : await getAutoItems(block, mode, maxItems);
 
-  if (!items.length) return;
+  if (!items.length) {
+    // Silently exit if no items; block remains undecorated or shows empty
+    return;
+  }
 
   hideSource(block);
 
