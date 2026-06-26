@@ -334,9 +334,14 @@ async function fetchArticleMetadata(path) {
   return {
     path: articlePath,
     url: articlePath,
-    title: getMetaFromDocument(doc, 'og:title') || doc.querySelector('title')?.textContent?.trim(),
-    description: getMetaFromDocument(doc, 'description') || getMetaFromDocument(doc, 'og:description'),
-    image: getMetaFromDocument(doc, 'article-image'),
+    title: getMetaFromDocument(doc, 'jcr:title')
+      || getMetaFromDocument(doc, 'og:title')
+      || doc.querySelector('title')?.textContent?.trim(),
+    description: getMetaFromDocument(doc, 'jcr:description')
+      || getMetaFromDocument(doc, 'description')
+      || getMetaFromDocument(doc, 'og:description'),
+    image: getMetaFromDocument(doc, 'article-image')
+      || getMetaFromDocument(doc, 'og:image'),
     ogImage: getMetaFromDocument(doc, 'og:image'),
     imageAlt: getMetaFromDocument(doc, 'article-image-alt'),
     authorName: getMetaFromDocument(doc, 'article-author-name'),
@@ -424,7 +429,7 @@ export async function getArticles() {
     return getAemArticles();
   }
 
-  return MOCK_ARTICLES;
+  return MOCK_ARTICLES.map((article, index) => normalizeArticle(article, index));
 }
 
 export async function getTagCloud(strategy = 'frequency', limit = 20) {

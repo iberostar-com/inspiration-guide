@@ -5,6 +5,7 @@ import getImagePreset from './image-presets.js';
 
 const DEFAULT_BREAKPOINTS = [{ width: '750' }];
 const DAM_EXTENSION_REGEXP = /\.[a-z0-9]+$/i;
+const DAM_PATH_PREFIX = '/content/dam/';
 const DYNAMIC_MEDIA_PATH_SEGMENT = '/is/image/';
 
 export function isRemoteImage(src = '') {
@@ -43,14 +44,48 @@ function createImage(src, alt, eager) {
   return image;
 }
 
+function normalizeSource(src = '') {
+  const value = `${src || ''}`.trim();
+  if (!value || value.toLowerCase() === 'undefined') return '';
+  return value;
+}
+
+function isDamAssetPath(src = '') {
+  const normalized = normalizeSource(src);
+  if (!normalized) return false;
+
+  if (isRemoteImage(normalized)) {
+    try {
+      return new URL(normalized, window.location).pathname.startsWith(DAM_PATH_PREFIX);
+    } catch (error) {
+      return false;
+    }
+  }
+
+  return normalized.startsWith(DAM_PATH_PREFIX);
+}
+
+function notifyImageUnavailable(image) {
+  image.dispatchEvent(new CustomEvent('media:image-unavailable', { bubbles: true }));
+}
+
 function attachImageFallback(image, fallbackSrc) {
-  if (!fallbackSrc) return;
+  const fallback = normalizeSource(fallbackSrc);
+  if (!fallback) {
+    image.addEventListener('error', () => {
+      notifyImageUnavailable(image);
+    });
+    return;
+  }
 
   image.addEventListener('error', () => {
-    if (image.dataset.imageFallbackApplied === 'true') return;
+    if (image.dataset.imageFallbackApplied === 'true') {
+      notifyImageUnavailable(image);
+      return;
+    }
 
     image.dataset.imageFallbackApplied = 'true';
-    image.src = fallbackSrc;
+    image.src = fallback;
   });
 }
 
@@ -205,6 +240,7 @@ function createDynamicMediaPicture(src, alt, options, preset, config) {
 }
 
 export function createResponsiveImage(src, alt, eagerOrOptions, breakpoints) {
+  const normalizedSrc = normalizeSource(src);
   const imageAlt = alt || '';
   const options = normalizeImageOptions(eagerOrOptions, breakpoints);
   const preset = getImagePreset(options.preset);
@@ -213,9 +249,15 @@ export function createResponsiveImage(src, alt, eagerOrOptions, breakpoints) {
     || DEFAULT_BREAKPOINTS;
   const dynamicMediaConfig = getDynamicMediaConfig();
 
+  if (!normalizedSrc) {
+    const placeholder = document.createElement('span');
+    placeholder.className = 'media-image-unavailable';
+    return placeholder;
+  }
+
   if (dynamicMediaConfig.enabled) {
     const dynamicMediaPicture = createDynamicMediaPicture(
-      src,
+      normalizedSrc,
       imageAlt,
       options,
       preset,
@@ -226,12 +268,14 @@ export function createResponsiveImage(src, alt, eagerOrOptions, breakpoints) {
     }
   }
 
-  if (isRemoteImage(src)) {
-    return createImage(src, imageAlt, options.eager);
+  if (isRemoteImage(normalizedSrc) || isDamAssetPath(normalizedSrc)) {
+    const image = createImage(normalizedSrc, imageAlt, options.eager);
+    attachImageFallback(image, '');
+    return image;
   }
 
   const optimizedPicture = createOptimizedPicture(
-    src,
+    normalizedSrc,
     imageAlt,
     options.eager,
     fallbackBreakpoints,
@@ -240,11 +284,14 @@ export function createResponsiveImage(src, alt, eagerOrOptions, breakpoints) {
 
   if (optimizedImage) {
     optimizedImage.addEventListener('error', () => {
-      if (optimizedImage.dataset.optimizedFallbackApplied === 'true') return;
+      if (optimizedImage.dataset.optimizedFallbackApplied === 'true') {
+        notifyImageUnavailable(optimizedImage);
+        return;
+      }
 
       optimizedImage.dataset.optimizedFallbackApplied = 'true';
       optimizedPicture.querySelectorAll('source').forEach((source) => source.remove());
-      optimizedImage.src = src;
+      optimizedImage.src = normalizedSrc;
     });
   }
 

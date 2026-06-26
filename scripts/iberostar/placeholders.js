@@ -25,6 +25,7 @@ function getRowKey(row) {
 }
 
 function getRowValue(row) {
+  if (!row) return '';
   return row.text || row.Text || row.value || row.Value || row.copy || row.Copy || '';
 }
 
@@ -47,6 +48,8 @@ async function fetchPlaceholders(path) {
 
 function getPlaceholderValue(payload, key) {
   const normalizedKey = normalizeKey(key);
+  if (!normalizedKey) return '';
+
   const row = getRows(payload).find((item) => normalizeKey(getRowKey(item)) === normalizedKey);
   return getRowValue(row);
 }

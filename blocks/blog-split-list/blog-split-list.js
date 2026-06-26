@@ -183,6 +183,11 @@ function normalizeUrl(value) {
   return `${value || ''}`.trim();
 }
 
+function normalizeValue(value) {
+  const normalized = normalizeUrl(value);
+  return normalized.toLowerCase() === 'undefined' ? '' : normalized;
+}
+
 function samePath(a, b) {
   const left = normalizeUrl(a).replace(/\/$/, '');
   const right = normalizeUrl(b).replace(/\/$/, '');
@@ -257,26 +262,29 @@ function getManualField(row, propName, cells, index) {
 }
 
 function normalizeArticle(article = {}, index = 0) {
-  const url = normalizeUrl(article.url || article.href || article.path);
-  const title = `${article.title || ''}`.trim();
-  const description = `${article.description || article.summary || ''}`.trim();
-  const category = `${article.category || ''}`.trim();
-  const categorySlug = `${article.categorySlug || normalizeSlug(category)}`.trim();
+  const rawUrl = normalizeValue(article.url || article.href || article.path);
+  const rawPath = normalizeValue(article.path) || rawUrl;
+  const href = toPublicContentPath(rawUrl) || '#';
+  const path = toPublicContentPath(rawPath) || href;
+  const title = normalizeValue(article.title);
+  const description = normalizeValue(article.description || article.summary);
+  const category = normalizeValue(article.category);
+  const categorySlug = normalizeValue(article.categorySlug || normalizeSlug(category));
 
   return {
-    id: `${article.id || url || `article-${index + 1}`}`,
-    authorImage: normalizeUrl(article.authorImage),
-    authorName: `${article.authorName || article.author || ''}`.trim(),
+    id: `${normalizeValue(article.id) || path || `article-${index + 1}`}`,
+    authorImage: normalizeValue(article.authorImage),
+    authorName: normalizeValue(article.authorName || article.author),
     category,
     categorySlug,
-    categoryUrl: normalizeUrl(article.categoryUrl) || (categorySlug ? `/inspiration-guide/category/${categorySlug}` : ''),
+    categoryUrl: normalizeValue(article.categoryUrl) || (categorySlug ? `/inspiration-guide/category/${categorySlug}` : ''),
     description,
-    href: url || '#',
-    image: normalizeUrl(article.image),
-    imageAlt: `${article.imageAlt || title}`.trim(),
-    path: normalizeUrl(article.path) || url,
-    publicationDate: `${article.publicationDate || article.publishDate || ''}`.trim(),
-    readTime: `${article.readTime || (article.readingTime ? `${article.readingTime} min` : '')}`.trim(),
+    href,
+    image: normalizeValue(article.image),
+    imageAlt: normalizeValue(article.imageAlt) || title,
+    path,
+    publicationDate: normalizeValue(article.publicationDate || article.publishDate),
+    readTime: normalizeValue(article.readTime) || (article.readingTime ? `${article.readingTime} min` : ''),
     tags: Array.isArray(article.tags) ? article.tags.map((tag) => `${tag}`.toLowerCase()) : [],
     title,
   };
@@ -424,12 +432,17 @@ function appendImage(parent, item, imageOptions) {
   imageLink.href = item.href;
   imageLink.setAttribute('aria-label', item.title);
 
-  imageLink.append(createResponsiveImage(
+  const media = createResponsiveImage(
     item.image,
     item.imageAlt || item.title,
     imageOptions,
-  ));
+  );
 
+  media.addEventListener('media:image-unavailable', () => {
+    parent.remove();
+  });
+
+  imageLink.append(media);
   parent.append(imageLink);
 }
 
@@ -468,11 +481,12 @@ function appendAuthor(parent, item) {
   const author = document.createElement('div');
   author.className = 'blog-split-author';
 
-  if (item.authorImage && item.authorImage !== 'undefined') {
+  if (item.authorImage) {
     const avatar = document.createElement('img');
     avatar.src = item.authorImage;
     avatar.alt = item.authorName || '';
     avatar.loading = 'lazy';
+    avatar.addEventListener('error', () => avatar.remove());
     author.append(avatar);
   }
 
