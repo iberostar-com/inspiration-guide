@@ -154,8 +154,15 @@ function normalizeReadTime(value) {
   return minutes > 0 ? `${minutes} min` : text;
 }
 
+function isMeaningfulValue(value) {
+  if (value === undefined || value === null) return false;
+
+  const normalized = `${value}`.trim().toLowerCase();
+  return normalized !== '' && normalized !== 'undefined' && normalized !== 'null';
+}
+
 function firstDefined(...values) {
-  const value = values.find((item) => item !== undefined && item !== null && `${item}`.trim() !== '');
+  const value = values.find((item) => isMeaningfulValue(item));
   return value === undefined ? '' : value;
 }
 
@@ -375,16 +382,44 @@ function buildTagFrequency(articles) {
   return frequency;
 }
 
+async function enrichSparseArticles(articles = []) {
+  const enriched = await Promise.all(articles.map(async (article, index) => {
+    const needsEnrichment = !article.title
+      || article.title.toLowerCase() === 'untitled'
+      || !article.image
+      || !article.description;
+
+    if (!needsEnrichment || !article.path || article.path === '#') {
+      return article;
+    }
+
+    try {
+      const metadata = await fetchArticleMetadata(article.path);
+      return normalizeArticle({
+        ...article,
+        ...metadata,
+      }, index);
+    } catch (error) {
+      return article;
+    }
+  }));
+
+  return enriched;
+}
+
 async function getAemArticles() {
   const url = resolveAemDataUrl();
 
   try {
     const payload = await fetchJson(url);
     const collection = pickArticlesCollection(payload);
-
-    return collection
+    const normalized = collection
       .map((article, index) => normalizeArticle(article, index))
-      .filter((article) => article.title && article.id && article.visible);
+      .filter((article) => article.id && article.visible);
+
+    const enriched = await enrichSparseArticles(normalized);
+
+    return enriched.filter((article) => article.title && article.id && article.visible);
   } catch (error) {
     // eslint-disable-next-line no-console
     console.warn('[inspiration-data] Failed to load AEM data:', error);

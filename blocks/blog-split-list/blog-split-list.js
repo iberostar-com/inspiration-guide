@@ -111,8 +111,13 @@ function getTextValue(block, propName, fallback = '') {
   const text = el?.textContent?.trim();
   if (text) return text;
 
+  // Universal Editor can output mixed rows (some fields instrumented, others positional only).
+  // Fall back to positional extraction when the specific prop is not instrumented.
+  const positional = getPositionalTextValue(block, propName);
+  if (positional) return positional;
+
   if (!hasAuthoredProps(block)) {
-    return getPositionalTextValue(block, propName) || fallback;
+    return fallback;
   }
 
   return fallback;
@@ -157,7 +162,6 @@ function getConfiguredTags(block) {
     .filter(Boolean);
   const filterTagsField = getFieldByProp(block, 'filterTags');
   const positionalTagsField = !filterTagsField
-    && !hasAuthoredProps(block)
     && hasPositionalConfig(block)
     ? getSourceRows(block)[3]
     : null;
