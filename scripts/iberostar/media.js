@@ -1,5 +1,6 @@
 import { createOptimizedPicture } from '../aem.js';
 import DYNAMIC_MEDIA_CONFIG from './dynamic-media-config.js';
+import getEnvironmentConfig from './environment-config.js';
 import getImagePreset from './image-presets.js';
 
 const DEFAULT_BREAKPOINTS = [{ width: '750' }];
@@ -54,19 +55,35 @@ function attachImageFallback(image, fallbackSrc) {
 }
 
 function getDynamicMediaConfig() {
+  const environmentConfig = getEnvironmentConfig();
+  const environmentDynamicMedia = environmentConfig.dynamicMedia || {};
+
   return {
+    enabled: normalizeBoolean(
+      getMetaContent('dynamic-media-enabled'),
+      normalizeBoolean(
+        `${window.hlx?.dynamicMediaEnabled || ''}`,
+        environmentDynamicMedia.enabled ?? DYNAMIC_MEDIA_CONFIG.enabled,
+      ),
+    ),
     imageServer: getMetaContent('dynamic-media-image-server')
       || window.hlx?.dynamicMediaImageServer
+      || environmentDynamicMedia.imageServer
       || DYNAMIC_MEDIA_CONFIG.imageServer,
     company: getMetaContent('dynamic-media-company')
       || window.hlx?.dynamicMediaCompany
+      || environmentDynamicMedia.company
       || DYNAMIC_MEDIA_CONFIG.company,
     damRoot: getMetaContent('dynamic-media-dam-root')
       || window.hlx?.dynamicMediaDamRoot
+      || environmentDynamicMedia.damRoot
       || DYNAMIC_MEDIA_CONFIG.damRoot,
     stripExtension: normalizeBoolean(
       getMetaContent('dynamic-media-strip-extension'),
-      DYNAMIC_MEDIA_CONFIG.stripExtension,
+      normalizeBoolean(
+        `${window.hlx?.dynamicMediaStripExtension || ''}`,
+        environmentDynamicMedia.stripExtension ?? DYNAMIC_MEDIA_CONFIG.stripExtension,
+      ),
     ),
   };
 }
@@ -105,10 +122,9 @@ function encodeAssetPath(assetPath) {
     .join('/');
 }
 
-function resolveDynamicMediaBaseUrl(src) {
+function resolveDynamicMediaBaseUrl(src, config) {
   if (isDynamicMediaImage(src)) return src;
 
-  const config = getDynamicMediaConfig();
   if (!config.imageServer || !config.company) return '';
 
   const assetPath = getDamAssetPath(src, config);
@@ -148,8 +164,8 @@ function buildDynamicMediaUrl(baseUrl, rendition = {}) {
   return url.toString();
 }
 
-function createDynamicMediaPicture(src, alt, options, preset) {
-  const dynamicMediaUrl = resolveDynamicMediaBaseUrl(src);
+function createDynamicMediaPicture(src, alt, options, preset, config) {
+  const dynamicMediaUrl = resolveDynamicMediaBaseUrl(src, config);
   if (!dynamicMediaUrl) return null;
 
   const renditions = preset.renditions || [];
@@ -195,10 +211,19 @@ export function createResponsiveImage(src, alt, eagerOrOptions, breakpoints) {
   const fallbackBreakpoints = options.breakpoints
     || preset.fallbackBreakpoints
     || DEFAULT_BREAKPOINTS;
-  const dynamicMediaPicture = createDynamicMediaPicture(src, imageAlt, options, preset);
+  const dynamicMediaConfig = getDynamicMediaConfig();
 
-  if (dynamicMediaPicture) {
-    return dynamicMediaPicture;
+  if (dynamicMediaConfig.enabled) {
+    const dynamicMediaPicture = createDynamicMediaPicture(
+      src,
+      imageAlt,
+      options,
+      preset,
+      dynamicMediaConfig,
+    );
+    if (dynamicMediaPicture) {
+      return dynamicMediaPicture;
+    }
   }
 
   if (isRemoteImage(src)) {
