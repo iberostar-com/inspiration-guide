@@ -505,7 +505,17 @@
                 "template": {
                   "name": "Hotel Mini Card",
                   "model": "hotel-mini-card"
-                }
+                },
+                "variants": [
+                  {
+                    "name": "Horizontal",
+                    "value": "horizontal"
+                  },
+                  {
+                    "name": "Vertical",
+                    "value": "vertical"
+                  }
+                ]
               }
             }
           }

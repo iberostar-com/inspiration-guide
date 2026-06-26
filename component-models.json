@@ -1199,27 +1199,101 @@
     "id": "hotel-mini-card",
     "fields": [
       {
+        "component": "reference",
+        "valueType": "string",
+        "name": "media_image",
+        "label": "Image",
+        "multi": false
+      },
+      {
         "component": "text",
-        "name": "hotelName",
+        "valueType": "string",
+        "name": "media_imageAlt",
+        "label": "Image Alt",
+        "value": ""
+      },
+      {
+        "component": "text",
+        "valueType": "string",
+        "name": "hotel_hotelName",
         "label": "Hotel Name",
         "value": ""
       },
       {
         "component": "text",
-        "name": "location",
+        "valueType": "string",
+        "name": "hotel_location",
         "label": "Location",
         "value": ""
       },
       {
+        "component": "select",
+        "valueType": "string",
+        "name": "hotel_stars",
+        "label": "Stars",
+        "value": "4",
+        "options": [
+          {
+            "name": "None",
+            "value": "0"
+          },
+          {
+            "name": "3 stars",
+            "value": "3"
+          },
+          {
+            "name": "4 stars",
+            "value": "4"
+          },
+          {
+            "name": "5 stars",
+            "value": "5"
+          }
+        ]
+      },
+      {
         "component": "text",
-        "name": "priceFrom",
-        "label": "Price From",
+        "valueType": "string",
+        "name": "hotel_priceFrom",
+        "label": "Price Text",
         "value": ""
       },
       {
         "component": "text",
-        "name": "link",
-        "label": "Link",
+        "valueType": "string",
+        "name": "cta_linkText",
+        "label": "CTA Text",
+        "value": "Ver disponibilidad"
+      },
+      {
+        "component": "aem-content",
+        "valueType": "string",
+        "name": "cta_link",
+        "label": "Link"
+      },
+      {
+        "component": "select",
+        "valueType": "string",
+        "name": "cta_linkTarget",
+        "label": "Link Target",
+        "value": "_self",
+        "options": [
+          {
+            "name": "Same tab",
+            "value": "_self"
+          },
+          {
+            "name": "New tab",
+            "value": "_blank"
+          }
+        ]
+      },
+      {
+        "component": "text",
+        "valueType": "string",
+        "name": "tag_tagLabel",
+        "label": "Tag Label",
+        "description": "Only shown by the vertical variant.",
         "value": ""
       }
     ]

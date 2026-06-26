@@ -159,6 +159,32 @@ const IMAGE_PRESETS = {
     renditions: HOTEL_CARD_RENDITIONS,
     fallbackBreakpoints: [{ width: '750' }],
   },
+  'hotel-mini-card-horizontal': {
+    renditions: [
+      {
+        crop: 'IG-Hotel-Mini-Horizontal',
+        width: 432,
+        height: 306,
+      },
+    ],
+    fallbackBreakpoints: [{ width: '432' }],
+  },
+  'hotel-mini-card-vertical': {
+    renditions: [
+      {
+        media: '(min-width: 900px)',
+        crop: 'IG-Hotel-Mini-Vertical-Desktop',
+        width: 720,
+        height: 960,
+      },
+      {
+        crop: 'IG-Hotel-Mini-Vertical-Mobile',
+        width: 640,
+        height: 854,
+      },
+    ],
+    fallbackBreakpoints: [{ width: '750' }],
+  },
 };
 
 export default function getImagePreset(name) {
