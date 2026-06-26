@@ -207,9 +207,25 @@ function createHamburger() {
   return hamburger;
 }
 
+async function loadNavFragment() {
+  const primaryPath = resolveFragmentPath('nav', DEFAULT_NAV_PATH);
+  const fallbackPaths = [primaryPath, DEFAULT_NAV_PATH];
+
+  for (let i = 0; i < fallbackPaths.length; i += 1) {
+    const path = fallbackPaths[i];
+    // eslint-disable-next-line no-await-in-loop
+    const fragment = await loadFragment(path);
+
+    if (fragment) {
+      return fragment;
+    }
+  }
+
+  return null;
+}
+
 export default async function decorate(block) {
-  const navPath = resolveFragmentPath('nav', DEFAULT_NAV_PATH);
-  const fragment = await loadFragment(navPath);
+  const fragment = await loadNavFragment();
 
   if (!fragment) return;
 

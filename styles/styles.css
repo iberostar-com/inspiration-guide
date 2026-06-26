@@ -319,11 +319,17 @@ main > .section:first-of-type {
 body.page-article main > .article-layout-shell {
   display: grid;
   gap: 32px;
-  margin: 40px 16px;
+  margin: 24px 16px 40px;
 }
 
 body.page-article main > .article-layout-shell .section {
   margin: 0;
+}
+
+body.page-article main > .article-layout-shell .section > div {
+  max-width: unset;
+  margin: 0;
+  padding: 0;
 }
 
 body.page-article main > .article-layout-shell .article-layout-main,
@@ -335,15 +341,11 @@ body.page-article main > .article-layout-shell .article-layout-sidebar {
 
 @media (width >= 1200px) {
   body.page-article main > .article-layout-shell {
-    grid-template-columns: minmax(0, 1fr) 280px;
+    grid-template-columns: minmax(0, 805px) 277px;
+    gap: 76px;
     align-items: start;
     max-width: 1158px;
-    margin: 40px auto;
-  }
-
-  body.page-article main > .article-layout-shell .article-layout-sidebar {
-    position: sticky;
-    top: calc(var(--nav-height) + 24px);
+    margin: 24px auto 40px;
   }
 }
 

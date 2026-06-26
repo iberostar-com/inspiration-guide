@@ -7,6 +7,23 @@ function resolveFooterPath() {
   return resolveFragmentPath('footer', DEFAULT_FOOTER_PATH);
 }
 
+async function loadFooterFragment() {
+  const primaryPath = resolveFooterPath();
+  const fallbackPaths = [primaryPath, DEFAULT_FOOTER_PATH];
+
+  for (let i = 0; i < fallbackPaths.length; i += 1) {
+    const path = fallbackPaths[i];
+    // eslint-disable-next-line no-await-in-loop
+    const fragment = await loadFragment(path);
+
+    if (fragment) {
+      return fragment;
+    }
+  }
+
+  return null;
+}
+
 function classifySections(sections) {
   if (!sections.length) {
     return { brand: null, columns: [], meta: null };
@@ -58,8 +75,7 @@ function decorateFooterSections(footer) {
 }
 
 export default async function decorate(block) {
-  const footerPath = resolveFooterPath();
-  const fragment = await loadFragment(footerPath);
+  const fragment = await loadFooterFragment();
 
   if (!fragment) return;
 

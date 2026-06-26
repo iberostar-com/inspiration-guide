@@ -1,6 +1,7 @@
 import { getMetadata } from '../aem.js';
 
 const INSPIRATION_GUIDE_SEGMENT = '/inspiration-guide';
+const LOCALE_PATTERN = /\/(?:([a-z]{2}-[a-z]{2}))\/inspiration-guide(?:\/|$)/i;
 
 export function normalizeFragmentPath(path) {
   if (!path) return '';
@@ -33,6 +34,17 @@ function isFragmentPath(rootPath, fragmentName) {
   return normalizedPath === `${rootPath}/${fragmentName}`;
 }
 
+function getLocaleFallbackPath(fragmentName) {
+  const normalizedPath = normalizeFragmentPath(window.location.pathname);
+  const localeMatch = normalizedPath.match(LOCALE_PATTERN);
+
+  if (!localeMatch?.[1]) {
+    return '';
+  }
+
+  return `/${localeMatch[1].toLowerCase()}${INSPIRATION_GUIDE_SEGMENT}/${fragmentName}`;
+}
+
 export function resolveFragmentPath(metaName, fallbackPath) {
   const metaValue = getMetadata(metaName);
 
@@ -43,7 +55,7 @@ export function resolveFragmentPath(metaName, fallbackPath) {
   const inspirationGuideRoot = getInspirationGuideRoot();
 
   if (!inspirationGuideRoot || isFragmentPath(inspirationGuideRoot, metaName)) {
-    return fallbackPath;
+    return getLocaleFallbackPath(metaName) || fallbackPath;
   }
 
   return `${inspirationGuideRoot}/${metaName}`;
