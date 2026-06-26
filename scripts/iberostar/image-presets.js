@@ -111,6 +111,16 @@ const IMAGE_PRESETS = {
     renditions: ARTICLE_CARD_RENDITIONS,
     fallbackBreakpoints: [{ width: '600' }],
   },
+  'blog-split-list-author': {
+    renditions: [
+      {
+        width: 80,
+        height: 80,
+        fit: 'crop,0',
+      },
+    ],
+    fallbackBreakpoints: [{ width: '80' }],
+  },
   'cards-highlight': {
     renditions: ARTICLE_CARD_RENDITIONS,
     fallbackBreakpoints: [{ width: '750' }],

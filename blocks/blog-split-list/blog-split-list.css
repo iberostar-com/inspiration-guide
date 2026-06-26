@@ -137,9 +137,13 @@ main .blog-split-list .blog-split-author {
   align-items: center;
 }
 
+main .blog-split-list .blog-split-author picture,
 main .blog-split-list .blog-split-author img {
   width: 40px;
   height: 40px;
+}
+
+main .blog-split-list .blog-split-author img {
   border-radius: 50%;
   object-fit: cover;
 }

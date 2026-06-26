@@ -505,11 +505,10 @@ function appendAuthor(parent, item) {
   author.className = 'blog-split-author';
 
   if (item.authorImage) {
-    const avatar = document.createElement('img');
-    avatar.src = item.authorImage;
-    avatar.alt = item.authorName || '';
-    avatar.loading = 'lazy';
-    avatar.addEventListener('error', () => avatar.remove());
+    const avatar = createResponsiveImage(item.authorImage, item.authorName || '', {
+      preset: 'blog-split-list-author',
+    });
+    avatar.addEventListener('media:image-unavailable', () => avatar.remove());
     author.append(avatar);
   }
 

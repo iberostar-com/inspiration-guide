@@ -296,18 +296,25 @@ function resolveAemDataUrl() {
     return fromMeta;
   }
 
-  const segments = window.location.pathname.split('/').filter(Boolean);
-  const locale = segments.find((segment) => /^[a-z]{2}-[a-z]{2}$/i.test(segment));
-
-  if (locale) {
-    return `/${locale.toLowerCase()}/inspiration-guide/articles-index.json`;
-  }
-
-  return '/inspiration-guide/articles-index.json';
+  return '';
 }
 
 function resolvePageIndexUrl() {
   return '/query-index.json';
+}
+
+function isPageIndexUrl(url = '') {
+  return url.endsWith('/query-index.json') || url === 'query-index.json';
+}
+
+function getDefaultArticleIndexUrls() {
+  const segments = window.location.pathname.split('/').filter(Boolean);
+  const locale = segments.find((segment) => /^[a-z]{2}-[a-z]{2}$/i.test(segment));
+
+  return [
+    locale ? `/${locale.toLowerCase()}/inspiration-guide/articles-index.json` : '',
+    '/inspiration-guide/articles-index.json',
+  ].filter(Boolean);
 }
 
 async function fetchJson(url) {
@@ -421,12 +428,11 @@ async function enrichSparseArticles(articles = []) {
 async function getAemArticles() {
   const primaryUrl = resolveAemDataUrl();
   const isAuthor = isAuthorContext();
-  const fallbackUrls = isAuthor ? [
-    '/query-index.json',
-    '/en-us/inspiration-guide/articles-index.json',
-    '/inspiration-guide/articles-index.json',
-  ] : [];
-  const urlsToTry = [primaryUrl, ...fallbackUrls];
+  const urlsToTry = [
+    primaryUrl,
+    resolvePageIndexUrl(),
+    ...(isAuthor ? [] : getDefaultArticleIndexUrls()),
+  ].filter(Boolean);
 
   const tryLoadArticles = async (urls) => {
     if (!urls.length) return null;
@@ -434,7 +440,9 @@ async function getAemArticles() {
 
     try {
       const payload = await fetchJson(currentUrl);
-      const collection = pickArticlesCollection(payload);
+      const collection = isPageIndexUrl(currentUrl)
+        ? getIndexRows(payload).filter((row) => isArticlePath(row.path))
+        : pickArticlesCollection(payload);
       const normalized = collection
         .map((article, index) => normalizeArticle(article, index))
         .filter((article) => article.id && article.visible);
