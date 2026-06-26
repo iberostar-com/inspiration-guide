@@ -421,6 +421,34 @@
     ]
   },
   {
+    "id": "breadcrumbs",
+    "fields": [
+      {
+        "component": "text",
+        "valueType": "string",
+        "name": "homeLabel",
+        "label": "Home Label",
+        "description": "Optional. If empty, the block uses the breadcrumbHome placeholder/i18n value.",
+        "value": ""
+      },
+      {
+        "component": "aem-content",
+        "valueType": "string",
+        "name": "homeUrl",
+        "label": "Home URL",
+        "description": "Optional. If empty, the block links to the Inspiration Guide root for the current locale."
+      },
+      {
+        "component": "text",
+        "valueType": "string",
+        "name": "currentLabel",
+        "label": "Current Page Label",
+        "description": "Optional. If empty, the block uses the page title or the current URL segment.",
+        "value": ""
+      }
+    ]
+  },
+  {
     "id": "card",
     "fields": [
       {

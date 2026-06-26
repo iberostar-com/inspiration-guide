@@ -1,0 +1,63 @@
+main .breadcrumbs {
+  color: #1b2828;
+  font-family: var(--body-font-family);
+}
+
+main .breadcrumbs .breadcrumbs-source {
+  display: none;
+}
+
+main .breadcrumbs .breadcrumbs-rendered {
+  padding: 12px 0;
+}
+
+main .breadcrumbs .breadcrumbs-list {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+main .breadcrumbs .breadcrumbs-item {
+  display: inline-flex;
+  align-items: center;
+  color: #6f7679;
+  font-size: 0.8125rem;
+  line-height: 1.4;
+}
+
+main .breadcrumbs .breadcrumbs-item:not(:last-child)::after {
+  margin: 0 6px;
+  color: #aaa;
+  content: "/";
+}
+
+main .breadcrumbs .breadcrumbs-item a:any-link {
+  color: inherit;
+  text-decoration: none;
+}
+
+main .breadcrumbs .breadcrumbs-item a:hover,
+main .breadcrumbs .breadcrumbs-item a:focus-visible {
+  color: #1b2828;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+main .breadcrumbs .breadcrumbs-item [aria-current="page"] {
+  color: #1b2828;
+  font-weight: 500;
+}
+
+@media (width >= 900px) {
+  main .breadcrumbs .breadcrumbs-rendered {
+    padding: 16px 0;
+  }
+
+  main .breadcrumbs .breadcrumbs-item {
+    font-size: 0.875rem;
+  }
+}
