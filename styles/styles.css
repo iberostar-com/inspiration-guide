@@ -316,6 +316,37 @@ main > .section:first-of-type {
   }
 }
 
+body.page-article main > .article-layout-shell {
+  display: grid;
+  gap: 32px;
+  margin: 40px 16px;
+}
+
+body.page-article main > .article-layout-shell .section {
+  margin: 0;
+}
+
+body.page-article main > .article-layout-shell .article-layout-main,
+body.page-article main > .article-layout-shell .article-layout-sidebar {
+  display: grid;
+  gap: 40px;
+  min-width: 0;
+}
+
+@media (width >= 1200px) {
+  body.page-article main > .article-layout-shell {
+    grid-template-columns: minmax(0, 1fr) 280px;
+    align-items: start;
+    max-width: 1158px;
+    margin: 40px auto;
+  }
+
+  body.page-article main > .article-layout-shell .article-layout-sidebar {
+    position: sticky;
+    top: calc(var(--nav-height) + 24px);
+  }
+}
+
 /* section metadata */
 main .section.light,
 main .section.highlight {

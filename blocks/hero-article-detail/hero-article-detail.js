@@ -1,5 +1,4 @@
 import { getMetadata } from '../../scripts/aem.js';
-import { createResponsiveImage } from '../../scripts/iberostar/media.js';
 
 function getSourceRows(block) {
   return Array.from(block.children).filter((child) => !child.classList.contains('hero-article-detail-content'));
@@ -28,35 +27,6 @@ function hideSourceRows(block) {
     row.classList.add('hero-article-detail-source');
     row.setAttribute('aria-hidden', 'true');
   });
-}
-
-function getFieldByProp(block, propName) {
-  const selector = `[data-aue-prop="${propName}"]`;
-
-  return getSourceRows(block)
-    .map((row) => {
-      if (row.matches?.(selector)) {
-        return row;
-      }
-
-      return row.querySelector?.(selector) || null;
-    })
-    .find(Boolean) || null;
-}
-
-function getFieldText(block, propName) {
-  const field = getFieldByProp(block, propName);
-  return field?.textContent?.trim() || '';
-}
-
-function getFieldImage(block, propName) {
-  const field = getFieldByProp(block, propName);
-  if (!field) return '';
-
-  return field.querySelector('img')?.src
-    || field.querySelector('a[href]')?.getAttribute('href')?.trim()
-    || field.textContent?.trim()
-    || '';
 }
 
 function getMetaValue(name, fallback = '') {
@@ -166,10 +136,6 @@ export default function decorate(block) {
   const category = toCategoryLabel(getMetaValue('article-category'));
   const publicationDate = toDisplayDate(getMetaValue('article-publication-date'));
   const readTime = getMetaValue('article-read-time').toUpperCase();
-  const imageOverride = getFieldImage(block, 'image');
-  const imageAltOverride = getFieldText(block, 'imageAlt');
-  const articleImage = imageOverride || getMetaValue('article-image');
-  const articleImageAlt = imageAltOverride || getMetaValue('article-image-alt') || title;
 
   hideSourceRows(block);
 
@@ -277,18 +243,6 @@ export default function decorate(block) {
 
   info.append(actions);
   content.append(info);
-
-  if (articleImage) {
-    const mediaWrapper = document.createElement('div');
-    mediaWrapper.className = 'hero-article-detail-media';
-
-    mediaWrapper.append(createResponsiveImage(articleImage, articleImageAlt, {
-      eager: true,
-      preset: 'article-card-featured',
-    }));
-
-    content.append(mediaWrapper);
-  }
 
   block.append(content);
 }

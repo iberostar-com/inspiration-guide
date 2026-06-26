@@ -265,8 +265,35 @@
           {
             "name": "Highlight",
             "value": "highlight"
+          },
+          {
+            "name": "Article Main",
+            "value": "article-main"
+          },
+          {
+            "name": "Article Sidebar",
+            "value": "article-sidebar"
           }
         ]
+      }
+    ]
+  },
+  {
+    "id": "article-main-image",
+    "fields": [
+      {
+        "component": "reference",
+        "valueType": "string",
+        "name": "image",
+        "label": "Image Override",
+        "multi": false
+      },
+      {
+        "component": "text",
+        "valueType": "string",
+        "name": "imageAlt",
+        "label": "Image Alt Override",
+        "value": ""
       }
     ]
   },
@@ -996,22 +1023,7 @@
   },
   {
     "id": "hero-article-detail",
-    "fields": [
-      {
-        "component": "reference",
-        "valueType": "string",
-        "name": "image",
-        "label": "Image Override",
-        "multi": false
-      },
-      {
-        "component": "text",
-        "valueType": "string",
-        "name": "imageAlt",
-        "label": "Image Alt Override",
-        "value": ""
-      }
-    ]
+    "fields": []
   },
   {
     "id": "hero-blog",

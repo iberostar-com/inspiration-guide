@@ -125,6 +125,65 @@ function getPageType() {
   return document.querySelector('meta[name="page-type"]')?.content?.trim() || 'default';
 }
 
+function isArticleLayoutSection(section) {
+  return section.classList.contains('article-main') || section.classList.contains('article-sidebar');
+}
+
+function buildArticleLayoutShell(layoutSections) {
+  if (!layoutSections.length) {
+    return;
+  }
+
+  const shell = document.createElement('div');
+  shell.className = 'article-layout-shell';
+
+  const mainColumn = document.createElement('div');
+  mainColumn.className = 'article-layout-main';
+
+  const sidebarColumn = document.createElement('aside');
+  sidebarColumn.className = 'article-layout-sidebar';
+
+  shell.append(mainColumn, sidebarColumn);
+  layoutSections[0].before(shell);
+
+  layoutSections.forEach((section) => {
+    if (section.classList.contains('article-sidebar')) {
+      sidebarColumn.append(section);
+      return;
+    }
+
+    mainColumn.append(section);
+  });
+
+  if (!mainColumn.children.length || !sidebarColumn.children.length) {
+    shell.replaceWith(...layoutSections);
+  }
+}
+
+function applyArticleTwoColumnLayout(main) {
+  if (getPageType() !== 'article') {
+    return;
+  }
+
+  const sections = [...main.querySelectorAll(':scope > div.section')];
+  let index = 0;
+
+  while (index < sections.length) {
+    if (isArticleLayoutSection(sections[index])) {
+      const layoutGroup = [];
+
+      while (index < sections.length && isArticleLayoutSection(sections[index])) {
+        layoutGroup.push(sections[index]);
+        index += 1;
+      }
+
+      buildArticleLayoutShell(layoutGroup);
+    } else {
+      index += 1;
+    }
+  }
+}
+
 /**
  * Decorates the main element.
  * @param {Element} main The main element
@@ -135,6 +194,7 @@ export function decorateMain(main) {
   decorateRichtext(main);
   buildAutoBlocks(main);
   decorateSections(main);
+  applyArticleTwoColumnLayout(main);
   decorateBlocks(main);
   decorateButtons(main);
 }

@@ -33,6 +33,14 @@
             {
               "name": "Highlight",
               "value": "highlight"
+            },
+            {
+              "name": "Article Main",
+              "value": "article-main"
+            },
+            {
+              "name": "Article Sidebar",
+              "value": "article-sidebar"
             }
           ]
         }
@@ -50,6 +58,7 @@
         "hero",
         "hero-blog",
         "hero-article-detail",
+        "article-main-image",
         "blog-split-list",
         "header-brand",
         "nav-hotels",
