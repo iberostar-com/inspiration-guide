@@ -16,8 +16,13 @@ function getPropEl(block, propName) {
   return block.querySelector(`[data-aue-prop="${propName}"]`) || null;
 }
 
-function getRowByIndex(block, index) {
-  return getSourceRows(block)[index] || null;
+// In publish mode AEM bakes the imageAlt field value directly into <img alt="">.
+// Caption and alignment appear as plain text rows (indices 1 and 2).
+// We detect them by content: if a text row matches an alignment keyword → alignment,
+// otherwise → caption. This avoids fragile positional-index assumptions.
+
+function getTextRows(block) {
+  return getSourceRows(block).filter((row) => !row.querySelector('picture, img'));
 }
 
 function getImageSrc(block) {
@@ -28,37 +33,41 @@ function getImageSrc(block) {
       || propEl.textContent?.trim()
       || '';
   }
-  const row = getRowByIndex(block, 0);
-  return row?.querySelector('img')?.src
-    || row?.querySelector('a[href]')?.getAttribute('href')?.trim()
-    || block.querySelector('img')?.src
-    || '';
+  return block.querySelector('picture img, img')?.src || '';
 }
 
 function getImageAlt(block) {
+  // In UE mode: authored via data-aue-prop
   const propEl = getPropEl(block, 'imageAlt');
-  const authored = propEl?.textContent?.trim()
-    || getRowByIndex(block, 1)?.textContent?.trim()
-    || block.querySelector('img')?.alt?.trim()
-    || '';
-  return authored || getMetaContent('alt_es');
+  if (propEl) return propEl.textContent?.trim() || '';
+  // In publish mode: AEM bakes the alt into the <img> element directly
+  return block.querySelector('img')?.alt?.trim() || getMetaContent('alt_es');
 }
 
 function getCaption(block) {
+  // UE mode
   const propEl = getPropEl(block, 'caption');
-  const authored = propEl?.textContent?.trim()
-    || getRowByIndex(block, 2)?.textContent?.trim()
-    || '';
-  return authored || getMetaContent('dc:description');
+  if (propEl) return propEl.textContent?.trim() || '';
+  // Publish mode: find a text row whose content is NOT an alignment keyword
+  const captionRow = getTextRows(block).find(
+    (row) => !ALIGNMENTS.includes(row.textContent?.trim()),
+  );
+  return captionRow?.textContent?.trim() || getMetaContent('dc:description');
 }
 
 function getAlignment(block) {
+  // UE mode
   const propEl = getPropEl(block, 'alignment');
-  const val = propEl?.textContent?.trim()
-    || getRowByIndex(block, 3)?.textContent?.trim()
-    || [...block.classList]
-      .map((cls) => cls.match(/^(left|center|right)$/)?.[1])
-      .find(Boolean)
+  if (propEl) {
+    const val = propEl.textContent?.trim();
+    return ALIGNMENTS.includes(val) ? val : 'center';
+  }
+  // Publish mode: find a text row whose content IS an alignment keyword
+  const alignRow = getTextRows(block).find(
+    (row) => ALIGNMENTS.includes(row.textContent?.trim()),
+  );
+  const val = alignRow?.textContent?.trim()
+    || [...block.classList].map((cls) => cls.match(/^(left|center|right)$/)?.[1]).find(Boolean)
     || 'center';
   return ALIGNMENTS.includes(val) ? val : 'center';
 }
@@ -79,8 +88,12 @@ export default function decorate(block) {
     row.setAttribute('aria-hidden', 'true');
   });
 
-  // Apply alignment variant class to the block
+  // Remove any previous alignment class before applying the new one (handles UE re-renders)
+  ALIGNMENTS.forEach((a) => block.classList.remove(`article-content-image-${a}`));
   block.classList.add(`article-content-image-${alignment}`);
+
+  // Remove previously rendered figure if decorator re-runs in UE
+  block.querySelector('.article-content-image-figure')?.remove();
 
   const figure = document.createElement('figure');
   figure.className = 'article-content-image-figure';

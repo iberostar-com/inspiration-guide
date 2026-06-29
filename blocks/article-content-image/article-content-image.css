@@ -34,26 +34,26 @@ main .article-content-image .article-content-image-caption {
 }
 
 /* Alignment: center (default) — constrained width, centered */
-main .article-content-image.article-content-image-center .article-content-image-figure {
+.article-content-image.article-content-image-center .article-content-image-figure {
   max-width: 660px;
   margin: 0 auto;
 }
 
 /* Alignment: left — half-width, left-aligned */
-main .article-content-image.article-content-image-left .article-content-image-figure {
+.article-content-image.article-content-image-left .article-content-image-figure {
   max-width: 55%;
   margin-right: auto;
 }
 
 /* Alignment: right — half-width, right-aligned */
-main .article-content-image.article-content-image-right .article-content-image-figure {
+.article-content-image.article-content-image-right .article-content-image-figure {
   max-width: 55%;
   margin-left: auto;
 }
 
 @media (width < 600px) {
-  main .article-content-image.article-content-image-left .article-content-image-figure,
-  main .article-content-image.article-content-image-right .article-content-image-figure {
+  .article-content-image.article-content-image-left .article-content-image-figure,
+  .article-content-image.article-content-image-right .article-content-image-figure {
     max-width: 100%;
     margin: 0 auto;
   }
