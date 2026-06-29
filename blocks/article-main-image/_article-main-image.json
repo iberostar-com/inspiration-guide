@@ -31,7 +31,14 @@
           "component": "text",
           "valueType": "string",
           "name": "imageAlt",
-          "label": "Image Alt Override",
+          "label": "Alt Text Override (optional)",
+          "value": ""
+        },
+        {
+          "component": "text",
+          "valueType": "string",
+          "name": "caption",
+          "label": "Caption Override (optional)",
           "value": ""
         }
       ]

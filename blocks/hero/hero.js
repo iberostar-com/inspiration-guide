@@ -16,7 +16,7 @@ function decorateDefaultHero(block) {
   // Extract image and alt
   const img = cells[0]?.querySelector('img');
   if (img && cells[1]) {
-    img.alt = cells[1].textContent;
+    img.alt = cells[1].textContent?.trim() || img.alt || '';
     cells[1].remove();
   }
 

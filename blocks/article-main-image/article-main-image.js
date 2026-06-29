@@ -61,9 +61,17 @@ export default function decorate(block) {
 
   const imageOverride = getFieldImage(block, 'image');
   const imageAltOverride = getFieldText(block, 'imageAlt');
+  const captionOverride = getFieldText(block, 'caption');
+
   const imageSrc = imageOverride || getMetaValue('article-image');
-  const imageAlt = imageAltOverride || getMetaValue('article-image-alt') || getMetaValue('jcr:title') || 'Article image';
-  const imageCaption = getMetaValue('article-image-caption');
+  const imageAlt = imageAltOverride
+    || getMetaValue('article-image-alt')
+    || getMetaValue('alt_es')
+    || getMetaValue('jcr:title')
+    || 'Article image';
+  const imageCaption = captionOverride
+    || getMetaValue('article-image-caption')
+    || getMetaValue('dc:description');
 
   hideSourceRows(block);
 

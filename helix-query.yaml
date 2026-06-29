@@ -6,20 +6,32 @@ indices:
       - '/**'
     exclude:
       - '/**.json'
+      - '/**/*.json'
     target: /query-index.json
     properties:
-      lastModified:
+      path:
         select: none
-        value: parseTimestamp(headers["last-modified"], "ddd, DD MMM YYYY hh:mm:ss GMT")
+        value: path
+      title:
+        select: head > meta[property="og:title"]
+        value: attribute(el, "content")
+      description:
+        select: head > meta[name="description"]
+        value: attribute(el, "content")
       robots:
         select: head > meta[name="robots"]
         value: attribute(el, "content")
-  inspirationArticles:
+      lastModified:
+        select: none
+        value: parseTimestamp(headers["last-modified"], "ddd, DD MMM YYYY hh:mm:ss GMT")
+
+  inspirationArticlesEs:
     include:
       - '/es-es/inspiration-guide/articles/**'
       - '/es-es/inspiration-guide/article/**'
     exclude:
       - '/**.json'
+      - '/**/*.json'
     target: /es-es/inspiration-guide/articles-index.json
     properties:
       path:
@@ -40,7 +52,7 @@ indices:
       imageAlt:
         select: head > meta[name="article-image-alt"]
         value: attribute(el, "content")
-      imageAltEs:
+      imageAltLocalized:
         select: head > meta[name="alt_es"]
         value: attribute(el, "content")
       imageDcDescription:
@@ -61,6 +73,9 @@ indices:
       category:
         select: head > meta[name="article-category"]
         value: attribute(el, "content")
+      categoryPath:
+        select: head > meta[name="article-category-path"]
+        value: attribute(el, "content")
       tags:
         select: head > meta[name="article-tags"]
         value: attribute(el, "content")
@@ -76,6 +91,410 @@ indices:
       readTime:
         select: head > meta[name="article-read-time"]
         value: attribute(el, "content")
+      featured:
+        select: head > meta[name="article-featured"]
+        value: attribute(el, "content")
       visible:
         select: head > meta[name="article-visible"]
         value: attribute(el, "content")
+      robots:
+        select: head > meta[name="robots"]
+        value: attribute(el, "content")
+      lastModified:
+        select: none
+        value: parseTimestamp(headers["last-modified"], "ddd, DD MMM YYYY hh:mm:ss GMT")
+
+  inspirationArticlesEnUs:
+    include:
+      - '/en-us/inspiration-guide/articles/**'
+      - '/en-us/inspiration-guide/article/**'
+    exclude:
+      - '/**.json'
+      - '/**/*.json'
+    target: /en-us/inspiration-guide/articles-index.json
+    properties:
+      path:
+        select: none
+        value: path
+      title:
+        select: head > meta[property="og:title"]
+        value: attribute(el, "content")
+      description:
+        select: head > meta[name="description"]
+        value: attribute(el, "content")
+      image:
+        select: head > meta[name="article-image"]
+        value: attribute(el, "content")
+      ogImage:
+        select: head > meta[property="og:image"]
+        value: attribute(el, "content")
+      imageAlt:
+        select: head > meta[name="article-image-alt"]
+        value: attribute(el, "content")
+      imageAltLocalized:
+        select: head > meta[name="alt_es"]
+        value: attribute(el, "content")
+      imageDcDescription:
+        select: head > meta[name="dc:description"]
+        value: attribute(el, "content")
+      imageAutogenDescription:
+        select: head > meta[name="autogen:description"]
+        value: attribute(el, "content")
+      authorName:
+        select: head > meta[name="article-author-name"]
+        value: attribute(el, "content")
+      author:
+        select: head > meta[name="article-author"]
+        value: attribute(el, "content")
+      authorImage:
+        select: head > meta[name="article-author-image"]
+        value: attribute(el, "content")
+      category:
+        select: head > meta[name="article-category"]
+        value: attribute(el, "content")
+      categoryPath:
+        select: head > meta[name="article-category-path"]
+        value: attribute(el, "content")
+      tags:
+        select: head > meta[name="article-tags"]
+        value: attribute(el, "content")
+      publicationDate:
+        select: head > meta[name="article-publication-date"]
+        value: attribute(el, "content")
+      publicationTimestamp:
+        select: head > meta[name="article-publication-date"]
+        value: parseTimestamp(attribute(el, "content"), "YYYY-MM-DD")
+      updateDate:
+        select: head > meta[name="article-update-date"]
+        value: attribute(el, "content")
+      readTime:
+        select: head > meta[name="article-read-time"]
+        value: attribute(el, "content")
+      featured:
+        select: head > meta[name="article-featured"]
+        value: attribute(el, "content")
+      visible:
+        select: head > meta[name="article-visible"]
+        value: attribute(el, "content")
+      robots:
+        select: head > meta[name="robots"]
+        value: attribute(el, "content")
+      lastModified:
+        select: none
+        value: parseTimestamp(headers["last-modified"], "ddd, DD MMM YYYY hh:mm:ss GMT")
+
+  inspirationArticlesEnGb:
+    include:
+      - '/en-gb/inspiration-guide/articles/**'
+      - '/en-gb/inspiration-guide/article/**'
+    exclude:
+      - '/**.json'
+      - '/**/*.json'
+    target: /en-gb/inspiration-guide/articles-index.json
+    properties:
+      path:
+        select: none
+        value: path
+      title:
+        select: head > meta[property="og:title"]
+        value: attribute(el, "content")
+      description:
+        select: head > meta[name="description"]
+        value: attribute(el, "content")
+      image:
+        select: head > meta[name="article-image"]
+        value: attribute(el, "content")
+      ogImage:
+        select: head > meta[property="og:image"]
+        value: attribute(el, "content")
+      imageAlt:
+        select: head > meta[name="article-image-alt"]
+        value: attribute(el, "content")
+      imageAltLocalized:
+        select: head > meta[name="alt_es"]
+        value: attribute(el, "content")
+      imageDcDescription:
+        select: head > meta[name="dc:description"]
+        value: attribute(el, "content")
+      imageAutogenDescription:
+        select: head > meta[name="autogen:description"]
+        value: attribute(el, "content")
+      authorName:
+        select: head > meta[name="article-author-name"]
+        value: attribute(el, "content")
+      author:
+        select: head > meta[name="article-author"]
+        value: attribute(el, "content")
+      authorImage:
+        select: head > meta[name="article-author-image"]
+        value: attribute(el, "content")
+      category:
+        select: head > meta[name="article-category"]
+        value: attribute(el, "content")
+      categoryPath:
+        select: head > meta[name="article-category-path"]
+        value: attribute(el, "content")
+      tags:
+        select: head > meta[name="article-tags"]
+        value: attribute(el, "content")
+      publicationDate:
+        select: head > meta[name="article-publication-date"]
+        value: attribute(el, "content")
+      publicationTimestamp:
+        select: head > meta[name="article-publication-date"]
+        value: parseTimestamp(attribute(el, "content"), "YYYY-MM-DD")
+      updateDate:
+        select: head > meta[name="article-update-date"]
+        value: attribute(el, "content")
+      readTime:
+        select: head > meta[name="article-read-time"]
+        value: attribute(el, "content")
+      featured:
+        select: head > meta[name="article-featured"]
+        value: attribute(el, "content")
+      visible:
+        select: head > meta[name="article-visible"]
+        value: attribute(el, "content")
+      robots:
+        select: head > meta[name="robots"]
+        value: attribute(el, "content")
+      lastModified:
+        select: none
+        value: parseTimestamp(headers["last-modified"], "ddd, DD MMM YYYY hh:mm:ss GMT")
+
+  inspirationArticlesFrFr:
+    include:
+      - '/fr-fr/inspiration-guide/articles/**'
+      - '/fr-fr/inspiration-guide/article/**'
+    exclude:
+      - '/**.json'
+      - '/**/*.json'
+    target: /fr-fr/inspiration-guide/articles-index.json
+    properties:
+      path:
+        select: none
+        value: path
+      title:
+        select: head > meta[property="og:title"]
+        value: attribute(el, "content")
+      description:
+        select: head > meta[name="description"]
+        value: attribute(el, "content")
+      image:
+        select: head > meta[name="article-image"]
+        value: attribute(el, "content")
+      ogImage:
+        select: head > meta[property="og:image"]
+        value: attribute(el, "content")
+      imageAlt:
+        select: head > meta[name="article-image-alt"]
+        value: attribute(el, "content")
+      imageAltLocalized:
+        select: head > meta[name="alt_es"]
+        value: attribute(el, "content")
+      imageDcDescription:
+        select: head > meta[name="dc:description"]
+        value: attribute(el, "content")
+      imageAutogenDescription:
+        select: head > meta[name="autogen:description"]
+        value: attribute(el, "content")
+      authorName:
+        select: head > meta[name="article-author-name"]
+        value: attribute(el, "content")
+      author:
+        select: head > meta[name="article-author"]
+        value: attribute(el, "content")
+      authorImage:
+        select: head > meta[name="article-author-image"]
+        value: attribute(el, "content")
+      category:
+        select: head > meta[name="article-category"]
+        value: attribute(el, "content")
+      categoryPath:
+        select: head > meta[name="article-category-path"]
+        value: attribute(el, "content")
+      tags:
+        select: head > meta[name="article-tags"]
+        value: attribute(el, "content")
+      publicationDate:
+        select: head > meta[name="article-publication-date"]
+        value: attribute(el, "content")
+      publicationTimestamp:
+        select: head > meta[name="article-publication-date"]
+        value: parseTimestamp(attribute(el, "content"), "YYYY-MM-DD")
+      updateDate:
+        select: head > meta[name="article-update-date"]
+        value: attribute(el, "content")
+      readTime:
+        select: head > meta[name="article-read-time"]
+        value: attribute(el, "content")
+      featured:
+        select: head > meta[name="article-featured"]
+        value: attribute(el, "content")
+      visible:
+        select: head > meta[name="article-visible"]
+        value: attribute(el, "content")
+      robots:
+        select: head > meta[name="robots"]
+        value: attribute(el, "content")
+      lastModified:
+        select: none
+        value: parseTimestamp(headers["last-modified"], "ddd, DD MMM YYYY hh:mm:ss GMT")
+
+  inspirationArticlesDeDe:
+    include:
+      - '/de-de/inspiration-guide/articles/**'
+      - '/de-de/inspiration-guide/article/**'
+    exclude:
+      - '/**.json'
+      - '/**/*.json'
+    target: /de-de/inspiration-guide/articles-index.json
+    properties:
+      path:
+        select: none
+        value: path
+      title:
+        select: head > meta[property="og:title"]
+        value: attribute(el, "content")
+      description:
+        select: head > meta[name="description"]
+        value: attribute(el, "content")
+      image:
+        select: head > meta[name="article-image"]
+        value: attribute(el, "content")
+      ogImage:
+        select: head > meta[property="og:image"]
+        value: attribute(el, "content")
+      imageAlt:
+        select: head > meta[name="article-image-alt"]
+        value: attribute(el, "content")
+      imageAltLocalized:
+        select: head > meta[name="alt_es"]
+        value: attribute(el, "content")
+      imageDcDescription:
+        select: head > meta[name="dc:description"]
+        value: attribute(el, "content")
+      imageAutogenDescription:
+        select: head > meta[name="autogen:description"]
+        value: attribute(el, "content")
+      authorName:
+        select: head > meta[name="article-author-name"]
+        value: attribute(el, "content")
+      author:
+        select: head > meta[name="article-author"]
+        value: attribute(el, "content")
+      authorImage:
+        select: head > meta[name="article-author-image"]
+        value: attribute(el, "content")
+      category:
+        select: head > meta[name="article-category"]
+        value: attribute(el, "content")
+      categoryPath:
+        select: head > meta[name="article-category-path"]
+        value: attribute(el, "content")
+      tags:
+        select: head > meta[name="article-tags"]
+        value: attribute(el, "content")
+      publicationDate:
+        select: head > meta[name="article-publication-date"]
+        value: attribute(el, "content")
+      publicationTimestamp:
+        select: head > meta[name="article-publication-date"]
+        value: parseTimestamp(attribute(el, "content"), "YYYY-MM-DD")
+      updateDate:
+        select: head > meta[name="article-update-date"]
+        value: attribute(el, "content")
+      readTime:
+        select: head > meta[name="article-read-time"]
+        value: attribute(el, "content")
+      featured:
+        select: head > meta[name="article-featured"]
+        value: attribute(el, "content")
+      visible:
+        select: head > meta[name="article-visible"]
+        value: attribute(el, "content")
+      robots:
+        select: head > meta[name="robots"]
+        value: attribute(el, "content")
+      lastModified:
+        select: none
+        value: parseTimestamp(headers["last-modified"], "ddd, DD MMM YYYY hh:mm:ss GMT")
+
+  inspirationArticlesPtBr:
+    include:
+      - '/pt-br/inspiration-guide/articles/**'
+      - '/pt-br/inspiration-guide/article/**'
+    exclude:
+      - '/**.json'
+      - '/**/*.json'
+    target: /pt-br/inspiration-guide/articles-index.json
+    properties:
+      path:
+        select: none
+        value: path
+      title:
+        select: head > meta[property="og:title"]
+        value: attribute(el, "content")
+      description:
+        select: head > meta[name="description"]
+        value: attribute(el, "content")
+      image:
+        select: head > meta[name="article-image"]
+        value: attribute(el, "content")
+      ogImage:
+        select: head > meta[property="og:image"]
+        value: attribute(el, "content")
+      imageAlt:
+        select: head > meta[name="article-image-alt"]
+        value: attribute(el, "content")
+      imageAltLocalized:
+        select: head > meta[name="alt_es"]
+        value: attribute(el, "content")
+      imageDcDescription:
+        select: head > meta[name="dc:description"]
+        value: attribute(el, "content")
+      imageAutogenDescription:
+        select: head > meta[name="autogen:description"]
+        value: attribute(el, "content")
+      authorName:
+        select: head > meta[name="article-author-name"]
+        value: attribute(el, "content")
+      author:
+        select: head > meta[name="article-author"]
+        value: attribute(el, "content")
+      authorImage:
+        select: head > meta[name="article-author-image"]
+        value: attribute(el, "content")
+      category:
+        select: head > meta[name="article-category"]
+        value: attribute(el, "content")
+      categoryPath:
+        select: head > meta[name="article-category-path"]
+        value: attribute(el, "content")
+      tags:
+        select: head > meta[name="article-tags"]
+        value: attribute(el, "content")
+      publicationDate:
+        select: head > meta[name="article-publication-date"]
+        value: attribute(el, "content")
+      publicationTimestamp:
+        select: head > meta[name="article-publication-date"]
+        value: parseTimestamp(attribute(el, "content"), "YYYY-MM-DD")
+      updateDate:
+        select: head > meta[name="article-update-date"]
+        value: attribute(el, "content")
+      readTime:
+        select: head > meta[name="article-read-time"]
+        value: attribute(el, "content")
+      featured:
+        select: head > meta[name="article-featured"]
+        value: attribute(el, "content")
+      visible:
+        select: head > meta[name="article-visible"]
+        value: attribute(el, "content")
+      robots:
+        select: head > meta[name="robots"]
+        value: attribute(el, "content")
+      lastModified:
+        select: none
+        value: parseTimestamp(headers["last-modified"], "ddd, DD MMM YYYY hh:mm:ss GMT")
