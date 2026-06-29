@@ -73,6 +73,7 @@
 body {
   display: none;
   margin: 0;
+  overflow-x: scroll;
   background-color: var(--background-color);
   color: var(--text-color);
   font-family: var(--body-font-family);
@@ -140,12 +141,6 @@ pre {
   background-color: var(--light-color);
   overflow-x: auto;
   white-space: pre;
-}
-
-main {
-  /* Prevent horizontal scroll caused by full-width breakout blocks whose
-     width: 100vw includes the scrollbar gutter. */
-  overflow-x: clip;
 }
 
 main > div {

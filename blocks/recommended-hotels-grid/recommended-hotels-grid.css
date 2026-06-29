@@ -9,6 +9,7 @@ main .recommended-hotels-grid .recommended-hotels-grid-rendered {
   left: 50%;
   display: flex;
   width: 100vw;
+  max-width: 1440px;
   flex-direction: column;
   gap: 32px;
   padding: 40px 0;
@@ -101,9 +102,9 @@ main .recommended-hotels-grid .recommended-hotels-list::-webkit-scrollbar {
 }
 
 main .recommended-hotels-grid .recommended-hotels-item {
-  width: calc(100vw - 61px);
+  width: calc(min(100vw, 1440px) - 61px);
   min-width: 0;
-  flex: 0 0 calc(100vw - 61px);
+  flex: 0 0 calc(min(100vw, 1440px) - 61px);
   scroll-snap-align: start;
 }
 
@@ -191,8 +192,8 @@ main .recommended-hotels-grid .recommended-hotels-dot:focus-visible {
 
 @media (width >= 600px) {
   main .recommended-hotels-grid .recommended-hotels-item {
-    width: calc((100vw - 64px) / 2);
-    flex-basis: calc((100vw - 64px) / 2);
+    width: calc((min(100vw, 1440px) - 64px) / 2);
+    flex-basis: calc((min(100vw, 1440px) - 64px) / 2);
   }
 }
 
@@ -227,8 +228,8 @@ main .recommended-hotels-grid .recommended-hotels-dot:focus-visible {
   }
 
   main .recommended-hotels-grid .recommended-hotels-item {
-    width: calc((100vw - 96px) / 4);
-    flex-basis: calc((100vw - 96px) / 4);
+    width: calc((min(100vw, 1440px) - 96px) / 4);
+    flex-basis: calc((min(100vw, 1440px) - 96px) / 4);
   }
 
   main .recommended-hotels-grid .recommended-hotels-pagination {
