@@ -282,7 +282,7 @@ export function createHotelMiniCard(hotel, variant = 'horizontal') {
     action.append(price);
   }
 
-  if (hotel.href) {
+  if (variant !== 'vertical' && hotel.href) {
     action.append(createLink(hotel.href, hotel.ctaText, 'hotel-mini-card-cta', hotel.target));
   }
 
