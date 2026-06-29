@@ -2,15 +2,6 @@ main .hotel-mini-card .hotel-mini-card-source {
   display: none;
 }
 
-main .hotel-mini-card-list {
-  display: grid;
-  grid-template-columns: 1fr;
-  gap: 24px;
-  margin: 0;
-  padding: 0;
-  list-style: none;
-}
-
 main .hotel-mini-card {
   position: relative;
   color: #1b2828;

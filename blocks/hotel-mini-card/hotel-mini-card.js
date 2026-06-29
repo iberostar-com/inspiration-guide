@@ -1,16 +1,17 @@
 import { createResponsiveImage } from '../../scripts/iberostar/media.js';
 
-const FIELD_ORDER = [
-  'media_image',
-  'hotel_hotelName',
-  'hotel_location',
-  'hotel_stars',
-  'hotel_priceFrom',
-  'cta_linkText',
-  'cta_link',
-  'cta_linkTarget',
-  'tag_tagLabel',
-];
+const FIELD_POSITIONS = {
+  media_image: [0, 0],
+  media_imageAlt: [0, 0],
+  hotel_hotelName: [1, 0],
+  hotel_location: [1, 1],
+  hotel_stars: [1, 2],
+  hotel_priceFrom: [1, 3],
+  cta_linkText: [2, 0],
+  cta_link: [2, 0],
+  cta_linkTarget: [2, 1],
+  tag_tagLabel: [3, 0],
+};
 
 const FIELD_ALIASES = {
   ctaText: ['cta_linkText'],
@@ -43,42 +44,56 @@ function getPropElement(root, propName) {
   return root?.querySelector?.(selector) || null;
 }
 
-function getField(block, row, propName) {
+function getField(block, propName) {
   const names = [propName, ...(FIELD_ALIASES[propName] || [])];
-  const fromRow = names
-    .map((name) => getPropElement(row, name))
-    .find(Boolean);
-  if (fromRow) return fromRow;
-
   const fromBlock = getSourceRows(block)
     .flatMap((sourceRow) => names.map((name) => getPropElement(sourceRow, name)))
     .find(Boolean);
   if (fromBlock) return fromBlock;
 
-  const index = FIELD_ORDER.findIndex((name) => names.includes(name));
-  return index > -1 ? getCells(row)[index] || null : null;
+  const position = names.map((name) => FIELD_POSITIONS[name]).find(Boolean);
+  if (!position) return null;
+
+  const [rowIndex, cellIndex] = position;
+  return getCells(getSourceRows(block)[rowIndex])[cellIndex] || null;
 }
 
-function getText(block, row, propName, legacyAttr = '', fallback = '') {
-  return getField(block, row, propName)?.textContent?.trim()
+function getText(block, propName, legacyAttr = '', fallback = '') {
+  return getField(block, propName)?.textContent?.trim()
     || block.getAttribute(legacyAttr)?.trim()
     || fallback;
 }
 
-function getHref(block, row, propName, legacyAttr = '') {
-  const field = getField(block, row, propName);
-  return field?.querySelector?.('a[href]')?.getAttribute('href')?.trim()
+function getAnchor(field) {
+  if (field?.matches?.('a[href]')) return field;
+  return field?.querySelector?.('a[href]') || null;
+}
+
+function getHref(block, propName, legacyAttr = '') {
+  const field = getField(block, propName);
+  return getAnchor(field)?.getAttribute('href')?.trim()
     || block.getAttribute(legacyAttr)?.trim()
     || field?.textContent?.trim()
     || '';
 }
 
-function getImage(block, row) {
-  const field = getField(block, row, 'image');
-  return field?.querySelector?.('img')?.src
-    || field?.querySelector?.('a[href]')?.getAttribute('href')?.trim()
+function getImageElement(field) {
+  if (field?.matches?.('img')) return field;
+  return field?.querySelector?.('img') || null;
+}
+
+function getImage(block) {
+  const field = getField(block, 'image');
+  return getImageElement(field)?.src
+    || getAnchor(field)?.getAttribute('href')?.trim()
     || block.getAttribute('data-image')?.trim()
     || '';
+}
+
+function getImageAlt(block) {
+  const field = getField(block, 'image');
+  return getImageElement(field)?.alt?.trim()
+    || getText(block, 'imageAlt', 'data-image-alt', '');
 }
 
 function getVariant(block) {
@@ -140,22 +155,22 @@ function normalizeTarget(value) {
   return `${value || ''}`.trim().toLowerCase() === '_blank' ? '_blank' : '_self';
 }
 
-function readHotel(block, row, index, variant) {
-  const link = getHref(block, row, 'link', 'data-link');
-  const linkField = getField(block, row, 'link');
-  const linkText = linkField?.querySelector?.('a[href]')?.textContent?.trim();
+function readHotel(block, variant) {
+  const link = getHref(block, 'link', 'data-link');
+  const linkField = getField(block, 'link');
+  const linkText = getAnchor(linkField)?.textContent?.trim();
 
   return {
-    ctaText: getText(block, row, 'ctaText', 'data-cta-text', linkText || 'Ver disponibilidad'),
-    href: link || '#',
-    image: getImage(block, row),
-    imageAlt: getText(block, row, 'imageAlt', 'data-image-alt', ''),
-    location: getText(block, row, 'location', 'data-location', ''),
-    name: getText(block, row, 'hotelName', 'data-hotel-name', `Hotel ${index + 1}`),
-    priceFrom: getText(block, row, 'priceFrom', 'data-price-from', ''),
-    stars: normalizeStars(getText(block, row, 'stars', 'data-stars', '')),
-    tagLabel: variant === 'vertical' ? getText(block, row, 'tagLabel', 'data-tag-label', '') : '',
-    target: normalizeTarget(getText(block, row, 'linkTarget', 'data-link-target', '_self')),
+    ctaText: getText(block, 'ctaText', 'data-cta-text', linkText || ''),
+    href: link,
+    image: getImage(block),
+    imageAlt: getImageAlt(block),
+    location: getText(block, 'location', 'data-location', ''),
+    name: getText(block, 'hotelName', 'data-hotel-name', ''),
+    priceFrom: getText(block, 'priceFrom', 'data-price-from', ''),
+    stars: normalizeStars(getText(block, 'stars', 'data-stars', '')),
+    tagLabel: variant === 'vertical' ? getText(block, 'tagLabel', 'data-tag-label', '') : '',
+    target: normalizeTarget(getText(block, 'linkTarget', 'data-link-target', '_self')),
   };
 }
 
@@ -184,15 +199,17 @@ export function createHotelMiniCard(hotel, variant = 'horizontal') {
   const stars = createStars(hotel.stars, variant);
   if (stars) info.append(stars);
 
-  const title = document.createElement(variant === 'vertical' ? 'h3' : 'h2');
-  title.className = 'hotel-mini-card-title';
+  if (hotel.name) {
+    const title = document.createElement(variant === 'vertical' ? 'h3' : 'h2');
+    title.className = 'hotel-mini-card-title';
 
-  if (variant === 'vertical') {
-    title.append(createLink(hotel.href, hotel.name, 'hotel-mini-card-title-link', hotel.target));
-  } else {
-    title.textContent = hotel.name;
+    if (variant === 'vertical' && hotel.href) {
+      title.append(createLink(hotel.href, hotel.name, 'hotel-mini-card-title-link', hotel.target));
+    } else {
+      title.textContent = hotel.name;
+    }
+    info.append(title);
   }
-  info.append(title);
 
   if (hotel.location) {
     const location = document.createElement('p');
@@ -235,22 +252,11 @@ export default function decorate(block) {
   block.querySelector(':scope > .hotel-mini-card-rendered')?.remove();
 
   const variant = getVariant(block);
-  const rows = getSourceRows(block);
-  const sourceRows = rows.length ? rows : [block];
-
-  const list = document.createElement('ul');
-  list.className = `hotel-mini-card-rendered hotel-mini-card-list hotel-mini-card-list-${variant}`;
-
-  sourceRows.forEach((row, index) => {
-    const hotel = readHotel(block, row, index, variant);
-    const li = document.createElement('li');
-    li.className = 'hotel-mini-card-item';
-    li.append(createHotelMiniCard(hotel, variant));
-    list.append(li);
-  });
-
-  if (!list.children.length) return;
+  const hotel = readHotel(block, variant);
+  const rendered = document.createElement('div');
+  rendered.className = 'hotel-mini-card-rendered';
+  rendered.append(createHotelMiniCard(hotel, variant));
 
   hideSource(block);
-  block.append(list);
+  block.append(rendered);
 }
