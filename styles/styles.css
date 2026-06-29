@@ -142,6 +142,12 @@ pre {
   white-space: pre;
 }
 
+main {
+  /* Prevent horizontal scroll caused by full-width breakout blocks whose
+     width: 100vw includes the scrollbar gutter. */
+  overflow-x: clip;
+}
+
 main > div {
   margin: 40px 16px;
 }
