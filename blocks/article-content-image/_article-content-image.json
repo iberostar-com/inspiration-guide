@@ -31,15 +31,27 @@
           "component": "text",
           "valueType": "string",
           "name": "imageAlt",
-          "label": "Alt Text",
+          "label": "Alt Text (opcional, si no se rellena se usa el alt del DAM)",
           "value": ""
         },
         {
           "component": "text",
           "valueType": "string",
           "name": "caption",
-          "label": "Caption (optional)",
+          "label": "Caption (opcional, si no se rellena se usa dc:description del DAM)",
           "value": ""
+        },
+        {
+          "component": "select",
+          "valueType": "string",
+          "name": "alignment",
+          "label": "Alineación",
+          "value": "center",
+          "options": [
+            { "name": "Centro (ancho completo)", "value": "center" },
+            { "name": "Izquierda", "value": "left" },
+            { "name": "Derecha", "value": "right" }
+          ]
         }
       ]
     }
