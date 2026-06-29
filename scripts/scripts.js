@@ -167,6 +167,7 @@ function applyArticleTwoColumnLayout(main) {
   }
 
   if (isUniversalEditorPage) {
+    main.classList.add('article-layout-author');
     return;
   }
 

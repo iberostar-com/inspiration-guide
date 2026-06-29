@@ -87,6 +87,15 @@ main .recommended-hotels-grid .recommended-hotels-list {
   scrollbar-width: none;
 }
 
+main .recommended-hotels-grid .recommended-hotels-empty {
+  margin: 0;
+  padding: 0 16px;
+  color: #636363;
+  font-family: Inter, sans-serif;
+  font-size: 14px;
+  font-style: italic;
+}
+
 main .recommended-hotels-grid .recommended-hotels-list::-webkit-scrollbar {
   display: none;
 }

@@ -11,7 +11,7 @@ const FIELD_POSITIONS = {
   cta_link: [2, 0],
   cta_linkTarget: [2, 1],
   tag_layout: [3, 0],
-  tag_tagLabel: [3, 0],
+  tag_tagLabel: [3, 1],
 };
 
 const FIELD_ALIASES = {
@@ -254,7 +254,7 @@ export function createHotelMiniCard(hotel, variant = 'horizontal') {
     action.append(price);
   }
 
-  if (variant === 'horizontal' && hotel.href) {
+  if (hotel.href) {
     action.append(createLink(hotel.href, hotel.ctaText, 'hotel-mini-card-cta', hotel.target));
   }
 
@@ -292,6 +292,10 @@ function observeAuthorChanges(block) {
       characterData: true,
       subtree: true,
     });
+  });
+  observer.observe(block, {
+    attributes: true,
+    attributeFilter: ['class', 'data-variant', 'data-layout'],
   });
   block.hotelMiniCardObserver = observer;
 }

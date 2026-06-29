@@ -336,6 +336,12 @@ export default async function decorate(block) {
     wrapper.sliderCleanup = setupSlider(list, desktopControls, mobileControls, labels);
   } else {
     desktopControls.hidden = true;
+    if (isAuthoringPage(block)) {
+      const emptyState = document.createElement('p');
+      emptyState.className = 'recommended-hotels-empty';
+      emptyState.textContent = 'Add Hotel Mini Cards here to populate the slider.';
+      wrapper.append(emptyState);
+    }
   }
 
   hideSourceRows(sourceRows);

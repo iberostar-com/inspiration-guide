@@ -194,6 +194,19 @@ main .hotel-mini-card-vertical .hotel-mini-card-price {
   line-height: 1.4;
 }
 
+main .hotel-mini-card-vertical .hotel-mini-card-action {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  align-items: flex-start;
+}
+
+main .hotel-mini-card-vertical .hotel-mini-card-cta {
+  font-size: 14px;
+  font-weight: 500;
+  line-height: 1.4;
+}
+
 main .hotel-mini-card-tag {
   position: absolute;
   top: 16px;
