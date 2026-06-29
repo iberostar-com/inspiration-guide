@@ -6,16 +6,58 @@ import { getTranslation } from '../../scripts/iberostar/i18n.js';
 import { moveInstrumentation } from '../../scripts/scripts.js';
 
 const DEFAULT_VISIBLE_COUNT = 4;
+const CONFIG_FIELD_POSITIONS = {
+  eyebrow: 0,
+  title: 1,
+};
 
 function getSourceRows(block) {
   return [...block.children]
     .filter((child) => !child.classList.contains('recommended-hotels-grid-rendered'));
 }
 
+function getPropElement(block, propName) {
+  const selector = `[data-aue-prop="${propName}"]`;
+  return getSourceRows(block)
+    .map((row) => (row.matches?.(selector) ? row : row.querySelector?.(selector)))
+    .find(Boolean) || null;
+}
+
+function getCells(row) {
+  if (!row) return [];
+  if (row.children.length > 1) return [...row.children];
+
+  const nested = [...(row.children[0]?.children || [])];
+  return nested.length ? nested : [...row.children];
+}
+
+function getConfigValue(block, propName, legacyAttr) {
+  const prop = getPropElement(block, propName);
+  if (prop) return prop.textContent?.trim() || '';
+
+  const legacyValue = block.getAttribute(legacyAttr);
+  if (legacyValue !== null) return legacyValue.trim();
+
+  const row = getSourceRows(block)[CONFIG_FIELD_POSITIONS[propName]];
+  const cells = getCells(row);
+  return cells[cells.length - 1]?.textContent?.trim() || '';
+}
+
 function hasConfigFields(row) {
   return Boolean(row.querySelector?.(
-    '[data-aue-prop="eyebrow"], [data-aue-prop="title"], [data-aue-prop="cta_link"], [data-aue-prop="maxItems"], [data-aue-prop="cta_maxItems"], [data-aue-prop="hotels"]',
+    '[data-aue-prop="eyebrow"], [data-aue-prop="title"]',
   ));
+}
+
+function getConfigRows(block) {
+  const rows = getSourceRows(block);
+  const instrumented = rows.filter((row) => hasConfigFields(row));
+  if (instrumented.length) return instrumented;
+
+  if (block.hasAttribute('data-eyebrow') || block.hasAttribute('data-title')) return [];
+
+  return rows.slice(0, Object.keys(CONFIG_FIELD_POSITIONS).length)
+    .filter((row) => getCells(row).length === 1);
 }
 
 function hideSourceRows(rows) {
@@ -46,7 +88,8 @@ function createPlaceholderHotel(index) {
 
 function getAuthoredHotels(block) {
   const rows = getSourceRows(block);
-  const itemRows = rows.filter((row) => !hasConfigFields(row));
+  const configRows = new Set(getConfigRows(block));
+  const itemRows = rows.filter((row) => !configRows.has(row));
   const hotels = itemRows
     .map((row, index) => {
       const hotel = readHotelData(row, 'vertical');
@@ -285,12 +328,12 @@ async function getLabels(block) {
 
   return {
     carousel,
-    eyebrow: block.getAttribute('data-eyebrow') || defaultEyebrow,
+    eyebrow: getConfigValue(block, 'eyebrow', 'data-eyebrow') || defaultEyebrow,
     goTo,
     next,
     of,
     previous,
-    title: block.getAttribute('data-title') || defaultTitle,
+    title: getConfigValue(block, 'title', 'data-title') || defaultTitle,
   };
 }
 

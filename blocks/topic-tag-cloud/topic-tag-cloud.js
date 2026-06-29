@@ -11,6 +11,11 @@
  */
 
 const MAX_TAGS = 20;
+const FIELD_POSITIONS = {
+  tags: 2,
+  title: 0,
+  useArticleTags: 1,
+};
 
 function tagLabel(tagPath) {
   // "inspiration-guide:adventure" → "Adventure"
@@ -41,15 +46,61 @@ function getPageTags() {
   return parseTagList(content);
 }
 
-function getAuthoredTags(block) {
-  const tagsField = block.querySelector('[data-aue-prop="tags"]');
-  if (tagsField) return parseTagList(tagsField.textContent);
+function getSourceRows(block) {
+  return [...block.children]
+    .filter((row) => !row.classList.contains('topic-tag-cloud-rendered'));
+}
 
-  const tagsRow = [...block.children].find((row) => (
-    !row.classList.contains('topic-tag-cloud-rendered')
-    && !row.querySelector('picture, img')
-  ));
-  return parseTagList(tagsRow?.textContent || '');
+function getPropElement(block, propName) {
+  const selector = `[data-aue-prop="${propName}"]`;
+  return getSourceRows(block)
+    .map((row) => (row.matches?.(selector) ? row : row.querySelector?.(selector)))
+    .find(Boolean) || null;
+}
+
+function getPositionalField(block, propName) {
+  const row = getSourceRows(block)[FIELD_POSITIONS[propName]];
+  if (!row) return null;
+
+  const cells = [...row.children];
+  return cells[cells.length - 1] || row;
+}
+
+function getTextValue(block, propName, legacyAttr = '') {
+  const prop = getPropElement(block, propName);
+  if (prop) return prop.textContent?.trim() || '';
+
+  const legacyValue = legacyAttr ? block.getAttribute(legacyAttr) : null;
+  if (legacyValue !== null) return legacyValue.trim();
+
+  return getPositionalField(block, propName)?.textContent?.trim() || '';
+}
+
+function getBooleanValue(block, propName, legacyAttr = '') {
+  return getTextValue(block, propName, legacyAttr).toLowerCase() === 'true';
+}
+
+function getListValues(field) {
+  const items = [...(field?.querySelectorAll?.('li') || [])]
+    .map((item) => item.textContent?.trim())
+    .filter(Boolean);
+  return items.length ? items : parseTagList(field?.textContent || '');
+}
+
+function getAuthoredTags(block) {
+  const tagsField = getPropElement(block, 'tags');
+  if (tagsField) return getListValues(tagsField);
+
+  const legacyTags = block.getAttribute('data-tags');
+  if (legacyTags !== null) return parseTagList(legacyTags);
+
+  const hasLegacyConfig = block.hasAttribute('data-title')
+    || block.hasAttribute('data-use-article-tags');
+  const positionalField = hasLegacyConfig
+    ? getSourceRows(block)[0]
+    : getPositionalField(block, 'tags');
+
+  return getListValues(positionalField);
 }
 
 function buildChips(tags, languageRoot) {
@@ -72,15 +123,18 @@ function getLanguageRoot() {
 }
 
 export default function decorate(block) {
-  const previous = block.querySelector('.topic-tag-cloud-rendered');
+  const previous = block.querySelector(':scope > .topic-tag-cloud-rendered');
   if (previous) previous.remove();
 
-  const title = block.getAttribute('data-title') || '';
-  const useArticleTags = block.getAttribute('data-use-article-tags') === 'true';
+  const title = getTextValue(block, 'title', 'data-title');
+  const useArticleTags = getBooleanValue(block, 'useArticleTags', 'data-use-article-tags');
   const tags = useArticleTags ? getPageTags() : getAuthoredTags(block);
 
   // Preserve Universal Editor instrumentation while hiding source rows.
-  [...block.children].forEach((row) => row.classList.add('topic-tag-cloud-source'));
+  getSourceRows(block).forEach((row) => {
+    row.classList.add('topic-tag-cloud-source');
+    row.setAttribute('aria-hidden', 'true');
+  });
 
   if (!tags.length) return;
 
