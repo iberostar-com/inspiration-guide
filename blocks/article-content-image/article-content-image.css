@@ -1,0 +1,30 @@
+main .article-content-image .article-content-image-source {
+  display: none;
+}
+
+main .article-content-image .article-content-image-figure {
+  margin: 0;
+  width: 100%;
+}
+
+main .article-content-image .article-content-image-figure picture {
+  display: block;
+  width: 100%;
+}
+
+main .article-content-image .article-content-image-figure img {
+  display: block;
+  height: auto;
+  object-fit: cover;
+  width: 100%;
+}
+
+main .article-content-image .article-content-image-caption {
+  color: #717171;
+  font-family: Inter, sans-serif;
+  font-size: 14px;
+  font-style: italic;
+  font-weight: 400;
+  line-height: 1.4;
+  margin-top: 8px;
+}

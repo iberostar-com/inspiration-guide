@@ -71,9 +71,7 @@
   },
   {
     "id": "editorial-article-content",
-    "components": [
-      "editorial-content-image"
-    ]
+    "components": []
   },
   {
     "id": "featured-articles",
