@@ -58,12 +58,6 @@
           "name": "cta",
           "label": "\"View All\" Link URL",
           "value": ""
-        },
-        {
-          "component": "number",
-          "name": "maxItems",
-          "label": "Maximum Cards",
-          "value": 4
         }
       ]
     },

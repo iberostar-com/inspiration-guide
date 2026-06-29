@@ -1,5 +1,9 @@
-/* Pre-hide all direct div children before JS runs to avoid flash of source text */
-main .article-content-image > div {
+/* Hide source rows — no "main" prefix so this works in UE canvas too */
+.article-content-image > div {
+  display: none;
+}
+
+.article-content-image-source {
   display: none;
 }
 

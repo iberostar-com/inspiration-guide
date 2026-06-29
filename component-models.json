@@ -1030,12 +1030,6 @@
         "name": "cta",
         "label": "\"View All\" Link URL",
         "value": ""
-      },
-      {
-        "component": "number",
-        "name": "maxItems",
-        "label": "Maximum Cards",
-        "value": 4
       }
     ]
   },
@@ -1487,36 +1481,26 @@
         "component": "text",
         "name": "title",
         "label": "Section Title",
-        "value": "Topics",
-        "required": false
+        "value": "Related Topics"
+      }
+    ]
+  },
+  {
+    "id": "topic-tag",
+    "fields": [
+      {
+        "component": "text",
+        "valueType": "string",
+        "name": "label",
+        "label": "Tag Label",
+        "value": ""
       },
       {
-        "component": "select",
-        "name": "mode",
-        "label": "Tag Generation Mode",
-        "options": [
-          {
-            "name": "Manual",
-            "value": "manual"
-          },
-          {
-            "name": "Auto (Category)",
-            "value": "auto-category"
-          },
-          {
-            "name": "Auto (Frequency)",
-            "value": "auto-frequency"
-          }
-        ],
-        "value": "manual",
-        "required": true
-      },
-      {
-        "component": "number",
-        "name": "maxTags",
-        "label": "Maximum Tags",
-        "value": 20,
-        "required": false
+        "component": "text",
+        "valueType": "string",
+        "name": "tagUrl",
+        "label": "Tag URL (optional)",
+        "value": ""
       }
     ]
   }

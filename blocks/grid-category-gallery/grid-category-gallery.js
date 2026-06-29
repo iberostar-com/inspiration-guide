@@ -12,46 +12,83 @@ function createCard(row) {
   li.className = 'grid-category-gallery-item';
   moveInstrumentation(row, li);
 
-  const card = document.createElement('div');
-  card.className = 'grid-category-gallery-card';
+  // Entire card is a link
+  const cardLink = document.createElement('a');
+  cardLink.className = 'grid-category-gallery-card';
+  cardLink.href = link;
+  cardLink.setAttribute('aria-label', title || subtitle);
 
   if (picture) {
+    const img = picture.querySelector('img');
     const media = document.createElement('div');
     media.className = 'grid-category-gallery-media';
     media.append(createResponsiveImage(
-      picture.querySelector('img')?.src,
-      title,
+      img?.src,
+      img?.alt || title,
       { preset: 'category-card' },
     ));
-    card.append(media);
+    cardLink.append(media);
   }
 
   const body = document.createElement('div');
   body.className = 'grid-category-gallery-body';
 
   if (subtitle) {
-    const subtitleLink = document.createElement('a');
-    subtitleLink.className = 'grid-category-gallery-subtitle';
-    subtitleLink.href = link;
-    const p = document.createElement('p');
-    p.textContent = subtitle;
-    subtitleLink.append(p);
-    body.append(subtitleLink);
+    const subtitleEl = document.createElement('p');
+    subtitleEl.className = 'grid-category-gallery-subtitle';
+    subtitleEl.textContent = subtitle;
+    body.append(subtitleEl);
   }
 
   if (title) {
-    const titleLink = document.createElement('a');
-    titleLink.className = 'grid-category-gallery-title';
-    titleLink.href = link;
-    const h3 = document.createElement('h3');
-    h3.textContent = title;
-    titleLink.append(h3);
-    body.append(titleLink);
+    const headingEl = document.createElement('h3');
+    headingEl.className = 'grid-category-gallery-title';
+    headingEl.textContent = title;
+    body.append(headingEl);
   }
 
-  card.append(body);
-  li.append(card);
+  cardLink.append(body);
+  li.append(cardLink);
   return li;
+}
+
+function buildCarouselControls(list, items) {
+  const controls = document.createElement('div');
+  controls.className = 'grid-category-gallery-controls';
+
+  const prev = document.createElement('button');
+  prev.type = 'button';
+  prev.className = 'grid-category-gallery-prev';
+  prev.setAttribute('aria-label', 'Previous');
+  prev.innerHTML = '<span aria-hidden="true"></span>';
+
+  const next = document.createElement('button');
+  next.type = 'button';
+  next.className = 'grid-category-gallery-next';
+  next.setAttribute('aria-label', 'Next');
+  next.innerHTML = '<span aria-hidden="true"></span>';
+
+  const updateButtons = () => {
+    const { scrollLeft, scrollWidth, clientWidth } = list;
+    prev.disabled = scrollLeft <= 0;
+    next.disabled = scrollLeft + clientWidth >= scrollWidth - 1;
+  };
+
+  prev.addEventListener('click', () => {
+    const itemWidth = items[0]?.offsetWidth || 0;
+    list.scrollBy({ left: -(itemWidth + 16), behavior: 'smooth' });
+  });
+
+  next.addEventListener('click', () => {
+    const itemWidth = items[0]?.offsetWidth || 0;
+    list.scrollBy({ left: itemWidth + 16, behavior: 'smooth' });
+  });
+
+  list.addEventListener('scroll', updateButtons, { passive: true });
+  updateButtons();
+
+  controls.append(prev, next);
+  return controls;
 }
 
 export default function decorate(block) {
@@ -59,9 +96,8 @@ export default function decorate(block) {
   const subtitle = block.getAttribute('data-subtitle') || '';
   const ctaText = block.getAttribute('data-cta-text') || '';
   const ctaUrl = block.getAttribute('data-cta') || '';
-  const maxItems = Number.parseInt(block.getAttribute('data-max-items') || '4', 10);
 
-  const rows = [...block.children].slice(0, maxItems);
+  const rows = [...block.children];
 
   const wrapper = document.createElement('div');
   wrapper.className = 'grid-category-gallery';
@@ -71,16 +107,22 @@ export default function decorate(block) {
     header.className = 'grid-category-gallery-header';
 
     const headerText = document.createElement('div');
+    headerText.className = 'grid-category-gallery-header-text';
+
     if (title) {
-      const h2 = document.createElement('h2');
-      h2.textContent = title;
-      headerText.append(h2);
+      const titleEl = document.createElement('h2');
+      titleEl.className = 'grid-category-gallery-heading';
+      titleEl.textContent = title;
+      headerText.append(titleEl);
     }
+
     if (subtitle) {
-      const p = document.createElement('p');
-      p.textContent = subtitle;
-      headerText.append(p);
+      const subtitleEl = document.createElement('p');
+      subtitleEl.className = 'grid-category-gallery-subheading';
+      subtitleEl.textContent = subtitle;
+      headerText.append(subtitleEl);
     }
+
     header.append(headerText);
 
     if (ctaUrl) {
@@ -96,8 +138,17 @@ export default function decorate(block) {
 
   const list = document.createElement('ul');
   list.className = 'grid-category-gallery-list';
-  rows.forEach((row) => list.append(createCard(row)));
+
+  const items = rows.map((row) => {
+    const li = createCard(row);
+    list.append(li);
+    return li;
+  });
+
   wrapper.append(list);
+
+  const controls = buildCarouselControls(list, items);
+  wrapper.append(controls);
 
   block.replaceChildren(wrapper);
 }

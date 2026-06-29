@@ -1,79 +1,54 @@
 /**
  * Topic Tag Cloud block
- * Renders tags as chips/pills
- * Supports manual contribution or auto-generation
+ * Container block — each child row is a topic-tag item
+ * Renders tags as outlined pill chips
  * @param {Element} block The block element
  */
 
-import { getTagCloud } from '../../scripts/inspiration-data.js';
+import { moveInstrumentation } from '../../scripts/scripts.js';
 
-/**
- * Extract tags from manually contributed rows
- * Expected structure from AEM: each row is a tag name
- */
-function extractManualTags(block) {
-  const rows = Array.from(block.querySelectorAll(':scope > div > div'));
-  return rows
-    .map((row) => row.textContent?.trim())
-    .filter((tag) => tag && tag.length > 0);
+function getSourceRows(block) {
+  return [...block.children].filter((row) => !row.classList.contains('topic-tag-cloud-rendered'));
 }
 
-/**
- * Generate tags auto (placeholder - requires Fetch from CF)
- * Real implementation in Fase 5 (lógica de datos)
- */
-async function generateAutoTags(mode, maxTags) {
-  const strategy = mode === 'category' ? 'category' : 'frequency';
-  const cloud = await getTagCloud(strategy, maxTags);
-  return cloud.map(({ tag }) => tag);
-}
+export default function decorate(block) {
+  const title = block.getAttribute('data-title') || '';
+  const rows = getSourceRows(block);
 
-export default async function decorate(block) {
-  const mode = block.getAttribute('data-mode') || 'manual';
-  const maxTags = parseInt(block.getAttribute('data-max-tags') || '20', 10);
-  const title = block.getAttribute('data-title') || 'Topics';
+  const rendered = document.createElement('div');
+  rendered.className = 'topic-tag-cloud-rendered';
 
-  const wrapper = document.createElement('div');
-  wrapper.className = 'topic-tag-cloud';
-
-  // Title
   if (title) {
-    const h2 = document.createElement('h2');
-    h2.textContent = title;
-    h2.className = 'topic-tag-cloud-title';
-    wrapper.appendChild(h2);
+    const label = document.createElement('p');
+    label.className = 'topic-tag-cloud-label';
+    label.textContent = title;
+    rendered.append(label);
   }
 
-  // Tag list
   const tagList = document.createElement('div');
   tagList.className = 'topic-tag-cloud-list';
 
-  let tags = [];
+  rows.forEach((row) => {
+    const cells = [...row.children];
+    const tagText = cells[0]?.textContent?.trim();
+    const tagUrl = cells[1]?.textContent?.trim();
 
-  switch (mode) {
-    case 'manual':
-      tags = extractManualTags(block);
-      break;
-    case 'auto-category':
-      tags = await generateAutoTags('category', maxTags);
-      break;
-    case 'auto-frequency':
-      tags = await generateAutoTags('frequency', maxTags);
-      break;
-    default:
-      tags = extractManualTags(block);
-  }
+    if (!tagText) return;
 
-  // Render tags
-  tags.slice(0, maxTags).forEach((tag) => {
     const chip = document.createElement('a');
-    chip.href = `/tag/${encodeURIComponent(tag.toLowerCase())}`;
-    chip.className = 'tag-chip';
-    chip.textContent = tag;
-    chip.setAttribute('aria-label', `Filter by tag: ${tag}`);
-    tagList.appendChild(chip);
+    chip.className = 'topic-tag-cloud-chip';
+    chip.textContent = tagText;
+    chip.href = tagUrl || `/tag/${encodeURIComponent(tagText.toLowerCase())}`;
+    if (!tagUrl) chip.setAttribute('rel', 'tag');
+    moveInstrumentation(row, chip);
+    tagList.append(chip);
   });
 
-  wrapper.appendChild(tagList);
-  block.replaceChildren(wrapper);
+  rendered.append(tagList);
+  block.append(rendered);
+
+  // Hide source rows — preserve DOM nodes for UE instrumentation
+  rows.forEach((row) => {
+    row.classList.add('topic-tag-cloud-source');
+  });
 }
