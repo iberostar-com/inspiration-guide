@@ -1,4 +1,5 @@
-main .article-content-image .article-content-image-source {
+/* Pre-hide all direct div children before JS runs to avoid flash of source text */
+main .article-content-image > div {
   display: none;
 }
 
@@ -20,6 +21,7 @@ main .article-content-image .article-content-image-figure img {
   border-radius: 4px;
 }
 
+/* Caption always centered regardless of alignment */
 main .article-content-image .article-content-image-caption {
   color: #717171;
   font-family: Inter, sans-serif;
@@ -28,45 +30,31 @@ main .article-content-image .article-content-image-caption {
   font-weight: 400;
   line-height: 1.5;
   margin-top: 8px;
-}
-
-/* Alignment: center (default) — full width */
-main .article-content-image.article-content-image-center .article-content-image-figure {
-  margin: 0 auto;
-}
-
-main .article-content-image.article-content-image-center .article-content-image-caption {
   text-align: center;
 }
 
-/* Alignment: left — constrained width, left-aligned */
+/* Alignment: center (default) — constrained width, centered */
+main .article-content-image.article-content-image-center .article-content-image-figure {
+  max-width: 660px;
+  margin: 0 auto;
+}
+
+/* Alignment: left — half-width, left-aligned */
 main .article-content-image.article-content-image-left .article-content-image-figure {
   max-width: 55%;
   margin-right: auto;
 }
 
-main .article-content-image.article-content-image-left .article-content-image-caption {
-  text-align: left;
-}
-
-/* Alignment: right — constrained width, right-aligned */
+/* Alignment: right — half-width, right-aligned */
 main .article-content-image.article-content-image-right .article-content-image-figure {
   max-width: 55%;
   margin-left: auto;
-}
-
-main .article-content-image.article-content-image-right .article-content-image-caption {
-  text-align: right;
 }
 
 @media (width < 600px) {
   main .article-content-image.article-content-image-left .article-content-image-figure,
   main .article-content-image.article-content-image-right .article-content-image-figure {
     max-width: 100%;
-    margin: 0;
-  }
-
-  main .article-content-image.article-content-image-right .article-content-image-caption {
-    text-align: left;
+    margin: 0 auto;
   }
 }

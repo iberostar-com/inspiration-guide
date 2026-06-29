@@ -292,33 +292,33 @@
         "component": "text",
         "valueType": "string",
         "name": "imageAlt",
-        "label": "Alt Text (opcional, si no se rellena se usa el alt del DAM)",
+        "label": "Alt Text (optional)",
         "value": ""
       },
       {
         "component": "text",
         "valueType": "string",
         "name": "caption",
-        "label": "Caption (opcional, si no se rellena se usa dc:description del DAM)",
+        "label": "Caption (optional)",
         "value": ""
       },
       {
         "component": "select",
         "valueType": "string",
         "name": "alignment",
-        "label": "Alineación",
+        "label": "Alignment",
         "value": "center",
         "options": [
           {
-            "name": "Centro (ancho completo)",
+            "name": "Center",
             "value": "center"
           },
           {
-            "name": "Izquierda",
+            "name": "Left",
             "value": "left"
           },
           {
-            "name": "Derecha",
+            "name": "Right",
             "value": "right"
           }
         ]
