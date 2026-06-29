@@ -10,6 +10,7 @@ const FIELD_POSITIONS = {
   cta_linkText: [2, 0],
   cta_link: [2, 0],
   cta_linkTarget: [2, 1],
+  tag_layout: [3, 0],
   tag_tagLabel: [3, 0],
 };
 
@@ -21,6 +22,7 @@ const FIELD_ALIASES = {
   link: ['cta_link'],
   linkTarget: ['cta_linkTarget'],
   location: ['hotel_location'],
+  layout: ['tag_layout'],
   priceFrom: ['hotel_priceFrom'],
   stars: ['hotel_stars'],
   tagLabel: ['tag_tagLabel'],
@@ -106,6 +108,7 @@ function getImageAlt(block) {
 function getVariant(block) {
   const variant = block.getAttribute('data-variant')
     || block.getAttribute('data-layout')
+    || getText(block, 'layout', '', '')
     || (block.classList.contains('vertical') ? 'vertical' : '');
   return variant === 'vertical' ? 'vertical' : 'horizontal';
 }

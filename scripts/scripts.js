@@ -162,7 +162,12 @@ function buildArticleLayoutShell(layoutSections) {
 
 function applyArticleTwoColumnLayout(main) {
   const isUniversalEditorPage = main.querySelector(':scope > [data-aue-resource]');
-  if (getPageType() !== 'article' || isUniversalEditorPage) {
+  if (getPageType() !== 'article') {
+    return;
+  }
+
+  if (isUniversalEditorPage) {
+    main.classList.add('article-layout-author');
     return;
   }
 

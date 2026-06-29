@@ -1199,6 +1199,24 @@
     "id": "hotel-mini-card",
     "fields": [
       {
+        "component": "select",
+        "valueType": "string",
+        "name": "tag_layout",
+        "label": "Card Layout",
+        "description": "Choose Horizontal for article content or Vertical for recommended hotel grids.",
+        "value": "horizontal",
+        "options": [
+          {
+            "name": "Horizontal",
+            "value": "horizontal"
+          },
+          {
+            "name": "Vertical",
+            "value": "vertical"
+          }
+        ]
+      },
+      {
         "component": "reference",
         "valueType": "string",
         "name": "media_image",

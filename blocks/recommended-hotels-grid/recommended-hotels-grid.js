@@ -344,6 +344,25 @@ function createMobileControls(labels) {
   return controls;
 }
 
+function createPlaceholderHotel(index) {
+  return {
+    ctaText: '',
+    href: '',
+    image: '',
+    imageAlt: '',
+    location: '',
+    name: `Hotel ${index + 1}`,
+    priceFrom: '',
+    stars: 0,
+    tagLabel: '',
+    target: '_self',
+  };
+}
+
+function isAuthoringPage(block) {
+  return Boolean(block.closest('[data-aue-resource]') || document.querySelector('[data-aue-resource]'));
+}
+
 async function getLabels() {
   const [
     carousel,
@@ -377,10 +396,19 @@ export default async function decorate(block) {
   const configRow = getConfigRow(sourceRows);
   const config = readConfig(block, configRow);
   const itemRows = sourceRows.filter((row) => row !== configRow);
-  const hotels = itemRows
+  const authoredHotels = itemRows
     .map((row) => readHotelData(row, 'vertical'))
     .filter((hotel) => hotel.image || hotel.name || hotel.href)
     .slice(0, config.maxItems);
+  const placeholderCount = isAuthoringPage(block)
+    ? Math.max(0, config.maxItems - authoredHotels.length)
+    : 0;
+  const hotels = [
+    ...authoredHotels,
+    ...Array.from({ length: placeholderCount }).map((_, index) => (
+      createPlaceholderHotel(authoredHotels.length + index)
+    )),
+  ];
   const labels = await getLabels();
 
   const wrapper = document.createElement('div');

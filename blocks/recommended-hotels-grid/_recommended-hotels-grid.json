@@ -25,7 +25,8 @@
             "resourceType": "core/franklin/components/block/v1/block/item",
             "template": {
               "name": "Hotel",
-              "model": "hotel-mini-card"
+              "model": "hotel-mini-card",
+              "tag_layout": "vertical"
             }
           }
         }
