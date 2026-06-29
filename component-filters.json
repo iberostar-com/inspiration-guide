@@ -70,6 +70,12 @@
     ]
   },
   {
+    "id": "editorial-article-content",
+    "components": [
+      "editorial-content-image"
+    ]
+  },
+  {
     "id": "featured-articles",
     "components": [
       "featured-article"
