@@ -151,6 +151,8 @@ main .hotel-mini-card-horizontal .hotel-mini-card-cta {
 
 main .hotel-mini-card-vertical {
   display: flex;
+  width: 100%;
+  min-width: 0;
   flex-direction: column;
   gap: 24px;
   align-items: flex-start;

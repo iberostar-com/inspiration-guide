@@ -509,11 +509,13 @@
                 "variants": [
                   {
                     "name": "Horizontal",
-                    "value": "horizontal"
+                    "value": "horizontal",
+                    "description": "Compact horizontal card for editorial content."
                   },
                   {
                     "name": "Vertical",
-                    "value": "vertical"
+                    "value": "vertical",
+                    "description": "Portrait card used by recommended hotel grids."
                   }
                 ]
               }
@@ -604,7 +606,23 @@
                 "resourceType": "core/franklin/components/block/v1/block",
                 "template": {
                   "name": "Recommended Hotels Grid",
-                  "model": "recommended-hotels-grid"
+                  "model": "recommended-hotels-grid",
+                  "filter": "recommended-hotels-grid"
+                }
+              }
+            }
+          }
+        },
+        {
+          "title": "Hotel Mini Card (Vertical)",
+          "id": "recommended-hotel",
+          "plugins": {
+            "xwalk": {
+              "page": {
+                "resourceType": "core/franklin/components/block/v1/block/item",
+                "template": {
+                  "name": "Hotel",
+                  "model": "hotel-mini-card"
                 }
               }
             }

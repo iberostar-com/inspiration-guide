@@ -1,26 +1,263 @@
 @import url("../hotel-mini-card/hotel-mini-card.css");
 
-main .recommended-hotels-grid .recommended-hotels-list {
-  display: grid;
-  grid-template-columns: 1fr;
+main .recommended-hotels-grid .recommended-hotels-grid-source {
+  display: none;
+}
+
+main .recommended-hotels-grid .recommended-hotels-grid-rendered {
+  position: relative;
+  left: 50%;
+  display: flex;
+  width: 100vw;
+  flex-direction: column;
   gap: 32px;
+  padding: 40px 0;
+  overflow: hidden;
+  transform: translateX(-50%);
+  background: #fff;
+  color: #1b2828;
+}
+
+main .recommended-hotels-grid .recommended-hotels-grid-header {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  padding: 0 16px;
+}
+
+main .recommended-hotels-grid .recommended-hotels-grid-copy {
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
+  gap: 16px;
+}
+
+main .recommended-hotels-grid .recommended-hotels-grid-eyebrow {
   margin: 0;
-  padding: 0;
+  color: #1b2828;
+  font-family: Inter, sans-serif;
+  font-size: 12px;
+  font-weight: 500;
+  letter-spacing: 0.24px;
+  line-height: 1.4;
+  text-transform: uppercase;
+}
+
+main .recommended-hotels-grid .recommended-hotels-grid-title {
+  margin: 0;
+  color: #1b2828;
+  font-family: "Noe Display", serif;
+  font-size: 28px;
+  font-weight: 400;
+  line-height: 38px;
+}
+
+main .recommended-hotels-grid .recommended-hotels-grid-cta {
+  display: inline-flex;
+  width: fit-content;
+  align-items: center;
+  color: #1b2828;
+  font-family: Inter, sans-serif;
+  font-size: 14px;
+  font-weight: 500;
+  line-height: 1.4;
+  text-decoration: none;
+}
+
+main .recommended-hotels-grid .recommended-hotels-grid-cta::after {
+  margin-left: 8px;
+  content: "→";
+}
+
+main .recommended-hotels-grid .recommended-hotels-grid-cta:hover,
+main .recommended-hotels-grid .recommended-hotels-grid-cta:focus-visible {
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+main .recommended-hotels-grid .recommended-hotels-list {
+  display: flex;
+  gap: 16px;
+  margin: 0;
+  padding: 0 16px 4px;
+  overflow-x: auto;
   list-style: none;
+  scroll-padding-inline: 16px;
+  scroll-snap-type: x mandatory;
+  scrollbar-width: none;
+}
+
+main .recommended-hotels-grid .recommended-hotels-list::-webkit-scrollbar {
+  display: none;
 }
 
 main .recommended-hotels-grid .recommended-hotels-item {
+  width: calc(100vw - 61px);
   min-width: 0;
+  flex: 0 0 calc(100vw - 61px);
+  scroll-snap-align: start;
+}
+
+main .recommended-hotels-grid .recommended-hotels-pagination {
+  display: none;
+}
+
+main .recommended-hotels-grid .recommended-hotels-mobile-controls {
+  display: flex;
+  min-height: 32px;
+  align-items: center;
+  justify-content: space-between;
+  padding: 4px 16px;
+}
+
+main .recommended-hotels-grid .recommended-hotels-prev,
+main .recommended-hotels-grid .recommended-hotels-next {
+  display: inline-flex;
+  width: 32px;
+  height: 32px;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  border: 0;
+  border-radius: 50%;
+  background: transparent;
+  color: #1b2828;
+  cursor: pointer;
+}
+
+main .recommended-hotels-grid .recommended-hotels-prev span::before,
+main .recommended-hotels-grid .recommended-hotels-next span::before {
+  font-family: Inter, sans-serif;
+  font-size: 20px;
+  font-weight: 400;
+  line-height: 1;
+}
+
+main .recommended-hotels-grid .recommended-hotels-prev span::before {
+  content: "←";
+}
+
+main .recommended-hotels-grid .recommended-hotels-next span::before {
+  content: "→";
+}
+
+main .recommended-hotels-grid .recommended-hotels-prev:disabled,
+main .recommended-hotels-grid .recommended-hotels-next:disabled {
+  color: #b8b8b8;
+  cursor: default;
+}
+
+main .recommended-hotels-grid .recommended-hotels-prev:focus-visible,
+main .recommended-hotels-grid .recommended-hotels-next:focus-visible {
+  outline: 2px solid #1b6e63;
+  outline-offset: 2px;
+}
+
+main .recommended-hotels-grid .recommended-hotels-dots {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+main .recommended-hotels-grid .recommended-hotels-dot {
+  width: 6px;
+  height: 6px;
+  padding: 0;
+  border: 0;
+  border-radius: 4px;
+  background: #dedede;
+  cursor: pointer;
+  transition: width 0.2s ease, background-color 0.2s ease;
+}
+
+main .recommended-hotels-grid .recommended-hotels-dot.active {
+  width: 16px;
+  background: #38a596;
+}
+
+main .recommended-hotels-grid .recommended-hotels-dot:focus-visible {
+  outline: 2px solid #1b6e63;
+  outline-offset: 3px;
 }
 
 @media (width >= 600px) {
-  main .recommended-hotels-grid .recommended-hotels-list {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
+  main .recommended-hotels-grid .recommended-hotels-item {
+    width: calc((100vw - 64px) / 2);
+    flex-basis: calc((100vw - 64px) / 2);
   }
 }
 
 @media (width >= 1200px) {
+  main .recommended-hotels-grid .recommended-hotels-grid-rendered {
+    gap: 40px;
+    padding: 64px 0;
+  }
+
+  main .recommended-hotels-grid .recommended-hotels-grid-header {
+    padding: 0 24px;
+  }
+
+  main .recommended-hotels-grid .recommended-hotels-grid-title {
+    font-size: 32px;
+    line-height: 42px;
+  }
+
   main .recommended-hotels-grid .recommended-hotels-list {
-    grid-template-columns: repeat(3, minmax(0, 1fr));
+    padding-right: 24px;
+    padding-left: 24px;
+    clip-path: inset(0 24px 0 0);
+    scroll-padding-inline: 24px;
+  }
+
+  main .recommended-hotels-grid .recommended-hotels-item {
+    width: calc((100vw - 96px) / 4);
+    flex-basis: calc((100vw - 96px) / 4);
+  }
+
+  main .recommended-hotels-grid .recommended-hotels-pagination {
+    display: flex;
+    flex-shrink: 0;
+    align-items: center;
+    gap: 12px;
+  }
+
+  main .recommended-hotels-grid .recommended-hotels-status {
+    color: #1b2828;
+    font-family: Inter, sans-serif;
+    font-size: 14px;
+    font-weight: 400;
+    line-height: 1.4;
+    white-space: nowrap;
+  }
+
+  main .recommended-hotels-grid .recommended-hotels-pagination-buttons {
+    display: flex;
+    gap: 8px;
+  }
+
+  main .recommended-hotels-grid .recommended-hotels-pagination .recommended-hotels-prev,
+  main .recommended-hotels-grid .recommended-hotels-pagination .recommended-hotels-next {
+    background: #f5f5f5;
+  }
+
+  main .recommended-hotels-grid .recommended-hotels-pagination
+    .recommended-hotels-prev:disabled,
+  main .recommended-hotels-grid .recommended-hotels-pagination
+    .recommended-hotels-next:disabled {
+    background: transparent;
+  }
+
+  main .recommended-hotels-grid .recommended-hotels-mobile-controls {
+    display: none;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  main .recommended-hotels-grid .recommended-hotels-list {
+    scroll-behavior: auto;
+  }
+
+  main .recommended-hotels-grid .recommended-hotels-dot {
+    transition: none;
   }
 }

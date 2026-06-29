@@ -86,5 +86,11 @@
     "components": [
       "nav-language-option"
     ]
+  },
+  {
+    "id": "recommended-hotels-grid",
+    "components": [
+      "recommended-hotel"
+    ]
   }
 ]

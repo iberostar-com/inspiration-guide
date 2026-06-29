@@ -1,147 +1,416 @@
-import { createHotelMiniCard } from '../hotel-mini-card/hotel-mini-card.js';
+import {
+  createHotelMiniCard,
+  readHotelData,
+} from '../hotel-mini-card/hotel-mini-card.js';
+import { getTranslation } from '../../scripts/iberostar/i18n.js';
 
-const MOCK_HOTELS = [
-  {
-    id: 'hotel-001',
-    name: 'Iberostar Waves Bouganville Playa',
-    destination: 'playas',
-    location: 'Costa Adeje, Tenerife',
-    priceFrom: 'Desde 80 € 2 personas / noche',
-    stars: 4,
-    tagLabel: 'Tag Label',
-    image: 'https://picsum.photos/seed/hotel-001/1200/1600',
-    href: '#',
-  },
-  {
-    id: 'hotel-002',
-    name: 'Iberostar Selection Playa de Palma',
-    destination: 'playas',
-    location: 'Playa de Palma, Mallorca',
-    priceFrom: 'Desde 182 € 2 personas / noche',
-    stars: 5,
-    image: 'https://picsum.photos/seed/hotel-002/1200/1600',
-    href: '#',
-  },
-  {
-    id: 'hotel-003',
-    name: 'Iberostar Waves Playa de Muro',
-    destination: 'playas',
-    location: 'Playa de Muro, Mallorca',
-    priceFrom: 'Desde 182 € 2 personas / noche',
-    stars: 4,
-    image: 'https://picsum.photos/seed/hotel-003/1200/1600',
-    href: '#',
-  },
-  {
-    id: 'hotel-004',
-    name: 'Iberostar Riviera',
-    destination: 'playas',
-    location: 'Cancun',
-    priceFrom: 'Desde 260 € 2 personas / noche',
-    stars: 5,
-    tagLabel: 'Tag Label',
-    image: 'https://picsum.photos/seed/hotel-004/1200/1600',
-    href: '#',
-  },
-];
+const HEADING_TAGS = new Set(['h2', 'h3']);
+const DEFAULT_MAX_ITEMS = 3;
+const MAX_ITEMS = 12;
 
-const FIELD_ORDER = ['image', 'hotelName', 'location', 'stars', 'priceFrom', 'link', 'tagLabel'];
-
-function getDestinationFromPath() {
-  const parts = window.location.pathname.split('/').filter(Boolean);
-  const categoryIdx = parts.indexOf('category');
-  return categoryIdx > -1 ? parts[categoryIdx + 2] || '' : '';
+function getSourceRows(block) {
+  return [...block.children]
+    .filter((child) => !child.classList.contains('recommended-hotels-grid-rendered'));
 }
 
-function getCells(row) {
-  if (!row) return [];
-  if (row.children.length > 1) return [...row.children];
-
-  const nested = [...(row.children[0]?.children || [])];
-  return nested.length ? nested : [...row.children];
-}
-
-function getField(row, propName) {
+function getPropElement(root, propName) {
   const selector = `[data-aue-prop="${propName}"]`;
-  const byProp = row.matches?.(selector) ? row : row.querySelector?.(selector);
+  if (root?.matches?.(selector)) return root;
+  return root?.querySelector?.(selector) || null;
+}
+
+function getAnchor(root) {
+  if (root?.matches?.('a[href]')) return root;
+  return root?.querySelector?.('a[href]') || null;
+}
+
+function unwrapContent(root) {
+  let content = root;
+  while (
+    content?.children?.length === 1
+    && content.firstElementChild?.tagName === 'DIV'
+    && !content.firstElementChild.hasAttribute('data-aue-prop')
+  ) {
+    content = content.firstElementChild;
+  }
+  return content;
+}
+
+function getConfigRow(rows) {
+  const props = ['eyebrow', 'title', 'cta_link', 'maxItems'];
+  const byProp = rows.find(
+    (row) => props.some((propName) => getPropElement(row, propName)),
+  );
   if (byProp) return byProp;
 
-  const index = FIELD_ORDER.indexOf(propName);
-  return index > -1 ? getCells(row)[index] || null : null;
+  return rows.find((row) => unwrapContent(row)?.querySelector?.('h2, h3')) || null;
 }
 
-function getText(row, propName, fallback = '') {
-  return getField(row, propName)?.textContent?.trim() || fallback;
+function getConfigText(row, propName, fallback = '') {
+  return getPropElement(row, propName)?.textContent?.trim() || fallback;
 }
 
-function getHref(row, propName) {
-  const field = getField(row, propName);
-  return field?.querySelector?.('a[href]')?.getAttribute('href')?.trim()
-    || field?.textContent?.trim()
-    || '#';
+function sanitizeHeadingTag(value, row) {
+  const authoredHeading = unwrapContent(row)?.querySelector?.('h2, h3')?.tagName?.toLowerCase();
+  const configuredTag = `${value || ''}`.trim().toLowerCase();
+  if (HEADING_TAGS.has(configuredTag)) return configuredTag;
+  return HEADING_TAGS.has(authoredHeading) ? authoredHeading : 'h2';
 }
 
-function getImage(row) {
-  const field = getField(row, 'image');
-  return field?.querySelector?.('img')?.src
-    || field?.querySelector?.('a[href]')?.getAttribute('href')?.trim()
-    || '';
+function normalizeMaxItems(value) {
+  const parsed = Number.parseInt(`${value || DEFAULT_MAX_ITEMS}`, 10);
+  if (Number.isNaN(parsed)) return DEFAULT_MAX_ITEMS;
+  return Math.max(1, Math.min(parsed, MAX_ITEMS));
 }
 
-function normalizeStars(value) {
-  const parsed = Number.parseInt(`${value || ''}`.replace(/[^\d]/g, ''), 10);
-  if (Number.isNaN(parsed)) return 0;
-  return Math.max(0, Math.min(parsed, 5));
+function getFallbackElements(row) {
+  return [...(unwrapContent(row)?.children || [])];
 }
 
-function fromManualRows(block) {
-  return [...block.children].map((row, index) => ({
-    id: `manual-hotel-${index + 1}`,
-    href: getHref(row, 'link'),
-    image: getImage(row),
-    imageAlt: getText(row, 'imageAlt', ''),
-    location: getText(row, 'location', ''),
-    name: getText(row, 'hotelName', `Hotel ${index + 1}`),
-    priceFrom: getText(row, 'priceFrom', ''),
-    stars: normalizeStars(getText(row, 'stars', '')),
-    tagLabel: getText(row, 'tagLabel', ''),
-    target: '_self',
-  }));
+function getFallbackMaxItems(row) {
+  return getFallbackElements(row)
+    .map((element) => element.textContent?.trim())
+    .reverse()
+    .find((value) => /^\d+$/.test(value || '')) || '';
 }
 
-function fromAutoDestination(maxItems) {
-  const destination = getDestinationFromPath();
-  return MOCK_HOTELS
-    .filter((hotel) => !destination || hotel.destination === destination)
-    .slice(0, maxItems)
-    .map((hotel) => ({
-      ...hotel,
-      imageAlt: hotel.name,
-      target: '_self',
-    }));
+function readConfig(block, configRow) {
+  const fallbackElements = getFallbackElements(configRow);
+  const heading = unwrapContent(configRow)?.querySelector?.('h2, h3');
+  const fallbackAnchor = getAnchor(configRow);
+  const ctaField = getPropElement(configRow, 'cta_link');
+  const ctaAnchor = getAnchor(ctaField) || fallbackAnchor;
+  const targetField = getConfigText(configRow, 'cta_linkTarget');
+  const maxItems = block.getAttribute('data-max-items')?.trim()
+    || getConfigText(configRow, 'maxItems')
+    || getFallbackMaxItems(configRow);
+
+  return {
+    ctaHref: block.getAttribute('data-cta-link')?.trim()
+      || ctaAnchor?.getAttribute('href')?.trim()
+      || '',
+    ctaTarget: block.getAttribute('data-cta-link-target')?.trim()
+      || ctaAnchor?.getAttribute('target')?.trim()
+      || targetField
+      || '_self',
+    ctaText: block.getAttribute('data-cta-link-text')?.trim()
+      || getConfigText(configRow, 'cta_linkText')
+      || ctaAnchor?.textContent?.trim()
+      || '',
+    eyebrow: block.getAttribute('data-eyebrow')?.trim()
+      || getConfigText(configRow, 'eyebrow')
+      || fallbackElements[0]?.textContent?.trim()
+      || '',
+    maxItems: normalizeMaxItems(maxItems),
+    title: block.getAttribute('data-title')?.trim()
+      || getConfigText(configRow, 'title')
+      || heading?.textContent?.trim()
+      || '',
+    titleType: sanitizeHeadingTag(
+      block.getAttribute('data-title-type')?.trim()
+        || getConfigText(configRow, 'titleType'),
+      configRow,
+    ),
+  };
 }
 
-export default function decorate(block) {
-  const mode = block.getAttribute('data-mode') || 'manual';
-  const maxItems = Number.parseInt(block.getAttribute('data-max-items') || '12', 10);
+function hideSourceRows(rows) {
+  rows.forEach((row) => {
+    row.classList.add('recommended-hotels-grid-source');
+    row.setAttribute('aria-hidden', 'true');
+  });
+}
 
-  const items = mode === 'auto-destination'
-    ? fromAutoDestination(maxItems)
-    : fromManualRows(block).slice(0, maxItems);
+function createCta(config) {
+  if (!config.ctaText || !config.ctaHref) return null;
+
+  const link = document.createElement('a');
+  link.className = 'recommended-hotels-grid-cta';
+  link.href = config.ctaHref;
+  link.textContent = config.ctaText;
+  if (config.ctaTarget === '_blank') {
+    link.target = '_blank';
+    link.rel = 'noopener noreferrer';
+  }
+  return link;
+}
+
+function createHeader(config) {
+  const header = document.createElement('div');
+  header.className = 'recommended-hotels-grid-header';
+
+  const copy = document.createElement('div');
+  copy.className = 'recommended-hotels-grid-copy';
+
+  if (config.eyebrow) {
+    const eyebrow = document.createElement('p');
+    eyebrow.className = 'recommended-hotels-grid-eyebrow';
+    eyebrow.textContent = config.eyebrow;
+    copy.append(eyebrow);
+  }
+
+  if (config.title) {
+    const heading = document.createElement(config.titleType);
+    heading.className = 'recommended-hotels-grid-title';
+    heading.textContent = config.title;
+    copy.append(heading);
+  }
+
+  const cta = createCta(config);
+  if (cta) copy.append(cta);
+
+  header.append(copy);
+  return header;
+}
+
+function createNavButton(direction, label) {
+  const button = document.createElement('button');
+  button.type = 'button';
+  button.className = `recommended-hotels-${direction}`;
+  button.setAttribute('aria-label', label);
+  button.innerHTML = '<span aria-hidden="true"></span>';
+  return button;
+}
+
+function getSliderMetrics(list, items) {
+  const styles = window.getComputedStyle(list);
+  const gap = Number.parseFloat(styles.columnGap) || 16;
+  const paddingStart = Number.parseFloat(styles.paddingInlineStart) || 0;
+  const paddingEnd = Number.parseFloat(styles.paddingInlineEnd) || 0;
+  const itemWidth = items[0]?.getBoundingClientRect().width || list.clientWidth;
+  const contentWidth = list.clientWidth - paddingStart - paddingEnd;
+  const visibleCount = Math.max(
+    1,
+    Math.floor((contentWidth + gap) / (itemWidth + gap) + 0.01),
+  );
+
+  return {
+    gap,
+    paddingStart,
+    visibleCount,
+  };
+}
+
+function getCurrentIndex(list, items, paddingStart) {
+  const listLeft = list.getBoundingClientRect().left + paddingStart;
+  return items.reduce((nearest, item, index) => {
+    const distance = Math.abs(item.getBoundingClientRect().left - listLeft);
+    return distance < nearest.distance ? { distance, index } : nearest;
+  }, { distance: Number.POSITIVE_INFINITY, index: 0 }).index;
+}
+
+function scrollToIndex(list, items, index, paddingStart, behavior = 'smooth') {
+  const target = items[index];
+  if (!target) return;
+
+  const listRect = list.getBoundingClientRect();
+  const targetRect = target.getBoundingClientRect();
+  const left = list.scrollLeft + targetRect.left - listRect.left - paddingStart;
+  list.scrollTo({ behavior, left });
+}
+
+function createDots(container, pageCount, activePage, onSelect, label) {
+  container.replaceChildren();
+  Array.from({ length: pageCount }).forEach((_, index) => {
+    const dot = document.createElement('button');
+    dot.type = 'button';
+    dot.className = 'recommended-hotels-dot';
+    dot.classList.toggle('active', index === activePage);
+    dot.setAttribute('aria-label', `${label} ${index + 1}`);
+    dot.setAttribute('aria-current', index === activePage ? 'true' : 'false');
+    dot.addEventListener('click', () => onSelect(index));
+    container.append(dot);
+  });
+}
+
+function setupSlider(list, desktopControls, mobileControls, labels) {
+  const items = [...list.children];
+  const desktopStatus = desktopControls.querySelector('.recommended-hotels-status');
+  const desktopPrev = desktopControls.querySelector('.recommended-hotels-prev');
+  const desktopNext = desktopControls.querySelector('.recommended-hotels-next');
+  const mobilePrev = mobileControls.querySelector('.recommended-hotels-prev');
+  const mobileNext = mobileControls.querySelector('.recommended-hotels-next');
+  const dots = mobileControls.querySelector('.recommended-hotels-dots');
+  let frame = 0;
+  let currentIndex = 0;
+  let visibleCount = 1;
+
+  const sync = () => {
+    const metrics = getSliderMetrics(list, items);
+    visibleCount = Math.min(metrics.visibleCount, items.length);
+    currentIndex = Math.min(
+      getCurrentIndex(list, items, metrics.paddingStart),
+      Math.max(0, items.length - visibleCount),
+    );
+
+    const end = Math.min(items.length, currentIndex + visibleCount);
+    desktopStatus.textContent = `${currentIndex + 1} - ${end} ${labels.of} ${items.length}`;
+
+    const atStart = currentIndex === 0;
+    const atEnd = end >= items.length;
+    [desktopPrev, mobilePrev].forEach((button) => {
+      button.disabled = atStart;
+    });
+    [desktopNext, mobileNext].forEach((button) => {
+      button.disabled = atEnd;
+    });
+
+    const pageCount = Math.ceil(items.length / visibleCount);
+    const activePage = atEnd
+      ? pageCount - 1
+      : Math.min(Math.floor(currentIndex / visibleCount), pageCount - 1);
+    createDots(
+      dots,
+      pageCount,
+      activePage,
+      (page) => {
+        const target = Math.min(page * visibleCount, items.length - visibleCount);
+        scrollToIndex(list, items, target, metrics.paddingStart);
+      },
+      labels.goTo,
+    );
+
+    const controlsHidden = items.length <= visibleCount;
+    desktopControls.hidden = controlsHidden;
+    mobileControls.hidden = controlsHidden;
+  };
+
+  const scheduleSync = () => {
+    window.cancelAnimationFrame(frame);
+    frame = window.requestAnimationFrame(sync);
+  };
+
+  const move = (direction) => {
+    const metrics = getSliderMetrics(list, items);
+    const target = Math.max(
+      0,
+      Math.min(
+        currentIndex + direction * visibleCount,
+        items.length - visibleCount,
+      ),
+    );
+    scrollToIndex(list, items, target, metrics.paddingStart);
+  };
+
+  [desktopPrev, mobilePrev].forEach((button) => {
+    button.addEventListener('click', () => move(-1));
+  });
+  [desktopNext, mobileNext].forEach((button) => {
+    button.addEventListener('click', () => move(1));
+  });
+
+  list.addEventListener('scroll', scheduleSync, { passive: true });
+  const resizeObserver = new ResizeObserver(scheduleSync);
+  resizeObserver.observe(list);
+  sync();
+
+  return () => {
+    resizeObserver.disconnect();
+    window.cancelAnimationFrame(frame);
+  };
+}
+
+function createDesktopControls(labels) {
+  const controls = document.createElement('div');
+  controls.className = 'recommended-hotels-pagination';
+
+  const status = document.createElement('span');
+  status.className = 'recommended-hotels-status';
+  status.setAttribute('aria-live', 'polite');
+
+  const buttons = document.createElement('div');
+  buttons.className = 'recommended-hotels-pagination-buttons';
+  buttons.append(
+    createNavButton('prev', labels.previous),
+    createNavButton('next', labels.next),
+  );
+
+  controls.append(status, buttons);
+  return controls;
+}
+
+function createMobileControls(labels) {
+  const controls = document.createElement('div');
+  controls.className = 'recommended-hotels-mobile-controls';
+
+  const dots = document.createElement('div');
+  dots.className = 'recommended-hotels-dots';
+
+  controls.append(
+    createNavButton('prev', labels.previous),
+    dots,
+    createNavButton('next', labels.next),
+  );
+  return controls;
+}
+
+async function getLabels() {
+  const [
+    carousel,
+    previous,
+    next,
+    goTo,
+    of,
+  ] = await Promise.all([
+    getTranslation('hotelsCarousel', 'Recommended hotels'),
+    getTranslation('carouselPrevious', 'Previous hotels'),
+    getTranslation('carouselNext', 'Next hotels'),
+    getTranslation('carouselGoTo', 'Go to hotel group'),
+    getTranslation('carouselOf', 'of'),
+  ]);
+
+  return {
+    carousel,
+    goTo,
+    next,
+    of,
+    previous,
+  };
+}
+
+export default async function decorate(block) {
+  const existing = block.querySelector(':scope > .recommended-hotels-grid-rendered');
+  existing?.sliderCleanup?.();
+  existing?.remove();
+
+  const sourceRows = getSourceRows(block);
+  const configRow = getConfigRow(sourceRows);
+  const config = readConfig(block, configRow);
+  const itemRows = sourceRows.filter((row) => row !== configRow);
+  const hotels = itemRows
+    .map((row) => readHotelData(row, 'vertical'))
+    .filter((hotel) => hotel.image || hotel.name || hotel.href)
+    .slice(0, config.maxItems);
+  const labels = await getLabels();
 
   const wrapper = document.createElement('div');
   wrapper.className = 'recommended-hotels-grid-rendered';
 
+  const header = createHeader(config);
+  const desktopControls = createDesktopControls(labels);
+  header.append(desktopControls);
+  wrapper.append(header);
+
   const list = document.createElement('ul');
   list.className = 'recommended-hotels-list';
+  list.setAttribute('aria-label', labels.carousel);
+  list.tabIndex = 0;
 
-  items.forEach((hotel) => {
+  hotels.forEach((hotel) => {
     const li = document.createElement('li');
     li.className = 'recommended-hotels-item';
     li.append(createHotelMiniCard(hotel, 'vertical'));
     list.append(li);
   });
 
-  wrapper.append(list);
-  block.replaceChildren(wrapper);
+  const mobileControls = createMobileControls(labels);
+  if (list.children.length) {
+    wrapper.append(list, mobileControls);
+    wrapper.sliderCleanup = setupSlider(list, desktopControls, mobileControls, labels);
+  } else {
+    desktopControls.hidden = true;
+  }
+
+  hideSourceRows(sourceRows);
+  block.append(wrapper);
 }

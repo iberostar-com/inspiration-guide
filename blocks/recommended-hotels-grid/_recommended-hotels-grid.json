@@ -9,7 +9,23 @@
             "resourceType": "core/franklin/components/block/v1/block",
             "template": {
               "name": "Recommended Hotels Grid",
-              "model": "recommended-hotels-grid"
+              "model": "recommended-hotels-grid",
+              "filter": "recommended-hotels-grid"
+            }
+          }
+        }
+      }
+    },
+    {
+      "title": "Hotel Mini Card (Vertical)",
+      "id": "recommended-hotel",
+      "plugins": {
+        "xwalk": {
+          "page": {
+            "resourceType": "core/franklin/components/block/v1/block/item",
+            "template": {
+              "name": "Hotel",
+              "model": "hotel-mini-card"
             }
           }
         }
@@ -22,28 +38,88 @@
       "fields": [
         {
           "component": "text",
+          "valueType": "string",
+          "name": "eyebrow",
+          "label": "Eyebrow",
+          "value": "Hotels mentioned in the article"
+        },
+        {
+          "component": "text",
+          "valueType": "string",
           "name": "title",
           "label": "Section Title",
           "value": "Recommended Hotels"
         },
         {
           "component": "select",
-          "name": "mode",
-          "label": "Mode",
+          "valueType": "string",
+          "name": "titleType",
+          "label": "Section Title Heading",
+          "value": "h2",
           "options": [
-            { "name": "Manual", "value": "manual" },
-            { "name": "Auto by Destination", "value": "auto-destination" }
-          ],
-          "value": "manual"
+            {
+              "name": "h2",
+              "value": "h2"
+            },
+            {
+              "name": "h3",
+              "value": "h3"
+            }
+          ]
+        },
+        {
+          "component": "text",
+          "valueType": "string",
+          "name": "cta_linkText",
+          "label": "CTA Text",
+          "value": "View all hotels"
+        },
+        {
+          "component": "aem-content",
+          "valueType": "string",
+          "name": "cta_link",
+          "label": "CTA Link"
+        },
+        {
+          "component": "select",
+          "valueType": "string",
+          "name": "cta_linkTarget",
+          "label": "CTA Link Target",
+          "value": "_self",
+          "options": [
+            {
+              "name": "Same tab",
+              "value": "_self"
+            },
+            {
+              "name": "New tab",
+              "value": "_blank"
+            }
+          ]
         },
         {
           "component": "number",
+          "valueType": "number",
           "name": "maxItems",
-          "label": "Maximum Items",
-          "value": 12
+          "label": "Number of Hotels",
+          "description": "Maximum number of contributed hotel cards displayed in the grid.",
+          "value": 3,
+          "required": true,
+          "validation": {
+            "numberMin": 1,
+            "numberMax": 12,
+            "customErrorMsg": "Choose between 1 and 12 hotels."
+          }
         }
       ]
     }
   ],
-  "filters": []
+  "filters": [
+    {
+      "id": "recommended-hotels-grid",
+      "components": [
+        "recommended-hotel"
+      ]
+    }
+  ]
 }

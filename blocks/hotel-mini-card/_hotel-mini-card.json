@@ -14,11 +14,13 @@
             "variants": [
               {
                 "name": "Horizontal",
-                "value": "horizontal"
+                "value": "horizontal",
+                "description": "Compact horizontal card for editorial content."
               },
               {
                 "name": "Vertical",
-                "value": "vertical"
+                "value": "vertical",
+                "description": "Portrait card used by recommended hotel grids."
               }
             ]
           }
@@ -124,8 +126,8 @@
           "component": "text",
           "valueType": "string",
           "name": "tag_tagLabel",
-          "label": "Tag Label",
-          "description": "Only shown by the vertical variant.",
+          "label": "Promotional Badge",
+          "description": "Optional badge shown over the image in the vertical variant, for example Offer or Recommended.",
           "value": ""
         }
       ]

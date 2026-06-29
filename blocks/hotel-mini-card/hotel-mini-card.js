@@ -32,10 +32,17 @@ function getSourceRows(block) {
 
 function getCells(row) {
   if (!row) return [];
-  if (row.children.length > 1) return [...row.children];
 
-  const nested = [...(row.children[0]?.children || [])];
-  return nested.length ? nested : [...row.children];
+  let content = row;
+  while (
+    content.children.length === 1
+    && content.firstElementChild?.tagName === 'DIV'
+    && !content.firstElementChild.hasAttribute('data-aue-prop')
+  ) {
+    content = content.firstElementChild;
+  }
+
+  return content.children.length ? [...content.children] : [content];
 }
 
 function getPropElement(root, propName) {
@@ -155,7 +162,7 @@ function normalizeTarget(value) {
   return `${value || ''}`.trim().toLowerCase() === '_blank' ? '_blank' : '_self';
 }
 
-function readHotel(block, variant) {
+export function readHotelData(block, variant = 'horizontal') {
   const link = getHref(block, 'link', 'data-link');
   const linkField = getField(block, 'link');
   const linkText = getAnchor(linkField)?.textContent?.trim();
@@ -252,7 +259,7 @@ export default function decorate(block) {
   block.querySelector(':scope > .hotel-mini-card-rendered')?.remove();
 
   const variant = getVariant(block);
-  const hotel = readHotel(block, variant);
+  const hotel = readHotelData(block, variant);
   const rendered = document.createElement('div');
   rendered.className = 'hotel-mini-card-rendered';
   rendered.append(createHotelMiniCard(hotel, variant));

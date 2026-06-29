@@ -10,5 +10,10 @@
   "noArticles": "No hay artículos disponibles",
   "relatedArticles": "Artículos relacionados",
   "shareArticle": "Compartir artículo",
-  "tags": "Etiquetas"
+  "tags": "Etiquetas",
+  "hotelsCarousel": "Hoteles recomendados",
+  "carouselPrevious": "Hoteles anteriores",
+  "carouselNext": "Hoteles siguientes",
+  "carouselGoTo": "Ir al grupo de hoteles",
+  "carouselOf": "de"
 }
