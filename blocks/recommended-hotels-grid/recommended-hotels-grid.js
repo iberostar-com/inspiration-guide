@@ -3,6 +3,7 @@ import {
   readHotelData,
 } from '../hotel-mini-card/hotel-mini-card.js';
 import { getTranslation } from '../../scripts/iberostar/i18n.js';
+import { moveInstrumentation } from '../../scripts/scripts.js';
 
 const DEFAULT_VISIBLE_COUNT = 4;
 
@@ -22,14 +23,6 @@ function hideSourceRows(rows) {
     row.classList.add('recommended-hotels-grid-source');
     row.setAttribute('aria-hidden', 'true');
   });
-}
-
-function copyAueAttributes(from, to) {
-  [...from.attributes]
-    .filter(({ name }) => name.startsWith('data-aue-') || name.startsWith('data-richtext-'))
-    .forEach(({ name, value }) => {
-      to.setAttribute(name, value);
-    });
 }
 
 function isAuthoringPage(block) {
@@ -303,10 +296,18 @@ async function getLabels() {
 
 export default async function decorate(block) {
   const existing = block.querySelector(':scope > .recommended-hotels-grid-rendered');
-  existing?.sliderCleanup?.();
-  existing?.remove();
+  if (existing) {
+    existing.sliderCleanup?.();
+    // Restore source rows that were moved inside rendered items so they can be re-read
+    existing.querySelectorAll('.recommended-hotels-grid-source').forEach((row) => {
+      row.classList.remove('recommended-hotels-grid-source');
+      row.removeAttribute('aria-hidden');
+      block.insertBefore(row, existing);
+    });
+    existing.remove();
+  }
 
-  const { hotels, sourceRows } = getAuthoredHotels(block);
+  const { hotels } = getAuthoredHotels(block);
   const labels = await getLabels();
 
   const wrapper = document.createElement('div');
@@ -325,8 +326,12 @@ export default async function decorate(block) {
   hotels.forEach(({ hotel, source }) => {
     const li = document.createElement('li');
     li.className = 'recommended-hotels-item';
-    copyAueAttributes(source, li);
-    li.append(createHotelMiniCard(hotel, 'vertical'));
+    // Move UE instrumentation from source row to li so only one tree entry exists.
+    // Then nest the hidden source row inside li so UE can still resolve its prop fields.
+    moveInstrumentation(source, li);
+    source.classList.add('recommended-hotels-grid-source');
+    source.setAttribute('aria-hidden', 'true');
+    li.append(source, createHotelMiniCard(hotel, 'vertical'));
     list.append(li);
   });
 
@@ -344,6 +349,7 @@ export default async function decorate(block) {
     }
   }
 
-  hideSourceRows(sourceRows);
+  // Hide any remaining direct children that were not moved into li (e.g. old config rows)
+  hideSourceRows(getSourceRows(block));
   block.append(wrapper);
 }
