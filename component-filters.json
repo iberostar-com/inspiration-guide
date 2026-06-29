@@ -275,6 +275,12 @@
     }
   },
   {
+    "id": "editorial-article-grid",
+    "components": [
+      "editorial-article"
+    ]
+  },
+  {
     "id": "featured-articles",
     "components": [
       "featured-article"
@@ -296,12 +302,6 @@
     "id": "recommended-hotels-grid",
     "components": [
       "recommended-hotel"
-    ]
-  },
-  {
-    "id": "topic-tag-cloud",
-    "components": [
-      "topic-tag"
     ]
   }
 ]

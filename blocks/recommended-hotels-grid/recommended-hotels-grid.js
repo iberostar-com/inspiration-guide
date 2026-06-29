@@ -264,15 +264,15 @@ function setupSlider(list, desktopControls, mobileControls, labels) {
   };
 }
 
-async function getLabels() {
+async function getLabels(block) {
   const [
     carousel,
     previous,
     next,
     goTo,
     of,
-    eyebrow,
-    title,
+    defaultEyebrow,
+    defaultTitle,
   ] = await Promise.all([
     getTranslation('hotelsCarousel', 'Recommended hotels'),
     getTranslation('carouselPrevious', 'Previous hotels'),
@@ -285,12 +285,12 @@ async function getLabels() {
 
   return {
     carousel,
-    eyebrow,
+    eyebrow: block.getAttribute('data-eyebrow') || defaultEyebrow,
     goTo,
     next,
     of,
     previous,
-    title,
+    title: block.getAttribute('data-title') || defaultTitle,
   };
 }
 
@@ -308,7 +308,7 @@ export default async function decorate(block) {
   }
 
   const { hotels } = getAuthoredHotels(block);
-  const labels = await getLabels();
+  const labels = await getLabels(block);
 
   const wrapper = document.createElement('div');
   wrapper.className = 'recommended-hotels-grid-rendered';

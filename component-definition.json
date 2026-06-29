@@ -290,7 +290,23 @@
                 "resourceType": "core/franklin/components/block/v1/block",
                 "template": {
                   "name": "Editorial Article Grid",
-                  "model": "editorial-article-grid"
+                  "model": "editorial-article-grid",
+                  "filter": "editorial-article-grid"
+                }
+              }
+            }
+          }
+        },
+        {
+          "title": "Article",
+          "id": "editorial-article",
+          "plugins": {
+            "xwalk": {
+              "page": {
+                "resourceType": "core/franklin/components/block/v1/block/item",
+                "template": {
+                  "name": "Article",
+                  "model": "editorial-article"
                 }
               }
             }
@@ -622,6 +638,7 @@
                 "resourceType": "core/franklin/components/block/v1/block",
                 "template": {
                   "name": "Recommended Hotels Grid",
+                  "model": "recommended-hotels-grid",
                   "filter": "recommended-hotels-grid"
                 }
               }
@@ -653,23 +670,7 @@
                 "resourceType": "core/franklin/components/block/v1/block",
                 "template": {
                   "name": "Topic Tag Cloud",
-                  "model": "topic-tag-cloud",
-                  "filter": "topic-tag-cloud"
-                }
-              }
-            }
-          }
-        },
-        {
-          "title": "Topic Tag",
-          "id": "topic-tag",
-          "plugins": {
-            "xwalk": {
-              "page": {
-                "resourceType": "core/franklin/components/block/v1/block/item",
-                "template": {
-                  "name": "Tag",
-                  "model": "topic-tag"
+                  "model": "topic-tag-cloud"
                 }
               }
             }

@@ -668,6 +668,18 @@
     "id": "editorial-article-grid",
     "fields": [
       {
+        "component": "text",
+        "name": "pretitle",
+        "label": "Pretitle",
+        "value": ""
+      },
+      {
+        "component": "text",
+        "name": "title",
+        "label": "Title",
+        "value": ""
+      },
+      {
         "component": "select",
         "name": "mode",
         "label": "Mode",
@@ -686,28 +698,39 @@
           }
         ],
         "value": "manual"
+      }
+    ]
+  },
+  {
+    "id": "editorial-article",
+    "fields": [
+      {
+        "component": "reference",
+        "valueType": "string",
+        "name": "image",
+        "label": "Image",
+        "multi": false
       },
       {
-        "component": "select",
-        "name": "sort",
-        "label": "Sort",
-        "options": [
-          {
-            "name": "Latest",
-            "value": "latest"
-          },
-          {
-            "name": "Reading Time",
-            "value": "reading-time"
-          }
-        ],
-        "value": "latest"
+        "component": "text",
+        "valueType": "string",
+        "name": "title",
+        "label": "Article Title",
+        "value": ""
       },
       {
-        "component": "number",
-        "name": "maxItems",
-        "label": "Maximum Items",
-        "value": 8
+        "component": "text",
+        "valueType": "string",
+        "name": "category",
+        "label": "Category",
+        "value": ""
+      },
+      {
+        "component": "text",
+        "valueType": "string",
+        "name": "link",
+        "label": "Article URL",
+        "value": ""
       }
     ]
   },
@@ -1475,32 +1498,44 @@
     ]
   },
   {
+    "id": "recommended-hotels-grid",
+    "fields": [
+      {
+        "component": "text",
+        "name": "eyebrow",
+        "label": "Pretitle (Eyebrow)",
+        "value": ""
+      },
+      {
+        "component": "text",
+        "name": "title",
+        "label": "Title",
+        "value": ""
+      }
+    ]
+  },
+  {
     "id": "topic-tag-cloud",
     "fields": [
       {
         "component": "text",
         "name": "title",
         "label": "Section Title",
-        "value": "Related Topics"
-      }
-    ]
-  },
-  {
-    "id": "topic-tag",
-    "fields": [
-      {
-        "component": "text",
-        "valueType": "string",
-        "name": "label",
-        "label": "Tag Label",
         "value": ""
       },
       {
-        "component": "text",
+        "component": "boolean",
+        "valueType": "boolean",
+        "name": "useArticleTags",
+        "label": "Use Article Tags (auto from page)",
+        "value": false
+      },
+      {
+        "component": "aem-tag",
         "valueType": "string",
-        "name": "tagUrl",
-        "label": "Tag URL (optional)",
-        "value": ""
+        "name": "tags",
+        "label": "Tags",
+        "multi": true
       }
     ]
   }
