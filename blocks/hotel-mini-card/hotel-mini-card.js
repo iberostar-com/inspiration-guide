@@ -272,7 +272,32 @@ function hideSource(block) {
   });
 }
 
+function isAuthoringPage(block) {
+  return Boolean(block.closest('[data-aue-resource]') || document.querySelector('[data-aue-resource]'));
+}
+
+function observeAuthorChanges(block) {
+  block.hotelMiniCardObserver?.disconnect();
+  if (!isAuthoringPage(block)) return;
+
+  const observer = new MutationObserver(() => {
+    observer.disconnect();
+    // eslint-disable-next-line no-use-before-define
+    decorate(block);
+  });
+  getSourceRows(block).forEach((row) => {
+    observer.observe(row, {
+      attributes: true,
+      childList: true,
+      characterData: true,
+      subtree: true,
+    });
+  });
+  block.hotelMiniCardObserver = observer;
+}
+
 export default function decorate(block) {
+  block.hotelMiniCardObserver?.disconnect();
   block.querySelector(':scope > .hotel-mini-card-rendered')?.remove();
 
   const variant = getVariant(block);
@@ -283,4 +308,5 @@ export default function decorate(block) {
 
   hideSource(block);
   block.append(rendered);
+  observeAuthorChanges(block);
 }

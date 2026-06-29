@@ -24,6 +24,11 @@ function getAnchor(root) {
   return root?.querySelector?.('a[href]') || null;
 }
 
+function getImageElement(root) {
+  if (root?.matches?.('img')) return root;
+  return root?.querySelector?.('img') || null;
+}
+
 function unwrapContent(root) {
   let content = root;
   while (
@@ -368,8 +373,97 @@ function copyAueAttributes(from, to) {
     });
 }
 
+function getTextFromProps(root, names) {
+  return names
+    .map((name) => getPropElement(root, name)?.textContent?.trim())
+    .find(Boolean) || '';
+}
+
+function getHrefFromProps(root, names) {
+  return names
+    .map((name) => {
+      const field = getPropElement(root, name);
+      return getAnchor(field)?.getAttribute('href')?.trim() || field?.textContent?.trim() || '';
+    })
+    .find(Boolean) || '';
+}
+
+function getImageFromProps(root, names) {
+  return names
+    .map((name) => {
+      const field = getPropElement(root, name);
+      return getImageElement(field)?.src || getAnchor(field)?.getAttribute('href')?.trim() || '';
+    })
+    .find(Boolean) || '';
+}
+
+function readGridHotelData(root) {
+  const hasCardFields = Boolean(root.querySelector?.('[data-aue-prop^="card_"]'));
+  const isHotelCardsRoot = root.matches?.('[data-aue-prop="hotels"]')
+    || root.closest?.('[data-aue-prop="hotels"]');
+  if (isHotelCardsRoot && !hasCardFields) return null;
+
+  const fields = hasCardFields ? {
+    ctaText: ['card_linkText'],
+    href: ['card_link'],
+    image: ['card_image'],
+    imageAlt: ['card_imageAlt'],
+    location: ['card_location'],
+    name: ['card_hotelName'],
+    priceFrom: ['card_priceFrom'],
+    stars: ['card_stars'],
+    tagLabel: ['card_tagLabel'],
+    target: ['card_linkTarget'],
+  } : {
+    ctaText: ['cta_linkText'],
+    href: ['cta_link'],
+    image: ['media_image'],
+    imageAlt: ['media_imageAlt'],
+    location: ['hotel_location'],
+    name: ['hotel_hotelName'],
+    priceFrom: ['hotel_priceFrom'],
+    stars: ['hotel_stars'],
+    tagLabel: ['tag_tagLabel'],
+    target: ['cta_linkTarget'],
+  };
+  const hotel = {
+    ctaText: getTextFromProps(root, fields.ctaText),
+    href: getHrefFromProps(root, fields.href),
+    image: getImageFromProps(root, fields.image),
+    imageAlt: getTextFromProps(root, fields.imageAlt),
+    location: getTextFromProps(root, fields.location),
+    name: getTextFromProps(root, fields.name),
+    priceFrom: getTextFromProps(root, fields.priceFrom),
+    stars: getTextFromProps(root, fields.stars),
+    tagLabel: getTextFromProps(root, fields.tagLabel),
+    target: getTextFromProps(root, fields.target) || '_self',
+  };
+
+  return hotel.image || hotel.name || hotel.href ? hotel : null;
+}
+
 function isAuthoringPage(block) {
   return Boolean(block.closest('[data-aue-resource]') || document.querySelector('[data-aue-resource]'));
+}
+
+function observeAuthorChanges(block) {
+  block.recommendedHotelsObserver?.disconnect();
+  if (!isAuthoringPage(block)) return;
+
+  const observer = new MutationObserver(() => {
+    observer.disconnect();
+    // eslint-disable-next-line no-use-before-define
+    decorate(block);
+  });
+  getSourceRows(block).forEach((row) => {
+    observer.observe(row, {
+      attributes: true,
+      childList: true,
+      characterData: true,
+      subtree: true,
+    });
+  });
+  block.recommendedHotelsObserver = observer;
 }
 
 function getHotelContainerRoots(block) {
@@ -408,6 +502,7 @@ async function getLabels() {
 }
 
 export default async function decorate(block) {
+  block.recommendedHotelsObserver?.disconnect();
   const existing = block.querySelector(':scope > .recommended-hotels-grid-rendered');
   existing?.sliderCleanup?.();
   existing?.remove();
@@ -421,10 +516,10 @@ export default async function decorate(block) {
     .filter((row) => !nestedHotelRoots.some((root) => root === row || row.contains(root)));
   const authoredHotels = [...nestedHotelRoots, ...itemRows]
     .map((row) => ({
-      hotel: readHotelData(row, 'vertical'),
+      hotel: readGridHotelData(row) || readHotelData(row, 'vertical'),
       source: row,
     }))
-    .filter(({ hotel }) => hotel.image || hotel.name || hotel.href)
+    .filter(({ hotel }) => hotel?.image || hotel?.name || hotel?.href)
     .slice(0, config.maxItems);
   const placeholderCount = isAuthoringPage(block)
     ? Math.max(0, config.maxItems - authoredHotels.length)
@@ -468,4 +563,5 @@ export default async function decorate(block) {
 
   hideSourceRows(sourceRows);
   block.append(wrapper);
+  observeAuthorChanges(block);
 }
