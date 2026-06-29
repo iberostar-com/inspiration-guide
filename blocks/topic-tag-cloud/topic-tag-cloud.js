@@ -2,11 +2,10 @@
  * Topic Tag Cloud block
  * Shows a cloud of topic tags as outlined pill chips.
  *
- * Sources (in priority order):
- * 1. Authored AEM tags (data-tags attribute) when useArticleTags is false
+ * Sources:
+ * 1. Authored AEM tags (DOM field row) when useArticleTags is false
  * 2. Article page tags (meta[name="article-tags"]) when useArticleTags is true
- *    or when no tags are contributed and the block is on an article page
- * 3. Falls back to empty (nothing rendered)
+ * 3. Empty selected source renders nothing
  *
  * Limit: 20 tags maximum.
  */
@@ -42,8 +41,19 @@ function getPageTags() {
   return parseTagList(content);
 }
 
+function getAuthoredTags(block) {
+  const tagsField = block.querySelector('[data-aue-prop="tags"]');
+  if (tagsField) return parseTagList(tagsField.textContent);
+
+  const tagsRow = [...block.children].find((row) => (
+    !row.classList.contains('topic-tag-cloud-rendered')
+    && !row.querySelector('picture, img')
+  ));
+  return parseTagList(tagsRow?.textContent || '');
+}
+
 function buildChips(tags, languageRoot) {
-  return tags.slice(0, MAX_TAGS).map((tagPath) => {
+  return tags.filter((tagPath) => tagSlug(tagPath) !== '').slice(0, MAX_TAGS).map((tagPath) => {
     const label = tagLabel(tagPath);
     const slug = tagSlug(tagPath);
     const chip = document.createElement('a');
@@ -57,22 +67,19 @@ function buildChips(tags, languageRoot) {
 
 function getLanguageRoot() {
   const segments = window.location.pathname.split('/').filter(Boolean);
-  return segments.length >= 2 ? `/${segments[0]}/${segments[1]}` : '';
+  const locale = segments.find((segment) => /^[a-z]{2}-[a-z]{2}$/i.test(segment));
+  return locale ? `/${locale}` : '';
 }
 
 export default function decorate(block) {
+  const previous = block.querySelector('.topic-tag-cloud-rendered');
+  if (previous) previous.remove();
+
   const title = block.getAttribute('data-title') || '';
   const useArticleTags = block.getAttribute('data-use-article-tags') === 'true';
-  const authoredTags = parseTagList(block.getAttribute('data-tags') || '');
+  const tags = useArticleTags ? getPageTags() : getAuthoredTags(block);
 
-  let tags;
-  if (useArticleTags || !authoredTags.length) {
-    tags = getPageTags();
-  } else {
-    tags = authoredTags;
-  }
-
-  // Clear source rows
+  // Preserve Universal Editor instrumentation while hiding source rows.
   [...block.children].forEach((row) => row.classList.add('topic-tag-cloud-source'));
 
   if (!tags.length) return;
@@ -91,6 +98,8 @@ export default function decorate(block) {
   const list = document.createElement('div');
   list.className = 'topic-tag-cloud-list';
   buildChips(tags, languageRoot).forEach((chip) => list.append(chip));
+
+  if (!list.children.length) return;
 
   rendered.append(list);
   block.append(rendered);
