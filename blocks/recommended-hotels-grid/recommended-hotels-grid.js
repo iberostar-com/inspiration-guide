@@ -37,7 +37,7 @@ function unwrapContent(root) {
 }
 
 function getConfigRow(rows) {
-  const props = ['eyebrow', 'title', 'cta_link', 'maxItems'];
+  const props = ['eyebrow', 'title', 'cta_link', 'maxItems', 'cta_maxItems'];
   const byProp = rows.find(
     (row) => props.some((propName) => getPropElement(row, propName)),
   );
@@ -82,6 +82,7 @@ function readConfig(block, configRow) {
   const ctaAnchor = getAnchor(ctaField) || fallbackAnchor;
   const targetField = getConfigText(configRow, 'cta_linkTarget');
   const maxItems = block.getAttribute('data-max-items')?.trim()
+    || getConfigText(configRow, 'cta_maxItems')
     || getConfigText(configRow, 'maxItems')
     || getFallbackMaxItems(configRow);
 
@@ -359,8 +360,27 @@ function createPlaceholderHotel(index) {
   };
 }
 
+function copyAueAttributes(from, to) {
+  [...from.attributes]
+    .filter(({ name }) => name.startsWith('data-aue-') || name.startsWith('data-richtext-'))
+    .forEach(({ name, value }) => {
+      to.setAttribute(name, value);
+    });
+}
+
 function isAuthoringPage(block) {
   return Boolean(block.closest('[data-aue-resource]') || document.querySelector('[data-aue-resource]'));
+}
+
+function getHotelContainerRoots(block) {
+  return [...block.querySelectorAll('[data-aue-prop="hotels"]')]
+    .flatMap((container) => {
+      const items = [...container.children]
+        .filter((child) => child.querySelector?.(
+          '[data-aue-prop="card_hotelName"], [data-aue-prop="card_image"], [data-aue-prop="card_link"], [data-aue-prop="hotel_hotelName"], [data-aue-prop="media_image"], [data-aue-prop="cta_link"]',
+        ));
+      return items.length ? items : [container];
+    });
 }
 
 async function getLabels() {
@@ -395,10 +415,16 @@ export default async function decorate(block) {
   const sourceRows = getSourceRows(block);
   const configRow = getConfigRow(sourceRows);
   const config = readConfig(block, configRow);
-  const itemRows = sourceRows.filter((row) => row !== configRow);
-  const authoredHotels = itemRows
-    .map((row) => readHotelData(row, 'vertical'))
-    .filter((hotel) => hotel.image || hotel.name || hotel.href)
+  const nestedHotelRoots = getHotelContainerRoots(block);
+  const itemRows = sourceRows
+    .filter((row) => row !== configRow)
+    .filter((row) => !nestedHotelRoots.some((root) => root === row || row.contains(root)));
+  const authoredHotels = [...nestedHotelRoots, ...itemRows]
+    .map((row) => ({
+      hotel: readHotelData(row, 'vertical'),
+      source: row,
+    }))
+    .filter(({ hotel }) => hotel.image || hotel.name || hotel.href)
     .slice(0, config.maxItems);
   const placeholderCount = isAuthoringPage(block)
     ? Math.max(0, config.maxItems - authoredHotels.length)
@@ -406,7 +432,7 @@ export default async function decorate(block) {
   const hotels = [
     ...authoredHotels,
     ...Array.from({ length: placeholderCount }).map((_, index) => (
-      createPlaceholderHotel(authoredHotels.length + index)
+      { hotel: createPlaceholderHotel(authoredHotels.length + index), source: null }
     )),
   ];
   const labels = await getLabels();
@@ -424,9 +450,10 @@ export default async function decorate(block) {
   list.setAttribute('aria-label', labels.carousel);
   list.tabIndex = 0;
 
-  hotels.forEach((hotel) => {
+  hotels.forEach(({ hotel, source }) => {
     const li = document.createElement('li');
     li.className = 'recommended-hotels-item';
+    if (source) copyAueAttributes(source, li);
     li.append(createHotelMiniCard(hotel, 'vertical'));
     list.append(li);
   });

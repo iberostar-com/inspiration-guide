@@ -15,17 +15,17 @@ const FIELD_POSITIONS = {
 };
 
 const FIELD_ALIASES = {
-  ctaText: ['cta_linkText'],
-  image: ['media_image'],
-  imageAlt: ['media_imageAlt'],
-  hotelName: ['hotel_hotelName'],
-  link: ['cta_link'],
-  linkTarget: ['cta_linkTarget'],
-  location: ['hotel_location'],
+  ctaText: ['cta_linkText', 'card_linkText'],
+  image: ['media_image', 'card_image'],
+  imageAlt: ['media_imageAlt', 'card_imageAlt'],
+  hotelName: ['hotel_hotelName', 'card_hotelName'],
+  link: ['cta_link', 'card_link'],
+  linkTarget: ['cta_linkTarget', 'card_linkTarget'],
+  location: ['hotel_location', 'card_location'],
   layout: ['tag_layout'],
-  priceFrom: ['hotel_priceFrom'],
-  stars: ['hotel_stars'],
-  tagLabel: ['tag_tagLabel'],
+  priceFrom: ['hotel_priceFrom', 'card_priceFrom'],
+  stars: ['hotel_stars', 'card_stars'],
+  tagLabel: ['tag_tagLabel', 'card_tagLabel'],
 };
 
 function getSourceRows(block) {
@@ -105,12 +105,26 @@ function getImageAlt(block) {
     || getText(block, 'imageAlt', 'data-image-alt', '');
 }
 
+function normalizeVariant(value) {
+  const normalized = `${value || ''}`.trim().toLowerCase();
+  if (normalized.includes('vertical')) return 'vertical';
+  if (normalized.includes('horizontal')) return 'horizontal';
+  return '';
+}
+
+function getClassVariant(block) {
+  if (block.classList.contains('vertical')) return 'vertical';
+  if (block.classList.contains('horizontal')) return 'horizontal';
+  return '';
+}
+
 function getVariant(block) {
-  const variant = block.getAttribute('data-variant')
-    || block.getAttribute('data-layout')
-    || getText(block, 'layout', '', '')
-    || (block.classList.contains('vertical') ? 'vertical' : '');
-  return variant === 'vertical' ? 'vertical' : 'horizontal';
+  return [
+    getText(block, 'layout', '', ''),
+    block.getAttribute('data-layout'),
+    block.getAttribute('data-variant'),
+    getClassVariant(block),
+  ].map(normalizeVariant).find(Boolean) || 'horizontal';
 }
 
 function normalizeStars(value) {
