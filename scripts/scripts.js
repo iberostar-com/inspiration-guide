@@ -161,7 +161,8 @@ function buildArticleLayoutShell(layoutSections) {
 }
 
 function applyArticleTwoColumnLayout(main) {
-  if (getPageType() !== 'article') {
+  const isUniversalEditorPage = main.querySelector(':scope > [data-aue-resource]');
+  if (getPageType() !== 'article' || isUniversalEditorPage) {
     return;
   }
 
