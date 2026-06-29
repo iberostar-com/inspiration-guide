@@ -4,120 +4,17 @@ import {
 } from '../hotel-mini-card/hotel-mini-card.js';
 import { getTranslation } from '../../scripts/iberostar/i18n.js';
 
-const HEADING_TAGS = new Set(['h2', 'h3']);
-const DEFAULT_MAX_ITEMS = 3;
-const MAX_ITEMS = 12;
+const DEFAULT_VISIBLE_COUNT = 4;
 
 function getSourceRows(block) {
   return [...block.children]
     .filter((child) => !child.classList.contains('recommended-hotels-grid-rendered'));
 }
 
-function getPropElement(root, propName) {
-  const selector = `[data-aue-prop="${propName}"]`;
-  if (root?.matches?.(selector)) return root;
-  return root?.querySelector?.(selector) || null;
-}
-
-function getAnchor(root) {
-  if (root?.matches?.('a[href]')) return root;
-  return root?.querySelector?.('a[href]') || null;
-}
-
-function getImageElement(root) {
-  if (root?.matches?.('img')) return root;
-  return root?.querySelector?.('img') || null;
-}
-
-function unwrapContent(root) {
-  let content = root;
-  while (
-    content?.children?.length === 1
-    && content.firstElementChild?.tagName === 'DIV'
-    && !content.firstElementChild.hasAttribute('data-aue-prop')
-  ) {
-    content = content.firstElementChild;
-  }
-  return content;
-}
-
-function getConfigRow(rows) {
-  const props = ['eyebrow', 'title', 'cta_link', 'maxItems', 'cta_maxItems'];
-  const byProp = rows.find(
-    (row) => props.some((propName) => getPropElement(row, propName)),
-  );
-  if (byProp) return byProp;
-
-  return rows.find((row) => unwrapContent(row)?.querySelector?.('h2, h3')) || null;
-}
-
-function getConfigText(row, propName, fallback = '') {
-  return getPropElement(row, propName)?.textContent?.trim() || fallback;
-}
-
-function sanitizeHeadingTag(value, row) {
-  const authoredHeading = unwrapContent(row)?.querySelector?.('h2, h3')?.tagName?.toLowerCase();
-  const configuredTag = `${value || ''}`.trim().toLowerCase();
-  if (HEADING_TAGS.has(configuredTag)) return configuredTag;
-  return HEADING_TAGS.has(authoredHeading) ? authoredHeading : 'h2';
-}
-
-function normalizeMaxItems(value) {
-  const parsed = Number.parseInt(`${value || DEFAULT_MAX_ITEMS}`, 10);
-  if (Number.isNaN(parsed)) return DEFAULT_MAX_ITEMS;
-  return Math.max(1, Math.min(parsed, MAX_ITEMS));
-}
-
-function getFallbackElements(row) {
-  return [...(unwrapContent(row)?.children || [])];
-}
-
-function getFallbackMaxItems(row) {
-  return getFallbackElements(row)
-    .map((element) => element.textContent?.trim())
-    .reverse()
-    .find((value) => /^\d+$/.test(value || '')) || '';
-}
-
-function readConfig(block, configRow) {
-  const fallbackElements = getFallbackElements(configRow);
-  const heading = unwrapContent(configRow)?.querySelector?.('h2, h3');
-  const fallbackAnchor = getAnchor(configRow);
-  const ctaField = getPropElement(configRow, 'cta_link');
-  const ctaAnchor = getAnchor(ctaField) || fallbackAnchor;
-  const targetField = getConfigText(configRow, 'cta_linkTarget');
-  const maxItems = block.getAttribute('data-max-items')?.trim()
-    || getConfigText(configRow, 'cta_maxItems')
-    || getConfigText(configRow, 'maxItems')
-    || getFallbackMaxItems(configRow);
-
-  return {
-    ctaHref: block.getAttribute('data-cta-link')?.trim()
-      || ctaAnchor?.getAttribute('href')?.trim()
-      || '',
-    ctaTarget: block.getAttribute('data-cta-link-target')?.trim()
-      || ctaAnchor?.getAttribute('target')?.trim()
-      || targetField
-      || '_self',
-    ctaText: block.getAttribute('data-cta-link-text')?.trim()
-      || getConfigText(configRow, 'cta_linkText')
-      || ctaAnchor?.textContent?.trim()
-      || '',
-    eyebrow: block.getAttribute('data-eyebrow')?.trim()
-      || getConfigText(configRow, 'eyebrow')
-      || fallbackElements[0]?.textContent?.trim()
-      || '',
-    maxItems: normalizeMaxItems(maxItems),
-    title: block.getAttribute('data-title')?.trim()
-      || getConfigText(configRow, 'title')
-      || heading?.textContent?.trim()
-      || '',
-    titleType: sanitizeHeadingTag(
-      block.getAttribute('data-title-type')?.trim()
-        || getConfigText(configRow, 'titleType'),
-      configRow,
-    ),
-  };
+function hasConfigFields(row) {
+  return Boolean(row.querySelector?.(
+    '[data-aue-prop="eyebrow"], [data-aue-prop="title"], [data-aue-prop="cta_link"], [data-aue-prop="maxItems"], [data-aue-prop="cta_maxItems"], [data-aue-prop="hotels"]',
+  ));
 }
 
 function hideSourceRows(rows) {
@@ -127,46 +24,51 @@ function hideSourceRows(rows) {
   });
 }
 
-function createCta(config) {
-  if (!config.ctaText || !config.ctaHref) return null;
-
-  const link = document.createElement('a');
-  link.className = 'recommended-hotels-grid-cta';
-  link.href = config.ctaHref;
-  link.textContent = config.ctaText;
-  if (config.ctaTarget === '_blank') {
-    link.target = '_blank';
-    link.rel = 'noopener noreferrer';
-  }
-  return link;
+function copyAueAttributes(from, to) {
+  [...from.attributes]
+    .filter(({ name }) => name.startsWith('data-aue-') || name.startsWith('data-richtext-'))
+    .forEach(({ name, value }) => {
+      to.setAttribute(name, value);
+    });
 }
 
-function createHeader(config) {
-  const header = document.createElement('div');
-  header.className = 'recommended-hotels-grid-header';
+function isAuthoringPage(block) {
+  return Boolean(block.closest('[data-aue-resource]') || document.querySelector('[data-aue-resource]'));
+}
 
-  const copy = document.createElement('div');
-  copy.className = 'recommended-hotels-grid-copy';
+function createPlaceholderHotel(index) {
+  return {
+    ctaText: '',
+    href: '',
+    image: '',
+    imageAlt: '',
+    location: '',
+    name: `Hotel ${index + 1}`,
+    priceFrom: '',
+    stars: 0,
+    tagLabel: '',
+    target: '_self',
+  };
+}
 
-  if (config.eyebrow) {
-    const eyebrow = document.createElement('p');
-    eyebrow.className = 'recommended-hotels-grid-eyebrow';
-    eyebrow.textContent = config.eyebrow;
-    copy.append(eyebrow);
-  }
+function getAuthoredHotels(block) {
+  const rows = getSourceRows(block);
+  const itemRows = rows.filter((row) => !hasConfigFields(row));
+  const hotels = itemRows
+    .map((row, index) => {
+      const hotel = readHotelData(row, 'vertical');
+      const hasContent = hotel.image || hotel.name || hotel.href
+        || hotel.location || hotel.priceFrom;
+      if (hasContent) return { hotel, source: row };
+      if (isAuthoringPage(block)) return { hotel: createPlaceholderHotel(index), source: row };
+      return null;
+    })
+    .filter(Boolean);
 
-  if (config.title) {
-    const heading = document.createElement(config.titleType);
-    heading.className = 'recommended-hotels-grid-title';
-    heading.textContent = config.title;
-    copy.append(heading);
-  }
-
-  const cta = createCta(config);
-  if (cta) copy.append(cta);
-
-  header.append(copy);
-  return header;
+  return {
+    hotels,
+    sourceRows: rows,
+  };
 }
 
 function createNavButton(direction, label) {
@@ -176,6 +78,26 @@ function createNavButton(direction, label) {
   button.setAttribute('aria-label', label);
   button.innerHTML = '<span aria-hidden="true"></span>';
   return button;
+}
+
+function createHeader(labels) {
+  const header = document.createElement('div');
+  header.className = 'recommended-hotels-grid-header';
+
+  const copy = document.createElement('div');
+  copy.className = 'recommended-hotels-grid-copy';
+
+  const eyebrow = document.createElement('p');
+  eyebrow.className = 'recommended-hotels-grid-eyebrow';
+  eyebrow.textContent = labels.eyebrow;
+
+  const title = document.createElement('h2');
+  title.className = 'recommended-hotels-grid-title';
+  title.textContent = labels.title;
+
+  copy.append(eyebrow, title);
+  header.append(copy);
+  return header;
 }
 
 function getSliderMetrics(list, items) {
@@ -191,7 +113,6 @@ function getSliderMetrics(list, items) {
   );
 
   return {
-    gap,
     paddingStart,
     visibleCount,
   };
@@ -229,6 +150,40 @@ function createDots(container, pageCount, activePage, onSelect, label) {
   });
 }
 
+function createDesktopControls(labels) {
+  const controls = document.createElement('div');
+  controls.className = 'recommended-hotels-pagination';
+
+  const status = document.createElement('span');
+  status.className = 'recommended-hotels-status';
+  status.setAttribute('aria-live', 'polite');
+
+  const buttons = document.createElement('div');
+  buttons.className = 'recommended-hotels-pagination-buttons';
+  buttons.append(
+    createNavButton('prev', labels.previous),
+    createNavButton('next', labels.next),
+  );
+
+  controls.append(status, buttons);
+  return controls;
+}
+
+function createMobileControls(labels) {
+  const controls = document.createElement('div');
+  controls.className = 'recommended-hotels-mobile-controls';
+
+  const dots = document.createElement('div');
+  dots.className = 'recommended-hotels-dots';
+
+  controls.append(
+    createNavButton('prev', labels.previous),
+    dots,
+    createNavButton('next', labels.next),
+  );
+  return controls;
+}
+
 function setupSlider(list, desktopControls, mobileControls, labels) {
   const items = [...list.children];
   const desktopStatus = desktopControls.querySelector('.recommended-hotels-status');
@@ -239,7 +194,7 @@ function setupSlider(list, desktopControls, mobileControls, labels) {
   const dots = mobileControls.querySelector('.recommended-hotels-dots');
   let frame = 0;
   let currentIndex = 0;
-  let visibleCount = 1;
+  let visibleCount = DEFAULT_VISIBLE_COUNT;
 
   const sync = () => {
     const metrics = getSliderMetrics(list, items);
@@ -316,167 +271,6 @@ function setupSlider(list, desktopControls, mobileControls, labels) {
   };
 }
 
-function createDesktopControls(labels) {
-  const controls = document.createElement('div');
-  controls.className = 'recommended-hotels-pagination';
-
-  const status = document.createElement('span');
-  status.className = 'recommended-hotels-status';
-  status.setAttribute('aria-live', 'polite');
-
-  const buttons = document.createElement('div');
-  buttons.className = 'recommended-hotels-pagination-buttons';
-  buttons.append(
-    createNavButton('prev', labels.previous),
-    createNavButton('next', labels.next),
-  );
-
-  controls.append(status, buttons);
-  return controls;
-}
-
-function createMobileControls(labels) {
-  const controls = document.createElement('div');
-  controls.className = 'recommended-hotels-mobile-controls';
-
-  const dots = document.createElement('div');
-  dots.className = 'recommended-hotels-dots';
-
-  controls.append(
-    createNavButton('prev', labels.previous),
-    dots,
-    createNavButton('next', labels.next),
-  );
-  return controls;
-}
-
-function createPlaceholderHotel(index) {
-  return {
-    ctaText: '',
-    href: '',
-    image: '',
-    imageAlt: '',
-    location: '',
-    name: `Hotel ${index + 1}`,
-    priceFrom: '',
-    stars: 0,
-    tagLabel: '',
-    target: '_self',
-  };
-}
-
-function copyAueAttributes(from, to) {
-  [...from.attributes]
-    .filter(({ name }) => name.startsWith('data-aue-') || name.startsWith('data-richtext-'))
-    .forEach(({ name, value }) => {
-      to.setAttribute(name, value);
-    });
-}
-
-function getTextFromProps(root, names) {
-  return names
-    .map((name) => getPropElement(root, name)?.textContent?.trim())
-    .find(Boolean) || '';
-}
-
-function getHrefFromProps(root, names) {
-  return names
-    .map((name) => {
-      const field = getPropElement(root, name);
-      return getAnchor(field)?.getAttribute('href')?.trim() || field?.textContent?.trim() || '';
-    })
-    .find(Boolean) || '';
-}
-
-function getImageFromProps(root, names) {
-  return names
-    .map((name) => {
-      const field = getPropElement(root, name);
-      return getImageElement(field)?.src || getAnchor(field)?.getAttribute('href')?.trim() || '';
-    })
-    .find(Boolean) || '';
-}
-
-function readGridHotelData(root) {
-  const hasCardFields = Boolean(root.querySelector?.('[data-aue-prop^="card_"]'));
-  const isHotelCardsRoot = root.matches?.('[data-aue-prop="hotels"]')
-    || root.closest?.('[data-aue-prop="hotels"]');
-  if (isHotelCardsRoot && !hasCardFields) return null;
-
-  const fields = hasCardFields ? {
-    ctaText: ['card_linkText'],
-    href: ['card_link'],
-    image: ['card_image'],
-    imageAlt: ['card_imageAlt'],
-    location: ['card_location'],
-    name: ['card_hotelName'],
-    priceFrom: ['card_priceFrom'],
-    stars: ['card_stars'],
-    tagLabel: ['card_tagLabel'],
-    target: ['card_linkTarget'],
-  } : {
-    ctaText: ['cta_linkText'],
-    href: ['cta_link'],
-    image: ['media_image'],
-    imageAlt: ['media_imageAlt'],
-    location: ['hotel_location'],
-    name: ['hotel_hotelName'],
-    priceFrom: ['hotel_priceFrom'],
-    stars: ['hotel_stars'],
-    tagLabel: ['tag_tagLabel'],
-    target: ['cta_linkTarget'],
-  };
-  const hotel = {
-    ctaText: getTextFromProps(root, fields.ctaText),
-    href: getHrefFromProps(root, fields.href),
-    image: getImageFromProps(root, fields.image),
-    imageAlt: getTextFromProps(root, fields.imageAlt),
-    location: getTextFromProps(root, fields.location),
-    name: getTextFromProps(root, fields.name),
-    priceFrom: getTextFromProps(root, fields.priceFrom),
-    stars: getTextFromProps(root, fields.stars),
-    tagLabel: getTextFromProps(root, fields.tagLabel),
-    target: getTextFromProps(root, fields.target) || '_self',
-  };
-
-  return hotel.image || hotel.name || hotel.href ? hotel : null;
-}
-
-function isAuthoringPage(block) {
-  return Boolean(block.closest('[data-aue-resource]') || document.querySelector('[data-aue-resource]'));
-}
-
-function observeAuthorChanges(block) {
-  block.recommendedHotelsObserver?.disconnect();
-  if (!isAuthoringPage(block)) return;
-
-  const observer = new MutationObserver(() => {
-    observer.disconnect();
-    // eslint-disable-next-line no-use-before-define
-    decorate(block);
-  });
-  getSourceRows(block).forEach((row) => {
-    observer.observe(row, {
-      attributes: true,
-      childList: true,
-      characterData: true,
-      subtree: true,
-    });
-  });
-  block.recommendedHotelsObserver = observer;
-}
-
-function getHotelContainerRoots(block) {
-  return [...block.querySelectorAll('[data-aue-prop="hotels"]')]
-    .flatMap((container) => {
-      const items = [...container.children]
-        .filter((child) => child.querySelector?.(
-          '[data-aue-prop="card_hotelName"], [data-aue-prop="card_image"], [data-aue-prop="card_link"], [data-aue-prop="hotel_hotelName"], [data-aue-prop="media_image"], [data-aue-prop="cta_link"]',
-        ));
-      return items.length ? items : [container];
-    });
-}
-
 async function getLabels() {
   const [
     carousel,
@@ -484,58 +278,41 @@ async function getLabels() {
     next,
     goTo,
     of,
+    eyebrow,
+    title,
   ] = await Promise.all([
     getTranslation('hotelsCarousel', 'Recommended hotels'),
     getTranslation('carouselPrevious', 'Previous hotels'),
     getTranslation('carouselNext', 'Next hotels'),
     getTranslation('carouselGoTo', 'Go to hotel group'),
     getTranslation('carouselOf', 'of'),
+    getTranslation('recommendedHotelsEyebrow', 'Hoteles mencionados en el artículo'),
+    getTranslation('recommendedHotelsTitle', 'Hoteles recomendados'),
   ]);
 
   return {
     carousel,
+    eyebrow,
     goTo,
     next,
     of,
     previous,
+    title,
   };
 }
 
 export default async function decorate(block) {
-  block.recommendedHotelsObserver?.disconnect();
   const existing = block.querySelector(':scope > .recommended-hotels-grid-rendered');
   existing?.sliderCleanup?.();
   existing?.remove();
 
-  const sourceRows = getSourceRows(block);
-  const configRow = getConfigRow(sourceRows);
-  const config = readConfig(block, configRow);
-  const nestedHotelRoots = getHotelContainerRoots(block);
-  const itemRows = sourceRows
-    .filter((row) => row !== configRow)
-    .filter((row) => !nestedHotelRoots.some((root) => root === row || row.contains(root)));
-  const authoredHotels = [...nestedHotelRoots, ...itemRows]
-    .map((row) => ({
-      hotel: readGridHotelData(row) || readHotelData(row, 'vertical'),
-      source: row,
-    }))
-    .filter(({ hotel }) => hotel?.image || hotel?.name || hotel?.href)
-    .slice(0, config.maxItems);
-  const placeholderCount = isAuthoringPage(block)
-    ? Math.max(0, config.maxItems - authoredHotels.length)
-    : 0;
-  const hotels = [
-    ...authoredHotels,
-    ...Array.from({ length: placeholderCount }).map((_, index) => (
-      { hotel: createPlaceholderHotel(authoredHotels.length + index), source: null }
-    )),
-  ];
+  const { hotels, sourceRows } = getAuthoredHotels(block);
   const labels = await getLabels();
 
   const wrapper = document.createElement('div');
   wrapper.className = 'recommended-hotels-grid-rendered';
 
-  const header = createHeader(config);
+  const header = createHeader(labels);
   const desktopControls = createDesktopControls(labels);
   header.append(desktopControls);
   wrapper.append(header);
@@ -548,7 +325,7 @@ export default async function decorate(block) {
   hotels.forEach(({ hotel, source }) => {
     const li = document.createElement('li');
     li.className = 'recommended-hotels-item';
-    if (source) copyAueAttributes(source, li);
+    copyAueAttributes(source, li);
     li.append(createHotelMiniCard(hotel, 'vertical'));
     list.append(li);
   });
@@ -563,5 +340,4 @@ export default async function decorate(block) {
 
   hideSourceRows(sourceRows);
   block.append(wrapper);
-  observeAuthorChanges(block);
 }

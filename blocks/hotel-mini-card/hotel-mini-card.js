@@ -120,10 +120,10 @@ function getClassVariant(block) {
 
 function getVariant(block) {
   return [
-    getText(block, 'layout', '', ''),
     block.getAttribute('data-layout'),
     block.getAttribute('data-variant'),
     getClassVariant(block),
+    getText(block, 'layout', '', ''),
   ].map(normalizeVariant).find(Boolean) || 'horizontal';
 }
 
