@@ -1,4 +1,4 @@
-const FIELD_ORDER = ['title', 'description', 'linkText', 'link', 'linkTarget'];
+const FIELD_ORDER = ['title', 'description', 'link', 'linkTarget'];
 
 function getSourceRows(block) {
   return [...block.children].filter((child) => !child.classList.contains('editorial-article-banner-rendered'));
@@ -36,7 +36,10 @@ function getTextValue(block, propName, legacyAttr = '', fallback = '') {
 
 function getHrefValue(block, propName, legacyAttr = '') {
   const field = getPropElement(block, propName) || getPositionalField(block, propName);
-  const href = field?.querySelector?.('a[href]')?.getAttribute('href')?.trim();
+  const href = field?.querySelector?.('a[href]')?.getAttribute('href')?.trim()
+    || getSourceRows(block)
+      .map((row) => row.querySelector?.('a[href]')?.getAttribute('href')?.trim())
+      .find(Boolean);
   return href
     || block.getAttribute(legacyAttr)?.trim()
     || field?.textContent?.trim()
@@ -44,11 +47,15 @@ function getHrefValue(block, propName, legacyAttr = '') {
 }
 
 function getLinkText(block) {
-  const linkText = getTextValue(block, 'linkText', 'data-link-text');
-  if (linkText) return linkText;
+  const explicitLinkText = getPropElement(block, 'linkText')?.textContent?.trim()
+    || block.getAttribute('data-link-text')?.trim();
+  if (explicitLinkText) return explicitLinkText;
 
   const linkField = getPropElement(block, 'link') || getPositionalField(block, 'link');
-  const linkAnchorText = linkField?.querySelector?.('a[href]')?.textContent?.trim();
+  const linkAnchorText = linkField?.querySelector?.('a[href]')?.textContent?.trim()
+    || getSourceRows(block)
+      .map((row) => row.querySelector?.('a[href]')?.textContent?.trim())
+      .find(Boolean);
   if (linkAnchorText) return linkAnchorText;
 
   return linkField?.textContent?.trim() || getHrefValue(block, 'link', 'data-link');

@@ -14,7 +14,7 @@ main .hotel-mini-card-list {
 main .hotel-mini-card {
   position: relative;
   color: #1b2828;
-  font-family: var(--body-font-family);
+  font-family: Inter, sans-serif;
 }
 
 main .hotel-mini-card-media {
@@ -124,7 +124,7 @@ main .hotel-mini-card-horizontal .hotel-mini-card-info {
 }
 
 main .hotel-mini-card-horizontal .hotel-mini-card-title {
-  font-family: var(--heading-font-family);
+  font-family: "Noe Display", serif;
   font-size: 24px;
   font-weight: 400;
   line-height: 32px;
@@ -182,7 +182,7 @@ main .hotel-mini-card-vertical .hotel-mini-card-info {
 }
 
 main .hotel-mini-card-vertical .hotel-mini-card-title {
-  font-family: var(--body-font-family);
+  font-family: Inter, sans-serif;
   font-size: 16px;
   font-weight: 500;
   line-height: 1.4;
