@@ -202,6 +202,14 @@ main .recommended-hotels-grid .recommended-hotels-dot:focus-visible {
     padding: 64px 0;
   }
 
+  /* Inside the article two-column layout, the article-main column (805 px) is
+     left-aligned within the 1158 px shell, so its horizontal centre is
+     (1158 - 805) / 2 = 176.5 px to the left of the viewport centre.
+     Correct the breakout by shifting left: 50% right by that amount. */
+  body.page-article main .recommended-hotels-grid .recommended-hotels-grid-rendered {
+    left: calc(50% + 176.5px);
+  }
+
   main .recommended-hotels-grid .recommended-hotels-grid-header {
     padding: 0 24px;
   }

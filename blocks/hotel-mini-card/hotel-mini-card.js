@@ -55,16 +55,44 @@ function getPropElement(root, propName) {
 
 function getField(block, propName) {
   const names = [propName, ...(FIELD_ALIASES[propName] || [])];
-  const fromBlock = getSourceRows(block)
-    .flatMap((sourceRow) => names.map((name) => getPropElement(sourceRow, name)))
-    .find(Boolean);
-  if (fromBlock) return fromBlock;
+  const sourceRows = getSourceRows(block);
 
+  // 1. data-aue-prop lookup (works in UE / editor-support refresh context)
+  const fromProp = sourceRows
+    .flatMap((row) => names.map((name) => getPropElement(row, name)))
+    .find(Boolean);
+  if (fromProp) return fromProp;
+
+  // 2. Positional fallback for published / preview HTML.
+  //    FIELD_POSITIONS is defined for content where tag_layout is the first field
+  //    group (row 0). Detect whether that row exists by checking if the first source
+  //    row contains a picture/img (= no tag row) or plain text (= tag row present).
+  const hasTagRow = sourceRows.length > 0
+    && !sourceRows[0].querySelector('picture, img[src]');
+
+  const isTagField = names.some((n) => n.startsWith('tag_'));
   const position = names.map((name) => FIELD_POSITIONS[name]).find(Boolean);
   if (!position) return null;
 
-  const [rowIndex, cellIndex] = position;
-  return getCells(getSourceRows(block)[rowIndex])[cellIndex] || null;
+  let [rowIndex] = position;
+  const [, cellIndex] = position;
+
+  if (!hasTagRow) {
+    if (isTagField) {
+      // tag_tagLabel may appear as the last row when tag_layout was not authored.
+      if (!names.some((n) => n === 'tag_tagLabel' || n === 'tagLabel')) return null;
+      const lastRow = sourceRows[sourceRows.length - 1];
+      // Only read the last row as a tag row if it contains no media or links.
+      if (!lastRow || lastRow.querySelector('picture, img[src], a[href]')) return null;
+      return getCells(lastRow)[0] || null;
+    }
+    // Non-tag fields: FIELD_POSITIONS has media at index 1, hotel at 2, cta at 3
+    // (assuming tag at 0). Without tag row, shift everything back by one.
+    rowIndex -= 1;
+  }
+
+  if (rowIndex < 0) return null;
+  return getCells(sourceRows[rowIndex])[cellIndex] || null;
 }
 
 function getText(block, propName, legacyAttr = '', fallback = '') {
