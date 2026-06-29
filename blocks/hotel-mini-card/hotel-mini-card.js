@@ -1,17 +1,17 @@
 import { createResponsiveImage } from '../../scripts/iberostar/media.js';
 
 const FIELD_POSITIONS = {
-  media_image: [0, 0],
-  media_imageAlt: [0, 0],
-  hotel_hotelName: [1, 0],
-  hotel_location: [1, 1],
-  hotel_stars: [1, 2],
-  hotel_priceFrom: [1, 3],
-  cta_linkText: [2, 0],
-  cta_link: [2, 0],
-  cta_linkTarget: [2, 1],
-  tag_layout: [3, 0],
-  tag_tagLabel: [3, 1],
+  tag_layout: [0, 0],
+  tag_tagLabel: [0, 1],
+  media_image: [1, 0],
+  media_imageAlt: [1, 1],
+  hotel_hotelName: [2, 0],
+  hotel_location: [2, 1],
+  hotel_stars: [2, 2],
+  hotel_priceFrom: [2, 3],
+  cta_linkText: [3, 0],
+  cta_link: [3, 0],
+  cta_linkTarget: [3, 1],
 };
 
 const FIELD_ALIASES = {
