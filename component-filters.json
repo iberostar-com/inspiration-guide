@@ -41,6 +41,71 @@
     ]
   },
   {
+    "id": "article-content-table",
+    "components": [],
+    "rte": {
+      "toolbar": {
+        "format": [
+          "bold",
+          "italic",
+          "underline"
+        ],
+        "insert": [
+          "link",
+          "unlink",
+          "table"
+        ],
+        "editor": [
+          "removeformat",
+          "paste_text"
+        ],
+        "sections": [
+          "format",
+          "insert",
+          "editor"
+        ]
+      },
+      "actions": {
+        "bold": {
+          "tag": "strong",
+          "shortcut": "Mod-B",
+          "label": "Bold"
+        },
+        "italic": {
+          "tag": "em",
+          "shortcut": "Mod-I",
+          "label": "Italic"
+        },
+        "underline": {
+          "label": "Underline"
+        },
+        "link": {
+          "hideTarget": false,
+          "disableForImages": true,
+          "shortcut": "Mod-K",
+          "label": "Insert Link"
+        },
+        "unlink": {
+          "shortcut": "Mod-Shift-K",
+          "label": "Remove Link"
+        },
+        "table": {
+          "wrapInParagraphs": true,
+          "shortcut": "Mod-Alt-T",
+          "label": "Insert Table"
+        },
+        "removeformat": {
+          "label": "Remove Format"
+        },
+        "paste_text": {
+          "shortcut": "Mod-Shift-v",
+          "label": "Paste as Text"
+        }
+      },
+      "unsupportedHtml": true
+    }
+  },
+  {
     "id": "blog-split-list",
     "components": [
       "blog-split-list-article"
