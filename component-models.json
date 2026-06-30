@@ -1039,7 +1039,7 @@
       {
         "component": "text",
         "name": "subtitle",
-        "label": "Subtitle",
+        "label": "Pretitle",
         "value": ""
       },
       {
@@ -1069,23 +1069,28 @@
       {
         "component": "text",
         "valueType": "string",
+        "name": "imageAlt",
+        "label": "Image Alt (optional)",
+        "value": ""
+      },
+      {
+        "component": "text",
+        "valueType": "string",
         "name": "title",
-        "label": "Title",
+        "label": "Pretitle",
         "value": ""
       },
       {
         "component": "text",
         "valueType": "string",
         "name": "subtitle",
-        "label": "Subtitle",
+        "label": "Title",
         "value": ""
       },
       {
-        "component": "text",
-        "valueType": "string",
+        "component": "aem-content",
         "name": "link",
-        "label": "Link URL",
-        "value": ""
+        "label": "Link URL"
       }
     ]
   },

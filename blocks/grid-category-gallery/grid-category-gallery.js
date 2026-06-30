@@ -16,23 +16,47 @@ function getSourceRows(block) {
 
 function getCells(row) {
   if (!row) return [];
-  if (row.children.length > 1) return [...row.children];
 
-  const nested = [...(row.children[0]?.children || [])];
-  return nested.length ? nested : [...row.children];
+  let content = row;
+  while (
+    content.children.length === 1
+    && content.firstElementChild?.tagName === 'DIV'
+    && !content.firstElementChild.hasAttribute('data-aue-prop')
+    && !content.firstElementChild.hasAttribute('data-aue-resource')
+  ) {
+    content = content.firstElementChild;
+  }
+
+  return content.children.length ? [...content.children] : [content];
 }
 
-function getPropElement(block, propName) {
+function getPropElement(root, propName) {
   const selector = `[data-aue-prop="${propName}"]`;
+  if (root?.matches?.(selector)) return root;
+  return root?.querySelector?.(selector) || null;
+}
+
+function isInstrumentedCardRow(row) {
+  return Boolean(
+    row.matches?.('[data-aue-resource]')
+    || row.querySelector?.(':scope > [data-aue-resource]')
+    || getPropElement(row, 'image')
+    || getPropElement(row, 'pretitle'),
+  );
+}
+
+function getParentPropElement(block, propName) {
   return getSourceRows(block)
-    .map((row) => (row.matches?.(selector) ? row : row.querySelector?.(selector)))
+    .filter((row) => !isInstrumentedCardRow(row))
+    .map((row) => getPropElement(row, propName))
     .find(Boolean) || null;
 }
 
 function isConfigRow(row) {
-  return Boolean(row.querySelector?.(
-    '[data-aue-prop="title"], [data-aue-prop="subtitle"], [data-aue-prop="ctaText"], [data-aue-prop="cta"]',
-  ));
+  if (isInstrumentedCardRow(row)) return false;
+
+  return ['title', 'subtitle', 'ctaText', 'cta']
+    .some((propName) => Boolean(getPropElement(row, propName)));
 }
 
 function getConfigRows(block) {
@@ -49,7 +73,7 @@ function getConfigRows(block) {
 }
 
 function getConfigField(block, propName, legacyAttr) {
-  const prop = getPropElement(block, propName);
+  const prop = getParentPropElement(block, propName);
   if (prop) return prop;
 
   if (block.hasAttribute(legacyAttr)) return null;
@@ -64,7 +88,7 @@ function getConfigField(block, propName, legacyAttr) {
 }
 
 function getConfigText(block, propName, legacyAttr) {
-  const prop = getPropElement(block, propName);
+  const prop = getParentPropElement(block, propName);
   if (prop) return prop.textContent?.trim() || '';
 
   const legacyValue = block.getAttribute(legacyAttr);
@@ -104,12 +128,59 @@ function getCardLink(cell) {
     || '';
 }
 
-function createCard(row) {
+function getCardImage(field) {
+  const image = field?.matches?.('img') ? field : field?.querySelector?.('img');
+  const anchor = field?.matches?.('a[href]') ? field : field?.querySelector?.('a[href]');
+
+  return {
+    alt: image?.alt?.trim() || '',
+    src: image?.src
+      || anchor?.getAttribute('href')?.trim()
+      || field?.textContent?.trim()
+      || '',
+  };
+}
+
+function getCardData(row) {
   const cells = getCells(row);
-  const picture = cells[0]?.querySelector('picture');
-  const title = cells[1]?.textContent?.trim() || '';
-  const subtitle = cells[2]?.textContent?.trim() || '';
-  const link = getCardLink(cells[3]);
+  const imageField = getPropElement(row, 'image') || cells[0];
+  const imageAltField = getPropElement(row, 'imageAlt');
+  const pretitleField = getPropElement(row, 'pretitle');
+  const titleField = getPropElement(row, 'title');
+  const legacySubtitleField = getPropElement(row, 'subtitle');
+  const hasLegacyFields = !pretitleField && Boolean(legacySubtitleField);
+  const positionalOffset = cells.length >= 5 ? 1 : 0;
+  const image = getCardImage(imageField);
+
+  const pretitle = hasLegacyFields
+    ? titleField?.textContent?.trim() || ''
+    : pretitleField?.textContent?.trim()
+      || cells[1 + positionalOffset]?.textContent?.trim()
+      || '';
+  const title = hasLegacyFields
+    ? legacySubtitleField?.textContent?.trim() || ''
+    : titleField?.textContent?.trim()
+      || cells[2 + positionalOffset]?.textContent?.trim()
+      || '';
+  const linkField = getPropElement(row, 'link') || cells[3 + positionalOffset];
+
+  return {
+    imageAlt: imageAltField?.textContent?.trim() || image.alt || title,
+    imageSrc: image.src,
+    link: getCardLink(linkField),
+    pretitle,
+    title,
+  };
+}
+
+function createCard(row) {
+  const {
+    imageAlt,
+    imageSrc,
+    link,
+    pretitle,
+    title,
+  } = getCardData(row);
 
   const li = document.createElement('li');
   li.className = 'grid-category-gallery-item';
@@ -120,18 +191,18 @@ function createCard(row) {
 
   const card = document.createElement(link ? 'a' : 'div');
   card.className = 'grid-category-gallery-card';
+  card.classList.toggle('has-image', Boolean(imageSrc));
   if (link) {
     card.href = link;
-    card.setAttribute('aria-label', title || subtitle || 'View destination');
+    card.setAttribute('aria-label', title || pretitle || 'View destination');
   }
 
-  const img = picture?.querySelector('img');
-  if (img?.src) {
+  if (imageSrc) {
     const media = document.createElement('div');
     media.className = 'grid-category-gallery-media';
     media.append(createResponsiveImage(
-      img.src,
-      img.alt || title,
+      imageSrc,
+      imageAlt,
       { preset: 'category-card' },
     ));
     card.append(media);
@@ -140,10 +211,10 @@ function createCard(row) {
   const body = document.createElement('div');
   body.className = 'grid-category-gallery-body';
 
-  if (subtitle) {
+  if (pretitle) {
     const subtitleEl = document.createElement('p');
     subtitleEl.className = 'grid-category-gallery-subtitle';
-    subtitleEl.textContent = subtitle;
+    subtitleEl.textContent = pretitle;
     body.append(subtitleEl);
   }
 
@@ -212,9 +283,12 @@ export default function decorate(block) {
   const ctaUrl = getConfigHref(block, 'cta', 'data-cta');
   const sourceRows = getSourceRows(block);
   const configRows = new Set(getConfigRows(block));
-  const cardRows = sourceRows
-    .filter((row) => !configRows.has(row))
-    .slice(0, MAX_CARDS);
+  const instrumentedCardRows = sourceRows.filter((row) => isInstrumentedCardRow(row));
+  const cardRows = (
+    instrumentedCardRows.length
+      ? instrumentedCardRows
+      : sourceRows.filter((row) => !configRows.has(row))
+  ).slice(0, MAX_CARDS);
 
   const rendered = document.createElement('div');
   rendered.className = 'grid-category-gallery-rendered';
