@@ -103,13 +103,32 @@ function getAuthoredTags(block) {
   return getListValues(positionalField);
 }
 
+function getAuthorContentRoot() {
+  if (!window.location.hostname.endsWith('.adobeaemcloud.com')) return '';
+
+  const pathMatch = window.location.pathname.match(/^\/content\/[^/]+/);
+  if (pathMatch) return pathMatch[0];
+
+  const resource = document.querySelector('[data-aue-resource^="urn:aemconnection:/content/"]')
+    ?.getAttribute('data-aue-resource')
+    ?.replace(/^urn:aemconnection:/, '');
+  return resource?.match(/^\/content\/[^/]+/)?.[0] || '';
+}
+
+function getTagHref(slug, languageRoot) {
+  const publicPath = `${languageRoot}/inspiration-guide/tag/${encodeURIComponent(slug)}`;
+  const authorContentRoot = getAuthorContentRoot();
+
+  return authorContentRoot ? `${authorContentRoot}${publicPath}.html` : publicPath;
+}
+
 function buildChips(tags, languageRoot) {
   return tags.filter((tagPath) => tagSlug(tagPath) !== '').slice(0, MAX_TAGS).map((tagPath) => {
     const label = tagLabel(tagPath);
     const slug = tagSlug(tagPath);
     const chip = document.createElement('a');
     chip.className = 'topic-tag-cloud-chip';
-    chip.href = `${languageRoot}/inspiration-guide/tag/${encodeURIComponent(slug)}`;
+    chip.href = getTagHref(slug, languageRoot);
     chip.textContent = label;
     chip.setAttribute('rel', 'tag');
     return chip;
