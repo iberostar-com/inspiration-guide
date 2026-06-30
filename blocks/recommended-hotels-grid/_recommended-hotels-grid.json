@@ -60,7 +60,8 @@
           "component": "aem-content",
           "valueType": "string",
           "name": "gridCta_link",
-          "label": "CTA URL"
+          "label": "CTA URL",
+          "description": "Use an absolute URL for AEM pages outside this EDS site or for external destinations."
         },
         {
           "component": "select",

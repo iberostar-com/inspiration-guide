@@ -282,6 +282,36 @@
           }
         },
         {
+          "title": "Article Content Table",
+          "id": "editorial-content-table",
+          "plugins": {
+            "xwalk": {
+              "page": {
+                "resourceType": "core/franklin/components/block/v1/block/item",
+                "template": {
+                  "name": "Table",
+                  "model": "editorial-content-table"
+                }
+              }
+            }
+          }
+        },
+        {
+          "title": "Article Content Video",
+          "id": "editorial-content-video",
+          "plugins": {
+            "xwalk": {
+              "page": {
+                "resourceType": "core/franklin/components/block/v1/block/item",
+                "template": {
+                  "name": "Video",
+                  "model": "editorial-content-video"
+                }
+              }
+            }
+          }
+        },
+        {
           "title": "Editorial Article Grid",
           "id": "editorial-article-grid",
           "plugins": {

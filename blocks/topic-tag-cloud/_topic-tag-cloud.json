@@ -38,9 +38,7 @@
           "valueType": "string",
           "name": "tagParentPage",
           "label": "Tag Parent Page",
-          "validation": {
-            "rootPath": "/content/inspiration-guide"
-          }
+          "description": "Select any EDS page or contribute an absolute URL for a page outside this EDS site."
         },
         {
           "component": "aem-tag",

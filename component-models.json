@@ -665,6 +665,67 @@
     ]
   },
   {
+    "id": "editorial-content-table",
+    "fields": [
+      {
+        "component": "text",
+        "valueType": "string",
+        "name": "title",
+        "label": "Table Title",
+        "value": ""
+      },
+      {
+        "component": "select",
+        "valueType": "string",
+        "name": "titleHeading",
+        "label": "Title Heading",
+        "value": "h2",
+        "options": [
+          {
+            "name": "H2",
+            "value": "h2"
+          },
+          {
+            "name": "H3",
+            "value": "h3"
+          }
+        ]
+      },
+      {
+        "component": "richtext",
+        "valueType": "string",
+        "name": "text",
+        "label": "Table Content",
+        "value": ""
+      }
+    ]
+  },
+  {
+    "id": "editorial-content-video",
+    "fields": [
+      {
+        "component": "aem-content",
+        "valueType": "string",
+        "name": "videoCf",
+        "label": "Video (Content Fragment or URL)"
+      },
+      {
+        "component": "reference",
+        "valueType": "string",
+        "name": "poster",
+        "label": "Poster Image (optional)",
+        "multi": false
+      },
+      {
+        "component": "text",
+        "valueType": "string",
+        "name": "caption",
+        "label": "Caption (optional)",
+        "value": ""
+      }
+    ]
+  },
+  {
     "id": "editorial-article-grid",
     "fields": [
       {
@@ -1536,7 +1597,8 @@
         "component": "aem-content",
         "valueType": "string",
         "name": "gridCta_link",
-        "label": "CTA URL"
+        "label": "CTA URL",
+        "description": "Use an absolute URL for AEM pages outside this EDS site or for external destinations."
       },
       {
         "component": "select",
@@ -1688,9 +1750,7 @@
         "valueType": "string",
         "name": "tagParentPage",
         "label": "Tag Parent Page",
-        "validation": {
-          "rootPath": "/content/inspiration-guide"
-        }
+        "description": "Select any EDS page or contribute an absolute URL for a page outside this EDS site."
       },
       {
         "component": "aem-tag",

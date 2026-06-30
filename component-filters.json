@@ -74,6 +74,8 @@
   {
     "id": "editorial-article-content",
     "components": [
+      "editorial-content-table",
+      "editorial-content-video",
       "richtext"
     ],
     "rte": {

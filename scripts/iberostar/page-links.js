@@ -66,13 +66,25 @@ export function toPageHref(value) {
 
 export function appendPageSegment(parentPage, segment) {
   const parentPath = toPublicPagePath(parentPage);
-  const url = parsePageUrl(parentPath);
   const normalizedSegment = `${segment || ''}`.trim();
+  const isAbsolute = /^https?:\/\//i.test(parentPath);
 
-  if (!url || !PUBLIC_PAGE_PATTERN.test(url.pathname) || !normalizedSegment) return '';
+  if (!parentPath || !normalizedSegment) return '';
 
-  const pathname = url.pathname.replace(/\.html$/, '').replace(/\/$/, '');
-  return toPageHref(`${pathname}/${encodeURIComponent(normalizedSegment)}`);
+  try {
+    const url = new URL(parentPath, window.location.origin);
+    if (!['http:', 'https:'].includes(url.protocol)) return '';
+
+    const hasHtmlExtension = /\.html$/i.test(url.pathname);
+    const parentPathname = url.pathname.replace(/\.html$/i, '').replace(/\/$/, '');
+    const childPathname = `${parentPathname}/${encodeURIComponent(normalizedSegment)}${hasHtmlExtension ? '.html' : ''}`;
+    const childHref = `${childPathname}${url.search}${url.hash}`;
+
+    if (isAbsolute) return `${url.origin}${childHref}`;
+    return toPageHref(childHref);
+  } catch {
+    return '';
+  }
 }
 
 export function decoratePageLinks(root) {
