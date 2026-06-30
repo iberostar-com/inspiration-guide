@@ -3,6 +3,7 @@
   display: none;
 }
 
+.article-content-image > [data-aue-prop],
 .article-content-image-source {
   display: none;
 }

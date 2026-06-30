@@ -13,7 +13,21 @@ function getSourceRows(block) {
 }
 
 function getPropEl(block, propName) {
-  return block.querySelector(`[data-aue-prop="${propName}"]`) || null;
+  const selector = `[data-aue-prop="${propName}"]`;
+  return getSourceRows(block)
+    .map((row) => (row.matches?.(selector) ? row : row.querySelector?.(selector)))
+    .find(Boolean) || null;
+}
+
+function getElement(root, selector) {
+  if (root?.matches?.(selector)) return root;
+  return root?.querySelector?.(selector) || null;
+}
+
+function getSourceImage(block) {
+  return getSourceRows(block)
+    .map((row) => getElement(row, 'img'))
+    .find(Boolean) || null;
 }
 
 // In publish mode AEM bakes the imageAlt field value directly into <img alt="">.
@@ -22,18 +36,20 @@ function getPropEl(block, propName) {
 // otherwise → caption. This avoids fragile positional-index assumptions.
 
 function getTextRows(block) {
-  return getSourceRows(block).filter((row) => !row.querySelector('picture, img'));
+  return getSourceRows(block).filter(
+    (row) => !getElement(row, 'picture') && !getElement(row, 'img'),
+  );
 }
 
 function getImageSrc(block) {
   const propEl = getPropEl(block, 'image');
   if (propEl) {
-    return propEl.querySelector('img')?.src
-      || propEl.querySelector('a[href]')?.getAttribute('href')?.trim()
+    return getElement(propEl, 'img')?.src
+      || getElement(propEl, 'a[href]')?.getAttribute('href')?.trim()
       || propEl.textContent?.trim()
       || '';
   }
-  return block.querySelector('picture img, img')?.src || '';
+  return getSourceImage(block)?.src || '';
 }
 
 function getImageAlt(block) {
@@ -41,7 +57,7 @@ function getImageAlt(block) {
   const propEl = getPropEl(block, 'imageAlt');
   if (propEl) return propEl.textContent?.trim() || '';
   // In publish mode: AEM bakes the alt into the <img> element directly
-  return block.querySelector('img')?.alt?.trim() || getMetaContent('alt_es');
+  return getSourceImage(block)?.alt?.trim() || getMetaContent('alt_es');
 }
 
 function getCaption(block) {
@@ -59,7 +75,7 @@ function getAlignment(block) {
   // UE mode
   const propEl = getPropEl(block, 'alignment');
   if (propEl) {
-    const val = propEl.textContent?.trim();
+    const val = propEl.textContent?.trim().toLowerCase();
     return ALIGNMENTS.includes(val) ? val : 'center';
   }
   // Publish mode: find a text row whose content IS an alignment keyword
@@ -76,8 +92,6 @@ function getAlignment(block) {
 
 export default function decorate(block) {
   const src = getImageSrc(block);
-  if (!src) return;
-
   const alt = getImageAlt(block);
   const caption = getCaption(block);
   const alignment = getAlignment(block);
@@ -88,12 +102,14 @@ export default function decorate(block) {
     row.setAttribute('aria-hidden', 'true');
   });
 
-  // Remove any previous alignment class before applying the new one (handles UE re-renders)
-  ALIGNMENTS.forEach((a) => block.classList.remove(`article-content-image-${a}`));
-  block.classList.add(`article-content-image-${alignment}`);
-
-  // Remove previously rendered figure if decorator re-runs in UE
+  // Remove the previous render before rebuilding after a UE content update.
   block.querySelector('.article-content-image-figure')?.remove();
+
+  ALIGNMENTS.forEach((a) => block.classList.remove(`article-content-image-${a}`));
+  if (!src) return;
+
+  // Apply the alignment selected in the latest UE update.
+  block.classList.add(`article-content-image-${alignment}`);
 
   const figure = document.createElement('figure');
   figure.className = 'article-content-image-figure';
