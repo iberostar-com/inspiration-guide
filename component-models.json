@@ -353,6 +353,40 @@
         ]
       },
       {
+        "component": "multiselect",
+        "valueType": "string",
+        "name": "classes",
+        "label": "Table Style",
+        "description": "Select one or more presentation options for the table.",
+        "maxSize": 6,
+        "options": [
+          {
+            "name": "All Borders",
+            "value": "bordered"
+          },
+          {
+            "name": "Horizontal Dividers",
+            "value": "row-dividers"
+          },
+          {
+            "name": "Striped Rows",
+            "value": "striped"
+          },
+          {
+            "name": "Shaded Header",
+            "value": "shaded-header"
+          },
+          {
+            "name": "Shaded First Column",
+            "value": "shaded-first-column"
+          },
+          {
+            "name": "Compact Cells",
+            "value": "compact"
+          }
+        ]
+      },
+      {
         "component": "richtext",
         "valueType": "string",
         "name": "text",

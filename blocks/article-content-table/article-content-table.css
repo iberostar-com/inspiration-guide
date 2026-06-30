@@ -59,6 +59,47 @@ main .article-content-table td:first-child {
   border-inline-end: 1px solid #1b2828;
 }
 
+main .article-content-table.bordered th,
+main .article-content-table.bordered td {
+  border: 1px solid #d9dede;
+}
+
+main .article-content-table.row-dividers tbody tr {
+  border-block-end: 1px solid #d9dede;
+}
+
+main .article-content-table.compact th,
+main .article-content-table.compact td {
+  padding: 8px 12px;
+}
+
+main .article-content-table.shaded-header thead th {
+  background-color: #e2ebe8;
+}
+
+main .article-content-table.striped tbody tr:nth-child(even) > * {
+  background-color: #f4f7f6;
+}
+
+main .article-content-table.shaded-first-column tr > :first-child {
+  background-color: #f4f7f6;
+}
+
+main .article-content-table.bordered tr > :first-child {
+  padding-inline-start: 16px;
+}
+
+main .article-content-table.bordered.compact tr > :first-child {
+  padding-inline-start: 12px;
+}
+
+main .article-content-table blockquote {
+  margin: 0;
+  padding-inline-start: 12px;
+  border-inline-start: 3px solid #1b2828;
+  font-style: italic;
+}
+
 @media (width >= 600px) {
   main .article-content-table table {
     width: 100%;
