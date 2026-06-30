@@ -7,6 +7,7 @@ import {
   loadSections,
 } from './aem.js';
 import { decorateRichtext } from './editor-support-rte.js';
+import { decoratePageLinks } from './iberostar/page-links.js';
 // eslint-disable-next-line import/no-cycle
 import { decorateButtons } from './scripts.js';
 
@@ -44,6 +45,7 @@ async function applyChanges(event) {
           decorateIcons(newBlock);
           decorateBlock(newBlock);
           await loadBlock(newBlock);
+          decoratePageLinks(newBlock);
           existingBlock.remove();
           return true;
         }
@@ -61,6 +63,7 @@ async function applyChanges(event) {
         decorateSections(parentEl);
         decorateBlocks(parentEl);
         await loadSections(parentEl);
+        decoratePageLinks(element);
         elementParent.remove();
         return true;
       }

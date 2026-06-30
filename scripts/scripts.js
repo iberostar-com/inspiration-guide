@@ -11,6 +11,7 @@ import {
   loadCSS,
 } from './aem.js';
 import { decorateRichtext } from './editor-support-rte.js';
+import { decoratePageLinks } from './iberostar/page-links.js';
 
 /**
  * Moves all the attributes from a given elmenet to another given element.
@@ -203,6 +204,7 @@ export function decorateMain(main) {
   applyArticleTwoColumnLayout(main);
   decorateBlocks(main);
   decorateButtons(main);
+  decoratePageLinks(main);
 }
 
 /**
@@ -218,6 +220,7 @@ async function loadEager(doc) {
     decorateMain(main);
     document.body.classList.add('appear');
     await loadSection(main.querySelector('.section'), waitForFirstImage);
+    decoratePageLinks(main);
   }
 
   try {
@@ -239,18 +242,21 @@ async function loadLazy(doc) {
   const isFragmentPage = pageType === 'fragment';
 
   if (!isFragmentPage) {
-    loadHeader(doc.querySelector('header'));
+    const header = doc.querySelector('header');
+    loadHeader(header).then(() => decoratePageLinks(header));
   }
 
   const main = doc.querySelector('main');
   await loadSections(main);
+  decoratePageLinks(main);
 
   const { hash } = window.location;
   const element = hash ? doc.getElementById(hash.substring(1)) : false;
   if (hash && element) element.scrollIntoView();
 
   if (!isFragmentPage) {
-    loadFooter(doc.querySelector('footer'));
+    const footer = doc.querySelector('footer');
+    loadFooter(footer).then(() => decoratePageLinks(footer));
   }
 
   loadCSS(`${window.hlx.codeBasePath}/styles/lazy-styles.css`);

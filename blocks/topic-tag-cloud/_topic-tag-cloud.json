@@ -34,6 +34,15 @@
           "value": false
         },
         {
+          "component": "aem-content",
+          "valueType": "string",
+          "name": "tagParentPage",
+          "label": "Tag Parent Page",
+          "validation": {
+            "rootPath": "/content/inspiration-guide"
+          }
+        },
+        {
           "component": "aem-tag",
           "valueType": "string",
           "name": "tags",
