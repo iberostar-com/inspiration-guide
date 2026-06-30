@@ -10,9 +10,12 @@
  * Limit: 20 tags maximum.
  */
 
+import { appendPageSegment } from '../../scripts/iberostar/page-links.js';
+
 const MAX_TAGS = 20;
 const FIELD_POSITIONS = {
-  tags: 2,
+  tagParentPage: 2,
+  tags: 3,
   title: 0,
   useArticleTags: 1,
 };
@@ -76,6 +79,13 @@ function getTextValue(block, propName, legacyAttr = '') {
   return getPositionalField(block, propName)?.textContent?.trim() || '';
 }
 
+function getHrefValue(field) {
+  return field?.querySelector?.('a[href]')?.getAttribute('href')?.trim()
+    || field?.getAttribute?.('href')?.trim()
+    || field?.textContent?.trim()
+    || '';
+}
+
 function getBooleanValue(block, propName, legacyAttr = '') {
   return getTextValue(block, propName, legacyAttr).toLowerCase() === 'true';
 }
@@ -96,20 +106,32 @@ function getAuthoredTags(block) {
 
   const hasLegacyConfig = block.hasAttribute('data-title')
     || block.hasAttribute('data-use-article-tags');
+  const rows = getSourceRows(block);
   const positionalField = hasLegacyConfig
-    ? getSourceRows(block)[0]
-    : getPositionalField(block, 'tags');
+    ? rows[0]
+    : rows[rows.length >= 4 ? FIELD_POSITIONS.tags : 2];
 
   return getListValues(positionalField);
 }
 
-function buildChips(tags, languageRoot) {
+function getTagParentPage(block) {
+  const prop = getPropElement(block, 'tagParentPage');
+  if (prop) return getHrefValue(prop);
+
+  const legacyValue = block.getAttribute('data-tag-parent-page');
+  if (legacyValue !== null) return legacyValue.trim();
+
+  const rows = getSourceRows(block);
+  return rows.length >= 4 ? getHrefValue(rows[FIELD_POSITIONS.tagParentPage]) : '';
+}
+
+function buildChips(tags, tagParentPage) {
   return tags.filter((tagPath) => tagSlug(tagPath) !== '').slice(0, MAX_TAGS).map((tagPath) => {
     const label = tagLabel(tagPath);
     const slug = tagSlug(tagPath);
     const chip = document.createElement('a');
     chip.className = 'topic-tag-cloud-chip';
-    chip.href = `${languageRoot}/inspiration-guide/tag/${encodeURIComponent(slug)}`;
+    chip.href = appendPageSegment(tagParentPage, slug);
     chip.textContent = label;
     chip.setAttribute('rel', 'tag');
     return chip;
@@ -139,6 +161,8 @@ export default function decorate(block) {
   if (!tags.length) return;
 
   const languageRoot = getLanguageRoot();
+  const tagParentPage = getTagParentPage(block)
+    || `${languageRoot}/inspiration-guide/tag`;
   const rendered = document.createElement('div');
   rendered.className = 'topic-tag-cloud-rendered';
 
@@ -151,7 +175,7 @@ export default function decorate(block) {
 
   const list = document.createElement('div');
   list.className = 'topic-tag-cloud-list';
-  buildChips(tags, languageRoot).forEach((chip) => list.append(chip));
+  buildChips(tags, tagParentPage).forEach((chip) => list.append(chip));
 
   if (!list.children.length) return;
 

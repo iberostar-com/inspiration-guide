@@ -34,6 +34,13 @@
           "value": false
         },
         {
+          "component": "aem-content",
+          "valueType": "string",
+          "name": "tagParentPage",
+          "label": "Tag Parent Page",
+          "description": "Select any EDS page or contribute an absolute URL for a page outside this EDS site."
+        },
+        {
           "component": "aem-tag",
           "valueType": "string",
           "name": "tags",

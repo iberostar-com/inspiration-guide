@@ -1,8 +1,7 @@
 function getSourceRows(block) {
-  return [...block.children].filter((child) => !child.classList.contains('editorial-article-content-rendered'));
+  return [...block.children]
+    .filter((child) => !child.classList.contains('editorial-article-content-rendered'));
 }
-
-// --- Text item helpers ---
 
 function getRichTextElement(row) {
   if (row.matches?.('[data-aue-prop="text"]')) return row;
@@ -38,8 +37,6 @@ function renderTextRow(row, target) {
   }
 }
 
-// --- Source hiding ---
-
 function hideSource(block) {
   getSourceRows(block).forEach((row) => {
     row.classList.add('editorial-article-content-source');
@@ -47,16 +44,13 @@ function hideSource(block) {
   });
 }
 
-// --- Main decorator ---
-
 export default function decorate(block) {
   block.querySelector(':scope > .editorial-article-content-rendered')?.remove();
 
-  const rows = getSourceRows(block);
   const article = document.createElement('article');
   article.className = 'editorial-article-content-rendered';
 
-  rows.forEach((row) => {
+  getSourceRows(block).forEach((row) => {
     renderTextRow(row, article);
   });
 

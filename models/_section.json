@@ -52,6 +52,8 @@
       "id": "section",
       "components": [
         "article-content-image",
+        "article-content-table",
+        "article-content-video",
         "article-main-image",
         "blog-split-list",
         "breadcrumbs",

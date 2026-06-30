@@ -3,6 +3,10 @@ import formatLocalizedDate, { hasValidDate } from '../../scripts/iberostar/date-
 import { getPlaceholder } from '../../scripts/iberostar/placeholders.js';
 import { getTranslation } from '../../scripts/iberostar/i18n.js';
 import { getArticles } from '../../scripts/inspiration-data.js';
+import {
+  toPageHref,
+  toPublicPagePath as toPublicContentPath,
+} from '../../scripts/iberostar/page-links.js';
 
 const RESERVED_PROPS = new Set([
   'ctaLabel',
@@ -197,28 +201,6 @@ function samePath(a, b) {
   const left = normalizeUrl(a).replace(/\/$/, '');
   const right = normalizeUrl(b).replace(/\/$/, '');
   return !!left && !!right && left === right;
-}
-
-function toPublicContentPath(value) {
-  const path = normalizeUrl(value)
-    .replace(/^https?:\/\/[^/]+/, '')
-    .replace(/\.html$/, '');
-  const authoredPathMatch = path.match(/^\/content\/inspiration-guide\/([a-z]{2}-[a-z]{2})\/inspiration-guide\/(.*)$/i);
-
-  if (authoredPathMatch) {
-    const [, locale, remainder] = authoredPathMatch;
-    return `/${locale.toLowerCase()}/inspiration-guide/${remainder}`;
-  }
-
-  const guideIndex = path.indexOf('/inspiration-guide/');
-  if (guideIndex > -1 && path.startsWith('/content/')) {
-    const possibleLocale = path.slice(guideIndex + '/inspiration-guide/'.length).split('/')[0];
-    if (/^[a-z]{2}-[a-z]{2}$/i.test(possibleLocale)) {
-      return path.slice(guideIndex);
-    }
-  }
-
-  return path;
 }
 
 function getCurrentLocale() {
@@ -443,7 +425,7 @@ function createEyebrow(text) {
 function createCta(href, label, className) {
   const cta = document.createElement('a');
   cta.className = className;
-  cta.href = href || '#';
+  cta.href = toPageHref(href) || '#';
   cta.textContent = label;
   return cta;
 }
@@ -452,7 +434,7 @@ function appendImage(parent, item, imageOptions) {
   if (!item.image) return;
 
   const imageLink = document.createElement('a');
-  imageLink.href = item.href;
+  imageLink.href = toPageHref(item.href);
   imageLink.setAttribute('aria-label', item.title);
 
   const media = createResponsiveImage(
@@ -477,7 +459,7 @@ function appendMeta(parent, item, includeDate = false) {
     const category = item.categoryUrl ? document.createElement('a') : document.createElement('span');
     category.className = 'blog-split-category';
     category.textContent = item.category;
-    if (item.categoryUrl) category.href = item.categoryUrl;
+    if (item.categoryUrl) category.href = toPageHref(item.categoryUrl);
     meta.append(category);
   }
 
@@ -550,7 +532,7 @@ function createFeatured(item, ctaLabel, badgeLabel) {
 
   const title = document.createElement('h2');
   const link = document.createElement('a');
-  link.href = item.href;
+  link.href = toPageHref(item.href);
   link.textContent = item.title;
   title.append(link);
   body.append(title);
@@ -590,7 +572,7 @@ function createListItem(item, ctaLabel) {
 
   const heading = document.createElement('h3');
   const link = document.createElement('a');
-  link.href = item.href;
+  link.href = toPageHref(item.href);
   link.textContent = item.title;
   heading.append(link);
   body.append(heading);

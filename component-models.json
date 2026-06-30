@@ -326,6 +326,75 @@
     ]
   },
   {
+    "id": "article-content-table",
+    "fields": [
+      {
+        "component": "text",
+        "valueType": "string",
+        "name": "title",
+        "label": "Table Title",
+        "value": ""
+      },
+      {
+        "component": "select",
+        "valueType": "string",
+        "name": "titleHeading",
+        "label": "Title Heading",
+        "value": "h2",
+        "options": [
+          {
+            "name": "H2",
+            "value": "h2"
+          },
+          {
+            "name": "H3",
+            "value": "h3"
+          }
+        ]
+      },
+      {
+        "component": "richtext",
+        "valueType": "string",
+        "name": "text",
+        "label": "Table Content",
+        "value": ""
+      }
+    ]
+  },
+  {
+    "id": "article-content-video",
+    "fields": [
+      {
+        "component": "aem-content",
+        "valueType": "string",
+        "name": "videoCf",
+        "label": "Video (Content Fragment or URL)",
+        "description": "Select an AEM video reference or contribute a direct video URL."
+      },
+      {
+        "component": "reference",
+        "valueType": "string",
+        "name": "poster",
+        "label": "Poster Image (optional)",
+        "multi": false
+      },
+      {
+        "component": "text",
+        "valueType": "string",
+        "name": "posterAlt",
+        "label": "Poster Alt Text (optional)",
+        "value": ""
+      },
+      {
+        "component": "text",
+        "valueType": "string",
+        "name": "caption",
+        "label": "Caption (optional)",
+        "value": ""
+      }
+    ]
+  },
+  {
     "id": "article-main-image",
     "fields": [
       {
@@ -1524,6 +1593,37 @@
         "name": "title",
         "label": "Title",
         "value": ""
+      },
+      {
+        "component": "text",
+        "valueType": "string",
+        "name": "gridCta_linkText",
+        "label": "CTA Text",
+        "value": "Ver todos los hoteles"
+      },
+      {
+        "component": "aem-content",
+        "valueType": "string",
+        "name": "gridCta_link",
+        "label": "CTA URL",
+        "description": "Use an absolute URL for AEM pages outside this EDS site or for external destinations."
+      },
+      {
+        "component": "select",
+        "valueType": "string",
+        "name": "gridCta_linkTarget",
+        "label": "CTA Target",
+        "value": "_self",
+        "options": [
+          {
+            "name": "Same tab",
+            "value": "_self"
+          },
+          {
+            "name": "New tab",
+            "value": "_blank"
+          }
+        ]
       }
     ]
   },
@@ -1652,6 +1752,13 @@
         "name": "useArticleTags",
         "label": "Use Article Tags (auto from page)",
         "value": false
+      },
+      {
+        "component": "aem-content",
+        "valueType": "string",
+        "name": "tagParentPage",
+        "label": "Tag Parent Page",
+        "description": "Select any EDS page or contribute an absolute URL for a page outside this EDS site."
       },
       {
         "component": "aem-tag",

@@ -3,11 +3,15 @@ import {
   readHotelData,
 } from '../hotel-mini-card/hotel-mini-card.js';
 import { getTranslation } from '../../scripts/iberostar/i18n.js';
+import { toPageHref } from '../../scripts/iberostar/page-links.js';
 import { moveInstrumentation } from '../../scripts/scripts.js';
 
 const DEFAULT_VISIBLE_COUNT = 4;
 const CONFIG_FIELD_POSITIONS = {
   eyebrow: 0,
+  gridCta_link: 3,
+  gridCta_linkTarget: 4,
+  gridCta_linkText: 2,
   title: 1,
 };
 
@@ -31,21 +35,16 @@ function getCells(row) {
   return nested.length ? nested : [...row.children];
 }
 
-function getConfigValue(block, propName, legacyAttr) {
-  const prop = getPropElement(block, propName);
-  if (prop) return prop.textContent?.trim() || '';
-
-  const legacyValue = block.getAttribute(legacyAttr);
-  if (legacyValue !== null) return legacyValue.trim();
-
-  const row = getSourceRows(block)[CONFIG_FIELD_POSITIONS[propName]];
-  const cells = getCells(row);
-  return cells[cells.length - 1]?.textContent?.trim() || '';
+function getAnchor(field) {
+  if (field?.matches?.('a[href]')) return field;
+  return field?.querySelector?.('a[href]') || null;
 }
 
 function hasConfigFields(row) {
   return Boolean(row.querySelector?.(
-    '[data-aue-prop="eyebrow"], [data-aue-prop="title"]',
+    '[data-aue-prop="eyebrow"], [data-aue-prop="title"], '
+    + '[data-aue-prop="gridCta_linkText"], [data-aue-prop="gridCta_link"], '
+    + '[data-aue-prop="gridCta_linkTarget"]',
   ));
 }
 
@@ -54,10 +53,68 @@ function getConfigRows(block) {
   const instrumented = rows.filter((row) => hasConfigFields(row));
   if (instrumented.length) return instrumented;
 
-  if (block.hasAttribute('data-eyebrow') || block.hasAttribute('data-title')) return [];
+  const hasLegacyConfig = [
+    'data-cta-link',
+    'data-cta-link-target',
+    'data-cta-link-text',
+    'data-eyebrow',
+    'data-title',
+  ].some((attr) => block.hasAttribute(attr));
+  if (hasLegacyConfig) return [];
 
   return rows.slice(0, Object.keys(CONFIG_FIELD_POSITIONS).length)
     .filter((row) => getCells(row).length === 1);
+}
+
+function getConfigField(block, propName, legacyAttr) {
+  const prop = getPropElement(block, propName);
+  if (prop) return prop;
+  if (block.hasAttribute(legacyAttr)) return null;
+
+  const rows = getConfigRows(block);
+  const ctaRow = rows.find((row) => getAnchor(row));
+  let row = rows[CONFIG_FIELD_POSITIONS[propName]];
+
+  if (propName === 'gridCta_linkText') row = ctaRow || rows[2];
+  if (propName === 'gridCta_link') row = ctaRow || rows[3] || rows[2];
+  if (propName === 'gridCta_linkTarget') row = ctaRow || rows[4] || rows[2];
+
+  const cells = getCells(row);
+  return cells[cells.length - 1] || null;
+}
+
+function getConfigValue(block, propName, legacyAttr) {
+  const field = getConfigField(block, propName, legacyAttr);
+  if (field) return field.textContent?.trim() || '';
+
+  const legacyValue = block.getAttribute(legacyAttr);
+  return legacyValue?.trim() || '';
+}
+
+function getConfigHref(block, propName, legacyAttr) {
+  const field = getConfigField(block, propName, legacyAttr);
+  const legacyValue = block.getAttribute(legacyAttr);
+  return getAnchor(field)?.getAttribute('href')?.trim()
+    || legacyValue?.trim()
+    || field?.textContent?.trim()
+    || '';
+}
+
+function normalizeTarget(value) {
+  return `${value || ''}`.trim().toLowerCase() === '_blank' ? '_blank' : '_self';
+}
+
+function getCtaConfig(block) {
+  const field = getConfigField(block, 'gridCta_linkTarget', 'data-cta-link-target');
+  const anchor = getAnchor(field);
+  const target = anchor?.getAttribute('target')
+    || getConfigValue(block, 'gridCta_linkTarget', 'data-cta-link-target');
+
+  return {
+    href: getConfigHref(block, 'gridCta_link', 'data-cta-link'),
+    target: normalizeTarget(target),
+    text: getConfigValue(block, 'gridCta_linkText', 'data-cta-link-text'),
+  };
 }
 
 function hideSourceRows(rows) {
@@ -132,6 +189,17 @@ function createHeader(labels) {
   title.textContent = labels.title;
 
   copy.append(eyebrow, title);
+  if (labels.cta.text && labels.cta.href) {
+    const cta = document.createElement('a');
+    cta.className = 'recommended-hotels-grid-cta';
+    cta.href = toPageHref(labels.cta.href);
+    cta.textContent = labels.cta.text;
+    if (labels.cta.target === '_blank') {
+      cta.target = '_blank';
+      cta.rel = 'noopener noreferrer';
+    }
+    copy.append(cta);
+  }
   header.append(copy);
   return header;
 }
@@ -328,6 +396,7 @@ async function getLabels(block) {
 
   return {
     carousel,
+    cta: getCtaConfig(block),
     eyebrow: getConfigValue(block, 'eyebrow', 'data-eyebrow') || defaultEyebrow,
     goTo,
     next,
