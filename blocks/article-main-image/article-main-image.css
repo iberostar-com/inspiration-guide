@@ -1,0 +1,41 @@
+.article-main-image-container .article-main-image-wrapper {
+  max-width: unset;
+  padding: 0;
+}
+
+.article-main-image {
+  width: 100%;
+}
+
+.article-main-image .article-main-image-source {
+  display: none;
+}
+
+.article-main-image .article-main-image-content {
+  width: 100%;
+  max-width: 805px;
+  margin: 0;
+}
+
+.article-main-image .article-main-image-media {
+  width: 100%;
+  overflow: hidden;
+  border-radius: 4px;
+}
+
+.article-main-image .article-main-image-media picture,
+.article-main-image .article-main-image-media img {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+
+.article-main-image .article-main-image-caption {
+  margin: 12px 0 0;
+  color: #757575;
+  font-family: Inter, sans-serif;
+  font-size: 12px;
+  font-weight: 400;
+  line-height: 1.4;
+  text-align: center;
+}

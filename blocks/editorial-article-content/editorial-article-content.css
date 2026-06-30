@@ -1,0 +1,68 @@
+main .editorial-article-content {
+  color: #1b2828;
+  font-family: Inter, sans-serif;
+}
+
+main .editorial-article-content .editorial-article-content-source {
+  display: none;
+}
+
+main .editorial-article-content .editorial-article-content-rendered {
+  display: grid;
+  gap: 24px;
+  width: 100%;
+}
+
+main .editorial-article-content .editorial-article-content-rendered > * {
+  margin: 0;
+}
+
+main .editorial-article-content .editorial-article-content-rendered p,
+main .editorial-article-content .editorial-article-content-rendered li {
+  color: #1b2828;
+  font-size: 18px;
+  font-style: normal;
+  font-weight: 400;
+  line-height: 1.4;
+  overflow-wrap: anywhere;
+}
+
+main .editorial-article-content .editorial-article-content-rendered strong,
+main .editorial-article-content .editorial-article-content-rendered b {
+  font-weight: 700;
+}
+
+main .editorial-article-content .editorial-article-content-rendered h2 {
+  color: #1b2828;
+  font-family: "Noe Display", serif;
+  font-size: 32px;
+  font-weight: 400;
+  line-height: 42px;
+}
+
+main .editorial-article-content .editorial-article-content-rendered h3 {
+  color: #1b2828;
+  font-family: "Noe Display", serif;
+  font-size: 24px;
+  font-weight: 400;
+  line-height: 32px;
+}
+
+main .editorial-article-content .editorial-article-content-rendered ul,
+main .editorial-article-content .editorial-article-content-rendered ol {
+  display: grid;
+  gap: 8px;
+  margin: 0;
+  padding-left: 24px;
+}
+
+main .editorial-article-content .editorial-article-content-rendered a {
+  color: inherit;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+main .editorial-article-content .editorial-article-content-rendered a:hover,
+main .editorial-article-content .editorial-article-content-rendered a:focus-visible {
+  color: #000;
+}

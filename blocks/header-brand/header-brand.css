@@ -1,0 +1,23 @@
+.header-brand .header-brand-source {
+  display: none;
+}
+
+.header-brand .header-brand-link {
+  display: inline-flex;
+  align-items: center;
+  text-decoration: none;
+  color: inherit;
+}
+
+.header-brand .header-brand-link picture,
+.header-brand .header-brand-link img {
+  display: block;
+  width: 136px;
+  height: auto;
+}
+
+.header-brand .header-brand-label {
+  font-size: 1rem;
+  font-weight: 700;
+  line-height: 1;
+}

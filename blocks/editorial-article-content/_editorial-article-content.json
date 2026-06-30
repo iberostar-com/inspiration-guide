@@ -1,0 +1,240 @@
+{
+  "definitions": [
+    {
+      "title": "Editorial Article Content",
+      "id": "editorial-article-content",
+      "plugins": {
+        "xwalk": {
+          "page": {
+            "resourceType": "core/franklin/components/block/v1/block",
+            "template": {
+              "name": "Editorial Article Content",
+              "model": "editorial-article-content",
+              "filter": "editorial-article-content"
+            }
+          }
+        }
+      }
+    }
+  ],
+  "models": [
+    {
+      "id": "editorial-article-content",
+      "fields": [
+        {
+          "component": "richtext",
+          "valueType": "string",
+          "name": "text",
+          "label": "Text",
+          "value": ""
+        }
+      ]
+    }
+  ],
+  "filters": [
+    {
+      "id": "editorial-article-content",
+      "components": [
+        "richtext"
+      ],
+      "rte": {
+        "toolbar": {
+          "format": [
+            "bold",
+            "italic",
+            "underline",
+            "strike"
+          ],
+          "alignment": [
+            "left",
+            "center",
+            "right",
+            "justify"
+          ],
+          "direction": [
+            "ltr",
+            "rtl"
+          ],
+          "indentation": [
+            "indent",
+            "outdent"
+          ],
+          "blocks": [
+            "paragraph",
+            "h1",
+            "h2",
+            "h3",
+            "h4",
+            "h5",
+            "h6",
+            "code_block"
+          ],
+          "list": [
+            "bullet_list",
+            "ordered_list"
+          ],
+          "insert": [
+            "link",
+            "unlink",
+            "image",
+            "table",
+            "special_characters"
+          ],
+          "sr_script": [
+            "superscript",
+            "subscript"
+          ],
+          "editor": [
+            "removeformat",
+            "paste_text"
+          ],
+          "sections": [
+            "format",
+            "blocks",
+            "alignment",
+            "direction",
+            "indentation",
+            "list",
+            "insert",
+            "sr_script",
+            "editor"
+          ]
+        },
+        "actions": {
+          "bold": {
+            "tag": "strong",
+            "shortcut": "Mod-B",
+            "label": "Bold"
+          },
+          "italic": {
+            "tag": "em",
+            "shortcut": "Mod-I",
+            "label": "Italic"
+          },
+          "underline": {
+            "label": "Underline"
+          },
+          "strike": {
+            "tag": "del",
+            "label": "Strike"
+          },
+          "paragraph": {
+            "shortcut": "Mod-Alt-0",
+            "label": "Paragraph"
+          },
+          "h1": {
+            "shortcut": "Mod-Alt-1",
+            "label": "Heading 1"
+          },
+          "h2": {
+            "shortcut": "Mod-Alt-2",
+            "label": "Heading 2"
+          },
+          "h3": {
+            "shortcut": "Mod-Alt-3",
+            "label": "Heading 3"
+          },
+          "h4": {
+            "shortcut": "Mod-Alt-4",
+            "label": "Heading 4"
+          },
+          "h5": {
+            "shortcut": "Mod-Alt-5",
+            "label": "Heading 5"
+          },
+          "h6": {
+            "shortcut": "Mod-Alt-6",
+            "label": "Heading 6"
+          },
+          "code_block": {
+            "label": "Code Block"
+          },
+          "bullet_list": {
+            "wrapInParagraphs": true,
+            "shortcut": "Mod-Shift-8",
+            "label": "Bullet List"
+          },
+          "ordered_list": {
+            "wrapInParagraphs": true,
+            "shortcut": "Mod-Shift-9",
+            "label": "Ordered List"
+          },
+          "link": {
+            "hideTarget": false,
+            "disableForImages": true,
+            "shortcut": "Mod-K",
+            "label": "Insert Link"
+          },
+          "unlink": {
+            "shortcut": "Mod-Shift-K",
+            "label": "Remove Link"
+          },
+          "image": {
+            "wrapInPicture": true,
+            "shortcut": "Mod-Shift-I",
+            "label": "Insert Image"
+          },
+          "table": {
+            "wrapInParagraphs": true,
+            "shortcut": "Mod-Alt-T",
+            "label": "Insert Table"
+          },
+          "indentation": {
+            "scope": "all"
+          },
+          "indent": {
+            "shortcut": "Tab",
+            "label": "Increase Indent"
+          },
+          "outdent": {
+            "shortcut": "Shift-Tab",
+            "label": "Decrease Indent"
+          },
+          "superscript": {
+            "label": "Superscript"
+          },
+          "subscript": {
+            "label": "Subscript"
+          },
+          "special_characters": {
+            "label": "Special Characters",
+            "appendCharacters": [
+              {
+                "character": "“",
+                "title": "Left double quotation mark"
+              },
+              {
+                "character": "”",
+                "title": "Right double quotation mark"
+              },
+              {
+                "character": "‘",
+                "title": "Left single quotation mark"
+              },
+              {
+                "character": "’",
+                "title": "Right single quotation mark"
+              },
+              {
+                "character": "—",
+                "title": "Em dash"
+              },
+              {
+                "character": "…",
+                "title": "Ellipsis"
+              }
+            ]
+          },
+          "removeformat": {
+            "label": "Remove Format"
+          },
+          "paste_text": {
+            "shortcut": "Mod-Shift-v",
+            "label": "Paste as Text"
+          }
+        },
+        "unsupportedHtml": true
+      }
+    }
+  ]
+}

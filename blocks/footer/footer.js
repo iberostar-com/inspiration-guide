@@ -1,20 +1,93 @@
-import { getMetadata } from '../../scripts/aem.js';
+import { resolveFragmentPath } from '../../scripts/iberostar/fragments.js';
 import { loadFragment } from '../fragment/fragment.js';
 
-/**
- * loads and decorates the footer
- * @param {Element} block The footer block element
- */
+const DEFAULT_FOOTER_PATH = '/footer';
+
+function resolveFooterPath() {
+  return resolveFragmentPath('footer', DEFAULT_FOOTER_PATH);
+}
+
+async function loadFooterFragment() {
+  const primaryPath = resolveFooterPath();
+  const fallbackPaths = [primaryPath, DEFAULT_FOOTER_PATH];
+
+  for (let i = 0; i < fallbackPaths.length; i += 1) {
+    const path = fallbackPaths[i];
+    // eslint-disable-next-line no-await-in-loop
+    const fragment = await loadFragment(path);
+
+    if (fragment) {
+      return fragment;
+    }
+  }
+
+  return null;
+}
+
+function classifySections(sections) {
+  if (!sections.length) {
+    return { brand: null, columns: [], meta: null };
+  }
+
+  if (sections.length === 1) {
+    return { brand: sections[0], columns: [], meta: null };
+  }
+
+  return {
+    brand: sections[0],
+    columns: sections.slice(1, -1),
+    meta: sections[sections.length - 1],
+  };
+}
+
+function decorateFooterSections(footer) {
+  const sections = [...footer.children];
+  const { brand, columns, meta } = classifySections(sections);
+
+  footer.textContent = '';
+
+  const main = document.createElement('div');
+  main.className = 'footer-main';
+
+  if (brand) {
+    brand.classList.add('footer-section', 'footer-brand');
+    main.append(brand);
+  }
+
+  if (columns.length) {
+    const links = document.createElement('div');
+    links.className = 'footer-links';
+
+    columns.forEach((section, index) => {
+      section.classList.add('footer-section', 'footer-column', `footer-column-${index + 1}`);
+      links.append(section);
+    });
+
+    main.append(links);
+  }
+
+  footer.append(main);
+
+  if (meta) {
+    meta.classList.add('footer-section', 'footer-meta');
+    footer.append(meta);
+  }
+}
+
 export default async function decorate(block) {
-  // load footer as fragment
-  const footerMeta = getMetadata('footer');
-  const footerPath = footerMeta ? new URL(footerMeta, window.location).pathname : '/footer';
-  const fragment = await loadFragment(footerPath);
+  const fragment = await loadFooterFragment();
 
-  // decorate footer DOM
+  if (!fragment) return;
+
   block.textContent = '';
-  const footer = document.createElement('div');
-  while (fragment.firstElementChild) footer.append(fragment.firstElementChild);
 
+  const footer = document.createElement('div');
+  footer.className = 'footer';
+
+  while (fragment.firstElementChild) {
+    footer.append(fragment.firstElementChild);
+  }
+
+  decorateFooterSections(footer);
   block.append(footer);
 }

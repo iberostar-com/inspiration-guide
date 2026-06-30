@@ -21,6 +21,135 @@
           "name": "keywords",
           "multi": true,
           "label": "Keywords"
+        },
+        {
+          "component": "aem-content",
+          "name": "nav",
+          "label": "Header Fragment Path"
+        },
+        {
+          "component": "aem-content",
+          "name": "footer",
+          "label": "Footer Fragment Path"
+        },
+        {
+          "component": "select",
+          "name": "page-type",
+          "label": "Page Type",
+          "value": "default",
+          "options": [
+            {
+              "name": "Default",
+              "value": "default"
+            },
+            {
+              "name": "Home",
+              "value": "home"
+            },
+            {
+              "name": "Category",
+              "value": "category"
+            },
+            {
+              "name": "Tag",
+              "value": "tag"
+            },
+            {
+              "name": "Article",
+              "value": "article"
+            },
+            {
+              "name": "Fragment",
+              "value": "fragment"
+            }
+          ]
+        },
+        {
+          "component": "select",
+          "name": "inspiration-data-mode",
+          "label": "Inspiration Data Mode",
+          "value": "aem",
+          "options": [
+            {
+              "name": "AEM",
+              "value": "aem"
+            }
+          ]
+        },
+        {
+          "component": "text",
+          "valueType": "string",
+          "name": "article-internal-name",
+          "label": "Article Internal Name"
+        },
+        {
+          "component": "reference",
+          "valueType": "string",
+          "name": "article-image",
+          "label": "Article Image",
+          "multi": false
+        },
+        {
+          "component": "text",
+          "valueType": "string",
+          "name": "article-image-alt",
+          "label": "Article Image Alt"
+        },
+        {
+          "component": "text",
+          "valueType": "string",
+          "name": "article-author-name",
+          "label": "Article Author Name"
+        },
+        {
+          "component": "text",
+          "valueType": "string",
+          "name": "article-author-description",
+          "label": "Article Author Description"
+        },
+        {
+          "component": "reference",
+          "valueType": "string",
+          "name": "article-author-image",
+          "label": "Article Author Image",
+          "multi": false
+        },
+        {
+          "component": "aem-tag",
+          "valueType": "string",
+          "name": "article-category",
+          "label": "Article Primary Category"
+        },
+        {
+          "component": "aem-tag",
+          "valueType": "string",
+          "name": "article-tags",
+          "label": "Article Tags"
+        },
+        {
+          "component": "date-time",
+          "valueType": "date",
+          "name": "article-publication-date",
+          "label": "Article Publication Date"
+        },
+        {
+          "component": "date-time",
+          "valueType": "date",
+          "name": "article-update-date",
+          "label": "Article Update Date"
+        },
+        {
+          "component": "text",
+          "valueType": "string",
+          "name": "article-read-time",
+          "label": "Article Read Time"
+        },
+        {
+          "component": "boolean",
+          "valueType": "boolean",
+          "name": "article-visible",
+          "label": "Article Visible",
+          "value": true
         }
       ]
     }

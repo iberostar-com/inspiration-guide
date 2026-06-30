@@ -1,0 +1,8 @@
+.nav-hotels a {
+  text-decoration: none;
+  font-weight: var(--ibh-weight-medium, 500);
+}
+
+.nav-hotels a:hover {
+  text-decoration: underline;
+}

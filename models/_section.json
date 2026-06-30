@@ -33,6 +33,14 @@
             {
               "name": "Highlight",
               "value": "highlight"
+            },
+            {
+              "name": "Article Main",
+              "value": "article-main"
+            },
+            {
+              "name": "Article Sidebar",
+              "value": "article-sidebar"
             }
           ]
         }
@@ -43,14 +51,34 @@
     {
       "id": "section",
       "components": [
-        "text",
-        "image",
+        "article-content-image",
+        "article-main-image",
+        "blog-split-list",
+        "breadcrumbs",
         "button",
-        "title",
-        "hero",
         "cards",
         "columns",
-        "fragment"
+        "editorial-article-banner",
+        "editorial-article-content",
+        "editorial-article-grid",
+        "editorial-highlight-grid",
+        "featured-articles",
+        "fragment",
+        "grid-category-gallery",
+        "header-brand",
+        "hero",
+        "hero-article-detail",
+        "hero-blog",
+        "hotel-mini-card",
+        "image",
+        "lead-subscription-form",
+        "nav-hotels",
+        "nav-language",
+        "nav-search",
+        "recommended-hotels-grid",
+        "text",
+        "title",
+        "topic-tag-cloud"
       ]
     }
   ]

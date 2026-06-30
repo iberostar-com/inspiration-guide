@@ -10,6 +10,7 @@ import {
   loadSections,
   loadCSS,
 } from './aem.js';
+import { decorateRichtext } from './editor-support-rte.js';
 
 /**
  * Moves all the attributes from a given elmenet to another given element.
@@ -109,6 +110,86 @@ export function decorateButtons(main) {
   });
 }
 
+function applyPageMetadataState() {
+  const pageType = document.querySelector('meta[name="page-type"]')?.content?.trim();
+
+  if (!pageType || pageType === 'default') {
+    return;
+  }
+
+  document.body.dataset.pageType = pageType;
+  document.body.classList.add(`page-${pageType}`);
+}
+
+function getPageType() {
+  return document.querySelector('meta[name="page-type"]')?.content?.trim() || 'default';
+}
+
+function isArticleLayoutSection(section) {
+  return section.classList.contains('article-main') || section.classList.contains('article-sidebar');
+}
+
+function buildArticleLayoutShell(layoutSections) {
+  if (!layoutSections.length) {
+    return;
+  }
+
+  const shell = document.createElement('div');
+  shell.className = 'article-layout-shell';
+
+  const mainColumn = document.createElement('div');
+  mainColumn.className = 'article-layout-main';
+
+  const sidebarColumn = document.createElement('aside');
+  sidebarColumn.className = 'article-layout-sidebar';
+
+  shell.append(mainColumn, sidebarColumn);
+  layoutSections[0].before(shell);
+
+  layoutSections.forEach((section) => {
+    if (section.classList.contains('article-sidebar')) {
+      sidebarColumn.append(section);
+      return;
+    }
+
+    mainColumn.append(section);
+  });
+
+  if (!mainColumn.children.length || !sidebarColumn.children.length) {
+    shell.replaceWith(...layoutSections);
+  }
+}
+
+function applyArticleTwoColumnLayout(main) {
+  const isUniversalEditorPage = main.querySelector(':scope > [data-aue-resource]');
+  if (getPageType() !== 'article') {
+    return;
+  }
+
+  if (isUniversalEditorPage) {
+    main.classList.add('article-layout-author');
+    return;
+  }
+
+  const sections = [...main.querySelectorAll(':scope > div.section')];
+  let index = 0;
+
+  while (index < sections.length) {
+    if (isArticleLayoutSection(sections[index])) {
+      const layoutGroup = [];
+
+      while (index < sections.length && isArticleLayoutSection(sections[index])) {
+        layoutGroup.push(sections[index]);
+        index += 1;
+      }
+
+      buildArticleLayoutShell(layoutGroup);
+    } else {
+      index += 1;
+    }
+  }
+}
+
 /**
  * Decorates the main element.
  * @param {Element} main The main element
@@ -116,8 +197,10 @@ export function decorateButtons(main) {
 // eslint-disable-next-line import/prefer-default-export
 export function decorateMain(main) {
   decorateIcons(main);
+  decorateRichtext(main);
   buildAutoBlocks(main);
   decorateSections(main);
+  applyArticleTwoColumnLayout(main);
   decorateBlocks(main);
   decorateButtons(main);
 }
@@ -129,6 +212,7 @@ export function decorateMain(main) {
 async function loadEager(doc) {
   document.documentElement.lang = 'en';
   decorateTemplateAndTheme();
+  applyPageMetadataState();
   const main = doc.querySelector('main');
   if (main) {
     decorateMain(main);
@@ -151,7 +235,12 @@ async function loadEager(doc) {
  * @param {Element} doc The container element
  */
 async function loadLazy(doc) {
-  loadHeader(doc.querySelector('header'));
+  const pageType = getPageType();
+  const isFragmentPage = pageType === 'fragment';
+
+  if (!isFragmentPage) {
+    loadHeader(doc.querySelector('header'));
+  }
 
   const main = doc.querySelector('main');
   await loadSections(main);
@@ -160,10 +249,18 @@ async function loadLazy(doc) {
   const element = hash ? doc.getElementById(hash.substring(1)) : false;
   if (hash && element) element.scrollIntoView();
 
-  loadFooter(doc.querySelector('footer'));
+  if (!isFragmentPage) {
+    loadFooter(doc.querySelector('footer'));
+  }
 
   loadCSS(`${window.hlx.codeBasePath}/styles/lazy-styles.css`);
   loadFonts();
+
+  // Universal Editor support: only load when the document is instrumented.
+  if (document.querySelector('[data-aue-resource]') || window.location.href.includes('.aem.page')) {
+    // eslint-disable-next-line import/no-cycle
+    import('./editor-support.js');
+  }
 }
 
 /**

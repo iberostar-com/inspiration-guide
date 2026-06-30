@@ -1,0 +1,144 @@
+.lead-subscription-form {
+  display: flex;
+  flex-direction: column;
+  gap: var(--margin-margin-24);
+  padding: var(--padding-padding-32) var(--padding-padding-24);
+}
+
+.lead-subscription-form-grey {
+  background: var(--color-neutral-100);
+}
+
+.lead-subscription-form-white {
+  background: var(--color-neutral-white);
+}
+
+.lead-subscription-form-content {
+  display: flex;
+  flex-direction: column;
+  gap: var(--margin-margin-8);
+}
+
+.lead-subscription-form-content h2 {
+  margin: 0;
+}
+
+.lead-subscription-form-content p {
+  margin: 0;
+  color: var(--color-neutral-700);
+}
+
+.lead-subscription-form-form {
+  display: flex;
+  flex-direction: column;
+  gap: var(--margin-margin-16);
+}
+
+.lead-subscription-form-fields {
+  display: flex;
+  flex-direction: column;
+  gap: var(--margin-margin-12);
+}
+
+.lead-subscription-form input[type="email"] {
+  padding: var(--padding-padding-12) var(--padding-padding-16);
+  border: 1px solid var(--color-neutral-400);
+  border-radius: var(--border-radius-radius-4);
+  font-family: var(--ibh-font-body);
+  font-size: var(--ibh-text-body-m);
+  width: 100%;
+  box-sizing: border-box;
+  background: var(--color-neutral-white);
+  color: var(--color-neutral-900);
+}
+
+.lead-subscription-form input[type="email"]::placeholder {
+  color: var(--color-neutral-600);
+}
+
+.lead-subscription-form input[type="email"]:focus {
+  outline: none;
+  border-color: var(--color-neutral-1000);
+  box-shadow: 0 0 0 2px var(--color-neutral-300);
+}
+
+.lead-subscription-form-legal {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--margin-margin-12);
+  font-size: var(--ibh-text-body-s);
+  color: var(--color-neutral-700);
+  cursor: pointer;
+  margin: 0;
+}
+
+.lead-subscription-form input[type="checkbox"] {
+  width: 18px;
+  height: 18px;
+  margin: 0;
+  flex-shrink: 0;
+  cursor: pointer;
+}
+
+.lead-subscription-form input[type="checkbox"]:focus {
+  outline: 2px solid var(--color-neutral-1000);
+  outline-offset: 2px;
+}
+
+.lead-subscription-form-fields button {
+  padding: var(--padding-padding-12) var(--padding-padding-24);
+  background: var(--color-neutral-1000);
+  color: var(--color-neutral-white);
+  border: none;
+  border-radius: var(--border-radius-radius-4);
+  font-family: var(--ibh-font-body);
+  font-size: var(--ibh-text-body-s);
+  font-weight: var(--ibh-weight-medium);
+  cursor: pointer;
+  transition: background 0.2s ease;
+  white-space: nowrap;
+}
+
+.lead-subscription-form-fields button:hover {
+  background: var(--color-neutral-900);
+}
+
+.lead-subscription-form-fields button:focus {
+  outline: 2px solid var(--color-neutral-1000);
+  outline-offset: 2px;
+}
+
+/* Tablet and up: title/description left, form right */
+@media (width >= 600px) {
+  .lead-subscription-form {
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--margin-margin-32);
+  }
+
+  .lead-subscription-form-content {
+    flex: 1;
+  }
+
+  .lead-subscription-form-form {
+    flex: 1;
+    max-width: 420px;
+  }
+
+  .lead-subscription-form-fields {
+    flex-direction: row;
+    align-items: stretch;
+  }
+
+  .lead-subscription-form input[type="email"] {
+    flex: 1;
+    min-width: 0;
+  }
+}
+
+@media (width >= 900px) {
+  .lead-subscription-form {
+    padding: var(--padding-padding-48) var(--padding-padding-64);
+  }
+}

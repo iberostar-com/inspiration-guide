@@ -20,6 +20,135 @@
         "name": "keywords",
         "multi": true,
         "label": "Keywords"
+      },
+      {
+        "component": "aem-content",
+        "name": "nav",
+        "label": "Header Fragment Path"
+      },
+      {
+        "component": "aem-content",
+        "name": "footer",
+        "label": "Footer Fragment Path"
+      },
+      {
+        "component": "select",
+        "name": "page-type",
+        "label": "Page Type",
+        "value": "default",
+        "options": [
+          {
+            "name": "Default",
+            "value": "default"
+          },
+          {
+            "name": "Home",
+            "value": "home"
+          },
+          {
+            "name": "Category",
+            "value": "category"
+          },
+          {
+            "name": "Tag",
+            "value": "tag"
+          },
+          {
+            "name": "Article",
+            "value": "article"
+          },
+          {
+            "name": "Fragment",
+            "value": "fragment"
+          }
+        ]
+      },
+      {
+        "component": "select",
+        "name": "inspiration-data-mode",
+        "label": "Inspiration Data Mode",
+        "value": "aem",
+        "options": [
+          {
+            "name": "AEM",
+            "value": "aem"
+          }
+        ]
+      },
+      {
+        "component": "text",
+        "valueType": "string",
+        "name": "article-internal-name",
+        "label": "Article Internal Name"
+      },
+      {
+        "component": "reference",
+        "valueType": "string",
+        "name": "article-image",
+        "label": "Article Image",
+        "multi": false
+      },
+      {
+        "component": "text",
+        "valueType": "string",
+        "name": "article-image-alt",
+        "label": "Article Image Alt"
+      },
+      {
+        "component": "text",
+        "valueType": "string",
+        "name": "article-author-name",
+        "label": "Article Author Name"
+      },
+      {
+        "component": "text",
+        "valueType": "string",
+        "name": "article-author-description",
+        "label": "Article Author Description"
+      },
+      {
+        "component": "reference",
+        "valueType": "string",
+        "name": "article-author-image",
+        "label": "Article Author Image",
+        "multi": false
+      },
+      {
+        "component": "aem-tag",
+        "valueType": "string",
+        "name": "article-category",
+        "label": "Article Primary Category"
+      },
+      {
+        "component": "aem-tag",
+        "valueType": "string",
+        "name": "article-tags",
+        "label": "Article Tags"
+      },
+      {
+        "component": "date-time",
+        "valueType": "date",
+        "name": "article-publication-date",
+        "label": "Article Publication Date"
+      },
+      {
+        "component": "date-time",
+        "valueType": "date",
+        "name": "article-update-date",
+        "label": "Article Update Date"
+      },
+      {
+        "component": "text",
+        "valueType": "string",
+        "name": "article-read-time",
+        "label": "Article Read Time"
+      },
+      {
+        "component": "boolean",
+        "valueType": "boolean",
+        "name": "article-visible",
+        "label": "Article Visible",
+        "value": true
       }
     ]
   },
@@ -136,8 +265,240 @@
           {
             "name": "Highlight",
             "value": "highlight"
+          },
+          {
+            "name": "Article Main",
+            "value": "article-main"
+          },
+          {
+            "name": "Article Sidebar",
+            "value": "article-sidebar"
           }
         ]
+      }
+    ]
+  },
+  {
+    "id": "article-content-image",
+    "fields": [
+      {
+        "component": "reference",
+        "valueType": "string",
+        "name": "image",
+        "label": "Image",
+        "multi": false
+      },
+      {
+        "component": "text",
+        "valueType": "string",
+        "name": "imageAlt",
+        "label": "Alt Text (optional)",
+        "value": ""
+      },
+      {
+        "component": "text",
+        "valueType": "string",
+        "name": "caption",
+        "label": "Caption (optional)",
+        "value": ""
+      },
+      {
+        "component": "select",
+        "valueType": "string",
+        "name": "alignment",
+        "label": "Alignment",
+        "value": "center",
+        "options": [
+          {
+            "name": "Center",
+            "value": "center"
+          },
+          {
+            "name": "Left",
+            "value": "left"
+          },
+          {
+            "name": "Right",
+            "value": "right"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "article-main-image",
+    "fields": [
+      {
+        "component": "reference",
+        "valueType": "string",
+        "name": "image",
+        "label": "Image Override",
+        "multi": false
+      },
+      {
+        "component": "text",
+        "valueType": "string",
+        "name": "imageAlt",
+        "label": "Alt Text Override (optional)",
+        "value": ""
+      },
+      {
+        "component": "text",
+        "valueType": "string",
+        "name": "caption",
+        "label": "Caption Override (optional)",
+        "value": ""
+      }
+    ]
+  },
+  {
+    "id": "blog-split-list",
+    "fields": [
+      {
+        "component": "text",
+        "name": "featuredLabel",
+        "label": "Featured Column Title",
+        "value": "En portada"
+      },
+      {
+        "component": "text",
+        "name": "latestLabel",
+        "label": "Latest Column Title",
+        "value": "Últimas publicaciones"
+      },
+      {
+        "component": "aem-content",
+        "valueType": "string",
+        "name": "featuredArticlePath",
+        "label": "Featured Article Page"
+      },
+      {
+        "component": "aem-tag",
+        "valueType": "string",
+        "name": "filterTags",
+        "label": "Filter Tags"
+      }
+    ]
+  },
+  {
+    "id": "blog-split-list-article",
+    "fields": [
+      {
+        "component": "select",
+        "name": "article_placement",
+        "label": "Placement",
+        "value": "latest",
+        "options": [
+          {
+            "name": "Featured",
+            "value": "featured"
+          },
+          {
+            "name": "Latest",
+            "value": "latest"
+          }
+        ]
+      },
+      {
+        "component": "text",
+        "valueType": "string",
+        "name": "article_title",
+        "label": "Title",
+        "value": ""
+      },
+      {
+        "component": "text",
+        "valueType": "string",
+        "name": "article_description",
+        "label": "Description",
+        "value": ""
+      },
+      {
+        "component": "reference",
+        "valueType": "string",
+        "name": "article_image",
+        "label": "Image",
+        "multi": false
+      },
+      {
+        "component": "text",
+        "valueType": "string",
+        "name": "article_imageAlt",
+        "label": "Image Alt",
+        "value": ""
+      },
+      {
+        "component": "text",
+        "valueType": "string",
+        "name": "article_category",
+        "label": "Category",
+        "value": ""
+      },
+      {
+        "component": "aem-content",
+        "name": "article_categoryUrl",
+        "label": "Category URL"
+      },
+      {
+        "component": "text",
+        "valueType": "string",
+        "name": "article_publicationDate",
+        "label": "Publication Date",
+        "value": ""
+      },
+      {
+        "component": "text",
+        "valueType": "string",
+        "name": "article_readTime",
+        "label": "Read Time",
+        "value": ""
+      },
+      {
+        "component": "text",
+        "valueType": "string",
+        "name": "article_authorName",
+        "label": "Author Name",
+        "value": ""
+      },
+      {
+        "component": "reference",
+        "valueType": "string",
+        "name": "article_authorImage",
+        "label": "Author Image",
+        "multi": false
+      },
+      {
+        "component": "aem-content",
+        "name": "article_url",
+        "label": "Article URL"
+      }
+    ]
+  },
+  {
+    "id": "breadcrumbs",
+    "fields": [
+      {
+        "component": "text",
+        "valueType": "string",
+        "name": "homeLabel",
+        "label": "Home Label",
+        "description": "Optional. If empty, the block uses the breadcrumbHome placeholder/i18n value.",
+        "value": ""
+      },
+      {
+        "component": "aem-content",
+        "valueType": "string",
+        "name": "homeUrl",
+        "label": "Home URL",
+        "description": "Optional. If empty, the block links to the Inspiration Guide root for the current locale."
+      },
+      {
+        "component": "text",
+        "valueType": "string",
+        "name": "currentLabel",
+        "label": "Current Page Label",
+        "description": "Optional. If empty, the block uses the page title or the current URL segment.",
+        "value": ""
       }
     ]
   },
@@ -157,6 +518,69 @@
         "value": "",
         "label": "Text",
         "valueType": "string"
+      },
+      {
+        "component": "text",
+        "name": "link",
+        "label": "Link URL",
+        "value": "",
+        "valueType": "string"
+      }
+    ]
+  },
+  {
+    "id": "carousel-category-gallery",
+    "fields": [
+      {
+        "component": "text",
+        "name": "title",
+        "label": "Title",
+        "value": ""
+      },
+      {
+        "component": "text",
+        "name": "subtitle",
+        "label": "Subtitle",
+        "value": ""
+      },
+      {
+        "component": "number",
+        "name": "maxItems",
+        "label": "Maximum Cards",
+        "value": 9
+      }
+    ]
+  },
+  {
+    "id": "carousel-category-gallery-card",
+    "fields": [
+      {
+        "component": "text",
+        "valueType": "string",
+        "name": "icon",
+        "label": "Icon Name",
+        "value": ""
+      },
+      {
+        "component": "reference",
+        "valueType": "string",
+        "name": "image",
+        "label": "Image",
+        "multi": false
+      },
+      {
+        "component": "text",
+        "valueType": "string",
+        "name": "title",
+        "label": "Title",
+        "value": ""
+      },
+      {
+        "component": "text",
+        "valueType": "string",
+        "name": "link",
+        "label": "Link URL",
+        "value": ""
       }
     ]
   },
@@ -180,6 +604,420 @@
     ]
   },
   {
+    "id": "editorial-article-banner",
+    "fields": [
+      {
+        "component": "text",
+        "valueType": "string",
+        "name": "title",
+        "label": "Title",
+        "value": ""
+      },
+      {
+        "component": "textarea",
+        "valueType": "string",
+        "name": "description",
+        "label": "Description",
+        "value": ""
+      },
+      {
+        "component": "text",
+        "valueType": "string",
+        "name": "linkText",
+        "label": "Link Text",
+        "value": ""
+      },
+      {
+        "component": "aem-content",
+        "valueType": "string",
+        "name": "link",
+        "label": "Link URL"
+      },
+      {
+        "component": "select",
+        "valueType": "string",
+        "name": "linkTarget",
+        "label": "Link Target",
+        "value": "_self",
+        "options": [
+          {
+            "name": "Same tab",
+            "value": "_self"
+          },
+          {
+            "name": "New tab",
+            "value": "_blank"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "editorial-article-content",
+    "fields": [
+      {
+        "component": "richtext",
+        "valueType": "string",
+        "name": "text",
+        "label": "Text",
+        "value": ""
+      }
+    ]
+  },
+  {
+    "id": "editorial-article-grid",
+    "fields": [
+      {
+        "component": "text",
+        "name": "pretitle",
+        "label": "Pretitle",
+        "value": ""
+      },
+      {
+        "component": "text",
+        "name": "title",
+        "label": "Title",
+        "value": ""
+      },
+      {
+        "component": "select",
+        "name": "mode",
+        "label": "Mode",
+        "options": [
+          {
+            "name": "Manual",
+            "value": "manual"
+          },
+          {
+            "name": "Auto by Tag",
+            "value": "auto-tag"
+          },
+          {
+            "name": "Auto by Category",
+            "value": "auto-category"
+          }
+        ],
+        "value": "manual"
+      }
+    ]
+  },
+  {
+    "id": "editorial-article",
+    "fields": [
+      {
+        "component": "reference",
+        "valueType": "string",
+        "name": "image",
+        "label": "Image",
+        "multi": false
+      },
+      {
+        "component": "text",
+        "valueType": "string",
+        "name": "title",
+        "label": "Article Title",
+        "value": ""
+      },
+      {
+        "component": "text",
+        "valueType": "string",
+        "name": "category",
+        "label": "Category",
+        "value": ""
+      },
+      {
+        "component": "text",
+        "valueType": "string",
+        "name": "link",
+        "label": "Article URL",
+        "value": ""
+      }
+    ]
+  },
+  {
+    "id": "editorial-highlight-grid",
+    "fields": [
+      {
+        "component": "select",
+        "name": "source",
+        "label": "Source",
+        "options": [
+          {
+            "name": "Manual",
+            "value": "manual"
+          },
+          {
+            "name": "Auto by Tag",
+            "value": "auto-tag"
+          },
+          {
+            "name": "Auto by Category",
+            "value": "auto-category"
+          }
+        ],
+        "value": "manual"
+      },
+      {
+        "component": "number",
+        "name": "pageSize",
+        "label": "Page Size",
+        "value": 4
+      },
+      {
+        "component": "text",
+        "name": "ctaLabel",
+        "label": "Load More Label",
+        "value": "Load more"
+      }
+    ]
+  },
+  {
+    "id": "editorial-split-article",
+    "fields": [
+      {
+        "component": "text",
+        "name": "eyebrow",
+        "label": "Eyebrow",
+        "value": "Featured"
+      },
+      {
+        "component": "text",
+        "name": "title",
+        "label": "Title",
+        "value": ""
+      },
+      {
+        "component": "textarea",
+        "name": "summary",
+        "label": "Summary",
+        "value": ""
+      },
+      {
+        "component": "text",
+        "name": "link",
+        "label": "Article Link",
+        "value": ""
+      }
+    ]
+  },
+  {
+    "id": "featured-articles",
+    "fields": [
+      {
+        "component": "text",
+        "valueType": "string",
+        "name": "featured_heading",
+        "label": "Featured Title",
+        "value": ""
+      },
+      {
+        "component": "select",
+        "name": "featured_headingLevel",
+        "label": "Featured Title Heading",
+        "value": "h2",
+        "options": [
+          {
+            "name": "h2",
+            "value": "h2"
+          },
+          {
+            "name": "h3",
+            "value": "h3"
+          },
+          {
+            "name": "h4",
+            "value": "h4"
+          }
+        ]
+      },
+      {
+        "component": "text",
+        "valueType": "string",
+        "name": "latest_heading",
+        "label": "Latest Title",
+        "value": ""
+      },
+      {
+        "component": "select",
+        "name": "latest_headingLevel",
+        "label": "Latest Title Heading",
+        "value": "h2",
+        "options": [
+          {
+            "name": "h2",
+            "value": "h2"
+          },
+          {
+            "name": "h3",
+            "value": "h3"
+          },
+          {
+            "name": "h4",
+            "value": "h4"
+          }
+        ]
+      },
+      {
+        "component": "text",
+        "valueType": "string",
+        "name": "display_badge",
+        "label": "Featured Badge Text",
+        "value": ""
+      },
+      {
+        "component": "select",
+        "name": "display_articleHeading",
+        "label": "Article Title Heading",
+        "value": "h3",
+        "options": [
+          {
+            "name": "h2",
+            "value": "h2"
+          },
+          {
+            "name": "h3",
+            "value": "h3"
+          },
+          {
+            "name": "h4",
+            "value": "h4"
+          },
+          {
+            "name": "h5",
+            "value": "h5"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "featured-article",
+    "fields": [
+      {
+        "component": "select",
+        "name": "article_placement",
+        "label": "Placement",
+        "value": "latest",
+        "options": [
+          {
+            "name": "Featured",
+            "value": "featured"
+          },
+          {
+            "name": "Latest",
+            "value": "latest"
+          }
+        ]
+      },
+      {
+        "component": "text",
+        "valueType": "string",
+        "name": "article_title",
+        "label": "Title",
+        "value": ""
+      },
+      {
+        "component": "text",
+        "valueType": "string",
+        "name": "article_description",
+        "label": "Description",
+        "value": ""
+      },
+      {
+        "component": "reference",
+        "valueType": "string",
+        "name": "article_image",
+        "label": "Image",
+        "multi": false
+      },
+      {
+        "component": "text",
+        "valueType": "string",
+        "name": "article_imageAlt",
+        "label": "Image Alt",
+        "value": ""
+      },
+      {
+        "component": "text",
+        "valueType": "string",
+        "name": "article_category",
+        "label": "Category",
+        "value": ""
+      },
+      {
+        "component": "aem-content",
+        "name": "article_categoryUrl",
+        "label": "Category URL"
+      },
+      {
+        "component": "text",
+        "valueType": "string",
+        "name": "article_publicationDate",
+        "label": "Publication Date",
+        "value": ""
+      },
+      {
+        "component": "text",
+        "valueType": "string",
+        "name": "article_readTime",
+        "label": "Read Time",
+        "value": ""
+      },
+      {
+        "component": "text",
+        "valueType": "string",
+        "name": "article_authorName",
+        "label": "Author Name",
+        "value": ""
+      },
+      {
+        "component": "aem-content",
+        "name": "article_url",
+        "label": "Article URL"
+      },
+      {
+        "component": "text",
+        "valueType": "string",
+        "name": "article_cta",
+        "label": "CTA Text",
+        "value": ""
+      }
+    ]
+  },
+  {
+    "id": "form",
+    "fields": [
+      {
+        "component": "select",
+        "name": "variant",
+        "label": "Form Variant",
+        "options": [
+          {
+            "name": "Default",
+            "value": "default"
+          },
+          {
+            "name": "Newsletter",
+            "value": "newsletter"
+          }
+        ],
+        "value": "default"
+      },
+      {
+        "component": "text",
+        "name": "method",
+        "label": "Form Method",
+        "value": "POST"
+      },
+      {
+        "component": "text",
+        "name": "action",
+        "label": "Form Action URL",
+        "value": ""
+      }
+    ]
+  },
+  {
     "id": "fragment",
     "fields": [
       {
@@ -190,7 +1028,36 @@
     ]
   },
   {
-    "id": "hero",
+    "id": "grid-category-gallery",
+    "fields": [
+      {
+        "component": "text",
+        "name": "title",
+        "label": "Title",
+        "value": ""
+      },
+      {
+        "component": "text",
+        "name": "subtitle",
+        "label": "Pretitle",
+        "value": ""
+      },
+      {
+        "component": "text",
+        "name": "ctaText",
+        "label": "\"View All\" Link Text",
+        "value": ""
+      },
+      {
+        "component": "text",
+        "name": "cta",
+        "label": "\"View All\" Link URL",
+        "value": ""
+      }
+    ]
+  },
+  {
+    "id": "grid-category-gallery-card",
     "fields": [
       {
         "component": "reference",
@@ -203,15 +1070,594 @@
         "component": "text",
         "valueType": "string",
         "name": "imageAlt",
-        "label": "Alt",
+        "label": "Image Alt (optional)",
+        "value": ""
+      },
+      {
+        "component": "text",
+        "valueType": "string",
+        "name": "title",
+        "label": "Pretitle",
+        "value": ""
+      },
+      {
+        "component": "text",
+        "valueType": "string",
+        "name": "subtitle",
+        "label": "Title",
+        "value": ""
+      },
+      {
+        "component": "aem-content",
+        "name": "link",
+        "label": "Link URL"
+      }
+    ]
+  },
+  {
+    "id": "header-brand",
+    "fields": [
+      {
+        "component": "reference",
+        "valueType": "string",
+        "name": "logo",
+        "label": "Logo",
+        "multi": false
+      },
+      {
+        "component": "text",
+        "valueType": "string",
+        "name": "logoAlt",
+        "label": "Logo Alt",
+        "value": "Inspiration Guide"
+      },
+      {
+        "component": "text",
+        "valueType": "string",
+        "name": "link",
+        "label": "Link URL",
+        "value": "/inspiration-guide/home"
+      },
+      {
+        "component": "text",
+        "valueType": "string",
+        "name": "label",
+        "label": "Fallback Text",
+        "value": "Inspiration Guide"
+      }
+    ]
+  },
+  {
+    "id": "hero-article-detail",
+    "fields": []
+  },
+  {
+    "id": "hero-blog",
+    "fields": [
+      {
+        "component": "reference",
+        "valueType": "string",
+        "name": "hero_icon",
+        "label": "Icon",
+        "multi": false
+      },
+      {
+        "component": "text",
+        "valueType": "string",
+        "name": "hero_title",
+        "label": "Title",
+        "value": ""
+      },
+      {
+        "component": "select",
+        "name": "hero_titleHeading",
+        "label": "Title Heading",
+        "value": "h1",
+        "options": [
+          {
+            "name": "h1",
+            "value": "h1"
+          },
+          {
+            "name": "h2",
+            "value": "h2"
+          },
+          {
+            "name": "h3",
+            "value": "h3"
+          },
+          {
+            "name": "h4",
+            "value": "h4"
+          },
+          {
+            "name": "h5",
+            "value": "h5"
+          },
+          {
+            "name": "h6",
+            "value": "h6"
+          }
+        ]
+      },
+      {
+        "component": "textarea",
+        "valueType": "string",
+        "name": "hero_subtitle",
+        "label": "Subtitle",
+        "value": ""
+      },
+      {
+        "component": "select",
+        "name": "hero_subtitleHeading",
+        "label": "Subtitle Element",
+        "value": "p",
+        "options": [
+          {
+            "name": "Paragraph",
+            "value": "p"
+          },
+          {
+            "name": "Heading 2",
+            "value": "h2"
+          },
+          {
+            "name": "Heading 3",
+            "value": "h3"
+          },
+          {
+            "name": "Heading 4",
+            "value": "h4"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "hero",
+    "fields": [
+      {
+        "component": "select",
+        "name": "variant",
+        "label": "Hero Variant",
+        "options": [
+          {
+            "name": "Default",
+            "value": "default"
+          },
+          {
+            "name": "Tag",
+            "value": "tag"
+          },
+          {
+            "name": "Article",
+            "value": "article"
+          },
+          {
+            "name": "Blog",
+            "value": "blog"
+          }
+        ],
+        "required": true,
+        "value": "default"
+      },
+      {
+        "component": "reference",
+        "valueType": "string",
+        "name": "image",
+        "label": "Image",
+        "multi": false
+      },
+      {
+        "component": "text",
+        "valueType": "string",
+        "name": "imageAlt",
+        "label": "Alt Text",
         "value": ""
       },
       {
         "component": "richtext",
         "name": "text",
         "value": "",
-        "label": "Text",
-        "valueType": "string"
+        "label": "Text / Title",
+        "valueType": "string",
+        "required": true
+      },
+      {
+        "component": "textarea",
+        "name": "subtitle",
+        "label": "Subtitle (optional)",
+        "value": ""
+      }
+    ]
+  },
+  {
+    "id": "hotel-mini-card",
+    "fields": [
+      {
+        "component": "select",
+        "valueType": "string",
+        "name": "tag_layout",
+        "label": "Card Layout",
+        "description": "Choose Horizontal for article content or Vertical for recommended hotel grids.",
+        "value": "horizontal",
+        "options": [
+          {
+            "name": "Horizontal",
+            "value": "horizontal"
+          },
+          {
+            "name": "Vertical",
+            "value": "vertical"
+          }
+        ]
+      },
+      {
+        "component": "reference",
+        "valueType": "string",
+        "name": "media_image",
+        "label": "Image",
+        "multi": false
+      },
+      {
+        "component": "text",
+        "valueType": "string",
+        "name": "media_imageAlt",
+        "label": "Image Alt",
+        "value": ""
+      },
+      {
+        "component": "text",
+        "valueType": "string",
+        "name": "hotel_hotelName",
+        "label": "Hotel Name",
+        "value": ""
+      },
+      {
+        "component": "text",
+        "valueType": "string",
+        "name": "hotel_location",
+        "label": "Location",
+        "value": ""
+      },
+      {
+        "component": "select",
+        "valueType": "string",
+        "name": "hotel_stars",
+        "label": "Stars",
+        "value": "4",
+        "options": [
+          {
+            "name": "None",
+            "value": "0"
+          },
+          {
+            "name": "3 stars",
+            "value": "3"
+          },
+          {
+            "name": "4 stars",
+            "value": "4"
+          },
+          {
+            "name": "5 stars",
+            "value": "5"
+          }
+        ]
+      },
+      {
+        "component": "text",
+        "valueType": "string",
+        "name": "hotel_priceFrom",
+        "label": "Price Text",
+        "value": ""
+      },
+      {
+        "component": "text",
+        "valueType": "string",
+        "name": "cta_linkText",
+        "label": "CTA Text",
+        "value": "Ver disponibilidad",
+        "condition": {
+          "==": [
+            {
+              "var": "tag_layout"
+            },
+            "horizontal"
+          ]
+        }
+      },
+      {
+        "component": "aem-content",
+        "valueType": "string",
+        "name": "cta_link",
+        "label": "Link"
+      },
+      {
+        "component": "select",
+        "valueType": "string",
+        "name": "cta_linkTarget",
+        "label": "Link Target",
+        "value": "_self",
+        "options": [
+          {
+            "name": "Same tab",
+            "value": "_self"
+          },
+          {
+            "name": "New tab",
+            "value": "_blank"
+          }
+        ]
+      },
+      {
+        "component": "text",
+        "valueType": "string",
+        "name": "tag_tagLabel",
+        "label": "Promotional Badge",
+        "description": "Optional badge shown over the image in the vertical variant, for example Offer or Recommended.",
+        "value": ""
+      }
+    ]
+  },
+  {
+    "id": "lead-subscription-form",
+    "fields": [
+      {
+        "component": "text",
+        "valueType": "string",
+        "name": "title",
+        "label": "Title",
+        "value": "Suscríbete a nuestra Newsletter"
+      },
+      {
+        "component": "text",
+        "valueType": "string",
+        "name": "description",
+        "label": "Description",
+        "value": ""
+      },
+      {
+        "component": "richtext",
+        "name": "legal",
+        "label": "Legal text (checkbox)",
+        "value": ""
+      },
+      {
+        "component": "select",
+        "name": "background",
+        "label": "Background",
+        "options": [
+          {
+            "name": "White",
+            "value": "white"
+          },
+          {
+            "name": "Grey",
+            "value": "grey"
+          }
+        ],
+        "value": "grey"
+      }
+    ]
+  },
+  {
+    "id": "nav-hotels",
+    "fields": [
+      {
+        "component": "text",
+        "valueType": "string",
+        "name": "linkText",
+        "label": "Link Text",
+        "value": "Reservar Hoteles"
+      },
+      {
+        "component": "text",
+        "valueType": "string",
+        "name": "link",
+        "label": "Link URL",
+        "value": ""
+      }
+    ]
+  },
+  {
+    "id": "nav-language",
+    "fields": [
+      {
+        "component": "text",
+        "valueType": "string",
+        "name": "label",
+        "label": "Current Language Label",
+        "value": "ESP"
+      }
+    ]
+  },
+  {
+    "id": "nav-language-option",
+    "fields": [
+      {
+        "component": "text",
+        "valueType": "string",
+        "name": "label",
+        "label": "Language Label",
+        "value": ""
+      },
+      {
+        "component": "text",
+        "valueType": "string",
+        "name": "link",
+        "label": "Link URL",
+        "value": ""
+      }
+    ]
+  },
+  {
+    "id": "nav-search",
+    "fields": [
+      {
+        "component": "text",
+        "valueType": "string",
+        "name": "linkText",
+        "label": "Link Text",
+        "value": "Buscar"
+      },
+      {
+        "component": "text",
+        "valueType": "string",
+        "name": "link",
+        "label": "Link URL",
+        "value": "/search"
+      }
+    ]
+  },
+  {
+    "id": "recommended-hotels-grid",
+    "fields": [
+      {
+        "component": "text",
+        "name": "eyebrow",
+        "label": "Pretitle (Eyebrow)",
+        "value": ""
+      },
+      {
+        "component": "text",
+        "name": "title",
+        "label": "Title",
+        "value": ""
+      }
+    ]
+  },
+  {
+    "id": "recommended-hotel",
+    "fields": [
+      {
+        "component": "select",
+        "valueType": "string",
+        "name": "tag_layout",
+        "label": "Card Layout",
+        "value": "vertical",
+        "hidden": true,
+        "options": [
+          {
+            "name": "Vertical",
+            "value": "vertical"
+          }
+        ]
+      },
+      {
+        "component": "text",
+        "valueType": "string",
+        "name": "tag_tagLabel",
+        "label": "Promotional Badge",
+        "description": "Optional badge shown over the hotel image.",
+        "value": ""
+      },
+      {
+        "component": "reference",
+        "valueType": "string",
+        "name": "media_image",
+        "label": "Image",
+        "multi": false
+      },
+      {
+        "component": "text",
+        "valueType": "string",
+        "name": "media_imageAlt",
+        "label": "Image Alt",
+        "value": ""
+      },
+      {
+        "component": "text",
+        "valueType": "string",
+        "name": "hotel_hotelName",
+        "label": "Hotel Name",
+        "value": ""
+      },
+      {
+        "component": "text",
+        "valueType": "string",
+        "name": "hotel_location",
+        "label": "Location",
+        "value": ""
+      },
+      {
+        "component": "select",
+        "valueType": "string",
+        "name": "hotel_stars",
+        "label": "Stars",
+        "value": "4",
+        "options": [
+          {
+            "name": "None",
+            "value": "0"
+          },
+          {
+            "name": "3 stars",
+            "value": "3"
+          },
+          {
+            "name": "4 stars",
+            "value": "4"
+          },
+          {
+            "name": "5 stars",
+            "value": "5"
+          }
+        ]
+      },
+      {
+        "component": "text",
+        "valueType": "string",
+        "name": "hotel_priceFrom",
+        "label": "Price Text",
+        "value": ""
+      },
+      {
+        "component": "aem-content",
+        "valueType": "string",
+        "name": "cta_link",
+        "label": "Hotel URL"
+      },
+      {
+        "component": "select",
+        "valueType": "string",
+        "name": "cta_linkTarget",
+        "label": "Link Target",
+        "value": "_self",
+        "options": [
+          {
+            "name": "Same tab",
+            "value": "_self"
+          },
+          {
+            "name": "New tab",
+            "value": "_blank"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "topic-tag-cloud",
+    "fields": [
+      {
+        "component": "text",
+        "name": "title",
+        "label": "Section Title",
+        "value": ""
+      },
+      {
+        "component": "boolean",
+        "valueType": "boolean",
+        "name": "useArticleTags",
+        "label": "Use Article Tags (auto from page)",
+        "value": false
+      },
+      {
+        "component": "aem-tag",
+        "valueType": "string",
+        "name": "tags",
+        "label": "Tags"
       }
     ]
   }

@@ -1,0 +1,65 @@
+/* Hide source rows — no "main" prefix so this works in UE canvas too */
+.article-content-image > div {
+  display: none;
+}
+
+.article-content-image > [data-aue-prop],
+.article-content-image-source {
+  display: none;
+}
+
+main .article-content-image .article-content-image-figure {
+  margin: 0;
+  width: 100%;
+}
+
+main .article-content-image .article-content-image-figure picture {
+  display: block;
+  width: 100%;
+}
+
+main .article-content-image .article-content-image-figure img {
+  display: block;
+  height: auto;
+  object-fit: cover;
+  width: 100%;
+  border-radius: 4px;
+}
+
+/* Caption always centered regardless of alignment */
+main .article-content-image .article-content-image-caption {
+  color: #717171;
+  font-family: Inter, sans-serif;
+  font-size: 12px;
+  font-style: italic;
+  font-weight: 400;
+  line-height: 1.5;
+  margin-top: 8px;
+  text-align: center;
+}
+
+/* Alignment: center (default) — constrained width, centered */
+.article-content-image.article-content-image-center .article-content-image-figure {
+  max-width: 660px;
+  margin: 0 auto;
+}
+
+/* Alignment: left — half-width, left-aligned */
+.article-content-image.article-content-image-left .article-content-image-figure {
+  max-width: 55%;
+  margin-right: auto;
+}
+
+/* Alignment: right — half-width, right-aligned */
+.article-content-image.article-content-image-right .article-content-image-figure {
+  max-width: 55%;
+  margin-left: auto;
+}
+
+@media (width < 600px) {
+  .article-content-image.article-content-image-left .article-content-image-figure,
+  .article-content-image.article-content-image-right .article-content-image-figure {
+    max-width: 100%;
+    margin: 0 auto;
+  }
+}

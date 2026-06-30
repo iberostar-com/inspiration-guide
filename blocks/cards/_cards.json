@@ -10,7 +10,24 @@
             "template": {
               "name": "Cards",
               "filter": "cards"
-            }
+            },
+            "variants": [
+              {
+                "name": "Highlight",
+                "value": "highlight",
+                "description": "Large featured cards - image + text, responsive grid"
+              },
+              {
+                "name": "Overlay",
+                "value": "overlay",
+                "description": "Image with text overlay on hover"
+              },
+              {
+                "name": "Banner",
+                "value": "banner",
+                "description": "Horizontal cards - side-by-side on desktop"
+              }
+            ]
           }
         }
       }
@@ -47,6 +64,13 @@
           "name": "text",
           "value": "",
           "label": "Text",
+          "valueType": "string"
+        },
+        {
+          "component": "text",
+          "name": "link",
+          "label": "Link URL",
+          "value": "",
           "valueType": "string"
         }
       ]

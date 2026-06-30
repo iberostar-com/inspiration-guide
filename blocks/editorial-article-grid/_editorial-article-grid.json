@@ -1,0 +1,106 @@
+{
+  "definitions": [
+    {
+      "title": "Editorial Article Grid",
+      "id": "editorial-article-grid",
+      "plugins": {
+        "xwalk": {
+          "page": {
+            "resourceType": "core/franklin/components/block/v1/block",
+            "template": {
+              "name": "Editorial Article Grid",
+              "model": "editorial-article-grid",
+              "filter": "editorial-article-grid"
+            }
+          }
+        }
+      }
+    },
+    {
+      "title": "Article",
+      "id": "editorial-article",
+      "plugins": {
+        "xwalk": {
+          "page": {
+            "resourceType": "core/franklin/components/block/v1/block/item",
+            "template": {
+              "name": "Article",
+              "model": "editorial-article"
+            }
+          }
+        }
+      }
+    }
+  ],
+  "models": [
+    {
+      "id": "editorial-article-grid",
+      "fields": [
+        {
+          "component": "text",
+          "name": "pretitle",
+          "label": "Pretitle",
+          "value": ""
+        },
+        {
+          "component": "text",
+          "name": "title",
+          "label": "Title",
+          "value": ""
+        },
+        {
+          "component": "select",
+          "name": "mode",
+          "label": "Mode",
+          "options": [
+            { "name": "Manual", "value": "manual" },
+            { "name": "Auto by Tag", "value": "auto-tag" },
+            { "name": "Auto by Category", "value": "auto-category" }
+          ],
+          "value": "manual"
+        }
+      ]
+    },
+    {
+      "id": "editorial-article",
+      "fields": [
+        {
+          "component": "reference",
+          "valueType": "string",
+          "name": "image",
+          "label": "Image",
+          "multi": false
+        },
+        {
+          "component": "text",
+          "valueType": "string",
+          "name": "title",
+          "label": "Article Title",
+          "value": ""
+        },
+        {
+          "component": "text",
+          "valueType": "string",
+          "name": "category",
+          "label": "Category",
+          "value": ""
+        },
+        {
+          "component": "text",
+          "valueType": "string",
+          "name": "link",
+          "label": "Article URL",
+          "value": ""
+        }
+      ]
+    }
+  ],
+  "filters": [
+    {
+      "id": "editorial-article-grid",
+      "components": [
+        "editorial-article"
+      ]
+    }
+  ]
+}

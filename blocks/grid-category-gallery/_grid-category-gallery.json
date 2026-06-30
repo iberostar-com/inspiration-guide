@@ -1,0 +1,112 @@
+{
+  "definitions": [
+    {
+      "title": "Grid Category Gallery",
+      "id": "grid-category-gallery",
+      "plugins": {
+        "xwalk": {
+          "page": {
+            "resourceType": "core/franklin/components/block/v1/block",
+            "template": {
+              "name": "Grid Category Gallery",
+              "model": "grid-category-gallery",
+              "filter": "grid-category-gallery"
+            }
+          }
+        }
+      }
+    },
+    {
+      "title": "Grid Category Gallery Card",
+      "id": "grid-category-gallery-card",
+      "plugins": {
+        "xwalk": {
+          "page": {
+            "resourceType": "core/franklin/components/block/v1/block/item",
+            "template": {
+              "name": "Card",
+              "model": "grid-category-gallery-card"
+            }
+          }
+        }
+      }
+    }
+  ],
+  "models": [
+    {
+      "id": "grid-category-gallery",
+      "fields": [
+        {
+          "component": "text",
+          "name": "title",
+          "label": "Title",
+          "value": ""
+        },
+        {
+          "component": "text",
+          "name": "subtitle",
+          "label": "Pretitle",
+          "value": ""
+        },
+        {
+          "component": "text",
+          "name": "ctaText",
+          "label": "\"View All\" Link Text",
+          "value": ""
+        },
+        {
+          "component": "text",
+          "name": "cta",
+          "label": "\"View All\" Link URL",
+          "value": ""
+        }
+      ]
+    },
+    {
+      "id": "grid-category-gallery-card",
+      "fields": [
+        {
+          "component": "reference",
+          "valueType": "string",
+          "name": "image",
+          "label": "Image",
+          "multi": false
+        },
+        {
+          "component": "text",
+          "valueType": "string",
+          "name": "imageAlt",
+          "label": "Image Alt (optional)",
+          "value": ""
+        },
+        {
+          "component": "text",
+          "valueType": "string",
+          "name": "title",
+          "label": "Pretitle",
+          "value": ""
+        },
+        {
+          "component": "text",
+          "valueType": "string",
+          "name": "subtitle",
+          "label": "Title",
+          "value": ""
+        },
+        {
+          "component": "aem-content",
+          "name": "link",
+          "label": "Link URL"
+        }
+      ]
+    }
+  ],
+  "filters": [
+    {
+      "id": "grid-category-gallery",
+      "components": [
+        "grid-category-gallery-card"
+      ]
+    }
+  ]
+}

@@ -73,6 +73,7 @@
 body {
   display: none;
   margin: 0;
+  overflow-x: scroll;
   background-color: var(--background-color);
   color: var(--text-color);
   font-family: var(--body-font-family);
@@ -88,13 +89,13 @@ header {
   height: var(--nav-height);
 }
 
-header .header,
-footer .footer {
+header .header.block,
+footer .footer.block {
   visibility: hidden;
 }
 
-header .header[data-block-status="loaded"],
-footer .footer[data-block-status="loaded"] {
+header .header.block[data-block-status="loaded"],
+footer .footer.block[data-block-status="loaded"] {
   visibility: visible;
 }
 
@@ -155,7 +156,7 @@ button {
 
 /* links */
 a:any-link {
-  color: var(--link-color);
+  /* color: var(--link-color); */
   text-decoration: none;
   overflow-wrap: break-word;
 }
@@ -313,6 +314,79 @@ main > .section:first-of-type {
 @media (width >= 900px) {
   main > .section > div {
     padding: 0 32px;
+  }
+}
+
+body.page-article main > .article-layout-shell {
+  display: grid;
+  gap: 32px;
+  margin: 24px 16px 40px;
+}
+
+body.page-article main > .article-layout-shell .section {
+  margin: 0;
+}
+
+body.page-article main > .article-layout-shell .section > div {
+  max-width: unset;
+  margin: 0;
+  padding: 0;
+}
+
+body.page-article main > .article-layout-shell .article-layout-main,
+body.page-article main > .article-layout-shell .article-layout-sidebar {
+  display: grid;
+  gap: 40px;
+  min-width: 0;
+}
+
+body.page-article main.article-layout-author {
+  display: grid;
+  gap: 32px;
+  margin: 24px 16px 40px;
+}
+
+body.page-article main.article-layout-author > .section {
+  margin: 0;
+}
+
+body.page-article main.article-layout-author > .section > div {
+  max-width: unset;
+  margin: 0;
+  padding: 0;
+}
+
+@media (width >= 1200px) {
+  body.page-article main > .article-layout-shell {
+    grid-template-columns: minmax(0, 805px) 277px;
+    gap: 76px;
+    align-items: start;
+    max-width: 1158px;
+    margin: 24px auto 40px;
+  }
+
+  body.page-article main.article-layout-author {
+    grid-template-columns: minmax(0, 805px) 277px;
+    gap: 40px 76px;
+    align-items: start;
+    max-width: 1158px;
+    margin: 24px auto 40px;
+  }
+
+  body.page-article main.article-layout-author > .section {
+    min-width: 0;
+  }
+
+  body.page-article main.article-layout-author > .section.article-main {
+    grid-column: 1;
+  }
+
+  body.page-article main.article-layout-author > .section.article-sidebar {
+    grid-column: 2;
+  }
+
+  body.page-article main.article-layout-author > .section:not(.article-main, .article-sidebar) {
+    grid-column: 1 / -1;
   }
 }
 
