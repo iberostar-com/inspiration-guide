@@ -326,6 +326,75 @@
     ]
   },
   {
+    "id": "article-content-table",
+    "fields": [
+      {
+        "component": "text",
+        "valueType": "string",
+        "name": "title",
+        "label": "Table Title",
+        "value": ""
+      },
+      {
+        "component": "select",
+        "valueType": "string",
+        "name": "titleHeading",
+        "label": "Title Heading",
+        "value": "h2",
+        "options": [
+          {
+            "name": "H2",
+            "value": "h2"
+          },
+          {
+            "name": "H3",
+            "value": "h3"
+          }
+        ]
+      },
+      {
+        "component": "richtext",
+        "valueType": "string",
+        "name": "text",
+        "label": "Table Content",
+        "value": ""
+      }
+    ]
+  },
+  {
+    "id": "article-content-video",
+    "fields": [
+      {
+        "component": "aem-content",
+        "valueType": "string",
+        "name": "videoCf",
+        "label": "Video (Content Fragment or URL)",
+        "description": "Select an AEM video reference or contribute a direct video URL."
+      },
+      {
+        "component": "reference",
+        "valueType": "string",
+        "name": "poster",
+        "label": "Poster Image (optional)",
+        "multi": false
+      },
+      {
+        "component": "text",
+        "valueType": "string",
+        "name": "posterAlt",
+        "label": "Poster Alt Text (optional)",
+        "value": ""
+      },
+      {
+        "component": "text",
+        "valueType": "string",
+        "name": "caption",
+        "label": "Caption (optional)",
+        "value": ""
+      }
+    ]
+  },
+  {
     "id": "article-main-image",
     "fields": [
       {
@@ -660,67 +729,6 @@
         "valueType": "string",
         "name": "text",
         "label": "Text",
-        "value": ""
-      }
-    ]
-  },
-  {
-    "id": "editorial-content-table",
-    "fields": [
-      {
-        "component": "text",
-        "valueType": "string",
-        "name": "title",
-        "label": "Table Title",
-        "value": ""
-      },
-      {
-        "component": "select",
-        "valueType": "string",
-        "name": "titleHeading",
-        "label": "Title Heading",
-        "value": "h2",
-        "options": [
-          {
-            "name": "H2",
-            "value": "h2"
-          },
-          {
-            "name": "H3",
-            "value": "h3"
-          }
-        ]
-      },
-      {
-        "component": "richtext",
-        "valueType": "string",
-        "name": "text",
-        "label": "Table Content",
-        "value": ""
-      }
-    ]
-  },
-  {
-    "id": "editorial-content-video",
-    "fields": [
-      {
-        "component": "aem-content",
-        "valueType": "string",
-        "name": "videoCf",
-        "label": "Video (Content Fragment or URL)"
-      },
-      {
-        "component": "reference",
-        "valueType": "string",
-        "name": "poster",
-        "label": "Poster Image (optional)",
-        "multi": false
-      },
-      {
-        "component": "text",
-        "valueType": "string",
-        "name": "caption",
-        "label": "Caption (optional)",
         "value": ""
       }
     ]

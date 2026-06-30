@@ -15,36 +15,6 @@
           }
         }
       }
-    },
-    {
-      "title": "Article Content Table",
-      "id": "editorial-content-table",
-      "plugins": {
-        "xwalk": {
-          "page": {
-            "resourceType": "core/franklin/components/block/v1/block/item",
-            "template": {
-              "name": "Table",
-              "model": "editorial-content-table"
-            }
-          }
-        }
-      }
-    },
-    {
-      "title": "Article Content Video",
-      "id": "editorial-content-video",
-      "plugins": {
-        "xwalk": {
-          "page": {
-            "resourceType": "core/franklin/components/block/v1/block/item",
-            "template": {
-              "name": "Video",
-              "model": "editorial-content-video"
-            }
-          }
-        }
-      }
     }
   ],
   "models": [
@@ -59,75 +29,12 @@
           "value": ""
         }
       ]
-    },
-    {
-      "id": "editorial-content-table",
-      "fields": [
-        {
-          "component": "text",
-          "valueType": "string",
-          "name": "title",
-          "label": "Table Title",
-          "value": ""
-        },
-        {
-          "component": "select",
-          "valueType": "string",
-          "name": "titleHeading",
-          "label": "Title Heading",
-          "value": "h2",
-          "options": [
-            {
-              "name": "H2",
-              "value": "h2"
-            },
-            {
-              "name": "H3",
-              "value": "h3"
-            }
-          ]
-        },
-        {
-          "component": "richtext",
-          "valueType": "string",
-          "name": "text",
-          "label": "Table Content",
-          "value": ""
-        }
-      ]
-    },
-    {
-      "id": "editorial-content-video",
-      "fields": [
-        {
-          "component": "aem-content",
-          "valueType": "string",
-          "name": "videoCf",
-          "label": "Video (Content Fragment or URL)"
-        },
-        {
-          "component": "reference",
-          "valueType": "string",
-          "name": "poster",
-          "label": "Poster Image (optional)",
-          "multi": false
-        },
-        {
-          "component": "text",
-          "valueType": "string",
-          "name": "caption",
-          "label": "Caption (optional)",
-          "value": ""
-        }
-      ]
     }
   ],
   "filters": [
     {
       "id": "editorial-article-content",
       "components": [
-        "editorial-content-table",
-        "editorial-content-video",
         "richtext"
       ],
       "rte": {
