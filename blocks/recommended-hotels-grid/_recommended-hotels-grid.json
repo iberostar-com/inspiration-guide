@@ -48,6 +48,36 @@
           "name": "title",
           "label": "Title",
           "value": ""
+        },
+        {
+          "component": "text",
+          "valueType": "string",
+          "name": "gridCta_linkText",
+          "label": "CTA Text",
+          "value": "Ver todos los hoteles"
+        },
+        {
+          "component": "aem-content",
+          "valueType": "string",
+          "name": "gridCta_link",
+          "label": "CTA URL"
+        },
+        {
+          "component": "select",
+          "valueType": "string",
+          "name": "gridCta_linkTarget",
+          "label": "CTA Target",
+          "value": "_self",
+          "options": [
+            {
+              "name": "Same tab",
+              "value": "_self"
+            },
+            {
+              "name": "New tab",
+              "value": "_blank"
+            }
+          ]
         }
       ]
     },
