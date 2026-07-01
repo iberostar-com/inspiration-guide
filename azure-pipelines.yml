@@ -1,10 +1,10 @@
 trigger:
   branches:
     include:
+      - main
       - develop
       - qa
       - stage
-      - prod
 
 pr: none
 
@@ -27,20 +27,21 @@ pool:
   name: $(agentPoolName)
 
 stages:
+
+  # ── STAGE 1: SonarCloud ─────────────────────────────────────────
   - stage: SonarCloud
-    displayName: 'Sonar Cloud Analysis'
+    displayName: 'SonarCloud'
+    dependsOn: []
     condition: in(variables['Build.SourceBranchName'], 'main', 'stage', 'qa', 'develop')
     jobs:
-      - job: Sonar_Cloud_Analysis
-        displayName: 'Sonar Cloud Analysis'
-        pool:
-          vmImage: ubuntu-latest
+      - job: SonarCloud
+        displayName: 'SonarCloud'
         steps:
           - checkout: self
             fetchDepth: 0
 
           - task: SonarCloudPrepare@4.1.0
-            displayName: 'Prepare SonarCloud'
+            displayName: 'SonarCloudPrepare'
             inputs:
               SonarCloud: '$(sonarCloudEndpointName)'
               organization: '$(sonarCloudOrganization)'
@@ -56,30 +57,54 @@ stages:
             continueOnError: true
 
           - task: SonarCloudAnalyze@4.1.0
-            displayName: 'Analyze SonarCloud'
+            displayName: 'SonarCloudAnalyze'
+            continueOnError: true
 
           - task: SonarCloudPublish@4.1.0
-            displayName: 'Publish SonarCloud'
-            continueOnError: true
+            displayName: 'SonarCloudPublish'
             inputs:
               pollingTimeoutSec: '900'
 
-  - stage: MirrorPush_CloudManager_Merge
-    displayName: 'Push a Cloud Manager Git (Merge)'
+  # ── STAGE 2: Aprobación manual solo si Sonar tiene issues en main
+  - stage: Approval_Sonar
+    displayName: 'Approval SonarCloud'
+    dependsOn: SonarCloud
     condition: >
       and(
-        succeeded(),
+        eq(dependencies.SonarCloud.result, 'SucceededWithIssues'),
+        eq(variables['Build.SourceBranchName'], 'main')
+      )
+    jobs:
+      - deployment: Approval_Sonar
+        displayName: 'Approval SonarCloud'
+        environment: 'sonarcloud'
+        strategy:
+          runOnce:
+            deploy:
+              steps:
+                - checkout: self
+
+  # ── STAGE 3: Push a Cloud Manager Git (Adobe EDS) ───────────────
+  - stage: MirrorPush_CloudManager_Merge
+    displayName: 'Push CloudManager'
+    dependsOn:
+      - SonarCloud
+      - Approval_Sonar
+    condition: |
+      and(
         ne(variables['Build.Reason'], 'PullRequest'),
+        in(dependencies.SonarCloud.result, 'Succeeded', 'SucceededWithIssues'),
+        in(dependencies.Approval_Sonar.result, 'Succeeded', 'Skipped'),
         or(
+          eq(variables['Build.SourceBranch'], 'refs/heads/main'),
           eq(variables['Build.SourceBranch'], 'refs/heads/develop'),
           eq(variables['Build.SourceBranch'], 'refs/heads/qa'),
-          eq(variables['Build.SourceBranch'], 'refs/heads/stage'),
-          eq(variables['Build.SourceBranch'], 'refs/heads/prod')
+          eq(variables['Build.SourceBranch'], 'refs/heads/stage')
         )
       )
     jobs:
       - job: PushMerge
-        displayName: 'Push a Cloud Manager en merge'
+        displayName: 'Push CloudManager'
         steps:
           - checkout: self
             fetchDepth: 0
@@ -90,15 +115,14 @@ stages:
 
               CM_BRANCH="$(Build.SourceBranchName)"
 
-              echo "Merge detectado."
-              echo "Rama Azure: $CM_BRANCH"
+              echo "Rama origen Azure DevOps: $CM_BRANCH"
 
               case "$CM_BRANCH" in
-                dev|qa|stage|prod)
+                main|develop|qa|stage)
                   echo "Rama válida para Cloud Manager: $CM_BRANCH"
                   ;;
                 *)
-                  echo "La rama '$CM_BRANCH' no es promocionable. No se hace push a Cloud Manager."
+                  echo "La rama '$CM_BRANCH' no es promocionable. No se hace push."
                   exit 0
                   ;;
               esac
@@ -109,11 +133,6 @@ stages:
               fi
 
               REPO_URL="${CM_GIT_REPO_URL_IS%/}"
-
-              if [[ "$REPO_URL" != https://* ]]; then
-                echo "CM_GIT_REPO_URL_IS debe empezar por https://"
-                exit 1
-              fi
 
               ENC_USER="$(python3 -c "import os, urllib.parse; print(urllib.parse.quote(os.environ['CM_GIT_USERNAME'], safe=''))")"
               ENC_PASS="$(python3 -c "import os, urllib.parse; print(urllib.parse.quote(os.environ['CM_GIT_PASSWORD'], safe=''))")"
@@ -135,8 +154,17 @@ stages:
 
               git push --force cloudmanager "HEAD:${REMOTE_REF}"
 
-              echo "OK: Push completado a Cloud Manager (${REMOTE_REF})"
-            displayName: 'git push -> Cloud Manager (merge)'
+              #    URL dinámica según la rama
+              echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+              echo "   Push completado a Cloud Manager"
+              echo "   Rama: ${CM_BRANCH}"
+              if [ "$CM_BRANCH" = "main" ]; then
+                echo "   URL: https://main--inspiration-guide--iberostar-com.aem.live"
+              else
+                echo "   URL preview: https://${CM_BRANCH}--inspiration-guide--iberostar-com.aem.page"
+              fi
+              echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+            displayName: 'Push CloudManager'
             env:
               CM_GIT_USERNAME: $(CM_GIT_USERNAME)
               CM_GIT_PASSWORD: $(CM_GIT_PASSWORD)
