@@ -65,7 +65,7 @@ stages:
             inputs:
               pollingTimeoutSec: '900'
 
-  # ── STAGE 2: Aprobación manual solo si Sonar tiene issues en main
+  # ── STAGE 2: Manual approval ────────────────────────────────────
   - stage: Approval_Sonar
     displayName: 'Approval SonarCloud'
     dependsOn: SonarCloud
