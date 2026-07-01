@@ -5,29 +5,30 @@ import { moveInstrumentation } from '../../scripts/scripts.js';
 const MAX_ITEMS = 3;
 const CTA_COPY = 'Leer artículo';
 
+// --- Metadata helpers ---
+
 function getMetaContent(name) {
   return document.querySelector(`meta[name="${name}"]`)?.content?.trim() || '';
 }
 
-function normalizeTag(tag) {
-  return `${tag || ''}`.trim().toLowerCase();
+function normalizeStr(val) {
+  return `${val || ''}`.trim().toLowerCase();
 }
 
 function getPageTags() {
   return getMetaContent('article-tags')
     .split(',')
-    .map(normalizeTag)
+    .map(normalizeStr)
     .filter(Boolean);
 }
 
 function getPageCategorySegments() {
   const raw = getMetaContent('article-category');
   if (!raw) return [];
-  // e.g. "inspiration-guide:destinations/mallorca"
-  // strip namespace prefix, split by '/'
-  const path = normalizeTag(raw).replace(/^[^:]+:/, '');
+  // e.g. "inspiration-guide:destinations/mallorca" → strip namespace, split by '/'
+  const path = normalizeStr(raw).replace(/^[^:]+:/, '');
   const parts = path.split('/').filter(Boolean);
-  // build all ancestor paths too: ["destinations", "destinations/mallorca"]
+  // Build all ancestor paths: ["destinations", "destinations/mallorca"]
   const segments = [];
   parts.reduce((acc, part) => {
     const seg = acc ? `${acc}/${part}` : part;
@@ -37,9 +38,26 @@ function getPageCategorySegments() {
   return segments;
 }
 
+/**
+ * Returns the first (root) segment of a category path.
+ * "inspiration-guide:destinations/mallorca" → "Destinations"
+ * "destinations/mallorca" → "Destinations"
+ * "beaches" → "Beaches"
+ */
+function getRootCategoryLabel(raw) {
+  if (!raw) return '';
+  const path = `${raw}`.replace(/^[^:]+:/, '').replace(/-/g, ' ');
+  const first = path.split('/')[0]?.trim() || '';
+  return first.charAt(0).toUpperCase() + first.slice(1);
+}
+
+// --- Sorting ---
+
 function byLatest(a, b) {
   return `${b.publishDate}`.localeCompare(`${a.publishDate}`);
 }
+
+// --- Auto article fetching ---
 
 async function getAutoArticles(mode) {
   const all = await getArticles();
@@ -51,7 +69,7 @@ async function getAutoArticles(mode) {
     return all
       .filter((a) => {
         if (a.path === currentPath) return false;
-        return a.tags.some((t) => pageTags.includes(normalizeTag(t)));
+        return (a.tags || []).some((t) => pageTags.includes(normalizeStr(t)));
       })
       .sort(byLatest)
       .slice(0, MAX_ITEMS);
@@ -63,7 +81,7 @@ async function getAutoArticles(mode) {
     return all
       .filter((a) => {
         if (a.path === currentPath) return false;
-        const articleCat = normalizeTag(a.categorySlug || a.category);
+        const articleCat = normalizeStr(a.categorySlug || a.category || '');
         return segments.some((seg) => articleCat.includes(seg) || seg.includes(articleCat));
       })
       .sort(byLatest)
@@ -73,26 +91,55 @@ async function getAutoArticles(mode) {
   return [];
 }
 
+// --- Manual items (mode=manual) ---
+
+function getManualItemProp(row, propName) {
+  const el = row.querySelector(`[data-aue-prop="${propName}"]`);
+  return el || null;
+}
+
 function getManualItems(block) {
   return [...block.children]
     .filter((row) => !row.classList.contains('editorial-article-grid-rendered'))
     .slice(0, MAX_ITEMS)
     .map((row, index) => {
+      // Try data-aue-prop first, fall back to positional cells
       const cells = [...row.children];
-      const picture = cells[0]?.querySelector('picture');
+      const imageProp = getManualItemProp(row, 'image');
+      const picture = imageProp
+        ? imageProp.querySelector('picture')
+        : cells[0]?.querySelector('picture');
       const img = picture?.querySelector('img');
+
+      const titleProp = getManualItemProp(row, 'title');
+      const title = titleProp
+        ? titleProp.textContent?.trim()
+        : cells[1]?.textContent?.trim() || '';
+
+      const categoryProp = getManualItemProp(row, 'category');
+      const rawCategory = categoryProp
+        ? categoryProp.textContent?.trim()
+        : cells[2]?.textContent?.trim() || '';
+
+      const linkProp = getManualItemProp(row, 'link');
+      const href = linkProp
+        ? linkProp.textContent?.trim() || linkProp.querySelector('a')?.href || ''
+        : cells[3]?.textContent?.trim() || '#';
+
       return {
         id: `manual-${index + 1}`,
         image: img?.src || '',
         imageAlt: img?.alt || '',
-        title: cells[1]?.textContent?.trim() || '',
-        category: cells[2]?.textContent?.trim() || '',
-        href: cells[3]?.textContent?.trim() || '#',
+        title,
+        category: getRootCategoryLabel(rawCategory) || rawCategory,
+        href,
         picture,
         sourceRow: row,
       };
     });
 }
+
+// --- Card rendering ---
 
 function makeCard(item) {
   const li = document.createElement('li');
@@ -113,10 +160,12 @@ function makeCard(item) {
   const body = document.createElement('div');
   body.className = 'editorial-article-grid-body';
 
-  if (item.category) {
+  const category = item.category
+    || getRootCategoryLabel(item.categorySlug || item.category || '');
+  if (category) {
     const cat = document.createElement('p');
     cat.className = 'editorial-article-grid-category';
-    cat.textContent = item.category;
+    cat.textContent = category;
     body.append(cat);
   }
 
@@ -124,7 +173,7 @@ function makeCard(item) {
     const h3 = document.createElement('h3');
     h3.className = 'editorial-article-grid-title';
     const a = document.createElement('a');
-    a.href = item.href || '#';
+    a.href = item.href || item.path || '#';
     a.textContent = item.title;
     h3.append(a);
     body.append(h3);
@@ -132,7 +181,7 @@ function makeCard(item) {
 
   const cta = document.createElement('a');
   cta.className = 'editorial-article-grid-cta';
-  cta.href = item.href || '#';
+  cta.href = item.href || item.path || '#';
   cta.textContent = CTA_COPY;
   body.append(cta);
 
@@ -140,11 +189,37 @@ function makeCard(item) {
   return li;
 }
 
-export default async function decorate(block) {
-  const existing = block.querySelector('.editorial-article-grid-rendered');
-  if (existing) existing.remove();
+// --- Header rendering ---
 
-  const pretitle = block.getAttribute('data-pretitle') || '';
+function renderHeader(eyebrow, title) {
+  if (!eyebrow && !title) return null;
+
+  const header = document.createElement('div');
+  header.className = 'editorial-article-grid-header';
+
+  if (eyebrow) {
+    const el = document.createElement('h2');
+    el.className = 'editorial-article-grid-eyebrow';
+    el.textContent = eyebrow;
+    header.append(el);
+  }
+
+  if (title) {
+    const el = document.createElement('p');
+    el.className = 'editorial-article-grid-heading';
+    el.textContent = title;
+    header.append(el);
+  }
+
+  return header;
+}
+
+// --- Main decorator ---
+
+export default async function decorate(block) {
+  block.querySelector(':scope > .editorial-article-grid-rendered')?.remove();
+
+  const eyebrow = block.getAttribute('data-eyebrow') || '';
   const title = block.getAttribute('data-title') || '';
   const mode = block.getAttribute('data-mode') || 'manual';
 
@@ -153,15 +228,7 @@ export default async function decorate(block) {
 
   if (mode === 'manual') {
     const manual = getManualItems(block);
-    items = manual.map((m) => ({
-      id: m.id,
-      image: m.image,
-      imageAlt: m.imageAlt,
-      title: m.title,
-      category: m.category,
-      href: m.href,
-      picture: m.picture,
-    }));
+    items = manual;
     sourceRows = manual.map((m) => m.sourceRow).filter(Boolean);
   } else {
     items = await getAutoArticles(mode);
@@ -170,23 +237,8 @@ export default async function decorate(block) {
   const rendered = document.createElement('div');
   rendered.className = 'editorial-article-grid-rendered';
 
-  if (pretitle || title) {
-    const header = document.createElement('div');
-    header.className = 'editorial-article-grid-header';
-    if (pretitle) {
-      const h2 = document.createElement('h2');
-      h2.className = 'editorial-article-grid-pretitle';
-      h2.textContent = pretitle;
-      header.append(h2);
-    }
-    if (title) {
-      const p = document.createElement('p');
-      p.className = 'editorial-article-grid-heading';
-      p.textContent = title;
-      header.append(p);
-    }
-    rendered.append(header);
-  }
+  const header = renderHeader(eyebrow, title);
+  if (header) rendered.append(header);
 
   const list = document.createElement('ul');
   list.className = 'editorial-article-grid-list';
