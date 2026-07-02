@@ -33,7 +33,7 @@ function sampleRUM(checkpoint, data) {
       const weight = rateValue !== undefined ? rateValue : 100;
       const id = (window.hlx.rum && window.hlx.rum.id) || crypto.randomUUID().slice(-9);
       const isSelected = (window.hlx.rum && window.hlx.rum.isSelected)
-        || (weight > 0 && Math.random() * weight < 1);
+        || (weight > 0 && (crypto.getRandomValues(new Uint32Array(1))[0] / 2 ** 32) * weight < 1);
       // eslint-disable-next-line object-curly-newline, max-len
       window.hlx.rum = {
         weight,
