@@ -327,6 +327,25 @@
     ]
   },
   {
+    "id": "article-content-quote",
+    "fields": [
+      {
+        "component": "richtext",
+        "valueType": "string",
+        "name": "text",
+        "label": "Quote Text",
+        "value": ""
+      },
+      {
+        "component": "text",
+        "valueType": "string",
+        "name": "attribution",
+        "label": "Attribution (optional)",
+        "value": ""
+      }
+    ]
+  },
+  {
     "id": "article-content-table",
     "fields": [
       {
@@ -773,18 +792,21 @@
     "fields": [
       {
         "component": "text",
-        "name": "pretitle",
-        "label": "Pretitle",
+        "valueType": "string",
+        "name": "eyebrow",
+        "label": "Eyebrow (Antetítulo)",
         "value": ""
       },
       {
         "component": "text",
+        "valueType": "string",
         "name": "title",
         "label": "Title",
         "value": ""
       },
       {
         "component": "select",
+        "valueType": "string",
         "name": "mode",
         "label": "Mode",
         "options": [
