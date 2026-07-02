@@ -219,7 +219,7 @@ function renderHeader(eyebrow, title) {
 export default async function decorate(block) {
   block.querySelector(':scope > .editorial-article-grid-rendered')?.remove();
 
-  const eyebrow = block.getAttribute('data-eyebrow') || '';
+  const eyebrow = block.getAttribute('data-eyebrow') || block.getAttribute('data-pretitle') || '';
   const title = block.getAttribute('data-title') || '';
   const mode = block.getAttribute('data-mode') || 'manual';
 
