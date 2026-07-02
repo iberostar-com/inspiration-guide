@@ -1,5 +1,26 @@
 .carousel-category-gallery-header {
-  margin-bottom: 1rem;
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+}
+
+.carousel-category-gallery-eyebrow {
+  margin: 0 0 0.25rem;
+  font-size: 0.75rem;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: #636363;
+}
+
+.carousel-category-gallery-title {
+  margin: 0;
+  font-family: "Playfair Display", serif;
+  font-size: 1.75rem;
+  font-weight: 400;
+  line-height: 1.2;
 }
 
 .carousel-category-gallery-list {
@@ -61,9 +82,15 @@
 
 .carousel-category-gallery-nav {
   display: none;
-  justify-content: flex-end;
-  gap: 0.5rem;
-  margin-top: 0.5rem;
+  align-items: center;
+  gap: 0.75rem;
+  flex: 0 0 auto;
+}
+
+.carousel-category-gallery-counter {
+  font-size: 0.875rem;
+  color: #636363;
+  white-space: nowrap;
 }
 
 .carousel-category-gallery-prev,

@@ -656,18 +656,21 @@
     "fields": [
       {
         "component": "text",
+        "valueType": "string",
+        "name": "eyebrow",
+        "label": "Eyebrow (Antetítulo)",
+        "value": ""
+      },
+      {
+        "component": "text",
+        "valueType": "string",
         "name": "title",
         "label": "Title",
         "value": ""
       },
       {
-        "component": "text",
-        "name": "subtitle",
-        "label": "Subtitle",
-        "value": ""
-      },
-      {
         "component": "number",
+        "valueType": "number",
         "name": "maxItems",
         "label": "Maximum Cards",
         "value": 9
