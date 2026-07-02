@@ -217,12 +217,7 @@ async function decorateHome(block) {
   const cardHeading = sanitizeHeading(levels[1], 'h3');
 
   const all = await getArticles();
-  const items = getArticleRows(block)
-    .map((row) => {
-      const article = findArticle(all, getRefPath(row));
-      return article ? { article, row } : null;
-    })
-    .filter(Boolean);
+  const isEditor = !!block.closest('[data-aue-resource]');
 
   block.classList.add('editorial-highlight-grid-home');
 
@@ -238,11 +233,25 @@ async function decorateHome(block) {
 
   const list = document.createElement('ul');
   list.className = 'editorial-highlight-grid-list';
-  items.forEach(({ article, row }) => {
+  getArticleRows(block).forEach((row) => {
+    const article = findArticle(all, getRefPath(row));
+    // Skip unresolved items on published pages, but keep an editable placeholder
+    // in Universal Editor so a just-added item can still be configured.
+    if (!article && !isEditor) return;
+
     const li = document.createElement('li');
     li.className = 'editorial-highlight-grid-item';
     moveInstrumentation(row, li);
-    li.append(createArticleCard(toCardData(article), { headingTag: cardHeading }));
+
+    if (article) {
+      li.append(createArticleCard(toCardData(article), { headingTag: cardHeading }));
+    } else {
+      const placeholder = document.createElement('p');
+      placeholder.className = 'editorial-highlight-grid-placeholder';
+      placeholder.textContent = 'Selecciona un artículo';
+      li.append(placeholder);
+    }
+
     list.append(li);
   });
   rendered.append(list);
