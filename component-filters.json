@@ -690,6 +690,12 @@
     ]
   },
   {
+    "id": "editorial-highlight-grid",
+    "components": [
+      "editorial-highlight-article"
+    ]
+  },
+  {
     "id": "featured-articles",
     "components": [
       "featured-article"
