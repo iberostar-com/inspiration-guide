@@ -1,5 +1,6 @@
 const DEFAULT_PERSISTED_QUERY_PATH = '/graphql/execute.json/iberostar-com/hotel-by-code';
 const DEFAULT_LOCALE = 'en_us';
+const DEFAULT_OPERATION_NAME = 'HotelByCode';
 
 const HOTEL_REQUEST_CACHE = new Map();
 
@@ -17,7 +18,7 @@ export function getLocaleFromPath(pathname = window.location.pathname) {
 
 export function getHotelsRootPathFromLocale(locale) {
   const normalizedLocale = normalizeLocale(locale) || DEFAULT_LOCALE;
-  return `/content/dam/iberostar-com/${normalizedLocale}/content-fragments/data/hotels`;
+  return `/content/dam/iberostar-com/${normalizedLocale}/content-fragments/fichas/hotels`;
 }
 
 function normalizeHotel(rawHotel) {
@@ -72,10 +73,12 @@ function getPersistedQueryPath(options = {}) {
 function createRequestUrl(hotelCode, options = {}) {
   const persistedQueryPath = getPersistedQueryPath(options);
   const rootPath = getRootPath(options);
+  const operationName = options.operationName || DEFAULT_OPERATION_NAME;
 
   const url = new URL(persistedQueryPath, window.location.origin);
   url.searchParams.set('rootPath', rootPath);
   url.searchParams.set('hotelCode', `${hotelCode}`.trim());
+  url.searchParams.set('operationName', operationName);
 
   return {
     requestUrl: url,

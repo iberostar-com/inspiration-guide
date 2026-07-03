@@ -33,6 +33,36 @@
           "name": "destination",
           "label": "Destination Text",
           "value": ""
+        },
+        {
+          "component": "text",
+          "valueType": "string",
+          "name": "cta_linkText",
+          "label": "CTA Text",
+          "value": "Ver disponibilidad"
+        },
+        {
+          "component": "aem-content",
+          "valueType": "string",
+          "name": "cta_link",
+          "label": "CTA URL"
+        },
+        {
+          "component": "select",
+          "valueType": "string",
+          "name": "cta_linkTarget",
+          "label": "CTA Target",
+          "value": "_self",
+          "options": [
+            {
+              "name": "Same tab",
+              "value": "_self"
+            },
+            {
+              "name": "New tab",
+              "value": "_blank"
+            }
+          ]
         }
       ]
     }

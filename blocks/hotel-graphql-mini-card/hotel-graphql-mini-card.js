@@ -3,11 +3,17 @@ import { getTranslation } from '../../scripts/iberostar/i18n.js';
 import { fetchHotelByCode } from '../../scripts/iberostar/hotels-api.js';
 
 const FIELD_POSITIONS = {
+  cta_link: [3, 0],
+  cta_linkTarget: [4, 0],
+  cta_linkText: [2, 0],
   destination: [1, 0],
   hotelCode: [0, 0],
 };
 
 const FIELD_ALIASES = {
+  cta_link: ['link', 'ctaUrl'],
+  cta_linkTarget: ['linkTarget'],
+  cta_linkText: ['ctaText'],
   destination: ['destinationText'],
 };
 
@@ -56,6 +62,22 @@ function getText(block, propName) {
   return getField(block, propName)?.textContent?.trim() || '';
 }
 
+function getAnchor(field) {
+  if (field?.matches?.('a[href]')) return field;
+  return field?.querySelector?.('a[href]') || null;
+}
+
+function getHref(block, propName) {
+  const field = getField(block, propName);
+  return getAnchor(field)?.getAttribute('href')?.trim()
+    || field?.textContent?.trim()
+    || '';
+}
+
+function normalizeTarget(value) {
+  return `${value || ''}`.trim().toLowerCase() === '_blank' ? '_blank' : '_self';
+}
+
 function hideSource(block) {
   getSourceRows(block).forEach((row) => {
     if (row === block) return;
@@ -98,12 +120,15 @@ function createEmptyState(message) {
   return empty;
 }
 
-function toMiniCardData(hotel, destinationText, ctaText) {
+function toMiniCardData(hotel, destinationText, cta) {
   if (!hotel) return null;
 
+  const fallbackHref = createHotelHref(hotel);
+  const href = cta.href || fallbackHref;
+
   return {
-    ctaText,
-    href: createHotelHref(hotel),
+    ctaText: cta.text,
+    href,
     image: hotel.image || '',
     imageAlt: hotel.title || '',
     location: destinationText || '',
@@ -111,7 +136,7 @@ function toMiniCardData(hotel, destinationText, ctaText) {
     priceFrom: '',
     stars: normalizeStars(hotel.stars),
     tagLabel: '',
-    target: '_self',
+    target: cta.target,
   };
 }
 
@@ -148,7 +173,12 @@ export default async function decorate(block) {
 
   const hotelCode = getText(block, 'hotelCode');
   const destinationText = getText(block, 'destination');
-  const ctaText = await getTranslation('hotelGraphqlMiniCardCta', 'View hotel');
+  const fallbackCtaText = await getTranslation('hotelGraphqlMiniCardCta', 'View hotel');
+  const cta = {
+    href: getHref(block, 'cta_link'),
+    target: normalizeTarget(getText(block, 'cta_linkTarget')),
+    text: getText(block, 'cta_linkText') || fallbackCtaText,
+  };
 
   const rendered = document.createElement('div');
   rendered.className = 'hotel-graphql-mini-card-rendered';
@@ -168,7 +198,7 @@ export default async function decorate(block) {
   const hotel = await fetchHotelByCode(hotelCode);
   if (runId !== block.hotelGraphqlMiniCardRunId) return;
 
-  const miniCardData = toMiniCardData(hotel, destinationText, ctaText);
+  const miniCardData = toMiniCardData(hotel, destinationText, cta);
   if (miniCardData) {
     rendered.append(createHotelMiniCard(miniCardData, 'horizontal'));
   } else if (isAuthoringPage(block)) {
