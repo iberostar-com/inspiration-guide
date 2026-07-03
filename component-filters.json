@@ -715,6 +715,12 @@
     ]
   },
   {
+    "id": "recommended-dynamic-hotels-grid",
+    "components": [
+      "recommended-dynamic-hotel"
+    ]
+  },
+  {
     "id": "recommended-hotels-grid",
     "components": [
       "recommended-hotel"
