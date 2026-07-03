@@ -162,6 +162,42 @@ function createEmptyState(message) {
   return empty;
 }
 
+function getStarCount(starsElement) {
+  const fromLabel = starsElement
+    ?.getAttribute('aria-label')
+    ?.match(/\d+/)?.[0];
+  const parsed = Number.parseInt(fromLabel || '', 10);
+  if (Number.isFinite(parsed)) return Math.max(0, Math.min(parsed, 5));
+
+  return Math.max(0, Math.min((starsElement?.textContent || '').replace(/[^★]/g, '').length, 5));
+}
+
+function createStarIcon() {
+  const star = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+  star.classList.add('hotel-mini-card-star-icon');
+  star.setAttribute('viewBox', '0 0 24 24');
+  star.setAttribute('aria-hidden', 'true');
+
+  const path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+  path.setAttribute('d', 'M12 2.5 14.76 8.1l6.19.9-4.48 4.37 1.06 6.17L12 16.64 6.47 19.54l1.06-6.17L3.05 9l6.19-.9L12 2.5Z');
+  path.setAttribute('fill', 'currentColor');
+
+  star.append(path);
+  return star;
+}
+
+function enhanceStarsForGraphql(renderedBlock) {
+  renderedBlock.querySelectorAll('.hotel-mini-card-stars').forEach((starsElement) => {
+    const count = getStarCount(starsElement);
+    if (!count) return;
+
+    starsElement.textContent = '';
+    Array.from({ length: count }).forEach(() => {
+      starsElement.append(createStarIcon());
+    });
+  });
+}
+
 function formatCurrencyValue(value, currency) {
   if (!Number.isFinite(value) || !currency) return '';
 
@@ -303,7 +339,9 @@ export default async function decorate(block) {
     cta,
   );
   if (miniCardData) {
-    rendered.append(createHotelMiniCard(miniCardData, 'horizontal'));
+    const card = createHotelMiniCard(miniCardData, 'horizontal');
+    enhanceStarsForGraphql(card);
+    rendered.append(card);
   } else if (isAuthoringPage(block)) {
     rendered.append(createEmptyState(`No active hotel found for code ${hotelCode}.`));
   }
