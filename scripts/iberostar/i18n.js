@@ -1,20 +1,39 @@
 const I18N_CACHE = new Map();
+const DEFAULT_LOCALE = 'en-us';
+
+function normalizeLocale(locale) {
+  const value = `${locale || ''}`.trim().toLowerCase();
+  if (!value) return DEFAULT_LOCALE;
+  if (value === 'en') return DEFAULT_LOCALE;
+  if (/^[a-z]{2}$/.test(value)) return `${value}-${value === 'en' ? 'us' : value}`;
+  return value;
+}
 
 function getCurrentLocale() {
   const segments = window.location.pathname.split('/').filter(Boolean);
   const locale = segments.find((segment) => /^[a-z]{2}-[a-z]{2}$/i.test(segment));
-  return locale ? locale.toLowerCase() : (document.documentElement.lang || 'en').toLowerCase();
+  const fromDocument = document.documentElement.lang || DEFAULT_LOCALE;
+  return normalizeLocale(locale || fromDocument);
 }
 
 async function fetchI18nData(locale) {
-  const cacheKey = `i18n:${locale}`;
+  const normalizedLocale = normalizeLocale(locale);
+  const cacheKey = `i18n:${normalizedLocale}`;
   if (I18N_CACHE.has(cacheKey)) {
     return I18N_CACHE.get(cacheKey);
   }
 
+  const localeCandidates = [
+    normalizedLocale,
+    normalizedLocale === 'en' ? DEFAULT_LOCALE : '',
+  ].filter(Boolean);
+
+  const uniqueCandidates = [...new Set(localeCandidates)];
   const paths = [
-    `/${locale}/i18n.json`,
-    `/i18n/${locale}.json`,
+    ...uniqueCandidates.flatMap((candidate) => [
+      `/${candidate}/i18n.json`,
+      `/i18n/${candidate}.json`,
+    ]),
     '/i18n.json',
   ];
 
@@ -47,8 +66,8 @@ export async function getTranslation(key, fallback = '') {
 
   if (value) return value;
 
-  if (locale !== 'en') {
-    const enData = await fetchI18nData('en');
+  if (normalizeLocale(locale) !== DEFAULT_LOCALE) {
+    const enData = await fetchI18nData(DEFAULT_LOCALE);
     if (enData[key]) return enData[key];
   }
 
