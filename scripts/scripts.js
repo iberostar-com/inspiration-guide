@@ -260,6 +260,7 @@ async function loadLazy(doc) {
   }
 
   loadCSS(`${window.hlx.codeBasePath}/styles/lazy-styles.css`);
+  loadCSS(`${window.hlx.codeBasePath}/styles/ibh-icons.css`);
   loadFonts();
 
   // Universal Editor support: only load when the document is instrumented.

@@ -202,15 +202,35 @@ function toCardData(article) {
     categoryUrl: article.categoryUrl,
     publicationDate: article.publicationDate || article.publishDate || '',
     readTime: article.readTime || '',
-    authorName: article.authorName || article.author || '',
     url: toPublicPagePath(article.url || article.path || '') || '',
     ctaText: CARD_CTA,
   };
 }
 
+function enhanceCard(card) {
+  const readTime = card.querySelector('.article-card-read-time');
+  if (readTime && !readTime.querySelector('i')) {
+    const icon = document.createElement('i');
+    icon.className = 'ibh-icon-schedule';
+    readTime.prepend(icon);
+  }
+
+  const cta = card.querySelector('.article-card-cta');
+  if (cta && !cta.querySelector('i')) {
+    const label = document.createElement('span');
+    label.className = 'article-card-cta-label';
+    label.textContent = cta.textContent;
+    const arrow = document.createElement('i');
+    arrow.className = 'ibh-icon-arrow-forward';
+    cta.textContent = '';
+    cta.append(label, arrow);
+  }
+}
+
 async function decorateHome(block) {
-  const title = textByProp(block, 'title');
-  const levels = getConfigRows(block)
+  const configRows = getConfigRows(block);
+  const title = textByProp(block, 'title') || configRows[1]?.textContent?.trim() || '';
+  const levels = configRows
     .map((row) => row.textContent?.trim().toLowerCase())
     .filter((text) => HEADING_TAGS.has(text));
   const titleHeading = sanitizeHeading(levels[0], 'h2');
@@ -244,7 +264,9 @@ async function decorateHome(block) {
     moveInstrumentation(row, li);
 
     if (article) {
-      li.append(createArticleCard(toCardData(article), { headingTag: cardHeading }));
+      const card = createArticleCard(toCardData(article), { headingTag: cardHeading });
+      enhanceCard(card);
+      li.append(card);
     } else {
       const placeholder = document.createElement('p');
       placeholder.className = 'editorial-highlight-grid-placeholder';

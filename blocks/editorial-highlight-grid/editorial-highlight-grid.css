@@ -41,8 +41,22 @@ main .editorial-highlight-grid .editorial-highlight-load-more {
 
 /* ---------- Home variant ---------- */
 
+main .editorial-highlight-grid-home .editorial-highlight-grid-rendered {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  font-family: inter, sans-serif;
+}
+
 main .editorial-highlight-grid-home .editorial-highlight-grid-title {
-  margin: 0 0 20px;
+  margin: 0;
+  color: #1b2828;
+  font-family: inter, sans-serif;
+  font-size: 12px;
+  font-weight: 500;
+  letter-spacing: 0.02em;
+  line-height: 1.4;
+  text-transform: uppercase;
 }
 
 main .editorial-highlight-grid-home .editorial-highlight-grid-list {
@@ -51,7 +65,7 @@ main .editorial-highlight-grid-home .editorial-highlight-grid-list {
   padding: 0;
   display: grid;
   grid-template-columns: 1fr;
-  gap: 20px;
+  gap: 40px;
 }
 
 main .editorial-highlight-grid-home .editorial-highlight-grid-item {
@@ -59,65 +73,125 @@ main .editorial-highlight-grid-home .editorial-highlight-grid-item {
 }
 
 main .editorial-highlight-grid-home .article-card {
-  display: grid;
-  gap: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 32px;
 }
 
 main .editorial-highlight-grid-home .article-card-media {
   overflow: hidden;
-  border-radius: 16px;
+  border-radius: 4px;
+  aspect-ratio: 328 / 250;
 }
 
+main .editorial-highlight-grid-home .article-card-image-link,
 main .editorial-highlight-grid-home .article-card picture,
 main .editorial-highlight-grid-home .article-card img {
   display: block;
   width: 100%;
-  height: auto;
-  aspect-ratio: 16 / 10;
+  height: 100%;
+}
+
+main .editorial-highlight-grid-home .article-card img {
   object-fit: cover;
 }
 
 main .editorial-highlight-grid-home .article-card-body {
-  display: grid;
-  gap: 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  padding: 0 16px;
 }
 
 main .editorial-highlight-grid-home .article-card-meta {
   display: flex;
   flex-wrap: wrap;
-  gap: 8px 14px;
-  color: #45616e;
-  font-size: var(--body-font-size-xs);
+  align-items: center;
+  gap: 8px 24px;
+  color: #757575;
+  font-size: 12px;
+  font-weight: 500;
+  letter-spacing: 0.02em;
+  line-height: 1.4;
+  text-transform: uppercase;
+}
+
+main .editorial-highlight-grid-home .article-card-category {
+  color: #757575;
+  text-decoration: none;
+}
+
+main .editorial-highlight-grid-home .article-card-read-time {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+main .editorial-highlight-grid-home .article-card-read-time i {
+  color: #636363;
+  font-size: 20px;
+  line-height: 1;
 }
 
 main .editorial-highlight-grid-home .article-card-title {
-  margin: 0;
+  margin: -8px 0 0;
+  color: #1b2828;
+  font-family: inter, sans-serif;
+  font-size: 18px;
+  font-weight: 500;
+  line-height: 1.4;
 }
 
 main .editorial-highlight-grid-home .article-card-title a {
-  color: #08314d;
+  color: #1b2828;
+  text-decoration: none;
 }
 
 main .editorial-highlight-grid-home .article-card-description {
   margin: 0;
-  color: #45616e;
+  color: #5c5c5c;
+  font-size: 16px;
+  font-weight: 400;
+  line-height: 1.4;
 }
 
 main .editorial-highlight-grid-home .article-card-cta {
-  font-weight: 700;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  width: fit-content;
+  color: #1b2828;
+  font-size: 16px;
+  font-weight: 500;
+  line-height: 1.4;
+  text-decoration: none;
+}
+
+main .editorial-highlight-grid-home .article-card-cta i {
+  font-size: 18px;
+  line-height: 1;
+}
+
+main .editorial-highlight-grid-home .article-card-cta:hover .article-card-cta-label {
+  text-decoration: underline;
 }
 
 main .editorial-highlight-grid-home .editorial-highlight-grid-placeholder {
   margin: 0;
   padding: 24px;
   border: 1px dashed var(--light-color);
-  border-radius: 16px;
-  color: #45616e;
+  border-radius: 4px;
+  color: #757575;
   text-align: center;
 }
 
-@media (width >= 600px) {
+@media (width >= 900px) {
   main .editorial-highlight-grid-home .editorial-highlight-grid-list {
     grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 40px;
+  }
+
+  main .editorial-highlight-grid-home .article-card-media {
+    aspect-ratio: 617 / 440;
   }
 }

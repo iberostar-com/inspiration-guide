@@ -15,6 +15,9 @@ main .grid-category-gallery .grid-category-gallery-source {
 
 main .grid-category-gallery .grid-category-gallery-rendered {
   box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  gap: 32px;
   width: 100%;
   max-width: 1440px;
   margin-inline: auto;
@@ -27,8 +30,7 @@ main .grid-category-gallery .grid-category-gallery-header {
   display: flex;
   align-items: flex-start;
   flex-direction: column;
-  gap: 24px;
-  margin-bottom: 40px;
+  gap: 16px;
 }
 
 main .grid-category-gallery .grid-category-gallery-header-text {
@@ -42,17 +44,17 @@ main .grid-category-gallery .grid-category-gallery-header-text {
 main .grid-category-gallery .grid-category-gallery-heading {
   margin: 0;
   color: #1b2828;
-  font-family: "Noe Display", serif;
-  font-size: 32px;
+  font-family: noe-display, serif;
+  font-size: 28px;
   font-weight: 400;
-  line-height: 42px;
+  line-height: 38px;
 }
 
 main .grid-category-gallery .grid-category-gallery-subheading {
   order: -1;
   margin: 0;
   color: #1b2828;
-  font-family: Inter, sans-serif;
+  font-family: inter, sans-serif;
   font-size: 12px;
   font-weight: 500;
   letter-spacing: 0.24px;
@@ -67,7 +69,7 @@ main .grid-category-gallery .grid-category-gallery-cta {
   align-items: center;
   gap: 8px;
   color: #1b2828;
-  font-family: Inter, sans-serif;
+  font-family: inter, sans-serif;
   font-size: 16px;
   font-weight: 500;
   line-height: 1.4;
@@ -76,14 +78,14 @@ main .grid-category-gallery .grid-category-gallery-cta {
 }
 
 main .grid-category-gallery .grid-category-gallery-cta::after {
+  font-family: ibh-icons, sans-serif;
   font-size: 18px;
   line-height: 1;
-  content: "→";
+  content: "\f21c";
 }
 
-main .grid-category-gallery .grid-category-gallery-cta:hover,
-main .grid-category-gallery .grid-category-gallery-cta:focus-visible {
-  color: #1b2828;
+main .grid-category-gallery .grid-category-gallery-cta:hover .grid-category-gallery-cta-label,
+main .grid-category-gallery .grid-category-gallery-cta:focus-visible .grid-category-gallery-cta-label {
   text-decoration: underline;
   text-underline-offset: 3px;
 }
@@ -91,11 +93,12 @@ main .grid-category-gallery .grid-category-gallery-cta:focus-visible {
 main .grid-category-gallery .grid-category-gallery-list {
   display: flex;
   gap: 16px;
-  margin: 0;
-  padding: 0 0 8px;
+  margin: 0 -16px;
+  padding: 0 16px;
   overflow-x: auto;
   list-style: none;
   scroll-snap-type: x mandatory;
+  scroll-padding-left: 16px;
   scrollbar-width: none;
 }
 
@@ -104,16 +107,14 @@ main .grid-category-gallery .grid-category-gallery-list::-webkit-scrollbar {
 }
 
 main .grid-category-gallery .grid-category-gallery-item {
-  width: calc(100vw - 5rem);
-  max-width: 320px;
-  flex: 0 0 auto;
+  flex: 0 0 calc(100% - 17px);
   scroll-snap-align: start;
 }
 
 main .grid-category-gallery .grid-category-gallery-card {
   position: relative;
   display: block;
-  aspect-ratio: 3 / 4;
+  height: 300px;
   overflow: hidden;
   border: 1px solid #d9dede;
   border-radius: 12px;
@@ -156,18 +157,12 @@ main .grid-category-gallery .grid-category-gallery-media img {
 
 main .grid-category-gallery .grid-category-gallery-media img {
   object-fit: cover;
-  transition: transform 0.3s ease;
-}
-
-main .grid-category-gallery .grid-category-gallery-card:hover .grid-category-gallery-media img,
-main .grid-category-gallery .grid-category-gallery-card:focus-visible .grid-category-gallery-media img {
-  transform: scale(1.04);
 }
 
 main .grid-category-gallery .grid-category-gallery-card.has-image::after {
   position: absolute;
   inset: 0;
-  background: linear-gradient(to top, rgb(0 0 0 / 70%) 20%, rgb(0 0 0 / 0%) 50%);
+  background: linear-gradient(0deg, rgb(0 0 0 / 70%) 20%, rgb(0 0 0 / 0%) 50%);
   content: "";
   pointer-events: none;
 }
@@ -181,13 +176,13 @@ main .grid-category-gallery .grid-category-gallery-body {
   flex-direction: column;
   justify-content: flex-end;
   gap: 10px;
-  padding: 24px;
+  padding: 0 0 24px 32px;
 }
 
 main .grid-category-gallery .grid-category-gallery-subtitle {
   margin: 0;
   color: #fff;
-  font-family: Inter, sans-serif;
+  font-family: inter, sans-serif;
   font-size: 12px;
   font-weight: 500;
   letter-spacing: 0.24px;
@@ -198,7 +193,7 @@ main .grid-category-gallery .grid-category-gallery-subtitle {
 main .grid-category-gallery .grid-category-gallery-title {
   margin: 0;
   color: #fff;
-  font-family: "Noe Display", serif;
+  font-family: noe-display, serif;
   font-size: 24px;
   font-weight: 400;
   line-height: 32px;
@@ -209,33 +204,31 @@ main .grid-category-gallery .grid-category-gallery-card:not(.has-image) .grid-ca
   color: #1b2828;
 }
 
+main .grid-category-gallery .grid-category-gallery-card:hover .grid-category-gallery-title {
+  text-decoration: underline;
+  text-decoration-color: #fff;
+}
+
 main .grid-category-gallery .grid-category-gallery-controls {
   display: flex;
-  justify-content: center;
-  gap: 12px;
-  margin-top: 16px;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20px;
+  padding: 4px 0;
 }
 
 main .grid-category-gallery .grid-category-gallery-prev,
 main .grid-category-gallery .grid-category-gallery-next {
   display: flex;
-  width: 40px;
-  height: 40px;
+  width: 24px;
+  height: 24px;
   align-items: center;
   justify-content: center;
   padding: 0;
-  border: 1px solid #1b2828;
-  border-radius: 50%;
+  border: 0;
   background: transparent;
   color: #1b2828;
   cursor: pointer;
-  transition: background 0.15s ease, color 0.15s ease;
-}
-
-main .grid-category-gallery .grid-category-gallery-prev:disabled,
-main .grid-category-gallery .grid-category-gallery-next:disabled {
-  cursor: default;
-  opacity: 0.3;
 }
 
 main .grid-category-gallery .grid-category-gallery-prev:focus-visible,
@@ -244,30 +237,48 @@ main .grid-category-gallery .grid-category-gallery-next:focus-visible {
   outline-offset: 3px;
 }
 
-main .grid-category-gallery .grid-category-gallery-prev:not(:disabled):hover,
-main .grid-category-gallery .grid-category-gallery-next:not(:disabled):hover {
-  background: #1b2828;
-  color: #fff;
+main .grid-category-gallery .grid-category-gallery-prev::before,
+main .grid-category-gallery .grid-category-gallery-next::before {
+  font-family: ibh-icons, sans-serif;
+  font-size: 24px;
+  line-height: 1;
 }
 
-main .grid-category-gallery .grid-category-gallery-prev span,
-main .grid-category-gallery .grid-category-gallery-next span {
-  display: block;
-  width: 8px;
-  height: 8px;
-  border-top: 2px solid currentcolor;
-  border-right: 2px solid currentcolor;
+main .grid-category-gallery .grid-category-gallery-prev::before {
+  content: "\f21e";
 }
 
-main .grid-category-gallery .grid-category-gallery-prev span {
-  transform: rotate(-135deg) translate(-1px, 1px);
+main .grid-category-gallery .grid-category-gallery-next::before {
+  content: "\f21c";
 }
 
-main .grid-category-gallery .grid-category-gallery-next span {
-  transform: rotate(45deg) translate(-1px, 1px);
+main .grid-category-gallery .grid-category-gallery-dots {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 0 auto;
+}
+
+main .grid-category-gallery .grid-category-gallery-dot {
+  width: 6px;
+  height: 6px;
+  padding: 0;
+  border: 0;
+  border-radius: 4px;
+  background: #dedede;
+  cursor: pointer;
+}
+
+main .grid-category-gallery .grid-category-gallery-dot.is-active {
+  width: 16px;
+  background: #38a596;
 }
 
 @media (width >= 600px) {
+  main .grid-category-gallery .grid-category-gallery-rendered {
+    gap: 40px;
+  }
+
   main .grid-category-gallery .grid-category-gallery-header {
     align-items: flex-end;
     flex-direction: row;
@@ -278,14 +289,18 @@ main .grid-category-gallery .grid-category-gallery-next span {
     display: grid;
     grid-template-columns: repeat(2, minmax(0, 1fr));
     gap: 24px;
+    margin: 0;
     padding: 0;
     overflow: visible;
     scroll-snap-type: none;
   }
 
   main .grid-category-gallery .grid-category-gallery-item {
-    width: auto;
-    max-width: none;
+    flex: initial;
+  }
+
+  main .grid-category-gallery .grid-category-gallery-card.has-image::after {
+    background: rgb(0 0 0 / 15%);
   }
 
   main .grid-category-gallery .grid-category-gallery-controls {
@@ -298,17 +313,17 @@ main .grid-category-gallery .grid-category-gallery-next span {
     padding: 64px clamp(32px, 5.76vw, 83px);
   }
 
+  main .grid-category-gallery .grid-category-gallery-heading {
+    font-size: 32px;
+    line-height: 42px;
+  }
+
   main .grid-category-gallery .grid-category-gallery-list {
     grid-template-columns: repeat(4, minmax(0, 1fr));
   }
 
-  main .grid-category-gallery .grid-category-gallery-card {
-    height: 300px;
-    aspect-ratio: auto;
-  }
-
   main .grid-category-gallery .grid-category-gallery-body {
-    padding: 24px 24px 24px 32px;
+    padding: 0 0 24px 32px;
   }
 
   main .article-layout-main .grid-category-gallery .grid-category-gallery-rendered,

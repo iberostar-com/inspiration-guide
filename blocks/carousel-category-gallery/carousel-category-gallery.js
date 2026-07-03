@@ -1,4 +1,3 @@
-import { decorateIcons } from '../../scripts/aem.js';
 import { createResponsiveImage } from '../../scripts/iberostar/media.js';
 import { moveInstrumentation } from '../../scripts/scripts.js';
 
@@ -9,8 +8,6 @@ function getRows(block) {
     .filter((row) => !row.classList.contains('carousel-category-gallery'));
 }
 
-// A card is authored as a child component (block/item). In Universal Editor it is
-// tagged with data-aue-model; on published pages it is a multi-cell row with media.
 function isCardRow(row) {
   if (row.matches?.('[data-aue-model="carousel-category-gallery-card"]')) return true;
   if (row.querySelector?.('[data-aue-model="carousel-category-gallery-card"]')) return true;
@@ -26,10 +23,6 @@ function getConfigRows(block) {
   return getRows(block).filter((row) => !isCardRow(row));
 }
 
-// Reads a block-level field from the source rows. Prefers Universal Editor
-// instrumentation (data-aue-prop); falls back to positional order on published
-// pages, then to a data-* attribute. Returns the value and the element that
-// carries the UE instrumentation (to move it onto the rendered node).
 function readConfig(block, propName, index) {
   const configRows = getConfigRows(block);
 
@@ -75,9 +68,9 @@ function createCard(row) {
   }
 
   if (icon) {
-    const iconSpan = document.createElement('span');
-    iconSpan.className = `icon icon-${icon}`;
-    card.append(iconSpan);
+    const iconEl = document.createElement('i');
+    iconEl.className = `ibh-icon-${icon.replace(/_/g, '-')}`;
+    card.append(iconEl);
   }
 
   if (title) {
@@ -90,28 +83,86 @@ function createCard(row) {
   return li;
 }
 
-// Which cards are currently within the scroll viewport of the list.
-function visibleRange(list) {
-  const cards = [...list.children];
-  const total = cards.length;
-  if (!total) return { start: 0, end: 0, total: 0 };
-
-  const box = list.getBoundingClientRect();
-  const tolerance = 8;
-  let first = -1;
-  let last = -1;
-  cards.forEach((card, index) => {
-    const rect = card.getBoundingClientRect();
-    if (rect.right > box.left + tolerance && rect.left < box.right - tolerance) {
-      if (first === -1) first = index;
-      last = index;
-    }
-  });
-  if (first === -1) { first = 0; last = 0; }
-  return { start: first + 1, end: last + 1, total };
+function getStride(cards) {
+  const first = cards[0].getBoundingClientRect();
+  if (cards[1]) return cards[1].getBoundingClientRect().left - first.left;
+  return first.width;
 }
 
-function buildNav(list) {
+function paging(list) {
+  const cards = [...list.children];
+  const total = cards.length;
+  if (!total) {
+    return {
+      start: 0, end: 0, total: 0, index: 0, stride: 0,
+    };
+  }
+
+  const stride = getStride(cards) || 1;
+  const perView = Math.max(1, Math.round(list.clientWidth / stride));
+  const maxIndex = Math.max(0, total - perView);
+  const index = Math.min(Math.max(Math.round(list.scrollLeft / stride), 0), maxIndex);
+
+  return {
+    start: index + 1,
+    end: Math.min(index + perView, total),
+    total,
+    index,
+    stride,
+  };
+}
+
+function enableDrag(list) {
+  let dragging = false;
+  let startX = 0;
+  let startScroll = 0;
+  let moved = false;
+
+  const stop = () => {
+    if (!dragging) return;
+    dragging = false;
+    list.style.removeProperty('scroll-snap-type');
+  };
+
+  list.addEventListener('pointerdown', (event) => {
+    if (event.pointerType === 'touch' || event.button !== 0) return;
+    dragging = true;
+    moved = false;
+    startX = event.clientX;
+    startScroll = list.scrollLeft;
+    list.style.scrollSnapType = 'none';
+  });
+
+  list.addEventListener('pointermove', (event) => {
+    if (!dragging) return;
+    const dx = event.clientX - startX;
+    if (Math.abs(dx) > 4) moved = true;
+    list.scrollLeft = startScroll - dx;
+  });
+
+  list.addEventListener('pointerup', stop);
+  list.addEventListener('pointerleave', stop);
+  list.addEventListener('pointercancel', stop);
+  list.addEventListener('dragstart', (event) => event.preventDefault());
+
+  list.addEventListener('click', (event) => {
+    if (moved) {
+      event.preventDefault();
+      event.stopPropagation();
+    }
+  }, true);
+}
+
+function buildArrow(className, label, direction) {
+  const button = document.createElement('button');
+  button.type = 'button';
+  button.className = className;
+  button.setAttribute('aria-label', label);
+  button.dataset.direction = direction;
+  return button;
+}
+
+function buildControls(list, count) {
   const nav = document.createElement('div');
   nav.className = 'carousel-category-gallery-nav';
 
@@ -119,42 +170,72 @@ function buildNav(list) {
   counter.className = 'carousel-category-gallery-counter';
   counter.setAttribute('aria-live', 'polite');
 
-  const prev = document.createElement('button');
-  prev.type = 'button';
-  prev.className = 'carousel-category-gallery-prev';
-  prev.setAttribute('aria-label', 'Previous');
+  const prev = buildArrow('carousel-category-gallery-prev', 'Previous', -1);
+  const next = buildArrow('carousel-category-gallery-next', 'Next', 1);
+  nav.append(counter, prev, next);
 
-  const next = document.createElement('button');
-  next.type = 'button';
-  next.className = 'carousel-category-gallery-next';
-  next.setAttribute('aria-label', 'Next');
+  const dotsBar = document.createElement('div');
+  dotsBar.className = 'carousel-category-gallery-dots-bar';
 
-  const scrollByCard = (direction) => {
-    const card = list.querySelector('.carousel-category-gallery-item');
-    const amount = (card?.getBoundingClientRect().width || 300) + 16;
-    list.scrollBy({ left: amount * direction, behavior: 'smooth' });
+  const prevArrow = buildArrow('carousel-category-gallery-arrow carousel-category-gallery-arrow-prev', 'Previous', -1);
+  const nextArrow = buildArrow('carousel-category-gallery-arrow carousel-category-gallery-arrow-next', 'Next', 1);
+
+  const dots = document.createElement('div');
+  dots.className = 'carousel-category-gallery-dots';
+
+  const dotEls = Array.from({ length: count }, (unused, i) => {
+    const dot = document.createElement('button');
+    dot.type = 'button';
+    dot.className = 'carousel-category-gallery-dot';
+    dot.setAttribute('aria-label', `Go to slide ${i + 1}`);
+    dot.dataset.index = i;
+    dots.append(dot);
+    return dot;
+  });
+
+  dotsBar.append(prevArrow, dots, nextArrow);
+
+  const scrollToIndex = (i) => {
+    const { stride } = paging(list);
+    list.scrollTo({ left: i * stride, behavior: 'smooth' });
   };
 
-  prev.addEventListener('click', () => scrollByCard(-1));
-  next.addEventListener('click', () => scrollByCard(1));
+  const step = (direction) => {
+    const { index } = paging(list);
+    scrollToIndex(index + direction);
+  };
+
+  [prev, next, prevArrow, nextArrow].forEach((button) => {
+    button.addEventListener('click', () => step(Number(button.dataset.direction)));
+  });
+
+  dotEls.forEach((dot) => {
+    dot.addEventListener('click', () => scrollToIndex(Number(dot.dataset.index)));
+  });
 
   const update = () => {
-    const { start, end, total } = visibleRange(list);
-    if (!total) { counter.textContent = ''; return; }
+    const {
+      start, end, total, index,
+    } = paging(list);
+    if (!total) return;
+
     const range = start === end ? `${start}` : `${start} - ${end}`;
     counter.textContent = `${range} de ${total}`;
+
+    const atStart = start <= 1;
+    const atEnd = end >= total;
+    prev.disabled = atStart;
+    next.disabled = atEnd;
+    prevArrow.disabled = atStart;
+    nextArrow.disabled = atEnd;
+
+    dotEls.forEach((dot, i) => dot.classList.toggle('is-active', i === index));
   };
 
-  let scheduled = 0;
-  const schedule = () => {
-    if (scheduled) return;
-    scheduled = requestAnimationFrame(() => { scheduled = 0; update(); });
-  };
-  list.addEventListener('scroll', schedule);
-  window.addEventListener('resize', schedule);
+  list.addEventListener('scroll', update, { passive: true });
+  window.addEventListener('resize', update);
 
-  nav.append(counter, prev, next);
-  return { nav, update };
+  return { nav, dotsBar, update };
 }
 
 export default function decorate(block) {
@@ -172,7 +253,8 @@ export default function decorate(block) {
   cardRows.forEach((row) => list.append(createCard(row)));
 
   const showNav = cardRows.length > 1;
-  let nav = null;
+  if (showNav) enableDrag(list);
+  let controls = null;
 
   if (eyebrow.value || title.value || showNav) {
     const header = document.createElement('div');
@@ -200,16 +282,17 @@ export default function decorate(block) {
     header.append(headings);
 
     if (showNav) {
-      nav = buildNav(list);
-      header.append(nav.nav);
+      controls = buildControls(list, cardRows.length);
+      header.append(controls.nav);
     }
 
     wrapper.append(header);
   }
 
   wrapper.append(list);
-  block.replaceChildren(wrapper);
-  decorateIcons(wrapper);
+  if (controls) wrapper.append(controls.dotsBar);
 
-  if (nav) requestAnimationFrame(nav.update);
+  block.replaceChildren(wrapper);
+
+  if (controls) requestAnimationFrame(controls.update);
 }

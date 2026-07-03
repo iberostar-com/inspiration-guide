@@ -73,22 +73,11 @@ function createPlayButton(label) {
   button.className = 'article-content-video-play';
   button.setAttribute('aria-label', label);
 
-  const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
-  svg.setAttribute('viewBox', '0 0 56 56');
-  svg.setAttribute('aria-hidden', 'true');
+  const icon = document.createElement('i');
+  icon.className = 'ibh-icon-play-arrow';
+  icon.setAttribute('aria-hidden', 'true');
 
-  const circle = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
-  circle.setAttribute('cx', '28');
-  circle.setAttribute('cy', '28');
-  circle.setAttribute('r', '28');
-  circle.setAttribute('fill', 'rgb(255 255 255 / 92%)');
-
-  const triangle = document.createElementNS('http://www.w3.org/2000/svg', 'path');
-  triangle.setAttribute('d', 'M22 18l20 10-20 10z');
-  triangle.setAttribute('fill', '#1b2828');
-
-  svg.append(circle, triangle);
-  button.append(svg);
+  button.append(icon);
   return button;
 }
 

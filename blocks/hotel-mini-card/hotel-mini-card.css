@@ -78,7 +78,8 @@ main .hotel-mini-card-title-link {
 main .hotel-mini-card-cta::after,
 main .hotel-mini-card-title-link::after {
   margin-left: 8px;
-  content: "→";
+  font-family: ibh-icons, sans-serif;
+  content: "\f21c";
 }
 
 main .hotel-mini-card-cta:hover,

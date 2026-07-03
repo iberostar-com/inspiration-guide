@@ -41,9 +41,17 @@ main .article-content-video .article-content-video-play {
   transition: transform 0.15s ease;
 }
 
-main .article-content-video .article-content-video-play svg {
+main .article-content-video .article-content-video-play i {
+  display: flex;
+  align-items: center;
+  justify-content: center;
   width: 56px;
   height: 56px;
+  border-radius: 50%;
+  background-color: rgb(255 255 255 / 92%);
+  color: #1b2828;
+  font-size: 32px;
+  line-height: 1;
 }
 
 main .article-content-video .article-content-video-play:hover,
