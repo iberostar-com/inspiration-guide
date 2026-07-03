@@ -1,8 +1,33 @@
-const DEFAULT_PERSISTED_QUERY_PATH = '/graphql/execute.json/iberostar-com/hotel-by-code';
-const DEFAULT_LOCALE = 'en_us';
-const DEFAULT_OPERATION_NAME = 'HotelByCode';
+import getEnvironmentConfig from './environment-config.js';
 
-const HOTEL_REQUEST_CACHE = new Map();
+const DEFAULT_LOCALE = 'en_us';
+const DEFAULT_LOCALE_HYPHENATED = 'en-us';
+const GRAPHQL_REQUEST_CACHE = new Map();
+const HOTEL_PRICE_REQUEST_CACHE = new Map();
+
+function getMetaContent(name) {
+  return document.querySelector(`meta[name="${name}"]`)?.content?.trim() || '';
+}
+
+function getHotelsConfig() {
+  const environmentConfig = getEnvironmentConfig();
+  const configuredHotels = environmentConfig.hotels || {};
+
+  return {
+    graphqlEndpoint: getMetaContent('hotel-graphql-endpoint')
+      || configuredHotels.graphqlEndpoint
+      || '/graphql/execute.json/iberostar-com/hotel-by-code',
+    graphqlOperationName: getMetaContent('hotel-graphql-operation-name')
+      || configuredHotels.graphqlOperationName
+      || 'HotelByCode',
+    priceFromChannel: getMetaContent('hotel-price-channel')
+      || configuredHotels.priceFromChannel
+      || 'b2c-web',
+    priceFromEndpoint: getMetaContent('hotel-price-endpoint')
+      || configuredHotels.priceFromEndpoint
+      || '',
+  };
+}
 
 function normalizeLocale(locale) {
   return `${locale || ''}`.trim().toLowerCase().replace('-', '_');
@@ -14,6 +39,18 @@ export function getLocaleFromPath(pathname = window.location.pathname) {
   const locale = normalizeLocale(localeSegment);
 
   return locale || DEFAULT_LOCALE;
+}
+
+export function getLocaleTagFromPath(pathname = window.location.pathname) {
+  const segments = `${pathname || ''}`.split('/').filter(Boolean);
+  const localeSegment = segments.find((segment) => /^[a-z]{2}-[a-z]{2}$/i.test(segment));
+  return localeSegment?.toLowerCase() || DEFAULT_LOCALE_HYPHENATED;
+}
+
+export function getCountryCodeFromPath(pathname = window.location.pathname) {
+  const localeTag = getLocaleTagFromPath(pathname);
+  const [, market = 'us'] = localeTag.split('-');
+  return market.toUpperCase();
 }
 
 export function getHotelsRootPathFromLocale(locale) {
@@ -64,16 +101,19 @@ function getRootPath(options = {}) {
 }
 
 function getPersistedQueryPath(options = {}) {
+  const hotelsConfig = getHotelsConfig();
   return options.persistedQueryPath
     || options.persistedQueryUrl
     || options.endpoint
-    || DEFAULT_PERSISTED_QUERY_PATH;
+    || hotelsConfig.graphqlEndpoint;
 }
 
 function createRequestUrl(hotelCode, options = {}) {
   const persistedQueryPath = getPersistedQueryPath(options);
   const rootPath = getRootPath(options);
-  const operationName = options.operationName || DEFAULT_OPERATION_NAME;
+  const hotelsConfig = getHotelsConfig();
+  const operationName = options.operationName
+    || hotelsConfig.graphqlOperationName;
 
   const url = new URL(persistedQueryPath, window.location.origin);
   url.searchParams.set('rootPath', rootPath);
@@ -100,7 +140,7 @@ export async function fetchHotelByCode(hotelCode, options = {}) {
 
   const { requestUrl, rootPath, persistedQueryPath } = createRequestUrl(normalizedCode, options);
   const cacheKey = `${persistedQueryPath}|${rootPath}|${normalizedCode}`;
-  const cached = HOTEL_REQUEST_CACHE.get(cacheKey);
+  const cached = GRAPHQL_REQUEST_CACHE.get(cacheKey);
 
   if (cached !== undefined) {
     return cached instanceof Promise ? cached : Promise.resolve(cached);
@@ -143,9 +183,9 @@ export async function fetchHotelByCode(hotelCode, options = {}) {
       return null;
     });
 
-  HOTEL_REQUEST_CACHE.set(cacheKey, requestPromise);
+  GRAPHQL_REQUEST_CACHE.set(cacheKey, requestPromise);
   const result = await requestPromise;
-  HOTEL_REQUEST_CACHE.set(cacheKey, result);
+  GRAPHQL_REQUEST_CACHE.set(cacheKey, result);
   return result;
 }
 
@@ -158,4 +198,98 @@ export async function fetchHotelsByCodes(hotelCodes, options = {}) {
 
   const hotels = await Promise.all(codes.map((code) => fetchHotelByCode(code, options)));
   return hotels.filter(Boolean);
+}
+
+function normalizePriceResponse(payload) {
+  const calendarPrices = Array.isArray(payload?.calendarPrices) ? payload.calendarPrices : [];
+  const cheapestPrice = calendarPrices
+    .filter((entry) => entry?.isAvailable && Number.isFinite(entry?.priceFrom))
+    .sort((left, right) => left.priceFrom - right.priceFrom)[0];
+
+  if (!cheapestPrice) return null;
+
+  return {
+    currency: payload?.currency || '',
+    defaultOccupancy: payload?.defaultOccupancy || { adults: 2, children: [] },
+    hotelId: payload?.hotelId || '',
+    isAvailable: Boolean(cheapestPrice.isAvailable),
+    mealPlanId: cheapestPrice.mealPlanId ?? null,
+    mlos: cheapestPrice.mlos ?? null,
+    priceFrom: cheapestPrice.priceFrom,
+    priceFromWithoutOffers: cheapestPrice.priceFromWithoutOffers ?? null,
+    roomTypeId: cheapestPrice.roomTypeId ?? null,
+    stayDate: cheapestPrice.date || '',
+  };
+}
+
+export async function fetchHotelPriceByCode(hotelCode, options = {}) {
+  const normalizedCode = `${hotelCode || ''}`.trim();
+  if (!normalizedCode) return null;
+
+  const hotelsConfig = getHotelsConfig();
+  const endpoint = options.priceFromEndpoint
+    || options.endpoint
+    || hotelsConfig.priceFromEndpoint;
+
+  if (!endpoint) return null;
+
+  const channel = options.channel || hotelsConfig.priceFromChannel;
+  const countryCode = options.countryCode
+    || getCountryCodeFromPath(options.pathname || window.location.pathname);
+  const requestUrl = new URL(endpoint, window.location.origin);
+  const cacheKey = `${requestUrl.toString()}|${normalizedCode}|${channel}|${countryCode}`;
+  const cached = HOTEL_PRICE_REQUEST_CACHE.get(cacheKey);
+
+  if (cached !== undefined) {
+    return cached instanceof Promise ? cached : Promise.resolve(cached);
+  }
+
+  const body = {
+    channel,
+    countryCode,
+    hotelId: normalizedCode,
+  };
+
+  const requestPromise = fetch(requestUrl, {
+    method: 'POST',
+    headers: {
+      Accept: 'application/json',
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify(body),
+    credentials: 'same-origin',
+  })
+    .then(async (response) => {
+      if (!response.ok) {
+        // eslint-disable-next-line no-console
+        console.warn(`[hotels-api] Hotel price query failed (${response.status})`, {
+          body,
+          requestUrl: requestUrl.toString(),
+        });
+        return null;
+      }
+
+      const payload = await response.json().catch(() => null);
+      const price = normalizePriceResponse(payload);
+      if (!price) {
+        // eslint-disable-next-line no-console
+        console.warn('[hotels-api] No price available for hotel', normalizedCode);
+        return null;
+      }
+
+      return price;
+    })
+    .catch((error) => {
+      // eslint-disable-next-line no-console
+      console.warn('[hotels-api] Unexpected error fetching hotel price', {
+        body,
+        error,
+      });
+      return null;
+    });
+
+  HOTEL_PRICE_REQUEST_CACHE.set(cacheKey, requestPromise);
+  const result = await requestPromise;
+  HOTEL_PRICE_REQUEST_CACHE.set(cacheKey, result);
+  return result;
 }
