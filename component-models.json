@@ -1376,6 +1376,25 @@
     ]
   },
   {
+    "id": "hotel-graphql-mini-card",
+    "fields": [
+      {
+        "component": "text",
+        "valueType": "string",
+        "name": "hotelCode",
+        "label": "Hotel Code",
+        "value": ""
+      },
+      {
+        "component": "text",
+        "valueType": "string",
+        "name": "destination",
+        "label": "Destination Text",
+        "value": ""
+      }
+    ]
+  },
+  {
     "id": "hotel-mini-card",
     "fields": [
       {
