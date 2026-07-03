@@ -116,6 +116,25 @@ export function getHotelsRootPathFromLocale(locale) {
   return `/content/dam/iberostar-com/${normalizedLocale}`;
 }
 
+function normalizeHotelStars(value) {
+  if (Number.isFinite(value)) return value;
+  if (typeof value === 'string' && value.trim()) {
+    const parsed = Number.parseFloat(value.replace(',', '.'));
+    if (Number.isFinite(parsed)) return parsed;
+  }
+
+  if (value && typeof value === 'object') {
+    return normalizeHotelStars(
+      value.stars
+      ?? value.value
+      ?? value.count
+      ?? value.number,
+    );
+  }
+
+  return null;
+}
+
 function normalizeHotel(rawHotel) {
   if (!rawHotel || typeof rawHotel !== 'object') return null;
 
@@ -139,7 +158,7 @@ function normalizeHotel(rawHotel) {
     sortOrder: rawHotel?.sortOrder ?? null,
     latitude: rawHotel?.latitude ?? null,
     longitude: rawHotel?.longitude ?? null,
-    stars: rawHotel?.stars ?? null,
+    stars: normalizeHotelStars(rawHotel?.stars),
     image,
     continent: rawHotel?.continent || null,
     country: rawHotel?.country || null,

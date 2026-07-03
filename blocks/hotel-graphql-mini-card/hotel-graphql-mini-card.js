@@ -147,6 +147,14 @@ function normalizeStars(value) {
   return Number.isNaN(parsed) ? 0 : clamp(parsed);
 }
 
+function isDebugEnabled() {
+  const query = new URLSearchParams(window.location.search).get('hotel-api-debug');
+  if (query) return query === '1' || query.toLowerCase() === 'true';
+
+  const meta = document.querySelector('meta[name="hotel-api-debug"]')?.content?.trim();
+  return meta === '1' || meta?.toLowerCase() === 'true';
+}
+
 function createEmptyState(message) {
   const empty = document.createElement('p');
   empty.className = 'hotel-graphql-mini-card-empty';
@@ -203,6 +211,17 @@ function toMiniCardData(hotel, destinationText, cta) {
   const fallbackHref = createHotelHref(hotel);
   const href = cta.href || fallbackHref;
 
+  const normalizedStars = normalizeStars(hotel.stars);
+  if (isDebugEnabled()) {
+    // eslint-disable-next-line no-console
+    console.info('[hotel-graphql-mini-card] Stars mapping', {
+      code: hotel.code,
+      normalizedStars,
+      rawStars: hotel.stars,
+      title: hotel.title,
+    });
+  }
+
   return {
     ctaText: cta.text,
     href,
@@ -211,7 +230,7 @@ function toMiniCardData(hotel, destinationText, cta) {
     location: destinationText || '',
     name: hotel.title || '',
     priceFrom: hotel.priceFrom || '',
-    stars: normalizeStars(hotel.stars),
+    stars: normalizedStars,
     tagLabel: '',
     target: cta.target,
   };
