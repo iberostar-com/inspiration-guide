@@ -136,6 +136,37 @@ function getText(field) {
   return field?.textContent?.trim() || '';
 }
 
+function getLocaleSegment(pathname = window.location.pathname) {
+  const segments = `${pathname || ''}`.split('/').filter(Boolean);
+  const segment = segments.find((item) => /^[a-z]{2}-[a-z]{2}$/i.test(item));
+  return segment ? segment.toLowerCase() : '';
+}
+
+function createHotelHref(hotel) {
+  if (!hotel?.slug) return '';
+  const localeSegment = getLocaleSegment();
+  const slug = `${hotel.slug}`.split('/').filter(Boolean).join('/');
+  if (!slug) return '';
+
+  return localeSegment
+    ? `/${localeSegment}/hotels/${slug}`
+    : `/hotels/${slug}`;
+}
+
+function getItemHref(row) {
+  const linkProp = row.querySelector('[data-aue-prop="cta_link"]');
+  const link = getAnchor(linkProp);
+  if (link?.getAttribute('href')) return link.getAttribute('href').trim();
+  return getText(linkProp);
+}
+
+function getItemTarget(row) {
+  const targetProp = row.querySelector('[data-aue-prop="cta_linkTarget"]');
+  const link = getAnchor(targetProp);
+  const target = link?.getAttribute('target') || getText(targetProp);
+  return normalizeTarget(target);
+}
+
 function getHotelCodes(block) {
   const rows = getSourceRows(block);
   const configRows = new Set(getConfigRows(block));
@@ -149,12 +180,16 @@ function getHotelCodes(block) {
       const tagLabelProp = row.querySelector('[data-aue-prop="tag_tagLabel"]');
       const hotelCode = getText(hotelCodeProp || row.querySelector('[data-hotel-code]') || getCells(row)[0]);
       const destination = getText(destinationProp || row.querySelector('[data-destination]') || getCells(row)[1]);
-      const tagLabel = getText(tagLabelProp || getCells(row)[2]);
+      const tagLabel = getText(tagLabelProp || getCells(row)[4]);
+      const href = getItemHref(row);
+      const target = getItemTarget(row);
 
       return {
         destination: destination.trim(),
+        href: href.trim(),
         hotelCode: hotelCode.trim(),
         source: row,
+        target,
         tagLabel: tagLabel.trim(),
       };
     })
@@ -211,7 +246,7 @@ function formatCurrencyValue(value, currency) {
   }).format(Math.round(value));
 }
 
-async function getPriceText(hotel, hotelCode) {
+async function getPriceText(hotel, hotelCode, endpointPrice = null) {
   const [prefix, perNightLabel, personSingular, personPlural] = await Promise.all([
     getTranslation('hotelPriceFromPrefix', 'Desde'),
     getTranslation('hotelPricePerNight', '/ noche'),
@@ -219,7 +254,7 @@ async function getPriceText(hotel, hotelCode) {
     getTranslation('hotelPricePersonPlural', 'personas'),
   ]);
 
-  const endpointPrice = await fetchHotelPriceByCode(hotelCode);
+  const resolvedEndpointPrice = endpointPrice || await fetchHotelPriceByCode(hotelCode);
   const fallbackPrice = Number.isFinite(hotel?.estimatedMinPrice)
     ? {
       currency: hotel?.estimatedMinCurrency || '',
@@ -227,7 +262,7 @@ async function getPriceText(hotel, hotelCode) {
       priceFrom: hotel.estimatedMinPrice,
     }
     : null;
-  const selectedPrice = endpointPrice || fallbackPrice;
+  const selectedPrice = resolvedEndpointPrice || fallbackPrice;
 
   if (!selectedPrice?.currency || !Number.isFinite(selectedPrice?.priceFrom)) return '';
 
@@ -242,13 +277,22 @@ async function getPriceText(hotel, hotelCode) {
     .trim();
 }
 
-function createGridContainer(cards) {
+function createGridContainer(entries) {
   const container = document.createElement('div');
   container.className = 'recommended-dynamic-hotels-grid-container';
 
-  cards.forEach((card) => {
+  entries.forEach(({ hotelData, source }) => {
+    const card = createHotelMiniCard(hotelData, 'vertical');
     const item = document.createElement('div');
     item.className = 'recommended-dynamic-hotels-grid-item';
+
+    if (source) {
+      moveInstrumentation(source, item);
+      source.classList.add('recommended-dynamic-hotels-grid-source');
+      source.setAttribute('aria-hidden', 'true');
+      item.append(source);
+    }
+
     item.append(card);
     container.append(item);
   });
@@ -257,6 +301,16 @@ function createGridContainer(cards) {
 }
 
 export default async function decorate(block) {
+  const existing = block.querySelector(':scope > .recommended-dynamic-hotels-grid-rendered');
+  if (existing) {
+    existing.querySelectorAll('.recommended-dynamic-hotels-grid-source').forEach((row) => {
+      row.classList.remove('recommended-dynamic-hotels-grid-source');
+      row.removeAttribute('aria-hidden');
+      block.insertBefore(row, existing);
+    });
+    existing.remove();
+  }
+
   const labels = {
     eyebrow: getConfigValue(block, 'eyebrow', 'data-eyebrow'),
     title: getConfigValue(block, 'title', 'data-title'),
@@ -264,12 +318,8 @@ export default async function decorate(block) {
   };
 
   const hotelCodesToFetch = getHotelCodes(block);
-  const sourceRows = getSourceRows(block);
-
   const rendered = document.createElement('div');
   rendered.className = 'recommended-dynamic-hotels-grid-rendered';
-
-  hideSourceRows(sourceRows);
 
   rendered.append(createHeader(labels));
 
@@ -282,7 +332,14 @@ export default async function decorate(block) {
   }
 
   const fetchPromises = hotelCodesToFetch.map(
-    ({ hotelCode, destination, tagLabel }) => Promise.all([
+    ({
+      hotelCode,
+      destination,
+      href,
+      source,
+      tagLabel,
+      target,
+    }) => Promise.all([
       fetchHotelByCode(hotelCode),
       fetchHotelPriceByCode(hotelCode),
     ])
@@ -291,25 +348,29 @@ export default async function decorate(block) {
         const hotelWithPrice = price
           ? { ...hotel, estimatedMinPrice: price.priceFrom, estimatedMinCurrency: price.currency }
           : hotel;
-        const priceFrom = await getPriceText(hotelWithPrice, hotelCode);
+        const priceFrom = await getPriceText(hotelWithPrice, hotelCode, price);
+        const fallbackHref = createHotelHref(hotel);
         return {
-          ctaText: '',
-          href: '',
-          image: hotel.image || '',
-          imageAlt: hotel.title || '',
-          location: destination || hotel.destination || '',
-          name: hotel.title || '',
-          priceFrom,
-          stars: hotel.stars || 0,
-          tagLabel: tagLabel || '',
-          target: '_self',
+          hotelData: {
+            ctaText: '',
+            href: href || fallbackHref,
+            image: hotel.image || '',
+            imageAlt: hotel.title || '',
+            location: destination || hotel.destination || '',
+            name: hotel.title || '',
+            priceFrom,
+            stars: hotel.stars || 0,
+            tagLabel: tagLabel || '',
+            target,
+          },
+          source,
         };
       })
       .catch(() => null),
   );
 
-  const hotelDataList = await Promise.all(fetchPromises);
-  const validHotels = hotelDataList.filter(Boolean);
+  const hotelEntries = await Promise.all(fetchPromises);
+  const validHotels = hotelEntries.filter(Boolean);
 
   if (!validHotels.length) {
     if (isAuthoringPage(block)) {
@@ -319,9 +380,8 @@ export default async function decorate(block) {
     return;
   }
 
-  const cards = validHotels.map((hotelData) => createHotelMiniCard(hotelData, 'vertical'));
-  rendered.append(createGridContainer(cards));
+  rendered.append(createGridContainer(validHotels));
 
-  moveInstrumentation(block, rendered);
+  hideSourceRows(getSourceRows(block));
   block.append(rendered);
 }

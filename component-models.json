@@ -1830,6 +1830,30 @@
         "description": "Override destination text for this hotel card"
       },
       {
+        "component": "aem-content",
+        "valueType": "string",
+        "name": "cta_link",
+        "label": "Hotel URL",
+        "description": "Optional override URL for this hotel card title link"
+      },
+      {
+        "component": "select",
+        "valueType": "string",
+        "name": "cta_linkTarget",
+        "label": "Hotel URL Target",
+        "value": "_self",
+        "options": [
+          {
+            "name": "Same tab",
+            "value": "_self"
+          },
+          {
+            "name": "New tab",
+            "value": "_blank"
+          }
+        ]
+      },
+      {
         "component": "text",
         "valueType": "string",
         "name": "tag_tagLabel",
