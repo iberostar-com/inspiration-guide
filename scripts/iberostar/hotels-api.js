@@ -9,6 +9,16 @@ function getMetaContent(name) {
   return document.querySelector(`meta[name="${name}"]`)?.content?.trim() || '';
 }
 
+function isHotelApiDebugEnabled() {
+  const fromQuery = new URLSearchParams(window.location.search).get('hotel-api-debug');
+  if (fromQuery) {
+    return fromQuery === '1' || fromQuery.toLowerCase() === 'true';
+  }
+
+  const fromMeta = getMetaContent('hotel-api-debug');
+  return fromMeta === '1' || fromMeta.toLowerCase() === 'true';
+}
+
 function getHotelsConfig() {
   const environmentConfig = getEnvironmentConfig();
   const configuredHotels = environmentConfig.hotels || {};
@@ -45,8 +55,25 @@ function isEdsPublicHostname(hostname = window.location.hostname) {
   return hostname.endsWith('.aem.page') || hostname.endsWith('.aem.live');
 }
 
+function isPublishHostname(hostname = window.location.hostname) {
+  return /^publish-p\d+-e\d+\./i.test(hostname);
+}
+
+function isAuthorHostname(hostname = window.location.hostname) {
+  return /^author-p\d+-e\d+\./i.test(hostname);
+}
+
 function resolveGraphqlHost(options, hotelsConfig) {
   if (options.graphqlHost) return options.graphqlHost;
+
+  if (isAuthorHostname()) {
+    // In author context use same-origin to avoid unnecessary cross-domain CORS hops.
+    return window.location.origin;
+  }
+
+  if (isPublishHostname()) {
+    return window.location.origin;
+  }
 
   const configuredHost = hotelsConfig.graphqlHost || hotelsConfig.aemAssetHost || '';
   if (configuredHost) return configuredHost;
@@ -279,6 +306,14 @@ export async function fetchHotelPriceByCode(hotelCode, options = {}) {
     hotelId: normalizedCode,
   };
 
+  if (isHotelApiDebugEnabled()) {
+    // eslint-disable-next-line no-console
+    console.info('[hotels-api] Price request', {
+      body,
+      endpoint: requestUrl.toString(),
+    });
+  }
+
   const requestPromise = fetch(requestUrl, {
     method: 'POST',
     headers: {
@@ -300,6 +335,15 @@ export async function fetchHotelPriceByCode(hotelCode, options = {}) {
 
       const payload = await response.json().catch(() => null);
       const price = normalizePriceResponse(payload);
+
+      if (isHotelApiDebugEnabled()) {
+        // eslint-disable-next-line no-console
+        console.info('[hotels-api] Price response', {
+          normalizedPrice: price,
+          payload,
+        });
+      }
+
       if (!price) {
         // eslint-disable-next-line no-console
         console.warn('[hotels-api] No price available for hotel', normalizedCode);

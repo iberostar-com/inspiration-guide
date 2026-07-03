@@ -12,7 +12,7 @@ const DEFAULT_CONFIG = {
     graphqlEndpoint: '/graphql/execute.json/iberostar-com/HotelByCode',
     graphqlOperationName: 'HotelByCode',
     priceFromChannel: 'b2c-web',
-    priceFromEndpoint: '',
+    priceFromEndpoint: 'https://gisapim.iberostar.com/mule/ae/price-from',
   },
 };
 
