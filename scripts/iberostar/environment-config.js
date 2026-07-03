@@ -9,7 +9,7 @@ const DEFAULT_CONFIG = {
   },
   hotels: {
     graphqlHost: 'https://publish-p179213-e1886364.adobeaemcloud.com',
-    graphqlEndpoint: '/graphql/execute.json/iberostar-com/hotel-by-code',
+    graphqlEndpoint: '/graphql/execute.json/iberostar-com/HotelByCode',
     graphqlOperationName: 'HotelByCode',
     priceFromChannel: 'b2c-web',
     priceFromEndpoint: '',

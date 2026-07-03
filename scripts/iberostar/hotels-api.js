@@ -21,7 +21,7 @@ function getHotelsConfig() {
       || '',
     graphqlEndpoint: getMetaContent('hotel-graphql-endpoint')
       || configuredHotels.graphqlEndpoint
-      || '/graphql/execute.json/iberostar-com/hotel-by-code',
+      || '/graphql/execute.json/iberostar-com/HotelByCode',
     graphqlOperationName: getMetaContent('hotel-graphql-operation-name')
       || configuredHotels.graphqlOperationName
       || 'HotelByCode',
@@ -41,17 +41,12 @@ function normalizeEndpointPath(endpoint) {
   return value.startsWith('/') ? value : `/${value}`;
 }
 
-function isAuthorHostname(hostname = window.location.hostname) {
-  return /^author-p\d+-e\d+\./i.test(hostname);
-}
-
 function isEdsPublicHostname(hostname = window.location.hostname) {
   return hostname.endsWith('.aem.page') || hostname.endsWith('.aem.live');
 }
 
 function resolveGraphqlHost(options, hotelsConfig) {
   if (options.graphqlHost) return options.graphqlHost;
-  if (isAuthorHostname()) return window.location.origin;
 
   const configuredHost = hotelsConfig.graphqlHost || hotelsConfig.aemAssetHost || '';
   if (configuredHost) return configuredHost;
@@ -91,7 +86,7 @@ export function getCountryCodeFromPath(pathname = window.location.pathname) {
 
 export function getHotelsRootPathFromLocale(locale) {
   const normalizedLocale = normalizeLocale(locale) || DEFAULT_LOCALE;
-  return `/content/dam/iberostar-com/${normalizedLocale}/content-fragments/fichas/hotels`;
+  return `/content/dam/iberostar-com/${normalizedLocale}`;
 }
 
 function normalizeHotel(rawHotel) {
@@ -149,13 +144,10 @@ function createRequestUrl(hotelCode, options = {}) {
   const rootPath = getRootPath(options);
   const hotelsConfig = getHotelsConfig();
   const graphqlHost = resolveGraphqlHost(options, hotelsConfig);
-  const operationName = options.operationName
-    || hotelsConfig.graphqlOperationName;
 
   const url = new URL(persistedQueryPath, graphqlHost);
-  url.searchParams.set('rootPath', rootPath);
-  url.searchParams.set('hotelCode', `${hotelCode}`.trim());
-  url.searchParams.set('operationName', operationName);
+  const normalizedCode = `${hotelCode}`.trim();
+  url.pathname = `${url.pathname};rootPath=${rootPath};hotelCode=${normalizedCode}`;
 
   return {
     requestUrl: url,
