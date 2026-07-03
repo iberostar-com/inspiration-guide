@@ -8,6 +8,7 @@ const DEFAULT_CONFIG = {
     assetHost: 'https://publish-p179213-e1886364.adobeaemcloud.com',
   },
   hotels: {
+    graphqlHost: 'https://publish-p179213-e1886364.adobeaemcloud.com',
     graphqlEndpoint: '/graphql/execute.json/iberostar-com/hotel-by-code',
     graphqlOperationName: 'HotelByCode',
     priceFromChannel: 'b2c-web',
@@ -20,6 +21,9 @@ const CLOUD_ENVIRONMENT_OVERRIDES = [
     key: 'stage',
     pattern: /-e1886364\./i,
     overrides: {
+      hotels: {
+        graphqlHost: 'https://publish-p179213-e1886364.adobeaemcloud.com',
+      },
       dynamicMedia: {
         assetHost: 'https://publish-p179213-e1886364.adobeaemcloud.com',
         imageServer: 'https://delivery-p179213-e1886364.adobeaemcloud.com',
@@ -30,6 +34,9 @@ const CLOUD_ENVIRONMENT_OVERRIDES = [
     key: 'dev',
     pattern: /-e1898042\./i,
     overrides: {
+      hotels: {
+        graphqlHost: 'https://publish-p179213-e1898042.adobeaemcloud.com',
+      },
       dynamicMedia: {
         assetHost: 'https://publish-p179213-e1898042.adobeaemcloud.com',
         imageServer: 'https://delivery-p179213-e1898042.adobeaemcloud.com',

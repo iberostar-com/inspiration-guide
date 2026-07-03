@@ -12,8 +12,13 @@ function getMetaContent(name) {
 function getHotelsConfig() {
   const environmentConfig = getEnvironmentConfig();
   const configuredHotels = environmentConfig.hotels || {};
+  const dynamicMediaConfig = environmentConfig.dynamicMedia || {};
 
   return {
+    aemAssetHost: dynamicMediaConfig.assetHost || '',
+    graphqlHost: getMetaContent('hotel-graphql-host')
+      || configuredHotels.graphqlHost
+      || '',
     graphqlEndpoint: getMetaContent('hotel-graphql-endpoint')
       || configuredHotels.graphqlEndpoint
       || '/graphql/execute.json/iberostar-com/hotel-by-code',
@@ -27,6 +32,37 @@ function getHotelsConfig() {
       || configuredHotels.priceFromEndpoint
       || '',
   };
+}
+
+function normalizeEndpointPath(endpoint) {
+  const value = `${endpoint || ''}`.trim();
+  if (!value) return '';
+  if (/^https?:\/\//i.test(value)) return value;
+  return value.startsWith('/') ? value : `/${value}`;
+}
+
+function isAuthorHostname(hostname = window.location.hostname) {
+  return /^author-p\d+-e\d+\./i.test(hostname);
+}
+
+function isEdsPublicHostname(hostname = window.location.hostname) {
+  return hostname.endsWith('.aem.page') || hostname.endsWith('.aem.live');
+}
+
+function resolveGraphqlHost(options, hotelsConfig) {
+  if (options.graphqlHost) return options.graphqlHost;
+  if (isAuthorHostname()) return window.location.origin;
+
+  const configuredHost = hotelsConfig.graphqlHost || hotelsConfig.aemAssetHost || '';
+  if (configuredHost) return configuredHost;
+
+  if (isEdsPublicHostname()) {
+    // EDS hosts don't usually expose the AEM GraphQL endpoint.
+    // eslint-disable-next-line no-console
+    console.warn('[hotels-api] Missing graphqlHost configuration for EDS host.');
+  }
+
+  return window.location.origin;
 }
 
 function normalizeLocale(locale) {
@@ -109,13 +145,14 @@ function getPersistedQueryPath(options = {}) {
 }
 
 function createRequestUrl(hotelCode, options = {}) {
-  const persistedQueryPath = getPersistedQueryPath(options);
+  const persistedQueryPath = normalizeEndpointPath(getPersistedQueryPath(options));
   const rootPath = getRootPath(options);
   const hotelsConfig = getHotelsConfig();
+  const graphqlHost = resolveGraphqlHost(options, hotelsConfig);
   const operationName = options.operationName
     || hotelsConfig.graphqlOperationName;
 
-  const url = new URL(persistedQueryPath, window.location.origin);
+  const url = new URL(persistedQueryPath, graphqlHost);
   url.searchParams.set('rootPath', rootPath);
   url.searchParams.set('hotelCode', `${hotelCode}`.trim());
   url.searchParams.set('operationName', operationName);
