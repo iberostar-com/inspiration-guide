@@ -97,6 +97,14 @@
           "name": "destination",
           "label": "Destination",
           "description": "Override destination text for this hotel card"
+        },
+        {
+          "component": "text",
+          "valueType": "string",
+          "name": "tag_tagLabel",
+          "label": "Promotional Badge",
+          "description": "Optional badge shown over the hotel image (e.g. \"hasta un 20%\")",
+          "value": ""
         }
       ]
     }

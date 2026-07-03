@@ -1,8 +1,13 @@
 import {
   createHotelMiniCard,
 } from '../hotel-mini-card/hotel-mini-card.js';
+import { getTranslation } from '../../scripts/iberostar/i18n.js';
 import { toPageHref } from '../../scripts/iberostar/page-links.js';
-import { fetchHotelByCode } from '../../scripts/iberostar/hotels-api.js';
+import {
+  fetchHotelByCode,
+  fetchHotelPriceByCode,
+  getLocaleTagFromPath,
+} from '../../scripts/iberostar/hotels-api.js';
 import { moveInstrumentation } from '../../scripts/scripts.js';
 
 const MAX_HOTELS = 4;
@@ -141,10 +146,17 @@ function getHotelCodes(block) {
     .map((row) => {
       const hotelCodeProp = row.querySelector('[data-aue-prop="hotelCode"]');
       const destinationProp = row.querySelector('[data-aue-prop="destination"]');
+      const tagLabelProp = row.querySelector('[data-aue-prop="tag_tagLabel"]');
       const hotelCode = getText(hotelCodeProp || row.querySelector('[data-hotel-code]') || getCells(row)[0]);
       const destination = getText(destinationProp || row.querySelector('[data-destination]') || getCells(row)[1]);
+      const tagLabel = getText(tagLabelProp || getCells(row)[2]);
 
-      return { hotelCode: hotelCode.trim(), destination: destination.trim(), source: row };
+      return {
+        destination: destination.trim(),
+        hotelCode: hotelCode.trim(),
+        source: row,
+        tagLabel: tagLabel.trim(),
+      };
     })
     .filter(({ hotelCode }) => hotelCode);
 }
@@ -187,6 +199,49 @@ function createEmptyState(message) {
   return empty;
 }
 
+function formatCurrencyValue(value, currency) {
+  if (!Number.isFinite(value) || !currency) return '';
+
+  const locale = getLocaleTagFromPath();
+  return new Intl.NumberFormat(locale, {
+    currency,
+    maximumFractionDigits: 0,
+    minimumFractionDigits: 0,
+    style: 'currency',
+  }).format(Math.round(value));
+}
+
+async function getPriceText(hotel, hotelCode) {
+  const [prefix, perNightLabel, personSingular, personPlural] = await Promise.all([
+    getTranslation('hotelPriceFromPrefix', 'Desde'),
+    getTranslation('hotelPricePerNight', '/ noche'),
+    getTranslation('hotelPricePersonSingular', 'persona'),
+    getTranslation('hotelPricePersonPlural', 'personas'),
+  ]);
+
+  const endpointPrice = await fetchHotelPriceByCode(hotelCode);
+  const fallbackPrice = Number.isFinite(hotel?.estimatedMinPrice)
+    ? {
+      currency: hotel?.estimatedMinCurrency || '',
+      defaultOccupancy: { adults: 2, children: [] },
+      priceFrom: hotel.estimatedMinPrice,
+    }
+    : null;
+  const selectedPrice = endpointPrice || fallbackPrice;
+
+  if (!selectedPrice?.currency || !Number.isFinite(selectedPrice?.priceFrom)) return '';
+
+  const adults = selectedPrice?.defaultOccupancy?.adults || 2;
+  const peopleLabel = adults === 1 ? personSingular : personPlural;
+  const formattedPrice = formatCurrencyValue(selectedPrice.priceFrom, selectedPrice.currency);
+
+  return [prefix, formattedPrice, `${adults} ${peopleLabel}`, perNightLabel]
+    .filter(Boolean)
+    .join(' ')
+    .replace(/\s+/g, ' ')
+    .trim();
+}
+
 function createGridContainer(cards) {
   const container = document.createElement('div');
   container.className = 'recommended-dynamic-hotels-grid-container';
@@ -227,9 +282,16 @@ export default async function decorate(block) {
   }
 
   const fetchPromises = hotelCodesToFetch.map(
-    ({ hotelCode, destination }) => fetchHotelByCode(hotelCode)
-      .then((hotel) => {
+    ({ hotelCode, destination, tagLabel }) => Promise.all([
+      fetchHotelByCode(hotelCode),
+      fetchHotelPriceByCode(hotelCode),
+    ])
+      .then(async ([hotel, price]) => {
         if (!hotel) return null;
+        const hotelWithPrice = price
+          ? { ...hotel, estimatedMinPrice: price.priceFrom, estimatedMinCurrency: price.currency }
+          : hotel;
+        const priceFrom = await getPriceText(hotelWithPrice, hotelCode);
         return {
           ctaText: '',
           href: '',
@@ -237,9 +299,9 @@ export default async function decorate(block) {
           imageAlt: hotel.title || '',
           location: destination || hotel.destination || '',
           name: hotel.title || '',
-          priceFrom: '',
+          priceFrom,
           stars: hotel.stars || 0,
-          tagLabel: '',
+          tagLabel: tagLabel || '',
           target: '_self',
         };
       })
