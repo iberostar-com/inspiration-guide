@@ -52,6 +52,7 @@
       "id": "section",
       "components": [
         "article-content-image",
+        "article-content-quote",
         "article-content-table",
         "article-content-video",
         "article-main-image",
@@ -59,6 +60,7 @@
         "breadcrumbs",
         "button",
         "cards",
+        "carousel-category-gallery",
         "columns",
         "editorial-article-banner",
         "editorial-article-content",

@@ -426,7 +426,11 @@ function createCta(href, label, className) {
   const cta = document.createElement('a');
   cta.className = className;
   cta.href = toPageHref(href) || '#';
-  cta.textContent = label;
+  const text = document.createElement('span');
+  text.textContent = label;
+  const icon = document.createElement('i');
+  icon.className = 'ibh-icon-arrow-forward';
+  cta.append(text, icon);
   return cta;
 }
 
@@ -473,7 +477,9 @@ function appendMeta(parent, item, includeDate = false) {
   if (includeDate && item.readTime) {
     const readTime = document.createElement('span');
     readTime.className = 'blog-split-read-time';
-    readTime.textContent = item.readTime;
+    const icon = document.createElement('i');
+    icon.className = 'ibh-icon-schedule';
+    readTime.append(icon, document.createTextNode(item.readTime));
     meta.append(readTime);
   }
 

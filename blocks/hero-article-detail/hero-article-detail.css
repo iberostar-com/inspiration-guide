@@ -157,8 +157,8 @@
 }
 
 .hero-article-detail .hero-article-detail-icon {
-  width: 16px;
-  height: 16px;
+  font-size: 16px;
+  line-height: 1;
 }
 
 .hero-article-detail .hero-article-detail-share {

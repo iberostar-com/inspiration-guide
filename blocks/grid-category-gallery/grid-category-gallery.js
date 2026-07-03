@@ -238,32 +238,57 @@ function buildCarouselControls(list, items) {
   prev.type = 'button';
   prev.className = 'grid-category-gallery-prev';
   prev.setAttribute('aria-label', 'Previous destinations');
-  prev.innerHTML = '<span aria-hidden="true"></span>';
 
   const next = document.createElement('button');
   next.type = 'button';
   next.className = 'grid-category-gallery-next';
   next.setAttribute('aria-label', 'Next destinations');
-  next.innerHTML = '<span aria-hidden="true"></span>';
 
-  const updateButtons = () => {
-    const { scrollLeft, scrollWidth, clientWidth } = list;
-    prev.disabled = scrollLeft <= 0;
-    next.disabled = scrollLeft + clientWidth >= scrollWidth - 1;
+  const dots = document.createElement('div');
+  dots.className = 'grid-category-gallery-dots';
+  const dotEls = items.map((item, index) => {
+    const dot = document.createElement('button');
+    dot.type = 'button';
+    dot.className = 'grid-category-gallery-dot';
+    dot.setAttribute('aria-label', `Go to destination ${index + 1}`);
+    dot.dataset.index = index;
+    dots.append(dot);
+    return dot;
+  });
+
+  const getStride = () => {
+    const first = items[0]?.getBoundingClientRect();
+    if (!first) return 0;
+    if (items[1]) return items[1].getBoundingClientRect().left - first.left;
+    return first.width;
   };
 
-  const scrollByCard = (direction) => {
-    const itemWidth = items[0]?.getBoundingClientRect().width || 0;
-    const gap = Number.parseFloat(window.getComputedStyle(list).columnGap) || 16;
-    list.scrollBy({ left: direction * (itemWidth + gap), behavior: 'smooth' });
+  const currentIndex = () => {
+    const stride = getStride() || 1;
+    const perView = Math.max(1, Math.round(list.clientWidth / stride));
+    const maxIndex = Math.max(0, items.length - perView);
+    return Math.min(Math.max(Math.round(list.scrollLeft / stride), 0), maxIndex);
   };
 
-  prev.addEventListener('click', () => scrollByCard(-1));
-  next.addEventListener('click', () => scrollByCard(1));
-  list.addEventListener('scroll', updateButtons, { passive: true });
-  updateButtons();
+  const scrollToIndex = (index) => {
+    list.scrollTo({ left: index * getStride(), behavior: 'smooth' });
+  };
 
-  controls.append(prev, next);
+  const update = () => {
+    const index = currentIndex();
+    dotEls.forEach((dot, i) => dot.classList.toggle('is-active', i === index));
+  };
+
+  prev.addEventListener('click', () => scrollToIndex(currentIndex() - 1));
+  next.addEventListener('click', () => scrollToIndex(currentIndex() + 1));
+  dotEls.forEach((dot) => {
+    dot.addEventListener('click', () => scrollToIndex(Number(dot.dataset.index)));
+  });
+  list.addEventListener('scroll', update, { passive: true });
+  window.addEventListener('resize', update);
+
+  controls.append(prev, dots, next);
+  requestAnimationFrame(update);
   return controls;
 }
 
@@ -320,7 +345,10 @@ export default function decorate(block) {
       const cta = document.createElement('a');
       cta.className = 'grid-category-gallery-cta';
       cta.href = ctaUrl;
-      cta.textContent = ctaText || ctaUrl;
+      const ctaLabel = document.createElement('span');
+      ctaLabel.className = 'grid-category-gallery-cta-label';
+      ctaLabel.textContent = ctaText || ctaUrl;
+      cta.append(ctaLabel);
       header.append(cta);
     }
 

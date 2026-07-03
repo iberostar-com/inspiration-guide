@@ -327,6 +327,25 @@
     ]
   },
   {
+    "id": "article-content-quote",
+    "fields": [
+      {
+        "component": "richtext",
+        "valueType": "string",
+        "name": "text",
+        "label": "Quote Text",
+        "value": ""
+      },
+      {
+        "component": "text",
+        "valueType": "string",
+        "name": "attribution",
+        "label": "Attribution (optional)",
+        "value": ""
+      }
+    ]
+  },
+  {
     "id": "article-content-table",
     "fields": [
       {
@@ -637,18 +656,21 @@
     "fields": [
       {
         "component": "text",
+        "valueType": "string",
+        "name": "eyebrow",
+        "label": "Eyebrow (Antetítulo)",
+        "value": ""
+      },
+      {
+        "component": "text",
+        "valueType": "string",
         "name": "title",
         "label": "Title",
         "value": ""
       },
       {
-        "component": "text",
-        "name": "subtitle",
-        "label": "Subtitle",
-        "value": ""
-      },
-      {
         "component": "number",
+        "valueType": "number",
         "name": "maxItems",
         "label": "Maximum Cards",
         "value": 9
@@ -773,18 +795,21 @@
     "fields": [
       {
         "component": "text",
-        "name": "pretitle",
-        "label": "Pretitle",
+        "valueType": "string",
+        "name": "eyebrow",
+        "label": "Eyebrow (Antetítulo)",
         "value": ""
       },
       {
         "component": "text",
+        "valueType": "string",
         "name": "title",
         "label": "Title",
         "value": ""
       },
       {
         "component": "select",
+        "valueType": "string",
         "name": "mode",
         "label": "Mode",
         "options": [
@@ -843,8 +868,72 @@
     "fields": [
       {
         "component": "select",
+        "valueType": "string",
+        "name": "variant",
+        "label": "Variant",
+        "value": "default",
+        "options": [
+          {
+            "name": "Default",
+            "value": "default"
+          },
+          {
+            "name": "Home",
+            "value": "home"
+          }
+        ]
+      },
+      {
+        "component": "text",
+        "valueType": "string",
+        "name": "title",
+        "label": "Title",
+        "value": ""
+      },
+      {
+        "component": "select",
+        "valueType": "string",
+        "name": "titleHeading",
+        "label": "Title Heading Level",
+        "value": "h2",
+        "options": [
+          {
+            "name": "H2",
+            "value": "h2"
+          },
+          {
+            "name": "H3",
+            "value": "h3"
+          }
+        ]
+      },
+      {
+        "component": "select",
+        "valueType": "string",
+        "name": "cardHeading",
+        "label": "Card Heading Level",
+        "value": "h3",
+        "options": [
+          {
+            "name": "H2",
+            "value": "h2"
+          },
+          {
+            "name": "H3",
+            "value": "h3"
+          },
+          {
+            "name": "H4",
+            "value": "h4"
+          }
+        ]
+      },
+      {
+        "component": "select",
+        "valueType": "string",
         "name": "source",
-        "label": "Source",
+        "label": "Source (Default variant)",
+        "value": "manual",
         "options": [
           {
             "name": "Manual",
@@ -858,20 +947,32 @@
             "name": "Auto by Category",
             "value": "auto-category"
           }
-        ],
-        "value": "manual"
+        ]
       },
       {
         "component": "number",
+        "valueType": "number",
         "name": "pageSize",
-        "label": "Page Size",
+        "label": "Page Size (Default variant)",
         "value": 4
       },
       {
         "component": "text",
+        "valueType": "string",
         "name": "ctaLabel",
-        "label": "Load More Label",
+        "label": "Load More Label (Default variant)",
         "value": "Load more"
+      }
+    ]
+  },
+  {
+    "id": "editorial-highlight-article",
+    "fields": [
+      {
+        "component": "aem-content",
+        "valueType": "string",
+        "name": "article",
+        "label": "Article Page"
       }
     ]
   },

@@ -1,5 +1,56 @@
 import { createResponsiveImage } from '../../scripts/iberostar/media.js';
 import { getArticles } from '../../scripts/inspiration-data.js';
+import { createArticleCard } from '../../scripts/iberostar/article-card.js';
+import { toPublicPagePath } from '../../scripts/iberostar/page-links.js';
+import { moveInstrumentation } from '../../scripts/scripts.js';
+
+const HEADING_TAGS = new Set(['h2', 'h3', 'h4', 'h5', 'h6']);
+const CARD_CTA = 'Leer artículo';
+
+// ---------- source rows ----------
+
+function getRows(block) {
+  return [...block.children].filter((row) => !row.classList.contains('editorial-highlight-grid')
+    && !row.classList.contains('editorial-highlight-grid-rendered'));
+}
+
+// A home article is a child component (reference to an article page).
+function isArticleRow(row) {
+  return !!(row.matches?.('[data-aue-model="editorial-highlight-article"]')
+    || row.querySelector?.('[data-aue-model="editorial-highlight-article"]')
+    || row.querySelector?.('a[href]'));
+}
+
+function getArticleRows(block) {
+  return getRows(block).filter(isArticleRow);
+}
+
+function getConfigRows(block) {
+  return getRows(block).filter((row) => !isArticleRow(row));
+}
+
+function textByProp(block, prop) {
+  return block.querySelector(`[data-aue-prop="${prop}"]`)?.textContent?.trim() || '';
+}
+
+function sanitizeHeading(value, fallback) {
+  const tag = `${value || fallback}`.trim().toLowerCase();
+  return HEADING_TAGS.has(tag) ? tag : fallback;
+}
+
+// Select fields render their value without data-aue-prop, so the variant is read
+// by matching the known option values across the block config rows.
+function readVariant(block) {
+  const byProp = textByProp(block, 'variant').toLowerCase();
+  if (byProp) return byProp;
+  const known = new Set(['home', 'default']);
+  const found = getConfigRows(block)
+    .map((row) => row.textContent?.trim().toLowerCase())
+    .find((text) => known.has(text));
+  return found || block.getAttribute('data-variant') || 'default';
+}
+
+// ---------- default variant (auto/manual list with "load more") ----------
 
 function getContextTag() {
   const segments = window.location.pathname.split('/').filter(Boolean);
@@ -14,18 +65,14 @@ function getContextCategory() {
 }
 
 function manualItems(block) {
-  return [...block.children].map((row, index) => {
+  return getArticleRows(block).map((row, index) => {
     const cells = [...row.children];
     const image = cells[0]?.querySelector('img')?.src || '';
     const title = cells[1]?.textContent?.trim() || `Manual article ${index + 1}`;
     const summary = cells[2]?.textContent?.trim() || '';
     const href = cells[3]?.textContent?.trim() || '#';
     return {
-      id: `m-${index + 1}`,
-      image,
-      title,
-      summary,
-      href,
+      id: `m-${index + 1}`, image, title, summary, href,
     };
   });
 }
@@ -36,22 +83,14 @@ async function autoItems(source) {
     const tag = getContextTag();
     return all
       .filter((article) => !tag || article.tags.includes(tag))
-      .map((article) => ({
-        ...article,
-        href: `/article/${article.id}`,
-      }));
+      .map((article) => ({ ...article, href: `/article/${article.id}` }));
   }
-
   if (source === 'auto-category') {
     const category = getContextCategory();
     return all
       .filter((article) => !category || article.category === category)
-      .map((article) => ({
-        ...article,
-        href: `/article/${article.id}`,
-      }));
+      .map((article) => ({ ...article, href: `/article/${article.id}` }));
   }
-
   return [];
 }
 
@@ -76,7 +115,6 @@ function createCard(item) {
   link.href = item.href || '#';
   link.textContent = item.title;
   h3.append(link);
-
   body.append(h3);
 
   if (item.summary) {
@@ -98,7 +136,7 @@ function renderPage(list, items, pageSize, currentPage) {
   return start + chunk.length < items.length;
 }
 
-export default async function decorate(block) {
+async function decorateDefault(block) {
   const source = block.getAttribute('data-source') || 'manual';
   const pageSize = Number.parseInt(block.getAttribute('data-page-size') || '4', 10);
   const ctaLabel = block.getAttribute('data-cta-label') || 'Load more';
@@ -128,4 +166,125 @@ export default async function decorate(block) {
 
   wrapper.append(list, button);
   block.replaceChildren(wrapper);
+}
+
+// ---------- home variant (manual list of article references) ----------
+
+function normalizePath(value) {
+  const publicPath = toPublicPagePath(`${value || ''}`.trim());
+  return publicPath.replace(/\.html$/, '').replace(/\/+$/, '');
+}
+
+function findArticle(articles, refPath) {
+  const target = normalizePath(refPath);
+  if (!target) return null;
+  return articles.find((article) => {
+    const candidate = normalizePath(article.path || article.url || article.href);
+    return candidate && (candidate === target
+      || candidate.endsWith(target) || target.endsWith(candidate));
+  }) || null;
+}
+
+function getRefPath(row) {
+  const link = row.querySelector('a[href]');
+  if (link) return link.getAttribute('href') || '';
+  return row.textContent?.trim() || '';
+}
+
+// Maps an indexed article to the shape expected by the shared ArticleCard helper.
+function toCardData(article) {
+  return {
+    title: article.title,
+    description: article.description || article.summary || '',
+    image: article.image,
+    imageAlt: article.imageAlt || article.title,
+    category: article.category,
+    categoryUrl: article.categoryUrl,
+    publicationDate: article.publicationDate || article.publishDate || '',
+    readTime: article.readTime || '',
+    url: toPublicPagePath(article.url || article.path || '') || '',
+    ctaText: CARD_CTA,
+  };
+}
+
+function enhanceCard(card) {
+  const readTime = card.querySelector('.article-card-read-time');
+  if (readTime && !readTime.querySelector('i')) {
+    const icon = document.createElement('i');
+    icon.className = 'ibh-icon-schedule';
+    readTime.prepend(icon);
+  }
+
+  const cta = card.querySelector('.article-card-cta');
+  if (cta && !cta.querySelector('i')) {
+    const label = document.createElement('span');
+    label.className = 'article-card-cta-label';
+    label.textContent = cta.textContent;
+    const arrow = document.createElement('i');
+    arrow.className = 'ibh-icon-arrow-forward';
+    cta.textContent = '';
+    cta.append(label, arrow);
+  }
+}
+
+async function decorateHome(block) {
+  const configRows = getConfigRows(block);
+  const title = textByProp(block, 'title') || configRows[1]?.textContent?.trim() || '';
+  const levels = configRows
+    .map((row) => row.textContent?.trim().toLowerCase())
+    .filter((text) => HEADING_TAGS.has(text));
+  const titleHeading = sanitizeHeading(levels[0], 'h2');
+  const cardHeading = sanitizeHeading(levels[1], 'h3');
+
+  const all = await getArticles();
+  const isEditor = !!block.closest('[data-aue-resource]');
+
+  block.classList.add('editorial-highlight-grid-home');
+
+  const rendered = document.createElement('div');
+  rendered.className = 'editorial-highlight-grid-rendered';
+
+  if (title) {
+    const heading = document.createElement(titleHeading);
+    heading.className = 'editorial-highlight-grid-title';
+    heading.textContent = title;
+    rendered.append(heading);
+  }
+
+  const list = document.createElement('ul');
+  list.className = 'editorial-highlight-grid-list';
+  getArticleRows(block).forEach((row) => {
+    const article = findArticle(all, getRefPath(row));
+    // Skip unresolved items on published pages, but keep an editable placeholder
+    // in Universal Editor so a just-added item can still be configured.
+    if (!article && !isEditor) return;
+
+    const li = document.createElement('li');
+    li.className = 'editorial-highlight-grid-item';
+    moveInstrumentation(row, li);
+
+    if (article) {
+      const card = createArticleCard(toCardData(article), { headingTag: cardHeading });
+      enhanceCard(card);
+      li.append(card);
+    } else {
+      const placeholder = document.createElement('p');
+      placeholder.className = 'editorial-highlight-grid-placeholder';
+      placeholder.textContent = 'Selecciona un artículo';
+      li.append(placeholder);
+    }
+
+    list.append(li);
+  });
+  rendered.append(list);
+
+  block.replaceChildren(rendered);
+}
+
+export default async function decorate(block) {
+  if (readVariant(block) === 'home') {
+    await decorateHome(block);
+    return;
+  }
+  await decorateDefault(block);
 }
