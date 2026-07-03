@@ -112,9 +112,39 @@ function createHotelHref(hotel) {
 }
 
 function normalizeStars(value) {
-  const parsed = Number.parseInt(`${value || ''}`.replace(/[^\d]/g, ''), 10);
-  if (Number.isNaN(parsed)) return 0;
-  return Math.max(0, Math.min(parsed, 5));
+  const clamp = (input) => Math.max(0, Math.min(Math.round(input), 5));
+
+  if (Number.isFinite(value)) {
+    return clamp(value);
+  }
+
+  if (Array.isArray(value)) {
+    return normalizeStars(value[0]);
+  }
+
+  if (value && typeof value === 'object') {
+    return normalizeStars(
+      value.stars
+      ?? value.value
+      ?? value.number
+      ?? value.count
+      ?? value.label,
+    );
+  }
+
+  const source = `${value || ''}`.trim();
+  if (!source) return 0;
+
+  const floatValue = Number.parseFloat(source.replace(',', '.'));
+  if (Number.isFinite(floatValue)) {
+    return clamp(floatValue);
+  }
+
+  const digitsMatch = source.match(/\d+/);
+  if (!digitsMatch) return 0;
+
+  const parsed = Number.parseInt(digitsMatch[0], 10);
+  return Number.isNaN(parsed) ? 0 : clamp(parsed);
 }
 
 function createEmptyState(message) {
