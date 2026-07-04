@@ -4,252 +4,510 @@ import { moveInstrumentation } from '../../scripts/scripts.js';
 
 const MAX_ITEMS = 3;
 const CTA_COPY = 'Leer artículo';
+const MODE_VALUES = new Set(['manual', 'auto-tag', 'auto-category']);
+const HEADING_TAGS = new Set(['p', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6']);
+const CONFIG_PROPS = new Set([
+  'eyebrow',
+  'eyebrowHeading',
+  'title',
+  'titleHeading',
+  'mode',
+  'manualArticle1',
+  'manualArticle2',
+  'manualArticle3',
+]);
 
-// --- Metadata helpers ---
+function getSourceRows(block) {
+  return [...block.children].filter((row) => !row.classList.contains('editorial-article-grid-rendered'));
+}
+
+function getPropElement(root, propName) {
+  const selector = `[data-aue-prop="${propName}"]`;
+  if (root?.matches?.(selector)) return root;
+  return root?.querySelector?.(selector) || null;
+}
+
+function getFieldByProp(block, propName) {
+  return getSourceRows(block)
+    .map((row) => getPropElement(row, propName))
+    .find(Boolean) || null;
+}
+
+function toDataAttributeName(propName) {
+  return `data-${propName.replace(/[A-Z]/g, (char) => `-${char.toLowerCase()}`)}`;
+}
+
+function textByProp(block, propName, fallback = '') {
+  const text = getFieldByProp(block, propName)?.textContent?.trim();
+  if (text) return text;
+
+  const attr = block.getAttribute(toDataAttributeName(propName));
+  if (attr) return attr;
+
+  return fallback;
+}
+
+function hrefByProp(block, propName) {
+  const field = getFieldByProp(block, propName);
+  if (!field) return '';
+
+  const href = field.querySelector('a[href]')?.getAttribute('href')?.trim();
+  return href || field.textContent?.trim() || '';
+}
+
+function normalizePath(path) {
+  if (!path) return '';
+
+  const withoutHtml = `${path}`.trim().replace(/\.html$/, '');
+  const withLeadingSlash = withoutHtml.startsWith('/') ? withoutHtml : `/${withoutHtml}`;
+  return withLeadingSlash.replace(/\/+$/, '') || '/';
+}
+
+function samePath(left, right) {
+  return normalizePath(left) === normalizePath(right);
+}
+
+function sanitizeHeadingTag(value, fallback) {
+  const normalized = `${value || fallback}`.trim().toLowerCase();
+  return HEADING_TAGS.has(normalized) ? normalized : fallback;
+}
+
+function sanitizeMode(value) {
+  const mode = `${value || ''}`.trim().toLowerCase();
+  return MODE_VALUES.has(mode) ? mode : 'manual';
+}
 
 function getMetaContent(name) {
   return document.querySelector(`meta[name="${name}"]`)?.content?.trim() || '';
 }
 
-function normalizeStr(val) {
-  return `${val || ''}`.trim().toLowerCase();
+function normalizeStr(value) {
+  return `${value || ''}`.trim().toLowerCase();
 }
 
-function getPageTags() {
-  return getMetaContent('article-tags')
-    .split(',')
+function splitList(value) {
+  return `${value || ''}`
+    .split(/[|,;>]/)
+    .map((item) => item.trim())
+    .filter(Boolean);
+}
+
+function splitPathSegments(value) {
+  return `${value || ''}`
+    .replace(/^[^:]+:/, '')
+    .split('/')
+    .map((item) => item.trim())
+    .filter(Boolean);
+}
+
+function toCategoryTree(value) {
+  const directSegments = splitPathSegments(value);
+  if (directSegments.length) return directSegments;
+
+  return splitList(value)
+    .map((item) => item.replace(/^[^:]+:/, '').trim())
+    .filter(Boolean);
+}
+
+function getArticleTags(article) {
+  if (Array.isArray(article?.tags)) {
+    return article.tags.map(normalizeStr).filter(Boolean);
+  }
+
+  return splitList(article?.tags).map(normalizeStr).filter(Boolean);
+}
+
+function isVisibleArticle(article) {
+  const visible = `${article?.visible ?? ''}`.trim().toLowerCase();
+  if (['false', '0', 'no', 'hidden'].includes(visible)) return false;
+
+  const robots = `${article?.robots || ''}`.trim().toLowerCase();
+  return !robots.includes('noindex');
+}
+
+function getRootCategoryLabel(raw) {
+  if (!raw) return '';
+
+  const tree = toCategoryTree(raw)
+    .map((part) => part.replace(/-/g, ' ').trim())
+    .filter(Boolean);
+  const root = tree[0] || '';
+  return root.charAt(0).toUpperCase() + root.slice(1);
+}
+
+function getComparableTimestamp(article) {
+  const direct = Number.parseInt(`${article?.publicationTimestamp || ''}`, 10);
+  if (Number.isFinite(direct)) return direct;
+
+  const fromDate = Date.parse(article?.publicationDate || article?.publishDate || '');
+  if (Number.isFinite(fromDate)) return fromDate;
+
+  const fromLastModified = Date.parse(article?.lastModified || '');
+  if (Number.isFinite(fromLastModified)) return fromLastModified;
+
+  return 0;
+}
+
+function byLatest(a, b) {
+  return getComparableTimestamp(b) - getComparableTimestamp(a);
+}
+
+function extractCurrentArticle(allArticles) {
+  const currentPath = normalizePath(window.location.pathname);
+  return allArticles.find((article) => samePath(article.path || article.href, currentPath)) || null;
+}
+
+function getCurrentTags(currentArticle) {
+  const indexedTags = getArticleTags(currentArticle);
+  if (indexedTags.length) return indexedTags;
+
+  return splitList(getMetaContent('article-tags'))
     .map(normalizeStr)
     .filter(Boolean);
 }
 
-function getPageCategorySegments() {
-  const raw = getMetaContent('article-category');
-  if (!raw) return [];
-  // e.g. "inspiration-guide:destinations/mallorca" → strip namespace, split by '/'
-  const path = normalizeStr(raw).replace(/^[^:]+:/, '');
-  const parts = path.split('/').filter(Boolean);
-  // Build all ancestor paths: ["destinations", "destinations/mallorca"]
-  const segments = [];
-  parts.reduce((acc, part) => {
-    const seg = acc ? `${acc}/${part}` : part;
-    segments.push(seg);
-    return seg;
-  }, '');
-  return segments;
+function getCurrentCategoryTree(currentArticle) {
+  const fromIndex = toCategoryTree(currentArticle?.categoryPath || currentArticle?.category)
+    .map(normalizeStr)
+    .filter(Boolean);
+  if (fromIndex.length) return fromIndex;
+
+  const fromMetaPath = toCategoryTree(getMetaContent('article-category-path'))
+    .map(normalizeStr)
+    .filter(Boolean);
+  if (fromMetaPath.length) return fromMetaPath;
+
+  return toCategoryTree(getMetaContent('article-category'))
+    .map(normalizeStr)
+    .filter(Boolean);
 }
 
-/**
- * Returns the first (root) segment of a category path.
- * "inspiration-guide:destinations/mallorca" → "Destinations"
- * "destinations/mallorca" → "Destinations"
- * "beaches" → "Beaches"
- */
-function getRootCategoryLabel(raw) {
-  if (!raw) return '';
-  const path = `${raw}`.replace(/^[^:]+:/, '').replace(/-/g, ' ');
-  const first = path.split('/')[0]?.trim() || '';
-  return first.charAt(0).toUpperCase() + first.slice(1);
+function matchesAnyTag(currentTags, article) {
+  if (!currentTags.length) return false;
+
+  const articleTags = getArticleTags(article);
+  return articleTags.some((tag) => currentTags.includes(tag));
 }
 
-// --- Sorting ---
+function matchesCategoryTree(currentTree, article) {
+  if (!currentTree.length) return false;
 
-function byLatest(a, b) {
-  return `${b.publishDate}`.localeCompare(`${a.publishDate}`);
+  const articleTree = toCategoryTree(article?.categoryPath || article?.category)
+    .map(normalizeStr)
+    .filter(Boolean);
+
+  if (!articleTree.length) return false;
+  return currentTree.some((segment) => articleTree.includes(segment));
 }
 
-// --- Auto article fetching ---
+function toResolvedCardItem(article) {
+  return {
+    href: article.href || article.path || '',
+    image: article.image || article.ogImage || '',
+    imageAlt: article.imageAlt || '',
+    title: article.title || '',
+    category: getRootCategoryLabel(article.categoryPath || article.category),
+  };
+}
 
 async function getAutoArticles(mode) {
-  const all = await getArticles();
-  const currentPath = window.location.pathname;
+  const all = (await getArticles()).filter(isVisibleArticle);
+  const currentArticle = extractCurrentArticle(all);
+  const currentPath = normalizePath(window.location.pathname);
+  const withoutCurrent = all.filter(
+    (article) => !samePath(article.path || article.href, currentPath),
+  );
 
   if (mode === 'auto-tag') {
-    const pageTags = getPageTags();
-    if (!pageTags.length) return all.sort(byLatest).slice(0, MAX_ITEMS);
-    return all
-      .filter((a) => {
-        if (a.path === currentPath) return false;
-        return (a.tags || []).some((t) => pageTags.includes(normalizeStr(t)));
-      })
+    const currentTags = getCurrentTags(currentArticle);
+    if (!currentTags.length) return [];
+
+    return withoutCurrent
+      .filter((article) => matchesAnyTag(currentTags, article))
       .sort(byLatest)
+      .map(toResolvedCardItem)
       .slice(0, MAX_ITEMS);
   }
 
   if (mode === 'auto-category') {
-    const segments = getPageCategorySegments();
-    if (!segments.length) return all.sort(byLatest).slice(0, MAX_ITEMS);
-    return all
-      .filter((a) => {
-        if (a.path === currentPath) return false;
-        const articleCat = normalizeStr(a.categorySlug || a.category || '');
-        return segments.some((seg) => articleCat.includes(seg) || seg.includes(articleCat));
-      })
+    const categoryTree = getCurrentCategoryTree(currentArticle);
+    if (!categoryTree.length) return [];
+
+    return withoutCurrent
+      .filter((article) => matchesCategoryTree(categoryTree, article))
       .sort(byLatest)
+      .map(toResolvedCardItem)
       .slice(0, MAX_ITEMS);
   }
 
   return [];
 }
 
-// --- Manual items (mode=manual) ---
+function findArticleByRef(allArticles, refPath) {
+  const target = normalizePath(refPath);
+  if (!target) return null;
 
-function getManualItemProp(row, propName) {
-  const el = row.querySelector(`[data-aue-prop="${propName}"]`);
-  return el || null;
+  return allArticles.find((article) => {
+    const candidate = normalizePath(article.path || article.href);
+    return candidate && (candidate === target
+      || candidate.endsWith(target) || target.endsWith(candidate));
+  }) || null;
 }
 
-function getManualItems(block) {
-  return [...block.children]
-    .filter((row) => !row.classList.contains('editorial-article-grid-rendered'))
+function getLegacyManualRows(block) {
+  return getSourceRows(block)
+    .filter((row) => !row.querySelector('[data-aue-prop]')
+      || [...row.querySelectorAll('[data-aue-prop]')]
+        .some((el) => !CONFIG_PROPS.has(el.getAttribute('data-aue-prop'))))
     .slice(0, MAX_ITEMS)
-    .map((row, index) => {
-      // Try data-aue-prop first, fall back to positional cells
-      const cells = [...row.children];
-      const imageProp = getManualItemProp(row, 'image');
-      const picture = imageProp
-        ? imageProp.querySelector('picture')
-        : cells[0]?.querySelector('picture');
-      const img = picture?.querySelector('img');
+    .map((row, index) => ({ row, index }));
+}
 
-      const titleProp = getManualItemProp(row, 'title');
-      const title = titleProp
-        ? titleProp.textContent?.trim()
-        : cells[1]?.textContent?.trim() || '';
+function parseLegacyManualItem(row, index) {
+  const getLegacyProp = (propName) => row.querySelector(`[data-aue-prop="${propName}"]`) || null;
 
-      const categoryProp = getManualItemProp(row, 'category');
-      const rawCategory = categoryProp
-        ? categoryProp.textContent?.trim()
-        : cells[2]?.textContent?.trim() || '';
+  const cells = [...row.children];
+  const imageProp = getLegacyProp('image');
+  const picture = imageProp ? imageProp.querySelector('picture') : cells[0]?.querySelector('picture');
+  const img = picture?.querySelector('img');
 
-      const linkProp = getManualItemProp(row, 'link');
-      const href = linkProp
-        ? linkProp.textContent?.trim() || linkProp.querySelector('a')?.href || ''
-        : cells[3]?.textContent?.trim() || '#';
+  const titleProp = getLegacyProp('title');
+  const title = titleProp ? titleProp.textContent?.trim() : cells[1]?.textContent?.trim() || '';
+
+  const categoryProp = getLegacyProp('category');
+  const rawCategory = categoryProp ? categoryProp.textContent?.trim() : cells[2]?.textContent?.trim() || '';
+
+  const linkProp = getLegacyProp('link');
+  const href = linkProp
+    ? linkProp.querySelector('a[href]')?.getAttribute('href')?.trim() || linkProp.textContent?.trim() || ''
+    : cells[3]?.querySelector('a[href]')?.getAttribute('href')?.trim() || cells[3]?.textContent?.trim() || '';
+
+  if (!title || !href) return null;
+
+  return {
+    href,
+    image: img?.src || '',
+    imageAlt: img?.alt || '',
+    title,
+    category: getRootCategoryLabel(rawCategory) || rawCategory,
+    picture,
+    sourceRow: row,
+    sortOrder: index,
+  };
+}
+
+async function getManualItems(block) {
+  const allArticles = (await getArticles()).filter(isVisibleArticle);
+
+  const manualRefInputs = ['manualArticle1', 'manualArticle2', 'manualArticle3']
+    .map((propName, index) => ({
+      propName,
+      index,
+      refPath: hrefByProp(block, propName),
+      sourceProp: getFieldByProp(block, propName),
+    }));
+
+  const hasManualRefInputs = manualRefInputs.some((item) => item.refPath);
+
+  if (hasManualRefInputs) {
+    return manualRefInputs
+      .map((item) => {
+        if (!item.refPath) return null;
+
+        const article = findArticleByRef(allArticles, item.refPath);
+        if (!article) return null;
+
+        return {
+          ...toResolvedCardItem(article),
+          sourceProp: item.sourceProp,
+          sortOrder: item.index,
+        };
+      })
+      .filter(Boolean)
+      .sort((a, b) => a.sortOrder - b.sortOrder)
+      .slice(0, MAX_ITEMS);
+  }
+
+  const legacyResolved = getLegacyManualRows(block)
+    .map(({ row, index }) => {
+      const refPath = row.querySelector('a[href]')?.getAttribute('href')?.trim() || '';
+      const article = findArticleByRef(allArticles, refPath);
+      if (!article) return null;
 
       return {
-        id: `manual-${index + 1}`,
-        image: img?.src || '',
-        imageAlt: img?.alt || '',
-        title,
-        category: getRootCategoryLabel(rawCategory) || rawCategory,
-        href,
-        picture,
+        ...toResolvedCardItem(article),
         sourceRow: row,
+        sortOrder: index,
       };
-    });
+    })
+    .filter(Boolean);
+
+  const manualLegacy = getLegacyManualRows(block)
+    .map(({ row, index }) => parseLegacyManualItem(row, index))
+    .filter(Boolean);
+
+  return [...manualRefs, ...legacyResolved, ...manualLegacy]
+    .slice(0, MAX_ITEMS)
+    .sort((a, b) => a.sortOrder - b.sortOrder);
 }
 
-// --- Card rendering ---
+function createTag(tagName, className, text) {
+  const element = document.createElement(tagName);
+  element.className = className;
+  element.textContent = text;
+  return element;
+}
 
-function makeCard(item) {
-  const li = document.createElement('li');
-  li.className = 'editorial-article-grid-card';
+function createCard(item) {
+  if (!item?.title || !item?.href) return null;
 
-  if (item.picture) {
+  const article = document.createElement('article');
+  article.className = 'editorial-article-grid-card';
+
+  const link = document.createElement('a');
+  link.className = 'editorial-article-grid-card-link';
+  link.href = item.href;
+
+  if (item.picture || item.image) {
     const media = document.createElement('div');
-    media.className = 'editorial-article-grid-media';
-    media.append(item.picture.cloneNode(true));
-    li.append(media);
-  } else if (item.image) {
-    const media = document.createElement('div');
-    media.className = 'editorial-article-grid-media';
-    media.append(createResponsiveImage(item.image, item.imageAlt || item.title, { preset: 'article-card' }));
-    li.append(media);
+    media.className = 'editorial-article-grid-card-image';
+
+    if (item.picture) {
+      media.append(item.picture.cloneNode(true));
+      const img = media.querySelector('img');
+      if (img) img.alt = item.imageAlt || img.alt || '';
+    } else {
+      media.append(createResponsiveImage(item.image, item.imageAlt || '', { preset: 'article-card' }));
+    }
+
+    link.append(media);
   }
 
   const body = document.createElement('div');
-  body.className = 'editorial-article-grid-body';
+  body.className = 'editorial-article-grid-card-body';
 
-  const category = item.category
-    || getRootCategoryLabel(item.categorySlug || item.category || '');
-  if (category) {
-    const cat = document.createElement('p');
-    cat.className = 'editorial-article-grid-category';
-    cat.textContent = category;
-    body.append(cat);
+  if (item.category) {
+    body.append(createTag('p', 'editorial-article-grid-card-category', item.category));
   }
 
-  if (item.title) {
-    const h3 = document.createElement('h3');
-    h3.className = 'editorial-article-grid-title';
-    const a = document.createElement('a');
-    a.href = item.href || item.path || '#';
-    a.textContent = item.title;
-    h3.append(a);
-    body.append(h3);
-  }
+  body.append(createTag('h3', 'editorial-article-grid-card-title', item.title));
 
-  const cta = document.createElement('a');
-  cta.className = 'editorial-article-grid-cta';
-  cta.href = item.href || item.path || '#';
-  cta.textContent = CTA_COPY;
+  const cta = document.createElement('span');
+  cta.className = 'editorial-article-grid-card-cta';
+  cta.append(document.createTextNode(CTA_COPY));
+
+  const arrow = document.createElement('span');
+  arrow.setAttribute('aria-hidden', 'true');
+  arrow.textContent = '→';
+  cta.append(arrow);
+
   body.append(cta);
+  link.append(body);
+  article.append(link);
 
-  li.append(body);
-  return li;
+  return article;
 }
 
-// --- Header rendering ---
+function readConfig(block) {
+  return {
+    eyebrow: textByProp(block, 'eyebrow', ''),
+    eyebrowHeading: sanitizeHeadingTag(textByProp(block, 'eyebrowHeading', 'h2'), 'h2'),
+    title: textByProp(block, 'title', ''),
+    titleHeading: sanitizeHeadingTag(textByProp(block, 'titleHeading', 'p'), 'p'),
+    mode: sanitizeMode(textByProp(block, 'mode', block.getAttribute('data-mode') || 'manual')),
+  };
+}
 
-function renderHeader(eyebrow, title) {
-  if (!eyebrow && !title) return null;
+function renderHeader(block, config) {
+  if (!config.eyebrow && !config.title) return null;
 
-  const header = document.createElement('div');
-  header.className = 'editorial-article-grid-header';
+  const header = document.createElement('header');
+  header.className = 'editorial-article-grid-heading';
 
-  if (eyebrow) {
-    const el = document.createElement('h2');
-    el.className = 'editorial-article-grid-eyebrow';
-    el.textContent = eyebrow;
-    header.append(el);
+  if (config.eyebrow) {
+    const eyebrow = createTag(config.eyebrowHeading, 'editorial-article-grid-eyebrow', config.eyebrow);
+    const source = getFieldByProp(block, 'eyebrow');
+    if (source) moveInstrumentation(source, eyebrow);
+    header.append(eyebrow);
   }
 
-  if (title) {
-    const el = document.createElement('p');
-    el.className = 'editorial-article-grid-heading';
-    el.textContent = title;
-    header.append(el);
+  if (config.title) {
+    const title = createTag(config.titleHeading, 'editorial-article-grid-title', config.title);
+    const source = getFieldByProp(block, 'title');
+    if (source) moveInstrumentation(source, title);
+    header.append(title);
   }
 
   return header;
 }
 
-// --- Main decorator ---
+function hideSourceRows(sourceRows) {
+  sourceRows.forEach((row) => {
+    row.classList.add('editorial-article-grid-source');
+    row.setAttribute('aria-hidden', 'true');
+  });
+}
+
+function collectSourceRows(items) {
+  return items
+    .map((item) => item.sourceRow || item.sourceProp)
+    .filter(Boolean);
+}
+
+function renderCards(items) {
+  const list = document.createElement('div');
+  list.className = 'editorial-article-grid-list';
+
+  items.forEach((item) => {
+    const card = createCard(item);
+    if (card) list.append(card);
+  });
+
+  return list;
+}
+
+function hasRenderableCards(items) {
+  return items.some((item) => item?.title && item?.href);
+}
+
+function removePreviousRender(block) {
+  block.querySelector(':scope > .editorial-article-grid-rendered')?.remove();
+}
+
+function markInstrumentation(items, rendered) {
+  const cards = [...rendered.querySelectorAll('.editorial-article-grid-card')];
+  items.forEach((item, index) => {
+    const source = item.sourceRow || item.sourceProp;
+    if (!source) return;
+    moveInstrumentation(source, cards[index] || rendered);
+  });
+}
 
 export default async function decorate(block) {
-  block.querySelector(':scope > .editorial-article-grid-rendered')?.remove();
+  removePreviousRender(block);
 
-  const eyebrow = block.getAttribute('data-eyebrow') || block.getAttribute('data-pretitle') || '';
-  const title = block.getAttribute('data-title') || '';
-  const mode = block.getAttribute('data-mode') || 'manual';
+  const config = readConfig(block);
+  const items = config.mode === 'manual'
+    ? await getManualItems(block)
+    : await getAutoArticles(config.mode);
 
-  let items;
-  let sourceRows = [];
-
-  if (mode === 'manual') {
-    const manual = getManualItems(block);
-    items = manual;
-    sourceRows = manual.map((m) => m.sourceRow).filter(Boolean);
-  } else {
-    items = await getAutoArticles(mode);
+  if (!hasRenderableCards(items)) {
+    block.classList.add('editorial-article-grid-empty');
+    return;
   }
 
-  const rendered = document.createElement('div');
+  block.classList.remove('editorial-article-grid-empty');
+
+  const rendered = document.createElement('section');
   rendered.className = 'editorial-article-grid-rendered';
 
-  const header = renderHeader(eyebrow, title);
+  const header = renderHeader(block, config);
   if (header) rendered.append(header);
 
-  const list = document.createElement('ul');
-  list.className = 'editorial-article-grid-list';
-  items.forEach((item) => list.append(makeCard(item)));
+  const list = renderCards(items);
   rendered.append(list);
 
   block.append(rendered);
-
-  // Hide source rows preserving UE instrumentation
-  sourceRows.forEach((row, i) => {
-    row.classList.add('editorial-article-grid-source');
-    moveInstrumentation(row, rendered.querySelectorAll('.editorial-article-grid-card')[i] || rendered);
-  });
+  hideSourceRows(collectSourceRows(items));
+  markInstrumentation(items, rendered);
 }

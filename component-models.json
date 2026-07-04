@@ -801,11 +801,85 @@
         "value": ""
       },
       {
+        "component": "select",
+        "valueType": "string",
+        "name": "eyebrowHeading",
+        "label": "Eyebrow Heading Level",
+        "value": "h2",
+        "options": [
+          {
+            "name": "Paragraph",
+            "value": "p"
+          },
+          {
+            "name": "H1",
+            "value": "h1"
+          },
+          {
+            "name": "H2",
+            "value": "h2"
+          },
+          {
+            "name": "H3",
+            "value": "h3"
+          },
+          {
+            "name": "H4",
+            "value": "h4"
+          },
+          {
+            "name": "H5",
+            "value": "h5"
+          },
+          {
+            "name": "H6",
+            "value": "h6"
+          }
+        ]
+      },
+      {
         "component": "text",
         "valueType": "string",
         "name": "title",
         "label": "Title",
         "value": ""
+      },
+      {
+        "component": "select",
+        "valueType": "string",
+        "name": "titleHeading",
+        "label": "Title Heading Level",
+        "value": "p",
+        "options": [
+          {
+            "name": "Paragraph",
+            "value": "p"
+          },
+          {
+            "name": "H1",
+            "value": "h1"
+          },
+          {
+            "name": "H2",
+            "value": "h2"
+          },
+          {
+            "name": "H3",
+            "value": "h3"
+          },
+          {
+            "name": "H4",
+            "value": "h4"
+          },
+          {
+            "name": "H5",
+            "value": "h5"
+          },
+          {
+            "name": "H6",
+            "value": "h6"
+          }
+        ]
       },
       {
         "component": "select",
@@ -827,6 +901,24 @@
           }
         ],
         "value": "manual"
+      },
+      {
+        "component": "aem-content",
+        "valueType": "string",
+        "name": "manualArticle1",
+        "label": "Manual Article 1"
+      },
+      {
+        "component": "aem-content",
+        "valueType": "string",
+        "name": "manualArticle2",
+        "label": "Manual Article 2"
+      },
+      {
+        "component": "aem-content",
+        "valueType": "string",
+        "name": "manualArticle3",
+        "label": "Manual Article 3"
       }
     ]
   },

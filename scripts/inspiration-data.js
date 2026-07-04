@@ -197,8 +197,21 @@ function normalizeArticle(raw, index) {
     raw.categoryPath,
     categorySlug ? `${getCurrentLanguageRoot()}/inspiration-guide/category/${categorySlug}` : '',
   );
+  const categoryPath = firstDefined(
+    raw.categoryPath,
+    raw.categoryHierarchy,
+    categoryTag,
+    categorySlug,
+    '',
+  );
   const subcategory = firstDefined(raw.subcategory, raw.subCategory, raw.subcategorySlug, '');
   const publishDate = firstDefined(raw.publishDate, raw.publicationDate, raw.publishedAt, raw.date, '');
+  const publicationTimestampRaw = firstDefined(
+    raw.publicationTimestamp,
+    Date.parse(publishDate),
+    0,
+  );
+  const publicationTimestamp = Number.parseInt(publicationTimestampRaw, 10) || 0;
   const updateDate = firstDefined(raw.updateDate, raw.updatedAt, '');
   const readingTimeRaw = firstDefined(raw.readingTime, raw.readTime, raw.minutesToRead, 0);
   const readingTime = Number.parseInt(readingTimeRaw, 10) || 0;
@@ -230,10 +243,12 @@ function normalizeArticle(raw, index) {
     authorImage: String(firstDefined(raw.authorImage, raw.author?.image, '')),
     category: String(category),
     categorySlug: String(categorySlug),
+    categoryPath: String(categoryPath),
     categoryUrl: String(categoryUrl),
     subcategory: String(subcategory),
     publishDate: String(publishDate),
     publicationDate: String(publishDate),
+    publicationTimestamp,
     updateDate: String(updateDate),
     readingTime,
     readTime,
@@ -241,6 +256,8 @@ function normalizeArticle(raw, index) {
     path: String(path || url),
     href: String(url),
     url: String(url),
+    robots: String(firstDefined(raw.robots, '')),
+    lastModified: String(firstDefined(raw.lastModified, '')),
     visible: isVisible(raw.visible),
   };
 }
@@ -373,11 +390,13 @@ async function fetchArticleMetadata(path) {
     author: getMetaFromDocument(doc, 'article-author'),
     authorImage: getMetaFromDocument(doc, 'article-author-image'),
     category: getMetaFromDocument(doc, 'article-category'),
+    categoryPath: getMetaFromDocument(doc, 'article-category-path'),
     tags: getMetaFromDocument(doc, 'article-tags'),
     publicationDate: getMetaFromDocument(doc, 'article-publication-date'),
     updateDate: getMetaFromDocument(doc, 'article-update-date'),
     readTime: getMetaFromDocument(doc, 'article-read-time'),
     visible: getMetaFromDocument(doc, 'article-visible'),
+    robots: getMetaFromDocument(doc, 'robots'),
   };
 }
 
