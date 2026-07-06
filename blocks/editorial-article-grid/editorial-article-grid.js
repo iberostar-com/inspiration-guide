@@ -26,11 +26,8 @@ const CONFIG_PROP_ORDER = [
   'cardCtaLabel',
   'ctaTarget',
   'manualArticle1',
-  'manualArticle1Pretitle',
   'manualArticle2',
-  'manualArticle2Pretitle',
   'manualArticle3',
-  'manualArticle3Pretitle',
 ];
 const CONFIG_PROPS = new Set(CONFIG_PROP_ORDER);
 const ARTICLE_CARD_CACHE = new Map();
@@ -170,6 +167,59 @@ function getMetaFromDocument(doc, name) {
     || '';
 }
 
+function unique(values) {
+  return [...new Set(values.filter(Boolean))];
+}
+
+function toFetchCandidates(refPath) {
+  const rawValue = `${refPath || ''}`.trim();
+  if (!rawValue) return [];
+
+  let rawPath = rawValue;
+  if (/^(?:https?:)?\/\//i.test(rawPath)) {
+    try {
+      rawPath = new URL(rawPath, window.location.origin).pathname;
+    } catch (e) {
+      rawPath = rawValue;
+    }
+  }
+
+  const normalized = normalizePath(rawPath);
+  const publicFromContent = rawPath.replace(/^\/content\/inspiration-guide(?:\/|$)/i, '/');
+
+  const withHtml = (path) => (path.endsWith('.html') ? path : `${path}.html`);
+  const withoutHtml = (path) => path.replace(/\.html$/i, '');
+
+  return unique([
+    rawPath,
+    withHtml(rawPath),
+    withoutHtml(rawPath),
+    normalized,
+    withHtml(normalized),
+    publicFromContent,
+    withHtml(publicFromContent),
+    withoutHtml(publicFromContent),
+  ]);
+}
+
+function extractImageFromDocument(doc) {
+  const image = getMetaFromDocument(doc, 'article-image')
+    || getMetaFromDocument(doc, 'og:image')
+    || getMetaFromDocument(doc, 'twitter:image')
+    || doc.querySelector('main picture img')?.getAttribute('src')
+    || doc.querySelector('picture img')?.getAttribute('src')
+    || doc.querySelector('img')?.getAttribute('src')
+    || '';
+
+  const imageAlt = getMetaFromDocument(doc, 'article-image-alt')
+    || getMetaFromDocument(doc, 'og:image:alt')
+    || doc.querySelector('main picture img')?.getAttribute('alt')
+    || doc.querySelector('picture img')?.getAttribute('alt')
+    || '';
+
+  return { image, imageAlt };
+}
+
 function normalizeStr(value) {
   return `${value || ''}`.trim().toLowerCase();
 }
@@ -214,14 +264,16 @@ function isVisibleArticle(article) {
   return !robots.includes('noindex');
 }
 
-function getRootCategoryLabel(raw) {
+function getLeafCategoryLabel(raw) {
   if (!raw) return '';
 
   const tree = toCategoryTree(raw)
+    .flatMap((part) => `${part}`.split('/'))
+    .map((part) => part.split(':').pop() || '')
     .map((part) => part.replace(/-/g, ' ').trim())
     .filter(Boolean);
-  const root = tree[0] || '';
-  return root.charAt(0).toUpperCase() + root.slice(1);
+  const leaf = tree[tree.length - 1] || '';
+  return leaf.charAt(0).toUpperCase() + leaf.slice(1);
 }
 
 function getComparableTimestamp(article) {
@@ -295,7 +347,7 @@ function toResolvedCardItem(article) {
     image: article.image || article.ogImage || '',
     imageAlt: article.imageAlt || '',
     title: article.title || '',
-    category: getRootCategoryLabel(article.categoryPath || article.category),
+    category: getLeafCategoryLabel(article.categoryPath || article.category),
   };
 }
 
@@ -305,33 +357,38 @@ async function fetchArticleCardItem(refPath) {
   if (ARTICLE_CARD_CACHE.has(href)) return ARTICLE_CARD_CACHE.get(href);
 
   const request = (async () => {
-    try {
-      const response = await fetch(href, {
-        headers: { Accept: 'text/html' },
-        credentials: 'same-origin',
-      });
-      if (!response.ok) return null;
+    const candidates = toFetchCandidates(refPath);
+    const attempts = await Promise.all(candidates.map(async (candidate) => {
+      try {
+        const response = await fetch(candidate, {
+          headers: { Accept: 'text/html' },
+          credentials: 'same-origin',
+        });
+        if (!response.ok) return null;
 
-      const html = await response.text();
-      const doc = new DOMParser().parseFromString(html, 'text/html');
-      const category = getMetaFromDocument(doc, 'article-category-path')
-        || getMetaFromDocument(doc, 'article-category');
+        const html = await response.text();
+        const doc = new DOMParser().parseFromString(html, 'text/html');
+        const category = getMetaFromDocument(doc, 'article-category-path')
+          || getMetaFromDocument(doc, 'article-category');
+        const { image, imageAlt } = extractImageFromDocument(doc);
 
-      return {
-        href,
-        image: getMetaFromDocument(doc, 'article-image')
-          || getMetaFromDocument(doc, 'og:image'),
-        imageAlt: getMetaFromDocument(doc, 'article-image-alt')
-          || getMetaFromDocument(doc, 'og:image:alt'),
-        title: getMetaFromDocument(doc, 'jcr:title')
-          || getMetaFromDocument(doc, 'og:title')
-          || doc.querySelector('title')?.textContent?.trim()
-          || '',
-        category: getRootCategoryLabel(category),
-      };
-    } catch (e) {
-      return null;
-    }
+        return {
+          href,
+          image,
+          imageAlt,
+          title: getMetaFromDocument(doc, 'jcr:title')
+            || getMetaFromDocument(doc, 'og:title')
+            || doc.querySelector('h1')?.textContent?.trim()
+            || doc.querySelector('title')?.textContent?.trim()
+            || '',
+          category: getLeafCategoryLabel(category),
+        };
+      } catch (e) {
+        return null;
+      }
+    }));
+
+    return attempts.find(Boolean) || null;
   })();
 
   ARTICLE_CARD_CACHE.set(href, request);
@@ -452,7 +509,7 @@ function parseLegacyManualItem(row, index) {
     image: img?.src || '',
     imageAlt: img?.alt || '',
     title,
-    category: getRootCategoryLabel(rawCategory) || rawCategory,
+    category: getLeafCategoryLabel(rawCategory) || rawCategory,
     picture,
     sourceRow: row,
     sortOrder: index,
@@ -463,17 +520,12 @@ async function getManualItems(block) {
   const allArticles = await safeGetVisibleArticles();
 
   const manualRefInputs = ['manualArticle1', 'manualArticle2', 'manualArticle3']
-    .map((propName, index) => {
-      const pretitlePropName = `${propName}Pretitle`;
-      return {
-        propName,
-        index,
-        refPath: hrefByProp(block, propName),
-        sourceProp: getFieldByProp(block, propName),
-        pretitle: textByProp(block, pretitlePropName),
-        pretitleSource: getFieldByProp(block, pretitlePropName),
-      };
-    });
+    .map((propName, index) => ({
+      propName,
+      index,
+      refPath: hrefByProp(block, propName),
+      sourceProp: getFieldByProp(block, propName),
+    }));
 
   const hasManualRefInputs = manualRefInputs.some((item) => item.refPath);
 
@@ -497,11 +549,10 @@ async function getManualItems(block) {
         return {
           href,
           title,
-          pretitle: item.pretitle || fetchedItem?.category || indexedItem?.category || '',
+          pretitle: fetchedItem?.category || indexedItem?.category || '',
           image: fetchedItem?.image || indexedItem?.image || '',
           imageAlt: fetchedItem?.imageAlt || indexedItem?.imageAlt || '',
           sourceProp: item.sourceProp,
-          pretitleSource: item.pretitleSource,
           sortOrder: item.index,
         };
       })))
@@ -542,12 +593,6 @@ function createCard(item, config) {
   const article = document.createElement('article');
   article.className = 'editorial-article-grid-card';
 
-  const link = document.createElement('a');
-  link.className = 'editorial-article-grid-card-link';
-  link.href = item.href;
-  link.target = config.ctaTarget;
-  if (config.ctaTarget === '_blank') link.rel = 'noopener noreferrer';
-
   if (item.picture || item.image) {
     const media = document.createElement('div');
     media.className = 'editorial-article-grid-card-image';
@@ -560,20 +605,25 @@ function createCard(item, config) {
       media.append(createResponsiveImage(item.image, item.imageAlt || '', { preset: 'article-card' }));
     }
 
-    link.append(media);
+    article.append(media);
   }
 
   const body = document.createElement('div');
   body.className = 'editorial-article-grid-card-body';
 
-  const pretitleText = item.pretitle || item.category;
+  const rawPretitle = item.pretitle || item.category;
+  const pretitleText = getLeafCategoryLabel(rawPretitle) || rawPretitle;
   if (pretitleText) {
-    const pretitle = createTag('p', 'editorial-article-grid-card-pretitle', pretitleText);
-    if (item.pretitleSource) moveInstrumentation(item.pretitleSource, pretitle);
-    body.append(pretitle);
+    body.append(createTag('p', 'editorial-article-grid-card-pretitle', pretitleText));
   }
 
   body.append(createTag('h3', 'editorial-article-grid-card-title', item.title));
+
+  const ctaLink = document.createElement('a');
+  ctaLink.className = 'editorial-article-grid-card-cta-link';
+  ctaLink.href = item.href;
+  ctaLink.target = config.ctaTarget;
+  if (config.ctaTarget === '_blank') ctaLink.rel = 'noopener noreferrer';
 
   const cta = document.createElement('span');
   cta.className = 'editorial-article-grid-card-cta';
@@ -584,9 +634,9 @@ function createCard(item, config) {
   arrow.textContent = '→';
   cta.append(arrow);
 
-  body.append(cta);
-  link.append(body);
-  article.append(link);
+  ctaLink.append(cta);
+  body.append(ctaLink);
+  article.append(body);
 
   return article;
 }
@@ -653,7 +703,7 @@ function renderCards(block, items, config) {
   if (ctaTargetSource) {
     moveInstrumentation(
       ctaTargetSource,
-      list.querySelector('.editorial-article-grid-card-link'),
+      list.querySelector('.editorial-article-grid-card-cta-link'),
     );
   }
 

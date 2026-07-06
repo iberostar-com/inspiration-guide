@@ -10,7 +10,7 @@ import {
 } from '../../scripts/iberostar/hotels-api.js';
 import { moveInstrumentation } from '../../scripts/scripts.js';
 
-const MAX_HOTELS = 4;
+const DEFAULT_VISIBLE_COUNT = 4;
 const CONFIG_FIELD_POSITIONS = {
   eyebrow: 0,
   gridCta_link: 3,
@@ -173,7 +173,6 @@ function getHotelCodes(block) {
   const itemRows = rows.filter((row) => !configRows.has(row));
 
   return itemRows
-    .slice(0, MAX_HOTELS)
     .map((row) => {
       const hotelCodeProp = row.querySelector('[data-aue-prop="hotelCode"]');
       const destinationProp = row.querySelector('[data-aue-prop="destination"]');
@@ -194,6 +193,186 @@ function getHotelCodes(block) {
       };
     })
     .filter(({ hotelCode }) => hotelCode);
+}
+
+function createNavButton(direction, label) {
+  const button = document.createElement('button');
+  button.type = 'button';
+  button.className = `recommended-dynamic-hotels-${direction}`;
+  button.setAttribute('aria-label', label);
+  button.innerHTML = '<span aria-hidden="true"></span>';
+  return button;
+}
+
+function getSliderMetrics(list, items) {
+  const styles = window.getComputedStyle(list);
+  const gap = Number.parseFloat(styles.columnGap) || 16;
+  const paddingStart = Number.parseFloat(styles.paddingInlineStart) || 0;
+  const paddingEnd = Number.parseFloat(styles.paddingInlineEnd) || 0;
+  const itemWidth = items[0]?.getBoundingClientRect().width || list.clientWidth;
+  const contentWidth = list.clientWidth - paddingStart - paddingEnd;
+  const visibleCount = Math.max(
+    1,
+    Math.floor((contentWidth + gap) / (itemWidth + gap) + 0.01),
+  );
+
+  return {
+    paddingStart,
+    visibleCount,
+  };
+}
+
+function getCurrentIndex(list, items, paddingStart) {
+  const listLeft = list.getBoundingClientRect().left + paddingStart;
+  return items.reduce((nearest, item, index) => {
+    const distance = Math.abs(item.getBoundingClientRect().left - listLeft);
+    return distance < nearest.distance ? { distance, index } : nearest;
+  }, { distance: Number.POSITIVE_INFINITY, index: 0 }).index;
+}
+
+function scrollToIndex(list, items, index, paddingStart, behavior = 'smooth') {
+  const target = items[index];
+  if (!target) return;
+
+  const listRect = list.getBoundingClientRect();
+  const targetRect = target.getBoundingClientRect();
+  const left = list.scrollLeft + targetRect.left - listRect.left - paddingStart;
+  list.scrollTo({ behavior, left });
+}
+
+function createDots(container, pageCount, activePage, onSelect, label) {
+  container.replaceChildren();
+  Array.from({ length: pageCount }).forEach((_, index) => {
+    const dot = document.createElement('button');
+    dot.type = 'button';
+    dot.className = 'recommended-dynamic-hotels-dot';
+    dot.classList.toggle('active', index === activePage);
+    dot.setAttribute('aria-label', `${label} ${index + 1}`);
+    dot.setAttribute('aria-current', index === activePage ? 'true' : 'false');
+    dot.addEventListener('click', () => onSelect(index));
+    container.append(dot);
+  });
+}
+
+function createDesktopControls(labels) {
+  const controls = document.createElement('div');
+  controls.className = 'recommended-dynamic-hotels-pagination';
+
+  const status = document.createElement('span');
+  status.className = 'recommended-dynamic-hotels-status';
+  status.setAttribute('aria-live', 'polite');
+
+  const buttons = document.createElement('div');
+  buttons.className = 'recommended-dynamic-hotels-pagination-buttons';
+  buttons.append(
+    createNavButton('prev', labels.previous),
+    createNavButton('next', labels.next),
+  );
+
+  controls.append(status, buttons);
+  return controls;
+}
+
+function createMobileControls(labels) {
+  const controls = document.createElement('div');
+  controls.className = 'recommended-dynamic-hotels-mobile-controls';
+
+  const dots = document.createElement('div');
+  dots.className = 'recommended-dynamic-hotels-dots';
+
+  controls.append(
+    createNavButton('prev', labels.previous),
+    dots,
+    createNavButton('next', labels.next),
+  );
+  return controls;
+}
+
+function setupSlider(list, desktopControls, mobileControls, labels) {
+  const items = [...list.children];
+  const desktopStatus = desktopControls.querySelector('.recommended-dynamic-hotels-status');
+  const desktopPrev = desktopControls.querySelector('.recommended-dynamic-hotels-prev');
+  const desktopNext = desktopControls.querySelector('.recommended-dynamic-hotels-next');
+  const mobilePrev = mobileControls.querySelector('.recommended-dynamic-hotels-prev');
+  const mobileNext = mobileControls.querySelector('.recommended-dynamic-hotels-next');
+  const dots = mobileControls.querySelector('.recommended-dynamic-hotels-dots');
+  let frame = 0;
+  let currentIndex = 0;
+  let visibleCount = DEFAULT_VISIBLE_COUNT;
+
+  const sync = () => {
+    const metrics = getSliderMetrics(list, items);
+    visibleCount = Math.min(metrics.visibleCount, items.length);
+    currentIndex = Math.min(
+      getCurrentIndex(list, items, metrics.paddingStart),
+      Math.max(0, items.length - visibleCount),
+    );
+
+    const end = Math.min(items.length, currentIndex + visibleCount);
+    desktopStatus.textContent = `${currentIndex + 1} - ${end} ${labels.of} ${items.length}`;
+
+    const atStart = currentIndex === 0;
+    const atEnd = end >= items.length;
+    [desktopPrev, mobilePrev].forEach((button) => {
+      button.disabled = atStart;
+    });
+    [desktopNext, mobileNext].forEach((button) => {
+      button.disabled = atEnd;
+    });
+
+    const pageCount = Math.ceil(items.length / visibleCount);
+    const activePage = atEnd
+      ? pageCount - 1
+      : Math.min(Math.floor(currentIndex / visibleCount), pageCount - 1);
+    createDots(
+      dots,
+      pageCount,
+      activePage,
+      (page) => {
+        const target = Math.min(page * visibleCount, items.length - visibleCount);
+        scrollToIndex(list, items, target, metrics.paddingStart);
+      },
+      labels.goTo,
+    );
+
+    const controlsHidden = items.length <= visibleCount;
+    desktopControls.hidden = controlsHidden;
+    mobileControls.hidden = controlsHidden;
+  };
+
+  const scheduleSync = () => {
+    window.cancelAnimationFrame(frame);
+    frame = window.requestAnimationFrame(sync);
+  };
+
+  const move = (direction) => {
+    const metrics = getSliderMetrics(list, items);
+    const target = Math.max(
+      0,
+      Math.min(
+        currentIndex + direction * visibleCount,
+        items.length - visibleCount,
+      ),
+    );
+    scrollToIndex(list, items, target, metrics.paddingStart);
+  };
+
+  [desktopPrev, mobilePrev].forEach((button) => {
+    button.addEventListener('click', () => move(-1));
+  });
+  [desktopNext, mobileNext].forEach((button) => {
+    button.addEventListener('click', () => move(1));
+  });
+
+  list.addEventListener('scroll', scheduleSync, { passive: true });
+  const resizeObserver = new ResizeObserver(scheduleSync);
+  resizeObserver.observe(list);
+  sync();
+
+  return () => {
+    resizeObserver.disconnect();
+    window.cancelAnimationFrame(frame);
+  };
 }
 
 function createHeader(labels) {
@@ -277,14 +456,16 @@ async function getPriceText(hotel, hotelCode, endpointPrice = null) {
     .trim();
 }
 
-function createGridContainer(entries) {
-  const container = document.createElement('div');
-  container.className = 'recommended-dynamic-hotels-grid-container';
+function createList(entries, labels) {
+  const list = document.createElement('ul');
+  list.className = 'recommended-dynamic-hotels-list';
+  list.setAttribute('aria-label', labels.carousel);
+  list.tabIndex = 0;
 
   entries.forEach(({ hotelData, source }) => {
     const card = createHotelMiniCard(hotelData, 'vertical');
-    const item = document.createElement('div');
-    item.className = 'recommended-dynamic-hotels-grid-item';
+    const item = document.createElement('li');
+    item.className = 'recommended-dynamic-hotels-item';
 
     if (source) {
       moveInstrumentation(source, item);
@@ -294,15 +475,16 @@ function createGridContainer(entries) {
     }
 
     item.append(card);
-    container.append(item);
+    list.append(item);
   });
 
-  return container;
+  return list;
 }
 
 export default async function decorate(block) {
   const existing = block.querySelector(':scope > .recommended-dynamic-hotels-grid-rendered');
   if (existing) {
+    existing.sliderCleanup?.();
     existing.querySelectorAll('.recommended-dynamic-hotels-grid-source').forEach((row) => {
       row.classList.remove('recommended-dynamic-hotels-grid-source');
       row.removeAttribute('aria-hidden');
@@ -311,17 +493,39 @@ export default async function decorate(block) {
     existing.remove();
   }
 
+  const [
+    carousel,
+    previous,
+    next,
+    goTo,
+    of,
+  ] = await Promise.all([
+    getTranslation('hotelsCarousel', 'Recommended hotels'),
+    getTranslation('carouselPrevious', 'Previous hotels'),
+    getTranslation('carouselNext', 'Next hotels'),
+    getTranslation('carouselGoTo', 'Go to hotel group'),
+    getTranslation('carouselOf', 'of'),
+  ]);
+
   const labels = {
-    eyebrow: getConfigValue(block, 'eyebrow', 'data-eyebrow'),
-    title: getConfigValue(block, 'title', 'data-title'),
+    carousel,
     cta: getCtaConfig(block),
+    eyebrow: getConfigValue(block, 'eyebrow', 'data-eyebrow'),
+    goTo,
+    next,
+    of,
+    previous,
+    title: getConfigValue(block, 'title', 'data-title'),
   };
 
   const hotelCodesToFetch = getHotelCodes(block);
   const rendered = document.createElement('div');
   rendered.className = 'recommended-dynamic-hotels-grid-rendered';
 
-  rendered.append(createHeader(labels));
+  const header = createHeader(labels);
+  const desktopControls = createDesktopControls(labels);
+  header.append(desktopControls);
+  rendered.append(header);
 
   if (!hotelCodesToFetch.length) {
     if (isAuthoringPage(block)) {
@@ -380,7 +584,10 @@ export default async function decorate(block) {
     return;
   }
 
-  rendered.append(createGridContainer(validHotels));
+  const list = createList(validHotels, labels);
+  const mobileControls = createMobileControls(labels);
+  rendered.append(list, mobileControls);
+  rendered.sliderCleanup = setupSlider(list, desktopControls, mobileControls, labels);
 
   hideSourceRows(getSourceRows(block));
   block.append(rendered);

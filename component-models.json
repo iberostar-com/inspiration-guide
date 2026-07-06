@@ -1002,40 +1002,43 @@
         "component": "aem-content",
         "valueType": "string",
         "name": "manualArticle1",
-        "label": "Manual Article 1"
-      },
-      {
-        "component": "text",
-        "valueType": "string",
-        "name": "manualArticle1Pretitle",
-        "label": "Manual Article 1 Pretitle",
-        "value": ""
+        "label": "Manual Article 1",
+        "condition": {
+          "==": [
+            {
+              "var": "mode"
+            },
+            "manual"
+          ]
+        }
       },
       {
         "component": "aem-content",
         "valueType": "string",
         "name": "manualArticle2",
-        "label": "Manual Article 2"
-      },
-      {
-        "component": "text",
-        "valueType": "string",
-        "name": "manualArticle2Pretitle",
-        "label": "Manual Article 2 Pretitle",
-        "value": ""
+        "label": "Manual Article 2",
+        "condition": {
+          "==": [
+            {
+              "var": "mode"
+            },
+            "manual"
+          ]
+        }
       },
       {
         "component": "aem-content",
         "valueType": "string",
         "name": "manualArticle3",
-        "label": "Manual Article 3"
-      },
-      {
-        "component": "text",
-        "valueType": "string",
-        "name": "manualArticle3Pretitle",
-        "label": "Manual Article 3 Pretitle",
-        "value": ""
+        "label": "Manual Article 3",
+        "condition": {
+          "==": [
+            {
+              "var": "mode"
+            },
+            "manual"
+          ]
+        }
       }
     ]
   },
