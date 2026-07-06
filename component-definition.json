@@ -98,6 +98,22 @@
           }
         },
         {
+          "title": "Article Content - Quote",
+          "id": "article-content-quote",
+          "plugins": {
+            "xwalk": {
+              "page": {
+                "resourceType": "core/franklin/components/block/v1/block",
+                "template": {
+                  "name": "Article Content Quote",
+                  "model": "article-content-quote",
+                  "filter": "article-content-quote"
+                }
+              }
+            }
+          }
+        },
+        {
           "title": "Article Content - Table",
           "id": "article-content-table",
           "plugins": {
@@ -245,6 +261,7 @@
                 "resourceType": "core/franklin/components/block/v1/block",
                 "template": {
                   "name": "Carousel Category Gallery",
+                  "model": "carousel-category-gallery",
                   "filter": "carousel-category-gallery"
                 }
               }
@@ -352,7 +369,23 @@
                 "resourceType": "core/franklin/components/block/v1/block",
                 "template": {
                   "name": "Editorial Highlight Grid",
-                  "model": "editorial-highlight-grid"
+                  "model": "editorial-highlight-grid",
+                  "filter": "editorial-highlight-grid"
+                }
+              }
+            }
+          }
+        },
+        {
+          "title": "Editorial Highlight Article",
+          "id": "editorial-highlight-article",
+          "plugins": {
+            "xwalk": {
+              "page": {
+                "resourceType": "core/franklin/components/block/v1/block/item",
+                "template": {
+                  "name": "Article",
+                  "model": "editorial-highlight-article"
                 }
               }
             }
@@ -560,6 +593,21 @@
           }
         },
         {
+          "title": "Hotel GraphQL Mini Card",
+          "id": "hotel-graphql-mini-card",
+          "plugins": {
+            "xwalk": {
+              "page": {
+                "resourceType": "core/franklin/components/block/v1/block",
+                "template": {
+                  "name": "Hotel GraphQL Mini Card",
+                  "model": "hotel-graphql-mini-card"
+                }
+              }
+            }
+          }
+        },
+        {
           "title": "Hotel Mini Card",
           "id": "hotel-mini-card",
           "plugins": {
@@ -617,6 +665,37 @@
           }
         },
         {
+          "title": "Nav Item",
+          "id": "nav-item",
+          "plugins": {
+            "xwalk": {
+              "page": {
+                "resourceType": "core/franklin/components/block/v1/block",
+                "template": {
+                  "name": "Nav Item",
+                  "model": "nav-item",
+                  "filter": "nav-item"
+                }
+              }
+            }
+          }
+        },
+        {
+          "title": "Nav Item Child",
+          "id": "nav-item-child",
+          "plugins": {
+            "xwalk": {
+              "page": {
+                "resourceType": "core/franklin/components/block/v1/block/item",
+                "template": {
+                  "name": "Nav Item Child",
+                  "model": "nav-item-child"
+                }
+              }
+            }
+          }
+        },
+        {
           "title": "Nav Language Selector",
           "id": "nav-language",
           "plugins": {
@@ -656,6 +735,37 @@
                 "template": {
                   "name": "Nav Search Link",
                   "model": "nav-search"
+                }
+              }
+            }
+          }
+        },
+        {
+          "title": "Recommended Dynamic Hotels Grid",
+          "id": "recommended-dynamic-hotels-grid",
+          "plugins": {
+            "xwalk": {
+              "page": {
+                "resourceType": "core/franklin/components/block/v1/block",
+                "template": {
+                  "name": "Recommended Dynamic Hotels Grid",
+                  "model": "recommended-dynamic-hotels-grid",
+                  "filter": "recommended-dynamic-hotels-grid"
+                }
+              }
+            }
+          }
+        },
+        {
+          "title": "Dynamic Hotel Item",
+          "id": "recommended-dynamic-hotel",
+          "plugins": {
+            "xwalk": {
+              "page": {
+                "resourceType": "core/franklin/components/block/v1/block/item",
+                "template": {
+                  "name": "Dynamic Hotel",
+                  "model": "recommended-dynamic-hotel"
                 }
               }
             }

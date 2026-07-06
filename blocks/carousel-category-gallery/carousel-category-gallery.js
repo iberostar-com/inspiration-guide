@@ -1,6 +1,45 @@
-import { decorateIcons } from '../../scripts/aem.js';
 import { createResponsiveImage } from '../../scripts/iberostar/media.js';
 import { moveInstrumentation } from '../../scripts/scripts.js';
+
+const DEFAULT_MAX_ITEMS = 9;
+
+function getRows(block) {
+  return [...block.children]
+    .filter((row) => !row.classList.contains('carousel-category-gallery'));
+}
+
+function isCardRow(row) {
+  if (row.matches?.('[data-aue-model="carousel-category-gallery-card"]')) return true;
+  if (row.querySelector?.('[data-aue-model="carousel-category-gallery-card"]')) return true;
+  if (row.querySelector?.('picture, img')) return true;
+  return row.children.length > 1;
+}
+
+function getCardRows(block) {
+  return getRows(block).filter(isCardRow);
+}
+
+function getConfigRows(block) {
+  return getRows(block).filter((row) => !isCardRow(row));
+}
+
+function readConfig(block, propName, index) {
+  const configRows = getConfigRows(block);
+
+  const instrumented = configRows
+    .map((row) => (row.matches?.(`[data-aue-prop="${propName}"]`)
+      ? row
+      : row.querySelector?.(`[data-aue-prop="${propName}"]`)))
+    .find(Boolean);
+  if (instrumented) {
+    return { value: instrumented.textContent?.trim() || '', source: instrumented };
+  }
+
+  const positional = configRows[index]?.textContent?.trim();
+  if (positional) return { value: positional, source: null };
+
+  return { value: block.getAttribute(`data-${propName}`) || '', source: null };
+}
 
 function createCard(row) {
   const cells = [...row.children];
@@ -17,22 +56,21 @@ function createCard(row) {
   card.className = 'carousel-category-gallery-card';
   if (link) card.href = link;
 
-  if (icon) {
-    const iconSpan = document.createElement('span');
-    iconSpan.className = `icon icon-${icon}`;
-    card.append(iconSpan);
-  }
-
   if (picture) {
     const media = document.createElement('div');
     media.className = 'carousel-category-gallery-media';
-    const optimizedPic = createResponsiveImage(
+    media.append(createResponsiveImage(
       picture.querySelector('img')?.src,
       title,
       { preset: 'category-carousel' },
-    );
-    media.append(optimizedPic);
+    ));
     card.append(media);
+  }
+
+  if (icon) {
+    const iconEl = document.createElement('i');
+    iconEl.className = `ibh-icon-${icon.replace(/_/g, '-')}`;
+    card.append(iconEl);
   }
 
   if (title) {
@@ -45,68 +83,216 @@ function createCard(row) {
   return li;
 }
 
-function addNavButtons(wrapper, list) {
+function getStride(cards) {
+  const first = cards[0].getBoundingClientRect();
+  if (cards[1]) return cards[1].getBoundingClientRect().left - first.left;
+  return first.width;
+}
+
+function paging(list) {
+  const cards = [...list.children];
+  const total = cards.length;
+  if (!total) {
+    return {
+      start: 0, end: 0, total: 0, index: 0, stride: 0,
+    };
+  }
+
+  const stride = getStride(cards) || 1;
+  const perView = Math.max(1, Math.round(list.clientWidth / stride));
+  const maxIndex = Math.max(0, total - perView);
+  const index = Math.min(Math.max(Math.round(list.scrollLeft / stride), 0), maxIndex);
+
+  return {
+    start: index + 1,
+    end: Math.min(index + perView, total),
+    total,
+    index,
+    stride,
+  };
+}
+
+function enableDrag(list) {
+  let dragging = false;
+  let startX = 0;
+  let startScroll = 0;
+  let moved = false;
+
+  const stop = () => {
+    if (!dragging) return;
+    dragging = false;
+    list.style.removeProperty('scroll-snap-type');
+  };
+
+  list.addEventListener('pointerdown', (event) => {
+    if (event.pointerType === 'touch' || event.button !== 0) return;
+    dragging = true;
+    moved = false;
+    startX = event.clientX;
+    startScroll = list.scrollLeft;
+    list.style.scrollSnapType = 'none';
+  });
+
+  list.addEventListener('pointermove', (event) => {
+    if (!dragging) return;
+    const dx = event.clientX - startX;
+    if (Math.abs(dx) > 4) moved = true;
+    list.scrollLeft = startScroll - dx;
+  });
+
+  list.addEventListener('pointerup', stop);
+  list.addEventListener('pointerleave', stop);
+  list.addEventListener('pointercancel', stop);
+  list.addEventListener('dragstart', (event) => event.preventDefault());
+
+  list.addEventListener('click', (event) => {
+    if (moved) {
+      event.preventDefault();
+      event.stopPropagation();
+    }
+  }, true);
+}
+
+function buildArrow(className, label, direction) {
+  const button = document.createElement('button');
+  button.type = 'button';
+  button.className = className;
+  button.setAttribute('aria-label', label);
+  button.dataset.direction = direction;
+  return button;
+}
+
+function buildControls(list, count) {
   const nav = document.createElement('div');
   nav.className = 'carousel-category-gallery-nav';
 
-  const prev = document.createElement('button');
-  prev.type = 'button';
-  prev.className = 'carousel-category-gallery-prev';
-  prev.setAttribute('aria-label', 'Previous');
+  const counter = document.createElement('span');
+  counter.className = 'carousel-category-gallery-counter';
+  counter.setAttribute('aria-live', 'polite');
 
-  const next = document.createElement('button');
-  next.type = 'button';
-  next.className = 'carousel-category-gallery-next';
-  next.setAttribute('aria-label', 'Next');
+  const prev = buildArrow('carousel-category-gallery-prev', 'Previous', -1);
+  const next = buildArrow('carousel-category-gallery-next', 'Next', 1);
+  nav.append(counter, prev, next);
 
-  const scrollByCard = (direction) => {
-    const card = list.querySelector('.carousel-category-gallery-item');
-    const amount = (card?.getBoundingClientRect().width || 300) + 16;
-    list.scrollBy({ left: amount * direction, behavior: 'smooth' });
+  const dotsBar = document.createElement('div');
+  dotsBar.className = 'carousel-category-gallery-dots-bar';
+
+  const prevArrow = buildArrow('carousel-category-gallery-arrow carousel-category-gallery-arrow-prev', 'Previous', -1);
+  const nextArrow = buildArrow('carousel-category-gallery-arrow carousel-category-gallery-arrow-next', 'Next', 1);
+
+  const dots = document.createElement('div');
+  dots.className = 'carousel-category-gallery-dots';
+
+  const dotEls = Array.from({ length: count }, (unused, i) => {
+    const dot = document.createElement('button');
+    dot.type = 'button';
+    dot.className = 'carousel-category-gallery-dot';
+    dot.setAttribute('aria-label', `Go to slide ${i + 1}`);
+    dot.dataset.index = i;
+    dots.append(dot);
+    return dot;
+  });
+
+  dotsBar.append(prevArrow, dots, nextArrow);
+
+  const scrollToIndex = (i) => {
+    const { stride } = paging(list);
+    list.scrollTo({ left: i * stride, behavior: 'smooth' });
   };
 
-  prev.addEventListener('click', () => scrollByCard(-1));
-  next.addEventListener('click', () => scrollByCard(1));
+  const step = (direction) => {
+    const { index } = paging(list);
+    scrollToIndex(index + direction);
+  };
 
-  nav.append(prev, next);
-  wrapper.append(nav);
+  [prev, next, prevArrow, nextArrow].forEach((button) => {
+    button.addEventListener('click', () => step(Number(button.dataset.direction)));
+  });
+
+  dotEls.forEach((dot) => {
+    dot.addEventListener('click', () => scrollToIndex(Number(dot.dataset.index)));
+  });
+
+  const update = () => {
+    const {
+      start, end, total, index,
+    } = paging(list);
+    if (!total) return;
+
+    const range = start === end ? `${start}` : `${start} - ${end}`;
+    counter.textContent = `${range} de ${total}`;
+
+    const atStart = start <= 1;
+    const atEnd = end >= total;
+    prev.disabled = atStart;
+    next.disabled = atEnd;
+    prevArrow.disabled = atStart;
+    nextArrow.disabled = atEnd;
+
+    dotEls.forEach((dot, i) => dot.classList.toggle('is-active', i === index));
+  };
+
+  list.addEventListener('scroll', update, { passive: true });
+  window.addEventListener('resize', update);
+
+  return { nav, dotsBar, update };
 }
 
 export default function decorate(block) {
-  const title = block.getAttribute('data-title') || '';
-  const subtitle = block.getAttribute('data-subtitle') || '';
-  const maxItems = Number.parseInt(block.getAttribute('data-max-items') || '9', 10);
+  const eyebrow = readConfig(block, 'eyebrow', 0);
+  const title = readConfig(block, 'title', 1);
+  const maxItems = Number.parseInt(readConfig(block, 'maxItems', 2).value, 10) || DEFAULT_MAX_ITEMS;
 
-  const rows = [...block.children].slice(0, maxItems);
+  const cardRows = getCardRows(block).slice(0, maxItems);
 
   const wrapper = document.createElement('div');
   wrapper.className = 'carousel-category-gallery';
 
-  if (title || subtitle) {
+  const list = document.createElement('ul');
+  list.className = 'carousel-category-gallery-list';
+  cardRows.forEach((row) => list.append(createCard(row)));
+
+  const showNav = cardRows.length > 1;
+  if (showNav) enableDrag(list);
+  let controls = null;
+
+  if (eyebrow.value || title.value || showNav) {
     const header = document.createElement('div');
     header.className = 'carousel-category-gallery-header';
-    if (title) {
-      const h2 = document.createElement('h2');
-      h2.textContent = title;
-      header.append(h2);
+
+    const headings = document.createElement('div');
+    headings.className = 'carousel-category-gallery-headings';
+
+    if (eyebrow.value) {
+      const el = document.createElement('p');
+      el.className = 'carousel-category-gallery-eyebrow';
+      el.textContent = eyebrow.value;
+      if (eyebrow.source) moveInstrumentation(eyebrow.source, el);
+      headings.append(el);
     }
-    if (subtitle) {
-      const p = document.createElement('p');
-      p.textContent = subtitle;
-      header.append(p);
+
+    if (title.value) {
+      const el = document.createElement('h2');
+      el.className = 'carousel-category-gallery-title';
+      el.textContent = title.value;
+      if (title.source) moveInstrumentation(title.source, el);
+      headings.append(el);
     }
+
+    header.append(headings);
+
+    if (showNav) {
+      controls = buildControls(list, cardRows.length);
+      header.append(controls.nav);
+    }
+
     wrapper.append(header);
   }
 
-  const list = document.createElement('ul');
-  list.className = 'carousel-category-gallery-list';
-  rows.forEach((row) => list.append(createCard(row)));
   wrapper.append(list);
-
-  if (rows.length > 1) {
-    addNavButtons(wrapper, list);
-  }
+  if (controls) wrapper.append(controls.dotsBar);
 
   block.replaceChildren(wrapper);
-  decorateIcons(wrapper);
+
+  if (controls) requestAnimationFrame(controls.update);
 }

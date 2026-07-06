@@ -24,8 +24,17 @@ export default function decorate(block) {
   const trigger = document.createElement('button');
   trigger.type = 'button';
   trigger.className = 'nav-language-trigger nav-drop';
-  trigger.textContent = currentLabel;
   trigger.setAttribute('aria-expanded', 'false');
+
+  const triggerLabel = document.createElement('span');
+  triggerLabel.className = 'nav-language-trigger-label';
+  triggerLabel.textContent = currentLabel;
+
+  const triggerIcon = document.createElement('i');
+  triggerIcon.className = 'nav-language-trigger-icon ibh-icon-keyboard-arrow-down';
+  triggerIcon.setAttribute('aria-hidden', 'true');
+
+  trigger.append(triggerLabel, triggerIcon);
 
   const menu = document.createElement('ul');
   menu.className = 'nav-language-menu';

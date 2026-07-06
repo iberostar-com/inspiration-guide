@@ -65,44 +65,16 @@ function toDisplayDate(value) {
 }
 
 function createClockIcon() {
-  const icon = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
-
-  icon.setAttribute('viewBox', '0 0 16 16');
+  const icon = document.createElement('i');
+  icon.className = 'hero-article-detail-icon ibh-icon-schedule';
   icon.setAttribute('aria-hidden', 'true');
-  icon.classList.add('hero-article-detail-icon');
-
-  const circle = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
-  circle.setAttribute('cx', '8');
-  circle.setAttribute('cy', '8');
-  circle.setAttribute('r', '6.5');
-  circle.setAttribute('fill', 'none');
-  circle.setAttribute('stroke', 'currentColor');
-  circle.setAttribute('stroke-width', '1.4');
-
-  const hand = document.createElementNS('http://www.w3.org/2000/svg', 'path');
-  hand.setAttribute('d', 'M8 4.4v3.8l2.6 1.7');
-  hand.setAttribute('fill', 'none');
-  hand.setAttribute('stroke', 'currentColor');
-  hand.setAttribute('stroke-width', '1.4');
-  hand.setAttribute('stroke-linecap', 'round');
-  hand.setAttribute('stroke-linejoin', 'round');
-
-  icon.append(circle, hand);
   return icon;
 }
 
 function createShareIcon() {
-  const icon = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
-
-  icon.setAttribute('viewBox', '0 0 16 16');
+  const icon = document.createElement('i');
+  icon.className = 'hero-article-detail-icon ibh-icon-share';
   icon.setAttribute('aria-hidden', 'true');
-  icon.classList.add('hero-article-detail-icon');
-
-  const path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
-  path.setAttribute('d', 'M8 2.2l3 3.1-.95.95L8.65 4.8v5.5h-1.3V4.8L5.95 6.25 5 5.3 8 2.2zm-4.5 8.5h9v2.9h-9v-2.9z');
-  path.setAttribute('fill', 'currentColor');
-
-  icon.append(path);
   return icon;
 }
 

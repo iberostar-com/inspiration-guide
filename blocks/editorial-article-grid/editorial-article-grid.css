@@ -1,141 +1,152 @@
 /* Editorial Article Grid */
 
+.editorial-article-grid-container .editorial-article-grid-wrapper {
+  max-width: unset;
+  padding: 0;
+}
+
 .editorial-article-grid-source {
   display: none;
 }
 
+.editorial-article-grid.editorial-article-grid-empty {
+  display: none;
+}
+
 .editorial-article-grid-rendered {
-  padding: 2rem 0;
-}
-
-/* Header */
-
-.editorial-article-grid-header {
-  margin-bottom: 2rem;
-}
-
-.editorial-article-grid-pretitle {
-  font-size: 0.6875rem; /* 11px */
-  font-weight: 700;
-  letter-spacing: 0.1em;
-  text-transform: uppercase;
-  color: var(--text-color, #222);
-  margin: 0 0 0.5rem;
-  line-height: 1.2;
+  background: #fff;
+  box-sizing: border-box;
+  margin: 0 auto;
+  max-width: 1440px;
+  padding: 40px 16px;
+  width: 100%;
 }
 
 .editorial-article-grid-heading {
-  font-size: 1.75rem;
-  font-weight: 700;
-  margin: 0;
-  line-height: 1.2;
-  color: var(--text-color, #222);
-}
-
-/* Cards list */
-
-.editorial-article-grid-list {
   display: grid;
-  grid-template-columns: 1fr;
-  gap: 1.5rem;
-  list-style: none;
+  gap: 16px;
+  margin-bottom: 32px;
+}
+
+.editorial-article-grid-eyebrow {
+  color: #1b2828;
+  font-family: inter, sans-serif;
+  font-size: 12px;
+  font-weight: 500;
+  letter-spacing: 0.02em;
+  line-height: 1.4;
   margin: 0;
-  padding: 0;
-}
-
-/* Card */
-
-.editorial-article-grid-card {
-  display: flex;
-  flex-direction: column;
-  background: var(--background-color, #fff);
-  border-radius: 4px;
-  overflow: hidden;
-}
-
-.editorial-article-grid-media {
-  aspect-ratio: 3 / 2;
-  overflow: hidden;
-  line-height: 0;
-}
-
-.editorial-article-grid-media picture,
-.editorial-article-grid-media img {
-  display: block;
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  transition: transform 0.3s ease;
-}
-
-.editorial-article-grid-card:hover .editorial-article-grid-media img {
-  transform: scale(1.04);
-}
-
-.editorial-article-grid-body {
-  display: flex;
-  flex-direction: column;
-  gap: 0.5rem;
-  padding: 1rem 0;
-  flex: 1;
-}
-
-.editorial-article-grid-category {
-  font-size: 0.6875rem;
-  font-weight: 700;
-  letter-spacing: 0.08em;
   text-transform: uppercase;
-  color: var(--text-color, #222);
-  margin: 0;
 }
 
 .editorial-article-grid-title {
+  color: #1b2828;
+  font-family: noe-display, serif;
+  font-size: 28px;
+  font-weight: 400;
+  line-height: 38px;
   margin: 0;
-  font-size: 1rem;
-  font-weight: 700;
-  line-height: 1.3;
 }
 
-.editorial-article-grid-title a {
-  color: var(--text-color, #222);
+.editorial-article-grid-list {
+  display: grid;
+  gap: 40px;
+  grid-template-columns: 1fr;
+}
+
+.editorial-article-grid-card {
+  min-width: 0;
+}
+
+.editorial-article-grid-card-link {
+  color: inherit;
+  display: flex;
+  flex-direction: column;
   text-decoration: none;
 }
 
-.editorial-article-grid-title a:hover {
+.editorial-article-grid-card-image {
+  border-radius: 4px;
+  height: 250px;
+  overflow: hidden;
+}
+
+.editorial-article-grid-card-image picture,
+.editorial-article-grid-card-image img {
+  display: block;
+  height: 100%;
+  object-fit: cover;
+  width: 100%;
+}
+
+.editorial-article-grid-card-body {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  margin-top: 32px;
+}
+
+.editorial-article-grid-card-link > .editorial-article-grid-card-body:first-child {
+  margin-top: 0;
+}
+
+.editorial-article-grid-card-pretitle {
+  color: #757575;
+  font-family: inter, sans-serif;
+  font-size: 12px;
+  font-weight: 500;
+  letter-spacing: 0.02em;
+  line-height: 1.4;
+  margin: 0;
+  text-transform: uppercase;
+}
+
+.editorial-article-grid-card-title {
+  color: #1b2828;
+  font-family: inter, sans-serif;
+  font-size: 18px;
+  font-weight: 500;
+  line-height: 1.4;
+  margin: 0;
+}
+
+.editorial-article-grid-card-cta {
+  color: #1b2828;
+  display: inline-flex;
+  font-family: inter, sans-serif;
+  font-size: 14px;
+  font-weight: 500;
+  gap: 8px;
+  line-height: 1.4;
+}
+
+.editorial-article-grid-card-link:hover .editorial-article-grid-card-title,
+.editorial-article-grid-card-link:focus-visible .editorial-article-grid-card-title {
   text-decoration: underline;
+  text-underline-offset: 3px;
 }
-
-.editorial-article-grid-cta {
-  display: inline-block;
-  font-size: 0.875rem;
-  font-weight: 600;
-  color: var(--link-color, #006ec7);
-  text-decoration: underline;
-  margin-top: auto;
-  padding-top: 0.5rem;
-}
-
-.editorial-article-grid-cta:hover {
-  text-decoration: none;
-}
-
-/* Tablet: 2 columns */
-
-@media (width >= 600px) {
-  .editorial-article-grid-list {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-  }
-}
-
-/* Desktop: 3 columns */
 
 @media (width >= 900px) {
+  .editorial-article-grid-rendered {
+    padding: 64px 24px;
+  }
+
   .editorial-article-grid-list {
+    gap: 24px;
     grid-template-columns: repeat(3, minmax(0, 1fr));
-    gap: 2rem;
+  }
+
+  .editorial-article-grid-card-image {
+    aspect-ratio: 448 / 278;
+    height: auto;
   }
 
   .editorial-article-grid-heading {
-    font-size: 2rem;
+    margin-bottom: 40px;
+  }
+
+  .editorial-article-grid-title {
+    font-size: 32px;
+    line-height: 42px;
   }
 }

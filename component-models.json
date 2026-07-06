@@ -117,7 +117,8 @@
         "component": "aem-tag",
         "valueType": "string",
         "name": "article-category",
-        "label": "Article Primary Category"
+        "label": "Article Primary Category",
+        "multi": false
       },
       {
         "component": "aem-tag",
@@ -322,6 +323,25 @@
             "value": "right"
           }
         ]
+      }
+    ]
+  },
+  {
+    "id": "article-content-quote",
+    "fields": [
+      {
+        "component": "richtext",
+        "valueType": "string",
+        "name": "text",
+        "label": "Quote Text",
+        "value": ""
+      },
+      {
+        "component": "text",
+        "valueType": "string",
+        "name": "attribution",
+        "label": "Attribution (optional)",
+        "value": ""
       }
     ]
   },
@@ -636,18 +656,21 @@
     "fields": [
       {
         "component": "text",
+        "valueType": "string",
+        "name": "eyebrow",
+        "label": "Eyebrow (Antetítulo)",
+        "value": ""
+      },
+      {
+        "component": "text",
+        "valueType": "string",
         "name": "title",
         "label": "Title",
         "value": ""
       },
       {
-        "component": "text",
-        "name": "subtitle",
-        "label": "Subtitle",
-        "value": ""
-      },
-      {
         "component": "number",
+        "valueType": "number",
         "name": "maxItems",
         "label": "Maximum Cards",
         "value": 9
@@ -772,18 +795,95 @@
     "fields": [
       {
         "component": "text",
-        "name": "pretitle",
-        "label": "Pretitle",
+        "valueType": "string",
+        "name": "eyebrow",
+        "label": "Eyebrow (Antetítulo)",
         "value": ""
       },
       {
+        "component": "select",
+        "valueType": "string",
+        "name": "eyebrowHeading",
+        "label": "Eyebrow Heading Level",
+        "value": "h2",
+        "options": [
+          {
+            "name": "Paragraph",
+            "value": "p"
+          },
+          {
+            "name": "H1",
+            "value": "h1"
+          },
+          {
+            "name": "H2",
+            "value": "h2"
+          },
+          {
+            "name": "H3",
+            "value": "h3"
+          },
+          {
+            "name": "H4",
+            "value": "h4"
+          },
+          {
+            "name": "H5",
+            "value": "h5"
+          },
+          {
+            "name": "H6",
+            "value": "h6"
+          }
+        ]
+      },
+      {
         "component": "text",
+        "valueType": "string",
         "name": "title",
         "label": "Title",
         "value": ""
       },
       {
         "component": "select",
+        "valueType": "string",
+        "name": "titleHeading",
+        "label": "Title Heading Level",
+        "value": "p",
+        "options": [
+          {
+            "name": "Paragraph",
+            "value": "p"
+          },
+          {
+            "name": "H1",
+            "value": "h1"
+          },
+          {
+            "name": "H2",
+            "value": "h2"
+          },
+          {
+            "name": "H3",
+            "value": "h3"
+          },
+          {
+            "name": "H4",
+            "value": "h4"
+          },
+          {
+            "name": "H5",
+            "value": "h5"
+          },
+          {
+            "name": "H6",
+            "value": "h6"
+          }
+        ]
+      },
+      {
+        "component": "select",
+        "valueType": "string",
         "name": "mode",
         "label": "Mode",
         "options": [
@@ -801,6 +901,69 @@
           }
         ],
         "value": "manual"
+      },
+      {
+        "component": "text",
+        "valueType": "string",
+        "name": "cardCtaLabel",
+        "label": "Article CTA Text",
+        "value": "Leer artículo"
+      },
+      {
+        "component": "select",
+        "valueType": "string",
+        "name": "ctaTarget",
+        "label": "Article CTA Target",
+        "value": "_self",
+        "options": [
+          {
+            "name": "Same tab",
+            "value": "_self"
+          },
+          {
+            "name": "New tab",
+            "value": "_blank"
+          }
+        ]
+      },
+      {
+        "component": "aem-content",
+        "valueType": "string",
+        "name": "manualArticle1",
+        "label": "Manual Article 1"
+      },
+      {
+        "component": "text",
+        "valueType": "string",
+        "name": "manualArticle1Pretitle",
+        "label": "Manual Article 1 Pretitle",
+        "value": ""
+      },
+      {
+        "component": "aem-content",
+        "valueType": "string",
+        "name": "manualArticle2",
+        "label": "Manual Article 2"
+      },
+      {
+        "component": "text",
+        "valueType": "string",
+        "name": "manualArticle2Pretitle",
+        "label": "Manual Article 2 Pretitle",
+        "value": ""
+      },
+      {
+        "component": "aem-content",
+        "valueType": "string",
+        "name": "manualArticle3",
+        "label": "Manual Article 3"
+      },
+      {
+        "component": "text",
+        "valueType": "string",
+        "name": "manualArticle3Pretitle",
+        "label": "Manual Article 3 Pretitle",
+        "value": ""
       }
     ]
   },
@@ -842,8 +1005,72 @@
     "fields": [
       {
         "component": "select",
+        "valueType": "string",
+        "name": "variant",
+        "label": "Variant",
+        "value": "default",
+        "options": [
+          {
+            "name": "Default",
+            "value": "default"
+          },
+          {
+            "name": "Home",
+            "value": "home"
+          }
+        ]
+      },
+      {
+        "component": "text",
+        "valueType": "string",
+        "name": "title",
+        "label": "Title",
+        "value": ""
+      },
+      {
+        "component": "select",
+        "valueType": "string",
+        "name": "titleHeading",
+        "label": "Title Heading Level",
+        "value": "h2",
+        "options": [
+          {
+            "name": "H2",
+            "value": "h2"
+          },
+          {
+            "name": "H3",
+            "value": "h3"
+          }
+        ]
+      },
+      {
+        "component": "select",
+        "valueType": "string",
+        "name": "cardHeading",
+        "label": "Card Heading Level",
+        "value": "h3",
+        "options": [
+          {
+            "name": "H2",
+            "value": "h2"
+          },
+          {
+            "name": "H3",
+            "value": "h3"
+          },
+          {
+            "name": "H4",
+            "value": "h4"
+          }
+        ]
+      },
+      {
+        "component": "select",
+        "valueType": "string",
         "name": "source",
-        "label": "Source",
+        "label": "Source (Default variant)",
+        "value": "manual",
         "options": [
           {
             "name": "Manual",
@@ -857,20 +1084,32 @@
             "name": "Auto by Category",
             "value": "auto-category"
           }
-        ],
-        "value": "manual"
+        ]
       },
       {
         "component": "number",
+        "valueType": "number",
         "name": "pageSize",
-        "label": "Page Size",
+        "label": "Page Size (Default variant)",
         "value": 4
       },
       {
         "component": "text",
+        "valueType": "string",
         "name": "ctaLabel",
-        "label": "Load More Label",
+        "label": "Load More Label (Default variant)",
         "value": "Load more"
+      }
+    ]
+  },
+  {
+    "id": "editorial-highlight-article",
+    "fields": [
+      {
+        "component": "aem-content",
+        "valueType": "string",
+        "name": "article",
+        "label": "Article Page"
       }
     ]
   },
@@ -1375,6 +1614,55 @@
     ]
   },
   {
+    "id": "hotel-graphql-mini-card",
+    "fields": [
+      {
+        "component": "text",
+        "valueType": "string",
+        "name": "hotelCode",
+        "label": "Hotel Code",
+        "value": ""
+      },
+      {
+        "component": "text",
+        "valueType": "string",
+        "name": "destination",
+        "label": "Destination Text",
+        "value": ""
+      },
+      {
+        "component": "text",
+        "valueType": "string",
+        "name": "cta_linkText",
+        "label": "CTA Text",
+        "value": "Ver disponibilidad"
+      },
+      {
+        "component": "aem-content",
+        "valueType": "string",
+        "name": "cta_link",
+        "label": "CTA URL"
+      },
+      {
+        "component": "select",
+        "valueType": "string",
+        "name": "cta_linkTarget",
+        "label": "CTA Target",
+        "value": "_self",
+        "options": [
+          {
+            "name": "Same tab",
+            "value": "_self"
+          },
+          {
+            "name": "New tab",
+            "value": "_blank"
+          }
+        ]
+      }
+    ]
+  },
+  {
     "id": "hotel-mini-card",
     "fields": [
       {
@@ -1564,6 +1852,42 @@
     ]
   },
   {
+    "id": "nav-item",
+    "fields": [
+      {
+        "component": "text",
+        "valueType": "string",
+        "name": "label",
+        "label": "Label",
+        "value": ""
+      },
+      {
+        "component": "aem-content",
+        "valueType": "string",
+        "name": "link",
+        "label": "Link"
+      }
+    ]
+  },
+  {
+    "id": "nav-item-child",
+    "fields": [
+      {
+        "component": "text",
+        "valueType": "string",
+        "name": "label",
+        "label": "Label",
+        "value": ""
+      },
+      {
+        "component": "aem-content",
+        "valueType": "string",
+        "name": "link",
+        "label": "Link"
+      }
+    ]
+  },
+  {
     "id": "nav-language",
     "fields": [
       {
@@ -1610,6 +1934,105 @@
         "name": "link",
         "label": "Link URL",
         "value": "/search"
+      }
+    ]
+  },
+  {
+    "id": "recommended-dynamic-hotels-grid",
+    "fields": [
+      {
+        "component": "text",
+        "name": "eyebrow",
+        "label": "Pretitle (Eyebrow)",
+        "value": ""
+      },
+      {
+        "component": "text",
+        "name": "title",
+        "label": "Title",
+        "value": ""
+      },
+      {
+        "component": "text",
+        "valueType": "string",
+        "name": "gridCta_linkText",
+        "label": "CTA Text",
+        "value": "Ver todos los hoteles"
+      },
+      {
+        "component": "aem-content",
+        "valueType": "string",
+        "name": "gridCta_link",
+        "label": "CTA URL",
+        "description": "Use an absolute URL for AEM pages outside this EDS site or for external destinations."
+      },
+      {
+        "component": "select",
+        "valueType": "string",
+        "name": "gridCta_linkTarget",
+        "label": "CTA Target",
+        "value": "_self",
+        "options": [
+          {
+            "name": "Same tab",
+            "value": "_self"
+          },
+          {
+            "name": "New tab",
+            "value": "_blank"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "recommended-dynamic-hotel",
+    "fields": [
+      {
+        "component": "text",
+        "valueType": "string",
+        "name": "hotelCode",
+        "label": "Hotel Code",
+        "description": "GraphQL hotel code to fetch data from"
+      },
+      {
+        "component": "text",
+        "valueType": "string",
+        "name": "destination",
+        "label": "Destination",
+        "description": "Override destination text for this hotel card"
+      },
+      {
+        "component": "aem-content",
+        "valueType": "string",
+        "name": "cta_link",
+        "label": "Hotel URL",
+        "description": "Optional override URL for this hotel card title link"
+      },
+      {
+        "component": "select",
+        "valueType": "string",
+        "name": "cta_linkTarget",
+        "label": "Hotel URL Target",
+        "value": "_self",
+        "options": [
+          {
+            "name": "Same tab",
+            "value": "_self"
+          },
+          {
+            "name": "New tab",
+            "value": "_blank"
+          }
+        ]
+      },
+      {
+        "component": "text",
+        "valueType": "string",
+        "name": "tag_tagLabel",
+        "label": "Promotional Badge",
+        "description": "Optional badge shown over the hotel image (e.g. \"hasta un 20%\")",
+        "value": ""
       }
     ]
   },

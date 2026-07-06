@@ -69,7 +69,8 @@ main .editorial-article-banner .editorial-article-banner-link {
 
 main .editorial-article-banner .editorial-article-banner-link::after {
   margin-left: 8px;
-  content: "→";
+  font-family: ibh-icons, sans-serif;
+  content: "\f21c";
 }
 
 main .editorial-article-banner .editorial-article-banner-link:hover {

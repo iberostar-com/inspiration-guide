@@ -14,11 +14,9 @@ export default function decorate(block) {
   const label = document.createElement('span');
   label.textContent = linkText;
 
-  const icon = document.createElement('img');
-  icon.src = '/icons/search.svg';
-  icon.alt = '';
-  icon.loading = 'lazy';
-  icon.className = 'nav-search-icon';
+  const icon = document.createElement('i');
+  icon.className = 'nav-search-icon ibh-icon-search';
+  icon.setAttribute('aria-hidden', 'true');
 
   a.append(label, icon);
   block.replaceChildren(a);
