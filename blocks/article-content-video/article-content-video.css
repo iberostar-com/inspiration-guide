@@ -5,8 +5,8 @@
 }
 
 main .article-content-video .article-content-video-figure {
-  width: 100%;
   margin: 0;
+  width: 100%;
 }
 
 main .article-content-video .article-content-video-poster {
@@ -80,34 +80,29 @@ main .article-content-video .article-content-video-caption {
   font-style: italic;
   font-weight: 400;
   line-height: 1.4;
+  text-align: center;
 }
 
-main .article-content-video-left .article-content-video-figure {
-  max-width: 50%;
-  float: left;
-  margin-right: 16px;
-  margin-bottom: 16px;
+main .article-content-video.article-content-video-center .article-content-video-figure {
+  max-width: 660px;
+  margin: 0 auto;
 }
 
-main .article-content-video-right .article-content-video-figure {
-  max-width: 50%;
-  float: right;
-  margin-left: 16px;
-  margin-bottom: 16px;
-}
-
-main .article-content-video-center .article-content-video-figure {
-  margin-left: auto;
+main .article-content-video.article-content-video-left .article-content-video-figure {
+  max-width: 55%;
   margin-right: auto;
 }
 
-@media (width < 768px) {
-  main .article-content-video-left .article-content-video-figure,
-  main .article-content-video-right .article-content-video-figure {
+main .article-content-video.article-content-video-right .article-content-video-figure {
+  max-width: 55%;
+  margin-left: auto;
+}
+
+@media (width < 600px) {
+  main .article-content-video.article-content-video-left .article-content-video-figure,
+  main .article-content-video.article-content-video-right .article-content-video-figure {
     max-width: 100%;
-    float: none;
-    margin-right: 0;
-    margin-left: 0;
+    margin: 0 auto;
   }
 }
 
