@@ -600,12 +600,6 @@ function createCard(item, config) {
   const article = document.createElement('article');
   article.className = 'editorial-article-grid-card';
 
-  const link = document.createElement('a');
-  link.className = 'editorial-article-grid-card-link';
-  link.href = item.href;
-  link.target = config.ctaTarget;
-  if (config.ctaTarget === '_blank') link.rel = 'noopener noreferrer';
-
   if (item.picture || item.image) {
     const media = document.createElement('div');
     media.className = 'editorial-article-grid-card-image';
@@ -618,7 +612,7 @@ function createCard(item, config) {
       media.append(createResponsiveImage(item.image, item.imageAlt || '', { preset: 'article-card' }));
     }
 
-    link.append(media);
+    article.append(media);
   }
 
   const body = document.createElement('div');
@@ -633,6 +627,12 @@ function createCard(item, config) {
 
   body.append(createTag('h3', 'editorial-article-grid-card-title', item.title));
 
+  const ctaLink = document.createElement('a');
+  ctaLink.className = 'editorial-article-grid-card-cta-link';
+  ctaLink.href = item.href;
+  ctaLink.target = config.ctaTarget;
+  if (config.ctaTarget === '_blank') ctaLink.rel = 'noopener noreferrer';
+
   const cta = document.createElement('span');
   cta.className = 'editorial-article-grid-card-cta';
   cta.append(document.createTextNode(config.ctaText));
@@ -642,9 +642,9 @@ function createCard(item, config) {
   arrow.textContent = '→';
   cta.append(arrow);
 
-  body.append(cta);
-  link.append(body);
-  article.append(link);
+  ctaLink.append(cta);
+  body.append(ctaLink);
+  article.append(body);
 
   return article;
 }
@@ -711,7 +711,7 @@ function renderCards(block, items, config) {
   if (ctaTargetSource) {
     moveInstrumentation(
       ctaTargetSource,
-      list.querySelector('.editorial-article-grid-card-link'),
+      list.querySelector('.editorial-article-grid-card-cta-link'),
     );
   }
 
