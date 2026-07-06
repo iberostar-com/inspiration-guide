@@ -82,6 +82,35 @@ main .article-content-video .article-content-video-caption {
   line-height: 1.4;
 }
 
+main .article-content-video-left .article-content-video-figure {
+  max-width: 50%;
+  float: left;
+  margin-right: 16px;
+  margin-bottom: 16px;
+}
+
+main .article-content-video-right .article-content-video-figure {
+  max-width: 50%;
+  float: right;
+  margin-left: 16px;
+  margin-bottom: 16px;
+}
+
+main .article-content-video-center .article-content-video-figure {
+  margin-left: auto;
+  margin-right: auto;
+}
+
+@media (width < 768px) {
+  main .article-content-video-left .article-content-video-figure,
+  main .article-content-video-right .article-content-video-figure {
+    max-width: 100%;
+    float: none;
+    margin-right: 0;
+    margin-left: 0;
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
   main .article-content-video .article-content-video-play {
     transition: none;
