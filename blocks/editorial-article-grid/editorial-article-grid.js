@@ -170,6 +170,59 @@ function getMetaFromDocument(doc, name) {
     || '';
 }
 
+function unique(values) {
+  return [...new Set(values.filter(Boolean))];
+}
+
+function toFetchCandidates(refPath) {
+  const rawValue = `${refPath || ''}`.trim();
+  if (!rawValue) return [];
+
+  let rawPath = rawValue;
+  if (/^(?:https?:)?\/\//i.test(rawPath)) {
+    try {
+      rawPath = new URL(rawPath, window.location.origin).pathname;
+    } catch (e) {
+      rawPath = rawValue;
+    }
+  }
+
+  const normalized = normalizePath(rawPath);
+  const publicFromContent = rawPath.replace(/^\/content\/inspiration-guide(?:\/|$)/i, '/');
+
+  const withHtml = (path) => (path.endsWith('.html') ? path : `${path}.html`);
+  const withoutHtml = (path) => path.replace(/\.html$/i, '');
+
+  return unique([
+    rawPath,
+    withHtml(rawPath),
+    withoutHtml(rawPath),
+    normalized,
+    withHtml(normalized),
+    publicFromContent,
+    withHtml(publicFromContent),
+    withoutHtml(publicFromContent),
+  ]);
+}
+
+function extractImageFromDocument(doc) {
+  const image = getMetaFromDocument(doc, 'article-image')
+    || getMetaFromDocument(doc, 'og:image')
+    || getMetaFromDocument(doc, 'twitter:image')
+    || doc.querySelector('main picture img')?.getAttribute('src')
+    || doc.querySelector('picture img')?.getAttribute('src')
+    || doc.querySelector('img')?.getAttribute('src')
+    || '';
+
+  const imageAlt = getMetaFromDocument(doc, 'article-image-alt')
+    || getMetaFromDocument(doc, 'og:image:alt')
+    || doc.querySelector('main picture img')?.getAttribute('alt')
+    || doc.querySelector('picture img')?.getAttribute('alt')
+    || '';
+
+  return { image, imageAlt };
+}
+
 function normalizeStr(value) {
   return `${value || ''}`.trim().toLowerCase();
 }
@@ -305,33 +358,38 @@ async function fetchArticleCardItem(refPath) {
   if (ARTICLE_CARD_CACHE.has(href)) return ARTICLE_CARD_CACHE.get(href);
 
   const request = (async () => {
-    try {
-      const response = await fetch(href, {
-        headers: { Accept: 'text/html' },
-        credentials: 'same-origin',
-      });
-      if (!response.ok) return null;
+    const candidates = toFetchCandidates(refPath);
+    const attempts = await Promise.all(candidates.map(async (candidate) => {
+      try {
+        const response = await fetch(candidate, {
+          headers: { Accept: 'text/html' },
+          credentials: 'same-origin',
+        });
+        if (!response.ok) return null;
 
-      const html = await response.text();
-      const doc = new DOMParser().parseFromString(html, 'text/html');
-      const category = getMetaFromDocument(doc, 'article-category-path')
-        || getMetaFromDocument(doc, 'article-category');
+        const html = await response.text();
+        const doc = new DOMParser().parseFromString(html, 'text/html');
+        const category = getMetaFromDocument(doc, 'article-category-path')
+          || getMetaFromDocument(doc, 'article-category');
+        const { image, imageAlt } = extractImageFromDocument(doc);
 
-      return {
-        href,
-        image: getMetaFromDocument(doc, 'article-image')
-          || getMetaFromDocument(doc, 'og:image'),
-        imageAlt: getMetaFromDocument(doc, 'article-image-alt')
-          || getMetaFromDocument(doc, 'og:image:alt'),
-        title: getMetaFromDocument(doc, 'jcr:title')
-          || getMetaFromDocument(doc, 'og:title')
-          || doc.querySelector('title')?.textContent?.trim()
-          || '',
-        category: getRootCategoryLabel(category),
-      };
-    } catch (e) {
-      return null;
-    }
+        return {
+          href,
+          image,
+          imageAlt,
+          title: getMetaFromDocument(doc, 'jcr:title')
+            || getMetaFromDocument(doc, 'og:title')
+            || doc.querySelector('h1')?.textContent?.trim()
+            || doc.querySelector('title')?.textContent?.trim()
+            || '',
+          category: getRootCategoryLabel(category),
+        };
+      } catch (e) {
+        return null;
+      }
+    }));
+
+    return attempts.find(Boolean) || null;
   })();
 
   ARTICLE_CARD_CACHE.set(href, request);
