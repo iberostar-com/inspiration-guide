@@ -141,7 +141,7 @@ function normalizeTags(value) {
 }
 
 function isVisible(value) {
-  const normalized = `${value || ''}`.trim().toLowerCase();
+  const normalized = `${value ?? ''}`.trim().toLowerCase();
   return !['false', '0', 'no', 'hidden'].includes(normalized);
 }
 

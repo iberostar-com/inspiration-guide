@@ -77,6 +77,10 @@
   margin-top: 32px;
 }
 
+.editorial-article-grid-card-link > .editorial-article-grid-card-body:first-child {
+  margin-top: 0;
+}
+
 .editorial-article-grid-card-category {
   color: #757575;
   font-family: inter, sans-serif;
@@ -133,4 +137,3 @@
     line-height: 42px;
   }
 }
-
