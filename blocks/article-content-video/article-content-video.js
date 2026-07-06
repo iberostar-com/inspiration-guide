@@ -2,6 +2,7 @@ import { createResponsiveImage } from '../../scripts/iberostar/media.js';
 import { getTranslation } from '../../scripts/iberostar/i18n.js';
 
 const VIDEO_EXTENSIONS = /\.(mp4|webm|ogg|mov)(\?.*)?$/i;
+const ALIGNMENTS = ['left', 'center', 'right'];
 
 function getSourceRows(block) {
   return [...block.children]
@@ -63,8 +64,23 @@ function getCaption(block) {
 
   const textRows = getSourceRows(block).filter((row) => (
     !row.querySelector('img, picture, video, source, a[href]')
-  ));
+  )).filter((row) => !ALIGNMENTS.includes(row.textContent?.trim()));
   return textRows.at(-1)?.textContent?.trim() || '';
+}
+
+function getAlignment(block) {
+  const alignField = getPropElement(block, 'alignment');
+  if (alignField) {
+    const val = alignField.textContent?.trim().toLowerCase();
+    return ALIGNMENTS.includes(val) ? val : 'center';
+  }
+
+  const textRows = getSourceRows(block).filter((row) => (
+    !row.querySelector('img, picture, video, source, a[href]')
+  ));
+  const alignRow = textRows.find((row) => ALIGNMENTS.includes(row.textContent?.trim()));
+  const val = alignRow?.textContent?.trim() || 'center';
+  return ALIGNMENTS.includes(val) ? val : 'center';
 }
 
 function createPlayButton(label) {
@@ -98,39 +114,46 @@ function activateVideo(figure, videoUrl) {
 }
 
 export default async function decorate(block) {
-  block.querySelector(':scope > .article-content-video-figure')?.remove();
-
   const videoUrl = getVideoUrl(block);
   const posterSrc = getPosterSrc(block);
   const posterAlt = getPosterAlt(block);
   const caption = getCaption(block);
+  const alignment = getAlignment(block);
 
   getSourceRows(block).forEach((row) => {
     row.classList.add('article-content-video-source');
     row.setAttribute('aria-hidden', 'true');
   });
 
-  if (!videoUrl) return;
+  block.querySelector(':scope > .article-content-video-figure')?.remove();
+  ALIGNMENTS.forEach((a) => block.classList.remove(`article-content-video-${a}`));
+  block.classList.add(`article-content-video-${alignment}`);
+
+  if (!videoUrl && !posterSrc && !caption) return;
 
   const figure = document.createElement('figure');
   figure.className = 'article-content-video-figure';
 
-  const poster = document.createElement('div');
-  poster.className = 'article-content-video-poster';
-  if (posterSrc) {
-    poster.append(createResponsiveImage(posterSrc, posterAlt, {
-      breakpoints: [
-        { width: '768' },
-        { media: '(min-width: 900px)', width: '1200' },
-      ],
-    }));
-  }
+  if (videoUrl || posterSrc) {
+    const poster = document.createElement('div');
+    poster.className = 'article-content-video-poster';
+    if (posterSrc) {
+      poster.append(createResponsiveImage(posterSrc, posterAlt, {
+        breakpoints: [
+          { width: '768' },
+          { media: '(min-width: 900px)', width: '1200' },
+        ],
+      }));
+    }
 
-  const playLabel = await getTranslation('playVideo', 'Play video');
-  const playButton = createPlayButton(playLabel);
-  playButton.addEventListener('click', () => activateVideo(figure, videoUrl));
-  poster.append(playButton);
-  figure.append(poster);
+    if (videoUrl) {
+      const playLabel = await getTranslation('playVideo', 'Play video');
+      const playButton = createPlayButton(playLabel);
+      playButton.addEventListener('click', () => activateVideo(figure, videoUrl));
+      poster.append(playButton);
+    }
+    figure.append(poster);
+  }
 
   if (caption) {
     const figcaption = document.createElement('figcaption');
