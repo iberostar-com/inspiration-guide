@@ -264,14 +264,16 @@ function isVisibleArticle(article) {
   return !robots.includes('noindex');
 }
 
-function getRootCategoryLabel(raw) {
+function getLeafCategoryLabel(raw) {
   if (!raw) return '';
 
   const tree = toCategoryTree(raw)
+    .flatMap((part) => `${part}`.split('/'))
+    .map((part) => part.split(':').pop() || '')
     .map((part) => part.replace(/-/g, ' ').trim())
     .filter(Boolean);
-  const root = tree[0] || '';
-  return root.charAt(0).toUpperCase() + root.slice(1);
+  const leaf = tree[tree.length - 1] || '';
+  return leaf.charAt(0).toUpperCase() + leaf.slice(1);
 }
 
 function getComparableTimestamp(article) {
@@ -345,7 +347,7 @@ function toResolvedCardItem(article) {
     image: article.image || article.ogImage || '',
     imageAlt: article.imageAlt || '',
     title: article.title || '',
-    category: getRootCategoryLabel(article.categoryPath || article.category),
+    category: getLeafCategoryLabel(article.categoryPath || article.category),
   };
 }
 
@@ -379,7 +381,7 @@ async function fetchArticleCardItem(refPath) {
             || doc.querySelector('h1')?.textContent?.trim()
             || doc.querySelector('title')?.textContent?.trim()
             || '',
-          category: getRootCategoryLabel(category),
+          category: getLeafCategoryLabel(category),
         };
       } catch (e) {
         return null;
@@ -507,7 +509,7 @@ function parseLegacyManualItem(row, index) {
     image: img?.src || '',
     imageAlt: img?.alt || '',
     title,
-    category: getRootCategoryLabel(rawCategory) || rawCategory,
+    category: getLeafCategoryLabel(rawCategory) || rawCategory,
     picture,
     sourceRow: row,
     sortOrder: index,
@@ -609,7 +611,8 @@ function createCard(item, config) {
   const body = document.createElement('div');
   body.className = 'editorial-article-grid-card-body';
 
-  const pretitleText = item.pretitle || item.category;
+  const rawPretitle = item.pretitle || item.category;
+  const pretitleText = getLeafCategoryLabel(rawPretitle) || rawPretitle;
   if (pretitleText) {
     body.append(createTag('p', 'editorial-article-grid-card-pretitle', pretitleText));
   }
