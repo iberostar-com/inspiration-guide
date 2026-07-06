@@ -37,11 +37,30 @@ function toDataAttributeName(propName) {
   return `data-${propName.replace(/[A-Z]/g, (char) => `-${char.toLowerCase()}`)}`;
 }
 
+function toDataAttributeNameWithDigitDashes(propName) {
+  return toDataAttributeName(propName).replace(/(\d+)/g, '-$1');
+}
+
+function attrByProp(block, propName) {
+  const dataAttrName = toDataAttributeName(propName);
+  const attrNames = [
+    dataAttrName,
+    toDataAttributeNameWithDigitDashes(propName),
+    dataAttrName.replace(/^data-/, ''),
+    toDataAttributeNameWithDigitDashes(propName).replace(/^data-/, ''),
+    propName,
+  ];
+
+  return attrNames
+    .map((attrName) => block.getAttribute(attrName)?.trim())
+    .find(Boolean) || '';
+}
+
 function textByProp(block, propName, fallback = '') {
   const text = getFieldByProp(block, propName)?.textContent?.trim();
   if (text) return text;
 
-  const attr = block.getAttribute(toDataAttributeName(propName));
+  const attr = attrByProp(block, propName);
   if (attr) return attr;
 
   return fallback;
@@ -49,19 +68,38 @@ function textByProp(block, propName, fallback = '') {
 
 function hrefByProp(block, propName) {
   const field = getFieldByProp(block, propName);
-  if (!field) return '';
+  if (field) {
+    const href = field.querySelector('a[href]')?.getAttribute('href')?.trim();
+    if (href) return href;
 
-  const href = field.querySelector('a[href]')?.getAttribute('href')?.trim();
-  return href || field.textContent?.trim() || '';
+    const textValue = field.textContent?.trim() || '';
+    if (textValue) return textValue;
+  }
+
+  const attr = attrByProp(block, propName);
+  if (attr) return `${attr}`.trim();
+
+  return '';
 }
 
 function normalizePath(path) {
   if (!path) return '';
 
-  let normalized = `${path}`.trim().replace(/\.html$/, '');
+  let normalized = `${path}`.trim();
+  if (/^(?:https?:)?\/\//i.test(normalized)) {
+    try {
+      normalized = new URL(normalized, window.location.origin).pathname;
+    } catch (e) {
+      // Keep the authored value and normalize it as a path below.
+    }
+  }
 
-  // Convert author/content paths to public paths (/content/... → /...)
-  normalized = normalized.replace(/^\/content\/inspiration-guide\//, '/');
+  normalized = normalized
+    .split(/[?#]/, 1)[0]
+    .replace(/\/+/g, '/')
+    .replace(/\/+$/, '')
+    .replace(/\.html$/i, '')
+    .replace(/^\/content\/inspiration-guide(?:\/|$)/i, '/');
 
   const withLeadingSlash = normalized.startsWith('/') ? normalized : `/${normalized}`;
   return withLeadingSlash.replace(/\/+$/, '') || '/';
@@ -214,6 +252,14 @@ function toResolvedCardItem(article) {
   };
 }
 
+async function safeGetVisibleArticles() {
+  try {
+    return (await getArticles()).filter(isVisibleArticle);
+  } catch (e) {
+    return [];
+  }
+}
+
 function toFallbackTitleFromPath(path) {
   const slug = normalizePath(path).split('/').filter(Boolean).pop() || '';
   if (!slug) return '';
@@ -225,8 +271,14 @@ function toFallbackTitleFromPath(path) {
     .replace(/\b\w/g, (char) => char.toUpperCase());
 }
 
+function getFallbackTitle(sourceProp, refPath) {
+  const linkText = sourceProp?.querySelector('a')?.textContent?.trim() || '';
+  if (linkText && !samePath(linkText, refPath)) return linkText;
+  return toFallbackTitleFromPath(refPath);
+}
+
 async function getAutoArticles(mode) {
-  const all = (await getArticles()).filter(isVisibleArticle);
+  const all = await safeGetVisibleArticles();
   const currentArticle = extractCurrentArticle(all);
   const currentPath = normalizePath(window.location.pathname);
   const withoutCurrent = all.filter(
@@ -262,16 +314,18 @@ function findArticleByRef(allArticles, refPath) {
   const target = normalizePath(refPath);
   if (!target) return null;
 
+  const exactMatch = allArticles.find(
+    (article) => normalizePath(article.path || article.href) === target,
+  );
+  if (exactMatch) return exactMatch;
+
+  const targetSlug = target.split('/').filter(Boolean).pop() || '';
+  if (!targetSlug) return null;
+
   return allArticles.find((article) => {
     const candidate = normalizePath(article.path || article.href);
-    if (!candidate) return false;
-
-    if (candidate === target) return true;
-
-    // Fuzzy match on last path segment (slug)
-    const targetSlug = target.split('/').filter(Boolean).pop() || '';
     const candidateSlug = candidate.split('/').filter(Boolean).pop() || '';
-    return targetSlug && targetSlug === candidateSlug;
+    return candidateSlug === targetSlug;
   }) || null;
 }
 
@@ -318,7 +372,7 @@ function parseLegacyManualItem(row, index) {
 }
 
 async function getManualItems(block) {
-  const allArticles = (await getArticles()).filter(isVisibleArticle);
+  const allArticles = await safeGetVisibleArticles();
 
   const manualRefInputs = ['manualArticle1', 'manualArticle2', 'manualArticle3']
     .map((propName, index) => ({
@@ -345,8 +399,7 @@ async function getManualItems(block) {
         }
 
         const fallbackHref = normalizePath(item.refPath);
-        const fallbackTitle = item.sourceProp?.querySelector('a')?.textContent?.trim()
-          || toFallbackTitleFromPath(item.refPath);
+        const fallbackTitle = getFallbackTitle(item.sourceProp, item.refPath);
         if (!fallbackHref || !fallbackTitle) return null;
 
         return {
@@ -366,11 +419,11 @@ async function getManualItems(block) {
     if (resolvedManualRefs.length) return resolvedManualRefs;
   }
 
-  const legacyResolved = getLegacyManualRows(block)
+  return getLegacyManualRows(block)
     .map(({ row, index }) => {
       const refPath = row.querySelector('a[href]')?.getAttribute('href')?.trim() || '';
       const article = findArticleByRef(allArticles, refPath);
-      if (!article) return null;
+      if (!article) return parseLegacyManualItem(row, index);
 
       return {
         ...toResolvedCardItem(article),
@@ -378,15 +431,9 @@ async function getManualItems(block) {
         sortOrder: index,
       };
     })
-    .filter(Boolean);
-
-  const manualLegacy = getLegacyManualRows(block)
-    .map(({ row, index }) => parseLegacyManualItem(row, index))
-    .filter(Boolean);
-
-  return [...legacyResolved, ...manualLegacy]
-    .slice(0, MAX_ITEMS)
-    .sort((a, b) => a.sortOrder - b.sortOrder);
+    .filter(Boolean)
+    .sort((a, b) => a.sortOrder - b.sortOrder)
+    .slice(0, MAX_ITEMS);
 }
 
 function createTag(tagName, className, text) {
@@ -486,12 +533,6 @@ function hideSourceRows(sourceRows) {
   });
 }
 
-function collectSourceRows(items) {
-  return items
-    .map((item) => item.sourceRow || item.sourceProp)
-    .filter(Boolean);
-}
-
 function renderCards(items) {
   const list = document.createElement('div');
   list.className = 'editorial-article-grid-list';
@@ -546,6 +587,6 @@ export default async function decorate(block) {
   rendered.append(list);
 
   block.append(rendered);
-  hideSourceRows(collectSourceRows(items));
+  hideSourceRows(getSourceRows(block));
   markInstrumentation(items, rendered);
 }
