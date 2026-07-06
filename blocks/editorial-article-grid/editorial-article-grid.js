@@ -6,7 +6,8 @@ const MAX_ITEMS = 3;
 const CTA_COPY = 'Leer artículo';
 const MODE_VALUES = new Set(['manual', 'auto-tag', 'auto-category']);
 const HEADING_TAGS = new Set(['p', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6']);
-const CONFIG_PROP_ORDER = [
+const LINK_TARGETS = new Set(['_self', '_blank']);
+const LEGACY_CONFIG_PROP_ORDER = [
   'eyebrow',
   'eyebrowHeading',
   'title',
@@ -16,7 +17,23 @@ const CONFIG_PROP_ORDER = [
   'manualArticle2',
   'manualArticle3',
 ];
+const CONFIG_PROP_ORDER = [
+  'eyebrow',
+  'eyebrowHeading',
+  'title',
+  'titleHeading',
+  'mode',
+  'cardCtaLabel',
+  'ctaTarget',
+  'manualArticle1',
+  'manualArticle1Pretitle',
+  'manualArticle2',
+  'manualArticle2Pretitle',
+  'manualArticle3',
+  'manualArticle3Pretitle',
+];
 const CONFIG_PROPS = new Set(CONFIG_PROP_ORDER);
+const ARTICLE_CARD_CACHE = new Map();
 
 function getSourceRows(block) {
   return [...block.children].filter((row) => !row.classList.contains('editorial-article-grid-rendered'));
@@ -30,9 +47,15 @@ function getPropElement(root, propName) {
 
 function getPositionalConfigRows(block) {
   const rows = getSourceRows(block);
-  const modeIndex = CONFIG_PROP_ORDER.indexOf('mode');
+  const modeIndex = LEGACY_CONFIG_PROP_ORDER.indexOf('mode');
   const mode = rows[modeIndex]?.textContent?.trim().toLowerCase() || '';
-  return MODE_VALUES.has(mode) ? rows.slice(0, CONFIG_PROP_ORDER.length) : [];
+  if (!MODE_VALUES.has(mode)) return null;
+
+  const propOrder = rows.length >= CONFIG_PROP_ORDER.length
+    ? CONFIG_PROP_ORDER
+    : LEGACY_CONFIG_PROP_ORDER;
+
+  return { propOrder, rows: rows.slice(0, propOrder.length) };
 }
 
 function getFieldByProp(block, propName) {
@@ -41,8 +64,9 @@ function getFieldByProp(block, propName) {
     .find(Boolean) || null;
   if (instrumentedField) return instrumentedField;
 
-  const propIndex = CONFIG_PROP_ORDER.indexOf(propName);
-  return getPositionalConfigRows(block)[propIndex] || null;
+  const positionalConfig = getPositionalConfigRows(block);
+  const propIndex = positionalConfig?.propOrder.indexOf(propName) ?? -1;
+  return positionalConfig?.rows[propIndex] || null;
 }
 
 function toDataAttributeName(propName) {
@@ -131,8 +155,19 @@ function sanitizeMode(value) {
   return MODE_VALUES.has(mode) ? mode : 'manual';
 }
 
+function sanitizeLinkTarget(value) {
+  const target = `${value || ''}`.trim().toLowerCase();
+  return LINK_TARGETS.has(target) ? target : '_self';
+}
+
 function getMetaContent(name) {
   return document.querySelector(`meta[name="${name}"]`)?.content?.trim() || '';
+}
+
+function getMetaFromDocument(doc, name) {
+  return doc.querySelector(`meta[name="${name}"]`)?.content?.trim()
+    || doc.querySelector(`meta[property="${name}"]`)?.content?.trim()
+    || '';
 }
 
 function normalizeStr(value) {
@@ -256,12 +291,51 @@ function matchesCategoryTree(currentTree, article) {
 
 function toResolvedCardItem(article) {
   return {
-    href: article.href || article.path || '',
+    href: normalizePath(article.href || article.path || ''),
     image: article.image || article.ogImage || '',
     imageAlt: article.imageAlt || '',
     title: article.title || '',
     category: getRootCategoryLabel(article.categoryPath || article.category),
   };
+}
+
+async function fetchArticleCardItem(refPath) {
+  const href = normalizePath(refPath);
+  if (!href) return null;
+  if (ARTICLE_CARD_CACHE.has(href)) return ARTICLE_CARD_CACHE.get(href);
+
+  const request = (async () => {
+    try {
+      const response = await fetch(href, {
+        headers: { Accept: 'text/html' },
+        credentials: 'same-origin',
+      });
+      if (!response.ok) return null;
+
+      const html = await response.text();
+      const doc = new DOMParser().parseFromString(html, 'text/html');
+      const category = getMetaFromDocument(doc, 'article-category-path')
+        || getMetaFromDocument(doc, 'article-category');
+
+      return {
+        href,
+        image: getMetaFromDocument(doc, 'article-image')
+          || getMetaFromDocument(doc, 'og:image'),
+        imageAlt: getMetaFromDocument(doc, 'article-image-alt')
+          || getMetaFromDocument(doc, 'og:image:alt'),
+        title: getMetaFromDocument(doc, 'jcr:title')
+          || getMetaFromDocument(doc, 'og:title')
+          || doc.querySelector('title')?.textContent?.trim()
+          || '',
+        category: getRootCategoryLabel(category),
+      };
+    } catch (e) {
+      return null;
+    }
+  })();
+
+  ARTICLE_CARD_CACHE.set(href, request);
+  return request;
 }
 
 async function safeGetVisibleArticles() {
@@ -342,7 +416,7 @@ function findArticleByRef(allArticles, refPath) {
 }
 
 function getLegacyManualRows(block) {
-  if (getPositionalConfigRows(block).length) return [];
+  if (getPositionalConfigRows(block)) return [];
 
   return getSourceRows(block)
     .filter((row) => !row.querySelector('[data-aue-prop]')
@@ -389,43 +463,48 @@ async function getManualItems(block) {
   const allArticles = await safeGetVisibleArticles();
 
   const manualRefInputs = ['manualArticle1', 'manualArticle2', 'manualArticle3']
-    .map((propName, index) => ({
-      propName,
-      index,
-      refPath: hrefByProp(block, propName),
-      sourceProp: getFieldByProp(block, propName),
-    }));
+    .map((propName, index) => {
+      const pretitlePropName = `${propName}Pretitle`;
+      return {
+        propName,
+        index,
+        refPath: hrefByProp(block, propName),
+        sourceProp: getFieldByProp(block, propName),
+        pretitle: textByProp(block, pretitlePropName),
+        pretitleSource: getFieldByProp(block, pretitlePropName),
+      };
+    });
 
   const hasManualRefInputs = manualRefInputs.some((item) => item.refPath);
 
   if (hasManualRefInputs) {
-    const resolvedManualRefs = manualRefInputs
-      .map((item) => {
+    const resolvedManualRefs = (await Promise.all(manualRefInputs
+      .map(async (item) => {
         if (!item.refPath) return null;
 
         const article = findArticleByRef(allArticles, item.refPath);
-        if (article) {
-          return {
-            ...toResolvedCardItem(article),
-            sourceProp: item.sourceProp,
-            sortOrder: item.index,
-          };
-        }
-
+        const indexedItem = article ? toResolvedCardItem(article) : null;
+        const needsEnrichment = !indexedItem?.image || !indexedItem?.title;
+        const fetchedItem = needsEnrichment
+          ? await fetchArticleCardItem(item.refPath)
+          : null;
         const fallbackHref = normalizePath(item.refPath);
         const fallbackTitle = getFallbackTitle(item.sourceProp, item.refPath);
-        if (!fallbackHref || !fallbackTitle) return null;
+        const href = fetchedItem?.href || indexedItem?.href || fallbackHref;
+        const title = fetchedItem?.title || indexedItem?.title || fallbackTitle;
+        if (!href || !title) return null;
 
         return {
-          href: fallbackHref,
-          title: fallbackTitle,
-          category: '',
-          image: '',
-          imageAlt: '',
+          href,
+          title,
+          pretitle: item.pretitle || fetchedItem?.category || indexedItem?.category || '',
+          image: fetchedItem?.image || indexedItem?.image || '',
+          imageAlt: fetchedItem?.imageAlt || indexedItem?.imageAlt || '',
           sourceProp: item.sourceProp,
+          pretitleSource: item.pretitleSource,
           sortOrder: item.index,
         };
-      })
+      })))
       .filter(Boolean)
       .sort((a, b) => a.sortOrder - b.sortOrder)
       .slice(0, MAX_ITEMS);
@@ -457,7 +536,7 @@ function createTag(tagName, className, text) {
   return element;
 }
 
-function createCard(item) {
+function createCard(item, config) {
   if (!item?.title || !item?.href) return null;
 
   const article = document.createElement('article');
@@ -466,6 +545,8 @@ function createCard(item) {
   const link = document.createElement('a');
   link.className = 'editorial-article-grid-card-link';
   link.href = item.href;
+  link.target = config.ctaTarget;
+  if (config.ctaTarget === '_blank') link.rel = 'noopener noreferrer';
 
   if (item.picture || item.image) {
     const media = document.createElement('div');
@@ -485,15 +566,18 @@ function createCard(item) {
   const body = document.createElement('div');
   body.className = 'editorial-article-grid-card-body';
 
-  if (item.category) {
-    body.append(createTag('p', 'editorial-article-grid-card-category', item.category));
+  const pretitleText = item.pretitle || item.category;
+  if (pretitleText) {
+    const pretitle = createTag('p', 'editorial-article-grid-card-pretitle', pretitleText);
+    if (item.pretitleSource) moveInstrumentation(item.pretitleSource, pretitle);
+    body.append(pretitle);
   }
 
   body.append(createTag('h3', 'editorial-article-grid-card-title', item.title));
 
   const cta = document.createElement('span');
   cta.className = 'editorial-article-grid-card-cta';
-  cta.append(document.createTextNode(CTA_COPY));
+  cta.append(document.createTextNode(config.ctaText));
 
   const arrow = document.createElement('span');
   arrow.setAttribute('aria-hidden', 'true');
@@ -514,6 +598,8 @@ function readConfig(block) {
     title: textByProp(block, 'title', ''),
     titleHeading: sanitizeHeadingTag(textByProp(block, 'titleHeading', 'p'), 'p'),
     mode: sanitizeMode(textByProp(block, 'mode', block.getAttribute('data-mode') || 'manual')),
+    ctaText: textByProp(block, 'cardCtaLabel', CTA_COPY),
+    ctaTarget: sanitizeLinkTarget(textByProp(block, 'ctaTarget', '_self')),
   };
 }
 
@@ -547,14 +633,29 @@ function hideSourceRows(sourceRows) {
   });
 }
 
-function renderCards(items) {
+function renderCards(block, items, config) {
   const list = document.createElement('div');
   list.className = 'editorial-article-grid-list';
 
   items.forEach((item) => {
-    const card = createCard(item);
+    const card = createCard(item, config);
     if (card) list.append(card);
   });
+
+  const ctaTextSource = getFieldByProp(block, 'cardCtaLabel');
+  const ctaTargetSource = getFieldByProp(block, 'ctaTarget');
+  if (ctaTextSource) {
+    moveInstrumentation(
+      ctaTextSource,
+      list.querySelector('.editorial-article-grid-card-cta'),
+    );
+  }
+  if (ctaTargetSource) {
+    moveInstrumentation(
+      ctaTargetSource,
+      list.querySelector('.editorial-article-grid-card-link'),
+    );
+  }
 
   return list;
 }
@@ -597,7 +698,7 @@ export default async function decorate(block) {
   const header = renderHeader(block, config);
   if (header) rendered.append(header);
 
-  const list = renderCards(items);
+  const list = renderCards(block, items, config);
   rendered.append(list);
 
   block.append(rendered);
