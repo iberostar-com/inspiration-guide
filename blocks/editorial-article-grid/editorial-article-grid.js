@@ -6,7 +6,7 @@ const MAX_ITEMS = 3;
 const CTA_COPY = 'Leer artículo';
 const MODE_VALUES = new Set(['manual', 'auto-tag', 'auto-category']);
 const HEADING_TAGS = new Set(['p', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6']);
-const CONFIG_PROPS = new Set([
+const CONFIG_PROP_ORDER = [
   'eyebrow',
   'eyebrowHeading',
   'title',
@@ -15,7 +15,8 @@ const CONFIG_PROPS = new Set([
   'manualArticle1',
   'manualArticle2',
   'manualArticle3',
-]);
+];
+const CONFIG_PROPS = new Set(CONFIG_PROP_ORDER);
 
 function getSourceRows(block) {
   return [...block.children].filter((row) => !row.classList.contains('editorial-article-grid-rendered'));
@@ -27,10 +28,21 @@ function getPropElement(root, propName) {
   return root?.querySelector?.(selector) || null;
 }
 
+function getPositionalConfigRows(block) {
+  const rows = getSourceRows(block);
+  const modeIndex = CONFIG_PROP_ORDER.indexOf('mode');
+  const mode = rows[modeIndex]?.textContent?.trim().toLowerCase() || '';
+  return MODE_VALUES.has(mode) ? rows.slice(0, CONFIG_PROP_ORDER.length) : [];
+}
+
 function getFieldByProp(block, propName) {
-  return getSourceRows(block)
+  const instrumentedField = getSourceRows(block)
     .map((row) => getPropElement(row, propName))
     .find(Boolean) || null;
+  if (instrumentedField) return instrumentedField;
+
+  const propIndex = CONFIG_PROP_ORDER.indexOf(propName);
+  return getPositionalConfigRows(block)[propIndex] || null;
 }
 
 function toDataAttributeName(propName) {
@@ -330,6 +342,8 @@ function findArticleByRef(allArticles, refPath) {
 }
 
 function getLegacyManualRows(block) {
+  if (getPositionalConfigRows(block).length) return [];
+
   return getSourceRows(block)
     .filter((row) => !row.querySelector('[data-aue-prop]')
       || [...row.querySelectorAll('[data-aue-prop]')]
