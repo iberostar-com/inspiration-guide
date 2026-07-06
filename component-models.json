@@ -445,6 +445,27 @@
         "name": "caption",
         "label": "Caption (optional)",
         "value": ""
+      },
+      {
+        "component": "select",
+        "valueType": "string",
+        "name": "alignment",
+        "label": "Alignment",
+        "value": "center",
+        "options": [
+          {
+            "name": "Center",
+            "value": "center"
+          },
+          {
+            "name": "Left",
+            "value": "left"
+          },
+          {
+            "name": "Right",
+            "value": "right"
+          }
+        ]
       }
     ]
   },
