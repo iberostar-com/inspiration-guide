@@ -419,11 +419,51 @@
     "id": "article-content-video",
     "fields": [
       {
+        "component": "select",
+        "valueType": "string",
+        "name": "videoType",
+        "label": "Video Type",
+        "value": "dam",
+        "options": [
+          {
+            "name": "DAM",
+            "value": "dam"
+          },
+          {
+            "name": "YouTube",
+            "value": "youtube"
+          }
+        ]
+      },
+      {
         "component": "aem-content",
         "valueType": "string",
-        "name": "videoCf",
-        "label": "Video (Content Fragment or URL)",
-        "description": "Select an AEM video reference or contribute a direct video URL."
+        "name": "videoDam",
+        "label": "Video DAM",
+        "description": "Select an AEM DAM video reference or contribute a direct video URL.",
+        "condition": {
+          "==": [
+            {
+              "var": "videoType"
+            },
+            "dam"
+          ]
+        }
+      },
+      {
+        "component": "text",
+        "valueType": "string",
+        "name": "youtubeVideoId",
+        "label": "YouTube Video (ID or URL)",
+        "value": "",
+        "condition": {
+          "==": [
+            {
+              "var": "videoType"
+            },
+            "youtube"
+          ]
+        }
       },
       {
         "component": "reference",
