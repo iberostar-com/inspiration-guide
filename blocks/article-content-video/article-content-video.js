@@ -3,6 +3,7 @@ import { getTranslation } from '../../scripts/iberostar/i18n.js';
 
 const VIDEO_EXTENSIONS = /\.(mp4|webm|ogg|mov)(\?.*)?$/i;
 const ALIGNMENTS = ['left', 'center', 'right'];
+const YOUTUBE_ID_REGEX = /^[A-Za-z0-9_-]{11}$/;
 
 function getSourceRows(block) {
   return [...block.children]
@@ -23,7 +24,7 @@ function getPropElementByNames(block, propNames) {
 }
 
 function getVideoUrl(block) {
-  const videoField = getPropElementByNames(block, ['videoCf', 'video']);
+  const videoField = getPropElementByNames(block, ['videoDam', 'youtubeVideoId', 'videoCf', 'video']);
   const directSource = videoField?.querySelector('source[src]')?.getAttribute('src')
     || videoField?.querySelector('video[src]')?.getAttribute('src');
   if (directSource) return directSource;
@@ -36,7 +37,7 @@ function getVideoUrl(block) {
   if (datasetSource) return datasetSource;
 
   const textSource = videoField?.textContent?.trim();
-  if (textSource && (/^https?:\/\//i.test(textSource) || textSource.startsWith('/'))) {
+  if (textSource) {
     return textSource;
   }
 
@@ -52,6 +53,41 @@ function getVideoUrl(block) {
   return [...block.querySelectorAll('a[href]')]
     .map((link) => link.getAttribute('href'))
     .find((href) => VIDEO_EXTENSIONS.test(href)) || '';
+}
+
+function getVideoType(block) {
+  const typeField = getPropElement(block, 'videoType');
+  const value = typeField?.textContent?.trim().toLowerCase() || '';
+  return ['dam', 'youtube'].includes(value) ? value : 'dam';
+}
+
+function getFieldValue(block, propNames) {
+  const field = getPropElementByNames(block, propNames);
+  if (!field) return '';
+
+  const directSource = field.querySelector('source[src]')?.getAttribute('src')
+    || field.querySelector('video[src]')?.getAttribute('src');
+  if (directSource) return directSource;
+
+  const datasetSource = field.dataset?.src
+    || field.dataset?.videoSrc
+    || field.dataset?.assetReference
+    || field.getAttribute('data-src')
+    || field.getAttribute('data-video-src');
+  if (datasetSource) return datasetSource;
+
+  const links = [...field.querySelectorAll('a[href]')].map((link) => link.getAttribute('href'));
+  if (links[0]) return links[0];
+
+  return field.textContent?.trim() || '';
+}
+
+function getVideoReference(block) {
+  const videoType = getVideoType(block);
+  if (videoType === 'youtube') {
+    return getFieldValue(block, ['youtubeVideoId', 'videoCf', 'video']);
+  }
+  return getFieldValue(block, ['videoDam', 'videoCf', 'video']);
 }
 
 function isLikelyVideoUrl(url) {
@@ -123,6 +159,49 @@ async function resolveVideoUrl(videoRef) {
 
   const resolutions = await Promise.all(candidates.map((url) => fetchResolvedVideo(url)));
   return resolutions.find(Boolean) || '';
+}
+
+function getYoutubeId(input) {
+  const value = (input || '').trim();
+  if (!value) return '';
+  if (YOUTUBE_ID_REGEX.test(value)) return value;
+
+  try {
+    const parsed = new URL(value);
+    const host = parsed.hostname.toLowerCase();
+
+    if (host.endsWith('youtu.be')) {
+      const candidate = parsed.pathname.split('/').filter(Boolean)[0] || '';
+      return YOUTUBE_ID_REGEX.test(candidate) ? candidate : '';
+    }
+
+    if (host.includes('youtube.com')) {
+      const queryId = parsed.searchParams.get('v') || '';
+      if (YOUTUBE_ID_REGEX.test(queryId)) return queryId;
+
+      const pathParts = parsed.pathname.split('/').filter(Boolean);
+      const embedIndex = pathParts.findIndex((part) => ['embed', 'shorts', 'live'].includes(part));
+      if (embedIndex >= 0) {
+        const candidate = pathParts[embedIndex + 1] || '';
+        return YOUTUBE_ID_REGEX.test(candidate) ? candidate : '';
+      }
+    }
+  } catch (e) {
+    // Non-URL values may still be valid IDs.
+  }
+
+  const match = value.match(/(?:v=|youtu\.be\/|youtube\.com\/(?:embed|shorts|live)\/)([A-Za-z0-9_-]{11})/);
+  return match?.[1] || '';
+}
+
+function createYoutubeEmbedUrl(videoId, autoplay = false) {
+  const params = new URLSearchParams({
+    rel: '0',
+    modestbranding: '1',
+    playsinline: '1',
+  });
+  if (autoplay) params.set('autoplay', '1');
+  return `https://www.youtube.com/embed/${videoId}?${params.toString()}`;
 }
 
 function getPosterImage(block) {
@@ -200,15 +279,36 @@ function activateVideo(figure, videoUrl) {
   video.playsInline = true;
   video.muted = false;
   video.className = 'article-content-video-player';
+
+  // Restore the original poster state when playback completes.
+  video.addEventListener('ended', () => {
+    video.replaceWith(poster);
+  }, { once: true });
+
   poster.replaceWith(video);
   video.play().catch(() => {
     // Native controls remain available when the browser blocks autoplay.
   });
 }
 
+function activateYoutube(figure, youtubeId) {
+  const poster = figure.querySelector('.article-content-video-poster');
+  if (!poster || !youtubeId) return;
+
+  const iframe = document.createElement('iframe');
+  iframe.src = createYoutubeEmbedUrl(youtubeId, true);
+  iframe.className = 'article-content-video-embed';
+  iframe.title = 'YouTube video player';
+  iframe.loading = 'lazy';
+  iframe.allow = 'accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share';
+  iframe.allowFullscreen = true;
+  poster.replaceWith(iframe);
+}
+
 export default async function decorate(block) {
-  const videoRef = getVideoUrl(block);
-  const videoUrl = await resolveVideoUrl(videoRef);
+  const videoRef = getVideoReference(block) || getVideoUrl(block);
+  const youtubeId = getYoutubeId(videoRef);
+  const videoUrl = youtubeId ? '' : await resolveVideoUrl(videoRef);
   const posterSrc = getPosterSrc(block);
   const posterAlt = getPosterAlt(block);
   const caption = getCaption(block);
@@ -244,6 +344,11 @@ export default async function decorate(block) {
       const playLabel = await getTranslation('playVideo', 'Play video');
       const playButton = createPlayButton(playLabel);
       playButton.addEventListener('click', async () => {
+        if (youtubeId) {
+          activateYoutube(figure, youtubeId);
+          return;
+        }
+
         const resolvedUrl = videoUrl || await resolveVideoUrl(videoRef);
         if (!resolvedUrl) return;
         activateVideo(figure, resolvedUrl);
