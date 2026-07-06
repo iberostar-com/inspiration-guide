@@ -104,12 +104,6 @@
       "components": [
         "category-hero-subcategory"
       ]
-    },
-    {
-      "id": "section",
-      "components": [
-        "category-hero"
-      ]
     }
   ]
 }
