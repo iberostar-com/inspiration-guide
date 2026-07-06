@@ -801,11 +801,85 @@
         "value": ""
       },
       {
+        "component": "select",
+        "valueType": "string",
+        "name": "eyebrowHeading",
+        "label": "Eyebrow Heading Level",
+        "value": "h2",
+        "options": [
+          {
+            "name": "Paragraph",
+            "value": "p"
+          },
+          {
+            "name": "H1",
+            "value": "h1"
+          },
+          {
+            "name": "H2",
+            "value": "h2"
+          },
+          {
+            "name": "H3",
+            "value": "h3"
+          },
+          {
+            "name": "H4",
+            "value": "h4"
+          },
+          {
+            "name": "H5",
+            "value": "h5"
+          },
+          {
+            "name": "H6",
+            "value": "h6"
+          }
+        ]
+      },
+      {
         "component": "text",
         "valueType": "string",
         "name": "title",
         "label": "Title",
         "value": ""
+      },
+      {
+        "component": "select",
+        "valueType": "string",
+        "name": "titleHeading",
+        "label": "Title Heading Level",
+        "value": "p",
+        "options": [
+          {
+            "name": "Paragraph",
+            "value": "p"
+          },
+          {
+            "name": "H1",
+            "value": "h1"
+          },
+          {
+            "name": "H2",
+            "value": "h2"
+          },
+          {
+            "name": "H3",
+            "value": "h3"
+          },
+          {
+            "name": "H4",
+            "value": "h4"
+          },
+          {
+            "name": "H5",
+            "value": "h5"
+          },
+          {
+            "name": "H6",
+            "value": "h6"
+          }
+        ]
       },
       {
         "component": "select",
@@ -827,6 +901,24 @@
           }
         ],
         "value": "manual"
+      },
+      {
+        "component": "aem-content",
+        "valueType": "string",
+        "name": "manualArticle1",
+        "label": "Manual Article 1"
+      },
+      {
+        "component": "aem-content",
+        "valueType": "string",
+        "name": "manualArticle2",
+        "label": "Manual Article 2"
+      },
+      {
+        "component": "aem-content",
+        "valueType": "string",
+        "name": "manualArticle3",
+        "label": "Manual Article 3"
       }
     ]
   },
@@ -1797,6 +1889,105 @@
         "name": "link",
         "label": "Link URL",
         "value": "/search"
+      }
+    ]
+  },
+  {
+    "id": "recommended-dynamic-hotels-grid",
+    "fields": [
+      {
+        "component": "text",
+        "name": "eyebrow",
+        "label": "Pretitle (Eyebrow)",
+        "value": ""
+      },
+      {
+        "component": "text",
+        "name": "title",
+        "label": "Title",
+        "value": ""
+      },
+      {
+        "component": "text",
+        "valueType": "string",
+        "name": "gridCta_linkText",
+        "label": "CTA Text",
+        "value": "Ver todos los hoteles"
+      },
+      {
+        "component": "aem-content",
+        "valueType": "string",
+        "name": "gridCta_link",
+        "label": "CTA URL",
+        "description": "Use an absolute URL for AEM pages outside this EDS site or for external destinations."
+      },
+      {
+        "component": "select",
+        "valueType": "string",
+        "name": "gridCta_linkTarget",
+        "label": "CTA Target",
+        "value": "_self",
+        "options": [
+          {
+            "name": "Same tab",
+            "value": "_self"
+          },
+          {
+            "name": "New tab",
+            "value": "_blank"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "recommended-dynamic-hotel",
+    "fields": [
+      {
+        "component": "text",
+        "valueType": "string",
+        "name": "hotelCode",
+        "label": "Hotel Code",
+        "description": "GraphQL hotel code to fetch data from"
+      },
+      {
+        "component": "text",
+        "valueType": "string",
+        "name": "destination",
+        "label": "Destination",
+        "description": "Override destination text for this hotel card"
+      },
+      {
+        "component": "aem-content",
+        "valueType": "string",
+        "name": "cta_link",
+        "label": "Hotel URL",
+        "description": "Optional override URL for this hotel card title link"
+      },
+      {
+        "component": "select",
+        "valueType": "string",
+        "name": "cta_linkTarget",
+        "label": "Hotel URL Target",
+        "value": "_self",
+        "options": [
+          {
+            "name": "Same tab",
+            "value": "_self"
+          },
+          {
+            "name": "New tab",
+            "value": "_blank"
+          }
+        ]
+      },
+      {
+        "component": "text",
+        "valueType": "string",
+        "name": "tag_tagLabel",
+        "label": "Promotional Badge",
+        "description": "Optional badge shown over the hotel image (e.g. \"hasta un 20%\")",
+        "value": ""
       }
     ]
   },

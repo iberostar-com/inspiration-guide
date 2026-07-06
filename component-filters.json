@@ -38,6 +38,7 @@
       "nav-item",
       "nav-language",
       "nav-search",
+      "recommended-dynamic-hotels-grid",
       "recommended-hotels-grid",
       "text",
       "title",
@@ -719,6 +720,12 @@
     "id": "nav-language",
     "components": [
       "nav-language-option"
+    ]
+  },
+  {
+    "id": "recommended-dynamic-hotels-grid",
+    "components": [
+      "recommended-dynamic-hotel"
     ]
   },
   {
