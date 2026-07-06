@@ -76,17 +76,27 @@ main .recommended-dynamic-hotels-grid .recommended-dynamic-hotels-grid-cta:focus
   text-underline-offset: 3px;
 }
 
-main .recommended-dynamic-hotels-grid .recommended-dynamic-hotels-grid-container {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-  gap: 24px;
-  padding: 0 16px;
-  width: 100%;
+main .recommended-dynamic-hotels-grid .recommended-dynamic-hotels-list {
+  display: flex;
+  gap: 16px;
+  margin: 0;
+  padding: 0 16px 4px;
+  overflow-x: auto;
+  list-style: none;
+  scroll-padding-inline: 16px;
+  scroll-snap-type: x mandatory;
+  scrollbar-width: none;
 }
 
-main .recommended-dynamic-hotels-grid .recommended-dynamic-hotels-grid-item {
-  display: flex;
-  flex-direction: column;
+main .recommended-dynamic-hotels-grid .recommended-dynamic-hotels-list::-webkit-scrollbar {
+  display: none;
+}
+
+main .recommended-dynamic-hotels-grid .recommended-dynamic-hotels-item {
+  width: calc(min(100vw, 1440px) - 61px);
+  min-width: 0;
+  flex: 0 0 calc(min(100vw, 1440px) - 61px);
+  scroll-snap-align: start;
 }
 
 main .recommended-dynamic-hotels-grid .recommended-dynamic-hotels-grid-empty {
@@ -98,25 +108,172 @@ main .recommended-dynamic-hotels-grid .recommended-dynamic-hotels-grid-empty {
   font-style: italic;
 }
 
+main .recommended-dynamic-hotels-grid .recommended-dynamic-hotels-pagination {
+  display: none;
+}
+
+main .recommended-dynamic-hotels-grid .recommended-dynamic-hotels-mobile-controls {
+  display: flex;
+  min-height: 32px;
+  align-items: center;
+  justify-content: space-between;
+  padding: 4px 16px;
+}
+
+main .recommended-dynamic-hotels-grid .recommended-dynamic-hotels-prev,
+main .recommended-dynamic-hotels-grid .recommended-dynamic-hotels-next {
+  display: inline-flex;
+  width: 32px;
+  height: 32px;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  border: 0;
+  border-radius: 50%;
+  background: transparent;
+  color: #1b2828;
+  cursor: pointer;
+}
+
+main .recommended-dynamic-hotels-grid .recommended-dynamic-hotels-prev span::before,
+main .recommended-dynamic-hotels-grid .recommended-dynamic-hotels-next span::before {
+  font-family: ibh-icons, sans-serif;
+  font-size: 20px;
+  font-weight: 400;
+  line-height: 1;
+}
+
+main .recommended-dynamic-hotels-grid .recommended-dynamic-hotels-prev span::before {
+  content: "\f21e";
+}
+
+main .recommended-dynamic-hotels-grid .recommended-dynamic-hotels-next span::before {
+  content: "\f21c";
+}
+
+main .recommended-dynamic-hotels-grid .recommended-dynamic-hotels-prev:disabled,
+main .recommended-dynamic-hotels-grid .recommended-dynamic-hotels-next:disabled {
+  color: #b8b8b8;
+  cursor: default;
+}
+
+main .recommended-dynamic-hotels-grid .recommended-dynamic-hotels-prev:focus-visible,
+main .recommended-dynamic-hotels-grid .recommended-dynamic-hotels-next:focus-visible {
+  outline: 2px solid #1b6e63;
+  outline-offset: 2px;
+}
+
+main .recommended-dynamic-hotels-grid .recommended-dynamic-hotels-dots {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+main .recommended-dynamic-hotels-grid .recommended-dynamic-hotels-dot {
+  width: 6px;
+  height: 6px;
+  padding: 0;
+  border: 0;
+  border-radius: 4px;
+  background: #dedede;
+  cursor: pointer;
+  transition: width 0.2s ease, background-color 0.2s ease;
+}
+
+main .recommended-dynamic-hotels-grid .recommended-dynamic-hotels-dot.active {
+  width: 16px;
+  background: #38a596;
+}
+
+main .recommended-dynamic-hotels-grid .recommended-dynamic-hotels-dot:focus-visible {
+  outline: 2px solid #1b6e63;
+  outline-offset: 3px;
+}
+
 main .recommended-dynamic-hotels-grid .hotel-mini-card-vertical {
   padding: 0;
 }
 
 @media (width >= 600px) {
-  main .recommended-dynamic-hotels-grid .recommended-dynamic-hotels-grid-container {
-    grid-template-columns: repeat(2, 1fr);
-  }
-}
-
-@media (width >= 1024px) {
-  main .recommended-dynamic-hotels-grid .recommended-dynamic-hotels-grid-container {
-    grid-template-columns: repeat(4, 1fr);
+  main .recommended-dynamic-hotels-grid .recommended-dynamic-hotels-item {
+    width: calc((min(100vw, 1440px) - 64px) / 2);
+    flex-basis: calc((min(100vw, 1440px) - 64px) / 2);
   }
 }
 
 @media (width >= 1200px) {
-  main .recommended-dynamic-hotels-grid .recommended-dynamic-hotels-grid-container {
-    grid-template-columns: repeat(4, 1fr);
-    gap: 32px;
+  main .recommended-dynamic-hotels-grid .recommended-dynamic-hotels-grid-rendered {
+    gap: 40px;
+    padding: 64px 0;
+  }
+
+  main .recommended-dynamic-hotels-grid .recommended-dynamic-hotels-grid-header {
+    padding: 0 24px;
+  }
+
+  main .recommended-dynamic-hotels-grid .recommended-dynamic-hotels-grid-title {
+    font-size: 32px;
+    line-height: 42px;
+  }
+
+  main .recommended-dynamic-hotels-grid .recommended-dynamic-hotels-list {
+    padding-right: 24px;
+    padding-left: 24px;
+    clip-path: inset(0 24px 0 0);
+    scroll-padding-inline: 24px;
+  }
+
+  main .recommended-dynamic-hotels-grid .recommended-dynamic-hotels-item {
+    width: calc((min(100vw, 1440px) - 96px) / 4);
+    flex-basis: calc((min(100vw, 1440px) - 96px) / 4);
+  }
+
+  main .recommended-dynamic-hotels-grid .recommended-dynamic-hotels-pagination {
+    display: flex;
+    flex-shrink: 0;
+    align-items: center;
+    gap: 12px;
+  }
+
+  main .recommended-dynamic-hotels-grid .recommended-dynamic-hotels-status {
+    color: #1b2828;
+    font-family: Inter, sans-serif;
+    font-size: 14px;
+    font-weight: 400;
+    line-height: 1.4;
+    white-space: nowrap;
+  }
+
+  main .recommended-dynamic-hotels-grid .recommended-dynamic-hotels-pagination-buttons {
+    display: flex;
+    gap: 8px;
+  }
+
+  main .recommended-dynamic-hotels-grid .recommended-dynamic-hotels-pagination
+    .recommended-dynamic-hotels-prev,
+  main .recommended-dynamic-hotels-grid .recommended-dynamic-hotels-pagination
+    .recommended-dynamic-hotels-next {
+    background: #f5f5f5;
+  }
+
+  main .recommended-dynamic-hotels-grid .recommended-dynamic-hotels-pagination
+    .recommended-dynamic-hotels-prev:disabled,
+  main .recommended-dynamic-hotels-grid .recommended-dynamic-hotels-pagination
+    .recommended-dynamic-hotels-next:disabled {
+    background: transparent;
+  }
+
+  main .recommended-dynamic-hotels-grid .recommended-dynamic-hotels-mobile-controls {
+    display: none;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  main .recommended-dynamic-hotels-grid .recommended-dynamic-hotels-list {
+    scroll-behavior: auto;
+  }
+
+  main .recommended-dynamic-hotels-grid .recommended-dynamic-hotels-dot {
+    transition: none;
   }
 }
