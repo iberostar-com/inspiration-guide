@@ -214,6 +214,17 @@ function toResolvedCardItem(article) {
   };
 }
 
+function toFallbackTitleFromPath(path) {
+  const slug = normalizePath(path).split('/').filter(Boolean).pop() || '';
+  if (!slug) return '';
+
+  return slug
+    .replace(/[-_]+/g, ' ')
+    .replace(/\s+/g, ' ')
+    .trim()
+    .replace(/\b\w/g, (char) => char.toUpperCase());
+}
+
 async function getAutoArticles(mode) {
   const all = (await getArticles()).filter(isVisibleArticle);
   const currentArticle = extractCurrentArticle(all);
@@ -320,15 +331,30 @@ async function getManualItems(block) {
   const hasManualRefInputs = manualRefInputs.some((item) => item.refPath);
 
   if (hasManualRefInputs) {
-    return manualRefInputs
+    const resolvedManualRefs = manualRefInputs
       .map((item) => {
         if (!item.refPath) return null;
 
         const article = findArticleByRef(allArticles, item.refPath);
-        if (!article) return null;
+        if (article) {
+          return {
+            ...toResolvedCardItem(article),
+            sourceProp: item.sourceProp,
+            sortOrder: item.index,
+          };
+        }
+
+        const fallbackHref = normalizePath(item.refPath);
+        const fallbackTitle = item.sourceProp?.querySelector('a')?.textContent?.trim()
+          || toFallbackTitleFromPath(item.refPath);
+        if (!fallbackHref || !fallbackTitle) return null;
 
         return {
-          ...toResolvedCardItem(article),
+          href: fallbackHref,
+          title: fallbackTitle,
+          category: '',
+          image: '',
+          imageAlt: '',
           sourceProp: item.sourceProp,
           sortOrder: item.index,
         };
@@ -336,6 +362,8 @@ async function getManualItems(block) {
       .filter(Boolean)
       .sort((a, b) => a.sortOrder - b.sortOrder)
       .slice(0, MAX_ITEMS);
+
+    if (resolvedManualRefs.length) return resolvedManualRefs;
   }
 
   const legacyResolved = getLegacyManualRows(block)
@@ -356,7 +384,7 @@ async function getManualItems(block) {
     .map(({ row, index }) => parseLegacyManualItem(row, index))
     .filter(Boolean);
 
-  return [...legacyResolved]
+  return [...legacyResolved, ...manualLegacy]
     .slice(0, MAX_ITEMS)
     .sort((a, b) => a.sortOrder - b.sortOrder);
 }
