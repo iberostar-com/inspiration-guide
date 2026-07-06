@@ -6,7 +6,8 @@ const MAX_ITEMS = 3;
 const CTA_COPY = 'Leer artículo';
 const MODE_VALUES = new Set(['manual', 'auto-tag', 'auto-category']);
 const HEADING_TAGS = new Set(['p', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6']);
-const CONFIG_PROPS = new Set([
+const LINK_TARGETS = new Set(['_self', '_blank']);
+const LEGACY_CONFIG_PROP_ORDER = [
   'eyebrow',
   'eyebrowHeading',
   'title',
@@ -15,7 +16,24 @@ const CONFIG_PROPS = new Set([
   'manualArticle1',
   'manualArticle2',
   'manualArticle3',
-]);
+];
+const CONFIG_PROP_ORDER = [
+  'eyebrow',
+  'eyebrowHeading',
+  'title',
+  'titleHeading',
+  'mode',
+  'cardCtaLabel',
+  'ctaTarget',
+  'manualArticle1',
+  'manualArticle1Pretitle',
+  'manualArticle2',
+  'manualArticle2Pretitle',
+  'manualArticle3',
+  'manualArticle3Pretitle',
+];
+const CONFIG_PROPS = new Set(CONFIG_PROP_ORDER);
+const ARTICLE_CARD_CACHE = new Map();
 
 function getSourceRows(block) {
   return [...block.children].filter((row) => !row.classList.contains('editorial-article-grid-rendered'));
@@ -27,21 +45,58 @@ function getPropElement(root, propName) {
   return root?.querySelector?.(selector) || null;
 }
 
+function getPositionalConfigRows(block) {
+  const rows = getSourceRows(block);
+  const modeIndex = LEGACY_CONFIG_PROP_ORDER.indexOf('mode');
+  const mode = rows[modeIndex]?.textContent?.trim().toLowerCase() || '';
+  if (!MODE_VALUES.has(mode)) return null;
+
+  const propOrder = rows.length >= CONFIG_PROP_ORDER.length
+    ? CONFIG_PROP_ORDER
+    : LEGACY_CONFIG_PROP_ORDER;
+
+  return { propOrder, rows: rows.slice(0, propOrder.length) };
+}
+
 function getFieldByProp(block, propName) {
-  return getSourceRows(block)
+  const instrumentedField = getSourceRows(block)
     .map((row) => getPropElement(row, propName))
     .find(Boolean) || null;
+  if (instrumentedField) return instrumentedField;
+
+  const positionalConfig = getPositionalConfigRows(block);
+  const propIndex = positionalConfig?.propOrder.indexOf(propName) ?? -1;
+  return positionalConfig?.rows[propIndex] || null;
 }
 
 function toDataAttributeName(propName) {
   return `data-${propName.replace(/[A-Z]/g, (char) => `-${char.toLowerCase()}`)}`;
 }
 
+function toDataAttributeNameWithDigitDashes(propName) {
+  return toDataAttributeName(propName).replace(/(\d+)/g, '-$1');
+}
+
+function attrByProp(block, propName) {
+  const dataAttrName = toDataAttributeName(propName);
+  const attrNames = [
+    dataAttrName,
+    toDataAttributeNameWithDigitDashes(propName),
+    dataAttrName.replace(/^data-/, ''),
+    toDataAttributeNameWithDigitDashes(propName).replace(/^data-/, ''),
+    propName,
+  ];
+
+  return attrNames
+    .map((attrName) => block.getAttribute(attrName)?.trim())
+    .find(Boolean) || '';
+}
+
 function textByProp(block, propName, fallback = '') {
   const text = getFieldByProp(block, propName)?.textContent?.trim();
   if (text) return text;
 
-  const attr = block.getAttribute(toDataAttributeName(propName));
+  const attr = attrByProp(block, propName);
   if (attr) return attr;
 
   return fallback;
@@ -49,19 +104,38 @@ function textByProp(block, propName, fallback = '') {
 
 function hrefByProp(block, propName) {
   const field = getFieldByProp(block, propName);
-  if (!field) return '';
+  if (field) {
+    const href = field.querySelector('a[href]')?.getAttribute('href')?.trim();
+    if (href) return href;
 
-  const href = field.querySelector('a[href]')?.getAttribute('href')?.trim();
-  return href || field.textContent?.trim() || '';
+    const textValue = field.textContent?.trim() || '';
+    if (textValue) return textValue;
+  }
+
+  const attr = attrByProp(block, propName);
+  if (attr) return `${attr}`.trim();
+
+  return '';
 }
 
 function normalizePath(path) {
   if (!path) return '';
 
-  let normalized = `${path}`.trim().replace(/\.html$/, '');
+  let normalized = `${path}`.trim();
+  if (/^(?:https?:)?\/\//i.test(normalized)) {
+    try {
+      normalized = new URL(normalized, window.location.origin).pathname;
+    } catch (e) {
+      // Keep the authored value and normalize it as a path below.
+    }
+  }
 
-  // Convert author/content paths to public paths (/content/... → /...)
-  normalized = normalized.replace(/^\/content\/inspiration-guide\//, '/');
+  normalized = normalized
+    .split(/[?#]/, 1)[0]
+    .replace(/\/+/g, '/')
+    .replace(/\/+$/, '')
+    .replace(/\.html$/i, '')
+    .replace(/^\/content\/inspiration-guide(?:\/|$)/i, '/');
 
   const withLeadingSlash = normalized.startsWith('/') ? normalized : `/${normalized}`;
   return withLeadingSlash.replace(/\/+$/, '') || '/';
@@ -81,8 +155,72 @@ function sanitizeMode(value) {
   return MODE_VALUES.has(mode) ? mode : 'manual';
 }
 
+function sanitizeLinkTarget(value) {
+  const target = `${value || ''}`.trim().toLowerCase();
+  return LINK_TARGETS.has(target) ? target : '_self';
+}
+
 function getMetaContent(name) {
   return document.querySelector(`meta[name="${name}"]`)?.content?.trim() || '';
+}
+
+function getMetaFromDocument(doc, name) {
+  return doc.querySelector(`meta[name="${name}"]`)?.content?.trim()
+    || doc.querySelector(`meta[property="${name}"]`)?.content?.trim()
+    || '';
+}
+
+function unique(values) {
+  return [...new Set(values.filter(Boolean))];
+}
+
+function toFetchCandidates(refPath) {
+  const rawValue = `${refPath || ''}`.trim();
+  if (!rawValue) return [];
+
+  let rawPath = rawValue;
+  if (/^(?:https?:)?\/\//i.test(rawPath)) {
+    try {
+      rawPath = new URL(rawPath, window.location.origin).pathname;
+    } catch (e) {
+      rawPath = rawValue;
+    }
+  }
+
+  const normalized = normalizePath(rawPath);
+  const publicFromContent = rawPath.replace(/^\/content\/inspiration-guide(?:\/|$)/i, '/');
+
+  const withHtml = (path) => (path.endsWith('.html') ? path : `${path}.html`);
+  const withoutHtml = (path) => path.replace(/\.html$/i, '');
+
+  return unique([
+    rawPath,
+    withHtml(rawPath),
+    withoutHtml(rawPath),
+    normalized,
+    withHtml(normalized),
+    publicFromContent,
+    withHtml(publicFromContent),
+    withoutHtml(publicFromContent),
+  ]);
+}
+
+function extractImageFromDocument(doc) {
+  const image = getMetaFromDocument(doc, 'article-image')
+    || getMetaFromDocument(doc, 'og:image')
+    || getMetaFromDocument(doc, 'twitter:image')
+    || doc.querySelector('main picture img')?.getAttribute('src')
+    || doc.querySelector('picture img')?.getAttribute('src')
+    || doc.querySelector('img')?.getAttribute('src')
+    || '';
+
+  const imageAlt = getMetaFromDocument(doc, 'article-image-alt')
+    || getMetaFromDocument(doc, 'og:image:alt')
+    || doc.querySelector('main picture img')?.getAttribute('alt')
+    || doc.querySelector('picture img')?.getAttribute('alt')
+    || '';
+
+  return { image, imageAlt };
 }
 
 function normalizeStr(value) {
@@ -206,12 +344,64 @@ function matchesCategoryTree(currentTree, article) {
 
 function toResolvedCardItem(article) {
   return {
-    href: article.href || article.path || '',
+    href: normalizePath(article.href || article.path || ''),
     image: article.image || article.ogImage || '',
     imageAlt: article.imageAlt || '',
     title: article.title || '',
     category: getRootCategoryLabel(article.categoryPath || article.category),
   };
+}
+
+async function fetchArticleCardItem(refPath) {
+  const href = normalizePath(refPath);
+  if (!href) return null;
+  if (ARTICLE_CARD_CACHE.has(href)) return ARTICLE_CARD_CACHE.get(href);
+
+  const request = (async () => {
+    const candidates = toFetchCandidates(refPath);
+    const attempts = await Promise.all(candidates.map(async (candidate) => {
+      try {
+        const response = await fetch(candidate, {
+          headers: { Accept: 'text/html' },
+          credentials: 'same-origin',
+        });
+        if (!response.ok) return null;
+
+        const html = await response.text();
+        const doc = new DOMParser().parseFromString(html, 'text/html');
+        const category = getMetaFromDocument(doc, 'article-category-path')
+          || getMetaFromDocument(doc, 'article-category');
+        const { image, imageAlt } = extractImageFromDocument(doc);
+
+        return {
+          href,
+          image,
+          imageAlt,
+          title: getMetaFromDocument(doc, 'jcr:title')
+            || getMetaFromDocument(doc, 'og:title')
+            || doc.querySelector('h1')?.textContent?.trim()
+            || doc.querySelector('title')?.textContent?.trim()
+            || '',
+          category: getRootCategoryLabel(category),
+        };
+      } catch (e) {
+        return null;
+      }
+    }));
+
+    return attempts.find(Boolean) || null;
+  })();
+
+  ARTICLE_CARD_CACHE.set(href, request);
+  return request;
+}
+
+async function safeGetVisibleArticles() {
+  try {
+    return (await getArticles()).filter(isVisibleArticle);
+  } catch (e) {
+    return [];
+  }
 }
 
 function toFallbackTitleFromPath(path) {
@@ -225,8 +415,14 @@ function toFallbackTitleFromPath(path) {
     .replace(/\b\w/g, (char) => char.toUpperCase());
 }
 
+function getFallbackTitle(sourceProp, refPath) {
+  const linkText = sourceProp?.querySelector('a')?.textContent?.trim() || '';
+  if (linkText && !samePath(linkText, refPath)) return linkText;
+  return toFallbackTitleFromPath(refPath);
+}
+
 async function getAutoArticles(mode) {
-  const all = (await getArticles()).filter(isVisibleArticle);
+  const all = await safeGetVisibleArticles();
   const currentArticle = extractCurrentArticle(all);
   const currentPath = normalizePath(window.location.pathname);
   const withoutCurrent = all.filter(
@@ -262,20 +458,24 @@ function findArticleByRef(allArticles, refPath) {
   const target = normalizePath(refPath);
   if (!target) return null;
 
+  const exactMatch = allArticles.find(
+    (article) => normalizePath(article.path || article.href) === target,
+  );
+  if (exactMatch) return exactMatch;
+
+  const targetSlug = target.split('/').filter(Boolean).pop() || '';
+  if (!targetSlug) return null;
+
   return allArticles.find((article) => {
     const candidate = normalizePath(article.path || article.href);
-    if (!candidate) return false;
-
-    if (candidate === target) return true;
-
-    // Fuzzy match on last path segment (slug)
-    const targetSlug = target.split('/').filter(Boolean).pop() || '';
     const candidateSlug = candidate.split('/').filter(Boolean).pop() || '';
-    return targetSlug && targetSlug === candidateSlug;
+    return candidateSlug === targetSlug;
   }) || null;
 }
 
 function getLegacyManualRows(block) {
+  if (getPositionalConfigRows(block)) return [];
+
   return getSourceRows(block)
     .filter((row) => !row.querySelector('[data-aue-prop]')
       || [...row.querySelectorAll('[data-aue-prop]')]
@@ -318,47 +518,51 @@ function parseLegacyManualItem(row, index) {
 }
 
 async function getManualItems(block) {
-  const allArticles = (await getArticles()).filter(isVisibleArticle);
+  const allArticles = await safeGetVisibleArticles();
 
   const manualRefInputs = ['manualArticle1', 'manualArticle2', 'manualArticle3']
-    .map((propName, index) => ({
-      propName,
-      index,
-      refPath: hrefByProp(block, propName),
-      sourceProp: getFieldByProp(block, propName),
-    }));
+    .map((propName, index) => {
+      const pretitlePropName = `${propName}Pretitle`;
+      return {
+        propName,
+        index,
+        refPath: hrefByProp(block, propName),
+        sourceProp: getFieldByProp(block, propName),
+        pretitle: textByProp(block, pretitlePropName),
+        pretitleSource: getFieldByProp(block, pretitlePropName),
+      };
+    });
 
   const hasManualRefInputs = manualRefInputs.some((item) => item.refPath);
 
   if (hasManualRefInputs) {
-    const resolvedManualRefs = manualRefInputs
-      .map((item) => {
+    const resolvedManualRefs = (await Promise.all(manualRefInputs
+      .map(async (item) => {
         if (!item.refPath) return null;
 
         const article = findArticleByRef(allArticles, item.refPath);
-        if (article) {
-          return {
-            ...toResolvedCardItem(article),
-            sourceProp: item.sourceProp,
-            sortOrder: item.index,
-          };
-        }
-
+        const indexedItem = article ? toResolvedCardItem(article) : null;
+        const needsEnrichment = !indexedItem?.image || !indexedItem?.title;
+        const fetchedItem = needsEnrichment
+          ? await fetchArticleCardItem(item.refPath)
+          : null;
         const fallbackHref = normalizePath(item.refPath);
-        const fallbackTitle = item.sourceProp?.querySelector('a')?.textContent?.trim()
-          || toFallbackTitleFromPath(item.refPath);
-        if (!fallbackHref || !fallbackTitle) return null;
+        const fallbackTitle = getFallbackTitle(item.sourceProp, item.refPath);
+        const href = fetchedItem?.href || indexedItem?.href || fallbackHref;
+        const title = fetchedItem?.title || indexedItem?.title || fallbackTitle;
+        if (!href || !title) return null;
 
         return {
-          href: fallbackHref,
-          title: fallbackTitle,
-          category: '',
-          image: '',
-          imageAlt: '',
+          href,
+          title,
+          pretitle: item.pretitle || fetchedItem?.category || indexedItem?.category || '',
+          image: fetchedItem?.image || indexedItem?.image || '',
+          imageAlt: fetchedItem?.imageAlt || indexedItem?.imageAlt || '',
           sourceProp: item.sourceProp,
+          pretitleSource: item.pretitleSource,
           sortOrder: item.index,
         };
-      })
+      })))
       .filter(Boolean)
       .sort((a, b) => a.sortOrder - b.sortOrder)
       .slice(0, MAX_ITEMS);
@@ -366,11 +570,11 @@ async function getManualItems(block) {
     if (resolvedManualRefs.length) return resolvedManualRefs;
   }
 
-  const legacyResolved = getLegacyManualRows(block)
+  return getLegacyManualRows(block)
     .map(({ row, index }) => {
       const refPath = row.querySelector('a[href]')?.getAttribute('href')?.trim() || '';
       const article = findArticleByRef(allArticles, refPath);
-      if (!article) return null;
+      if (!article) return parseLegacyManualItem(row, index);
 
       return {
         ...toResolvedCardItem(article),
@@ -378,15 +582,9 @@ async function getManualItems(block) {
         sortOrder: index,
       };
     })
-    .filter(Boolean);
-
-  const manualLegacy = getLegacyManualRows(block)
-    .map(({ row, index }) => parseLegacyManualItem(row, index))
-    .filter(Boolean);
-
-  return [...legacyResolved, ...manualLegacy]
-    .slice(0, MAX_ITEMS)
-    .sort((a, b) => a.sortOrder - b.sortOrder);
+    .filter(Boolean)
+    .sort((a, b) => a.sortOrder - b.sortOrder)
+    .slice(0, MAX_ITEMS);
 }
 
 function createTag(tagName, className, text) {
@@ -396,7 +594,7 @@ function createTag(tagName, className, text) {
   return element;
 }
 
-function createCard(item) {
+function createCard(item, config) {
   if (!item?.title || !item?.href) return null;
 
   const article = document.createElement('article');
@@ -405,6 +603,8 @@ function createCard(item) {
   const link = document.createElement('a');
   link.className = 'editorial-article-grid-card-link';
   link.href = item.href;
+  link.target = config.ctaTarget;
+  if (config.ctaTarget === '_blank') link.rel = 'noopener noreferrer';
 
   if (item.picture || item.image) {
     const media = document.createElement('div');
@@ -424,15 +624,18 @@ function createCard(item) {
   const body = document.createElement('div');
   body.className = 'editorial-article-grid-card-body';
 
-  if (item.category) {
-    body.append(createTag('p', 'editorial-article-grid-card-category', item.category));
+  const pretitleText = item.pretitle || item.category;
+  if (pretitleText) {
+    const pretitle = createTag('p', 'editorial-article-grid-card-pretitle', pretitleText);
+    if (item.pretitleSource) moveInstrumentation(item.pretitleSource, pretitle);
+    body.append(pretitle);
   }
 
   body.append(createTag('h3', 'editorial-article-grid-card-title', item.title));
 
   const cta = document.createElement('span');
   cta.className = 'editorial-article-grid-card-cta';
-  cta.append(document.createTextNode(CTA_COPY));
+  cta.append(document.createTextNode(config.ctaText));
 
   const arrow = document.createElement('span');
   arrow.setAttribute('aria-hidden', 'true');
@@ -453,6 +656,8 @@ function readConfig(block) {
     title: textByProp(block, 'title', ''),
     titleHeading: sanitizeHeadingTag(textByProp(block, 'titleHeading', 'p'), 'p'),
     mode: sanitizeMode(textByProp(block, 'mode', block.getAttribute('data-mode') || 'manual')),
+    ctaText: textByProp(block, 'cardCtaLabel', CTA_COPY),
+    ctaTarget: sanitizeLinkTarget(textByProp(block, 'ctaTarget', '_self')),
   };
 }
 
@@ -486,20 +691,29 @@ function hideSourceRows(sourceRows) {
   });
 }
 
-function collectSourceRows(items) {
-  return items
-    .map((item) => item.sourceRow || item.sourceProp)
-    .filter(Boolean);
-}
-
-function renderCards(items) {
+function renderCards(block, items, config) {
   const list = document.createElement('div');
   list.className = 'editorial-article-grid-list';
 
   items.forEach((item) => {
-    const card = createCard(item);
+    const card = createCard(item, config);
     if (card) list.append(card);
   });
+
+  const ctaTextSource = getFieldByProp(block, 'cardCtaLabel');
+  const ctaTargetSource = getFieldByProp(block, 'ctaTarget');
+  if (ctaTextSource) {
+    moveInstrumentation(
+      ctaTextSource,
+      list.querySelector('.editorial-article-grid-card-cta'),
+    );
+  }
+  if (ctaTargetSource) {
+    moveInstrumentation(
+      ctaTargetSource,
+      list.querySelector('.editorial-article-grid-card-link'),
+    );
+  }
 
   return list;
 }
@@ -542,10 +756,10 @@ export default async function decorate(block) {
   const header = renderHeader(block, config);
   if (header) rendered.append(header);
 
-  const list = renderCards(items);
+  const list = renderCards(block, items, config);
   rendered.append(list);
 
   block.append(rendered);
-  hideSourceRows(collectSourceRows(items));
+  hideSourceRows(getSourceRows(block));
   markInstrumentation(items, rendered);
 }
