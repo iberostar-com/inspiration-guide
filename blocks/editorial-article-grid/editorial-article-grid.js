@@ -58,8 +58,12 @@ function hrefByProp(block, propName) {
 function normalizePath(path) {
   if (!path) return '';
 
-  const withoutHtml = `${path}`.trim().replace(/\.html$/, '');
-  const withLeadingSlash = withoutHtml.startsWith('/') ? withoutHtml : `/${withoutHtml}`;
+  let normalized = `${path}`.trim().replace(/\.html$/, '');
+
+  // Convert author/content paths to public paths (/content/... → /...)
+  normalized = normalized.replace(/^\/content\/inspiration-guide\//, '/');
+
+  const withLeadingSlash = normalized.startsWith('/') ? normalized : `/${normalized}`;
   return withLeadingSlash.replace(/\/+$/, '') || '/';
 }
 
@@ -249,8 +253,14 @@ function findArticleByRef(allArticles, refPath) {
 
   return allArticles.find((article) => {
     const candidate = normalizePath(article.path || article.href);
-    return candidate && (candidate === target
-      || candidate.endsWith(target) || target.endsWith(candidate));
+    if (!candidate) return false;
+
+    if (candidate === target) return true;
+
+    // Fuzzy match on last path segment (slug)
+    const targetSlug = target.split('/').filter(Boolean).pop() || '';
+    const candidateSlug = candidate.split('/').filter(Boolean).pop() || '';
+    return targetSlug && targetSlug === candidateSlug;
   }) || null;
 }
 
@@ -346,7 +356,7 @@ async function getManualItems(block) {
     .map(({ row, index }) => parseLegacyManualItem(row, index))
     .filter(Boolean);
 
-  return [...manualRefs, ...legacyResolved, ...manualLegacy]
+  return [...legacyResolved]
     .slice(0, MAX_ITEMS)
     .sort((a, b) => a.sortOrder - b.sortOrder);
 }
