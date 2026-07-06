@@ -1,0 +1,115 @@
+{
+  "definitions": [
+    {
+      "title": "Category Hero",
+      "id": "category-hero",
+      "plugins": {
+        "xwalk": {
+          "page": {
+            "resourceType": "core/franklin/components/block/v1/block",
+            "template": {
+              "name": "Category Hero",
+              "model": "category-hero",
+              "filter": "category-hero"
+            },
+            "variants": [
+              {
+                "name": "Subcategory",
+                "value": "subcategory",
+                "description": "Compact top spacing variant for subcategory pages"
+              }
+            ]
+          }
+        }
+      }
+    },
+    {
+      "title": "Category Hero Subcategory",
+      "id": "category-hero-subcategory",
+      "plugins": {
+        "xwalk": {
+          "page": {
+            "resourceType": "core/franklin/components/block/v1/block/item",
+            "template": {
+              "name": "Subcategory",
+              "model": "category-hero-subcategory"
+            }
+          }
+        }
+      }
+    }
+  ],
+  "models": [
+    {
+      "id": "category-hero",
+      "fields": [
+        {
+          "component": "text",
+          "valueType": "string",
+          "name": "pretitle",
+          "label": "Antetítulo",
+          "value": ""
+        },
+        {
+          "component": "text",
+          "valueType": "string",
+          "name": "title",
+          "label": "Título",
+          "value": ""
+        },
+        {
+          "component": "richtext",
+          "name": "description",
+          "label": "Descripción",
+          "value": ""
+        },
+        {
+          "component": "select",
+          "valueType": "string",
+          "name": "subcategoriesHeadingTag",
+          "label": "Encabezado SEO de las subcategorías",
+          "value": "h2",
+          "options": [
+            { "name": "H2", "value": "h2" },
+            { "name": "H3", "value": "h3" },
+            { "name": "H4", "value": "h4" },
+            { "name": "H5", "value": "h5" },
+            { "name": "H6", "value": "h6" }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "category-hero-subcategory",
+      "fields": [
+        {
+          "component": "text",
+          "valueType": "string",
+          "name": "title",
+          "label": "Título",
+          "value": ""
+        },
+        {
+          "component": "aem-content",
+          "valueType": "string",
+          "name": "url",
+          "label": "URL"
+        }
+      ]
+    }
+  ],
+  "filters": [
+    {
+      "id": "category-hero",
+      "components": [
+        "category-hero-subcategory"
+      ]
+    },
+    {
+      "id": "section",
+      "components": [
+        "category-hero"
+      ]
+    }
+  ]
+}

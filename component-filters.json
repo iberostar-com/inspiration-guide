@@ -468,6 +468,18 @@
     ]
   },
   {
+    "id": "category-hero",
+    "components": [
+      "category-hero-subcategory"
+    ]
+  },
+  {
+    "id": "section",
+    "components": [
+      "category-hero"
+    ]
+  },
+  {
     "id": "columns",
     "components": [
       "column"
