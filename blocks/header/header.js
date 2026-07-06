@@ -15,85 +15,56 @@ function normalizePath(path) {
   }
 }
 
-function setSectionExpanded(section, expanded) {
-  section.setAttribute('aria-expanded', expanded ? 'true' : 'false');
-  section.querySelector(':scope > .nav-section-header .nav-section-toggle')
+function setItemExpanded(item, expanded) {
+  item.setAttribute('aria-expanded', expanded ? 'true' : 'false');
+  item.querySelector(':scope > .nav-item-content > .nav-item-toggle')
     ?.setAttribute('aria-expanded', expanded ? 'true' : 'false');
 }
 
-function closeAllSections(navSections, exceptSection) {
-  navSections.querySelectorAll('.nav-section-has-children').forEach((section) => {
-    if (section !== exceptSection) {
-      setSectionExpanded(section, false);
+function closeAllSections(navSections, exceptItem) {
+  navSections.querySelectorAll('.nav-item-has-children').forEach((item) => {
+    if (item !== exceptItem) {
+      setItemExpanded(item, false);
     }
   });
 }
 
-function toggleSection(section, navSections, forceExpanded) {
-  const expanded = forceExpanded ?? section.getAttribute('aria-expanded') !== 'true';
+function toggleItem(item, navSections, forceExpanded) {
+  const expanded = forceExpanded ?? item.getAttribute('aria-expanded') !== 'true';
 
   if (expanded) {
-    closeAllSections(navSections, section);
+    closeAllSections(navSections, item);
   }
 
-  setSectionExpanded(section, expanded);
+  setItemExpanded(item, expanded);
 }
 
-function markViewAllItem(submenu) {
-  const firstItem = submenu.querySelector(':scope > li:first-child');
-  const label = firstItem?.querySelector('a')?.textContent?.trim()?.toLowerCase() || '';
+function wireNavItem(item, navSections) {
+  const content = item.querySelector(':scope > .nav-item-content');
+  const toggle = content?.querySelector(':scope > .nav-item-toggle');
 
-  if (label.includes('ver todos')) {
-    firstItem.classList.add('nav-section-view-all');
-  }
-}
-
-function buildSectionHeader(item, navSections) {
-  const link = item.querySelector(':scope > a');
-  const submenu = item.querySelector(':scope > ul');
-
-  if (!link || !submenu) {
-    return;
-  }
-
-  item.classList.add('nav-section-has-children');
-  setSectionExpanded(item, false);
-  markViewAllItem(submenu);
-
-  const header = document.createElement('div');
-  header.className = 'nav-section-header';
-
-  const toggle = document.createElement('button');
-  toggle.type = 'button';
-  toggle.className = 'nav-section-toggle';
-  toggle.setAttribute('aria-expanded', 'false');
-  toggle.setAttribute('aria-label', `Toggle ${link.textContent.trim()} submenu`);
-
-  link.insertAdjacentElement('beforebegin', header);
-  header.append(link, toggle);
-
-  toggle.addEventListener('click', (event) => {
+  toggle?.addEventListener('click', (event) => {
     event.preventDefault();
     event.stopPropagation();
-    toggleSection(item, navSections);
+    toggleItem(item, navSections);
   });
 
-  header.addEventListener('mouseenter', () => {
+  content?.addEventListener('mouseenter', () => {
     if (DESKTOP_MEDIA.matches) {
-      toggleSection(item, navSections, true);
+      toggleItem(item, navSections, true);
     }
   });
 
   item.addEventListener('mouseleave', () => {
     if (DESKTOP_MEDIA.matches) {
-      toggleSection(item, navSections, false);
+      toggleItem(item, navSections, false);
     }
   });
 }
 
 function decorateNavSections(navSections) {
-  const items = navSections.querySelectorAll(':scope .default-content-wrapper > ul > li');
-  items.forEach((item) => buildSectionHeader(item, navSections));
+  navSections.querySelectorAll('.nav-item-has-children')
+    .forEach((item) => wireNavItem(item, navSections));
 }
 
 function markActiveNavigation(nav) {
@@ -108,8 +79,8 @@ function markActiveNavigation(nav) {
 
     if (isExactMatch || isChildMatch) {
       link.classList.add('is-active');
-      link.closest('li')?.classList.add('is-active');
-      link.closest('.nav-section-has-children')?.classList.add('is-trail');
+      link.closest('.nav-item-dropdown-item')?.classList.add('is-active');
+      link.closest('.nav-item-has-children')?.classList.add('is-trail');
     }
   });
 }
