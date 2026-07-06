@@ -16,11 +16,29 @@ function getPropElement(block, propName) {
     .find(Boolean) || null;
 }
 
+function getPropElementByNames(block, propNames) {
+  return propNames
+    .map((propName) => getPropElement(block, propName))
+    .find(Boolean) || null;
+}
+
 function getVideoUrl(block) {
-  const videoField = getPropElement(block, 'videoCf');
+  const videoField = getPropElementByNames(block, ['videoCf', 'video']);
   const directSource = videoField?.querySelector('source[src]')?.getAttribute('src')
     || videoField?.querySelector('video[src]')?.getAttribute('src');
   if (directSource) return directSource;
+
+  const datasetSource = videoField?.dataset?.src
+    || videoField?.dataset?.videoSrc
+    || videoField?.dataset?.assetReference
+    || videoField?.getAttribute('data-src')
+    || videoField?.getAttribute('data-video-src');
+  if (datasetSource) return datasetSource;
+
+  const textSource = videoField?.textContent?.trim();
+  if (textSource && (/^https?:\/\//i.test(textSource) || textSource.startsWith('/'))) {
+    return textSource;
+  }
 
   const fieldLinks = [...(videoField?.querySelectorAll('a[href]') || [])];
   const videoLink = fieldLinks.find((link) => VIDEO_EXTENSIONS.test(link.getAttribute('href')));
@@ -37,22 +55,24 @@ function getVideoUrl(block) {
 }
 
 function getPosterImage(block) {
-  const posterField = getPropElement(block, 'poster');
+  const posterField = getPropElementByNames(block, ['poster', 'posterImage']);
   return posterField?.querySelector('img')
     || getSourceRows(block).map((row) => row.querySelector('img')).find(Boolean)
     || null;
 }
 
 function getPosterSrc(block) {
-  const posterField = getPropElement(block, 'poster');
+  const posterField = getPropElementByNames(block, ['poster', 'posterImage']);
   return getPosterImage(block)?.src
     || posterField?.querySelector('a[href]')?.getAttribute('href')?.trim()
+    || posterField?.dataset?.src
+    || posterField?.dataset?.assetReference
     || posterField?.textContent?.trim()
     || '';
 }
 
 function getPosterAlt(block) {
-  const altField = getPropElement(block, 'posterAlt');
+  const altField = getPropElementByNames(block, ['posterAlt', 'videoAlt']);
   return altField?.textContent?.trim()
     || getPosterImage(block)?.alt?.trim()
     || '';
@@ -106,6 +126,7 @@ function activateVideo(figure, videoUrl) {
   video.controls = true;
   video.autoplay = true;
   video.playsInline = true;
+  video.muted = false;
   video.className = 'article-content-video-player';
   poster.replaceWith(video);
   video.play().catch(() => {
