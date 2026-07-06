@@ -35,6 +35,7 @@
       "image",
       "lead-subscription-form",
       "nav-hotels",
+      "nav-item",
       "nav-language",
       "nav-search",
       "recommended-hotels-grid",
@@ -706,6 +707,12 @@
     "id": "grid-category-gallery",
     "components": [
       "grid-category-gallery-card"
+    ]
+  },
+  {
+    "id": "nav-item",
+    "components": [
+      "nav-item-child"
     ]
   },
   {
