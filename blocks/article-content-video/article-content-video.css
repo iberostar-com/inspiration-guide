@@ -41,7 +41,7 @@ main .article-content-video .article-content-video-play {
   transition: transform 0.15s ease;
 }
 
-main .article-content-video .article-content-video-play i {
+main .article-content-video .article-content-video-play .article-content-video-play-icon {
   display: flex;
   align-items: center;
   justify-content: center;
@@ -50,8 +50,9 @@ main .article-content-video .article-content-video-play i {
   border-radius: 50%;
   background-color: rgb(255 255 255 / 92%);
   color: #1b2828;
-  font-size: 32px;
+  font-size: 26px;
   line-height: 1;
+  padding-left: 3px;
 }
 
 main .article-content-video .article-content-video-play:hover,

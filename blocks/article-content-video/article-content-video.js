@@ -54,6 +54,77 @@ function getVideoUrl(block) {
     .find((href) => VIDEO_EXTENSIONS.test(href)) || '';
 }
 
+function isLikelyVideoUrl(url) {
+  if (!url) return false;
+  if (VIDEO_EXTENSIONS.test(url)) return true;
+  return /\/content\/dam\//.test(url) && !/\.(json|html?|md|txt)(\?.*)?$/i.test(url);
+}
+
+function parseJsonForVideo(value) {
+  if (typeof value === 'string') {
+    if (VIDEO_EXTENSIONS.test(value)) return value;
+    return '';
+  }
+  if (!value || typeof value !== 'object') return '';
+  const values = Object.values(value);
+  return values
+    .map((entry) => parseJsonForVideo(entry))
+    .find(Boolean) || '';
+}
+
+function extractVideoFromHtml(html) {
+  if (!html) return '';
+  const parser = new DOMParser();
+  const doc = parser.parseFromString(html, 'text/html');
+  const source = doc.querySelector('source[src]')?.getAttribute('src')
+    || doc.querySelector('video[src]')?.getAttribute('src');
+  if (source) return source;
+
+  return [...doc.querySelectorAll('a[href]')]
+    .map((a) => a.getAttribute('href'))
+    .find((href) => VIDEO_EXTENSIONS.test(href)) || '';
+}
+
+async function fetchResolvedVideo(candidateUrl) {
+  if (!candidateUrl) return '';
+
+  try {
+    const response = await fetch(candidateUrl);
+    if (!response.ok) return '';
+
+    const contentType = response.headers.get('content-type') || '';
+    if (contentType.includes('video/')) return candidateUrl;
+
+    if (contentType.includes('application/json')) {
+      const data = await response.json();
+      return parseJsonForVideo(data);
+    }
+
+    if (contentType.includes('text/html')) {
+      const html = await response.text();
+      return extractVideoFromHtml(html);
+    }
+  } catch (e) {
+    // Ignore resolution failures and fallback to the next candidate.
+  }
+
+  return '';
+}
+
+async function resolveVideoUrl(videoRef) {
+  if (!videoRef) return '';
+
+  if (isLikelyVideoUrl(videoRef)) return videoRef;
+
+  const candidates = [
+    videoRef,
+    `${videoRef}.json`,
+  ];
+
+  const resolutions = await Promise.all(candidates.map((url) => fetchResolvedVideo(url)));
+  return resolutions.find(Boolean) || '';
+}
+
 function getPosterImage(block) {
   const posterField = getPropElementByNames(block, ['poster', 'posterImage']);
   return posterField?.querySelector('img')
@@ -109,9 +180,10 @@ function createPlayButton(label) {
   button.className = 'article-content-video-play';
   button.setAttribute('aria-label', label);
 
-  const icon = document.createElement('i');
-  icon.className = 'ibh-icon-play-arrow';
+  const icon = document.createElement('span');
+  icon.className = 'article-content-video-play-icon';
   icon.setAttribute('aria-hidden', 'true');
+  icon.textContent = '\u25B6';
 
   button.append(icon);
   return button;
@@ -135,7 +207,8 @@ function activateVideo(figure, videoUrl) {
 }
 
 export default async function decorate(block) {
-  const videoUrl = getVideoUrl(block);
+  const videoRef = getVideoUrl(block);
+  const videoUrl = await resolveVideoUrl(videoRef);
   const posterSrc = getPosterSrc(block);
   const posterAlt = getPosterAlt(block);
   const caption = getCaption(block);
@@ -150,7 +223,7 @@ export default async function decorate(block) {
   ALIGNMENTS.forEach((a) => block.classList.remove(`article-content-video-${a}`));
   block.classList.add(`article-content-video-${alignment}`);
 
-  if (!videoUrl && !posterSrc && !caption) return;
+  if (!videoRef && !videoUrl && !posterSrc && !caption) return;
 
   const figure = document.createElement('figure');
   figure.className = 'article-content-video-figure';
@@ -167,10 +240,14 @@ export default async function decorate(block) {
       }));
     }
 
-    if (videoUrl) {
+    if (videoUrl || videoRef) {
       const playLabel = await getTranslation('playVideo', 'Play video');
       const playButton = createPlayButton(playLabel);
-      playButton.addEventListener('click', () => activateVideo(figure, videoUrl));
+      playButton.addEventListener('click', async () => {
+        const resolvedUrl = videoUrl || await resolveVideoUrl(videoRef);
+        if (!resolvedUrl) return;
+        activateVideo(figure, resolvedUrl);
+      });
       poster.append(playButton);
     }
     figure.append(poster);
