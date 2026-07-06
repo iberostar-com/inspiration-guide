@@ -26,11 +26,8 @@ const CONFIG_PROP_ORDER = [
   'cardCtaLabel',
   'ctaTarget',
   'manualArticle1',
-  'manualArticle1Pretitle',
   'manualArticle2',
-  'manualArticle2Pretitle',
   'manualArticle3',
-  'manualArticle3Pretitle',
 ];
 const CONFIG_PROPS = new Set(CONFIG_PROP_ORDER);
 const ARTICLE_CARD_CACHE = new Map();
@@ -521,17 +518,12 @@ async function getManualItems(block) {
   const allArticles = await safeGetVisibleArticles();
 
   const manualRefInputs = ['manualArticle1', 'manualArticle2', 'manualArticle3']
-    .map((propName, index) => {
-      const pretitlePropName = `${propName}Pretitle`;
-      return {
-        propName,
-        index,
-        refPath: hrefByProp(block, propName),
-        sourceProp: getFieldByProp(block, propName),
-        pretitle: textByProp(block, pretitlePropName),
-        pretitleSource: getFieldByProp(block, pretitlePropName),
-      };
-    });
+    .map((propName, index) => ({
+      propName,
+      index,
+      refPath: hrefByProp(block, propName),
+      sourceProp: getFieldByProp(block, propName),
+    }));
 
   const hasManualRefInputs = manualRefInputs.some((item) => item.refPath);
 
@@ -555,11 +547,10 @@ async function getManualItems(block) {
         return {
           href,
           title,
-          pretitle: item.pretitle || fetchedItem?.category || indexedItem?.category || '',
+          pretitle: fetchedItem?.category || indexedItem?.category || '',
           image: fetchedItem?.image || indexedItem?.image || '',
           imageAlt: fetchedItem?.imageAlt || indexedItem?.imageAlt || '',
           sourceProp: item.sourceProp,
-          pretitleSource: item.pretitleSource,
           sortOrder: item.index,
         };
       })))
@@ -620,9 +611,7 @@ function createCard(item, config) {
 
   const pretitleText = item.pretitle || item.category;
   if (pretitleText) {
-    const pretitle = createTag('p', 'editorial-article-grid-card-pretitle', pretitleText);
-    if (item.pretitleSource) moveInstrumentation(item.pretitleSource, pretitle);
-    body.append(pretitle);
+    body.append(createTag('p', 'editorial-article-grid-card-pretitle', pretitleText));
   }
 
   body.append(createTag('h3', 'editorial-article-grid-card-title', item.title));
