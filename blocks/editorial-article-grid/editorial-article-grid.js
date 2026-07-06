@@ -37,11 +37,26 @@ function toDataAttributeName(propName) {
   return `data-${propName.replace(/[A-Z]/g, (char) => `-${char.toLowerCase()}`)}`;
 }
 
+function toDataAttributeNameWithDigitDashes(propName) {
+  return toDataAttributeName(propName).replace(/(\d+)/g, '-$1');
+}
+
+function attrByProp(block, propName) {
+  const attrName = toDataAttributeName(propName);
+  const direct = block.getAttribute(attrName);
+  if (direct) return direct;
+
+  const withDigitDashes = block.getAttribute(toDataAttributeNameWithDigitDashes(propName));
+  if (withDigitDashes) return withDigitDashes;
+
+  return '';
+}
+
 function textByProp(block, propName, fallback = '') {
   const text = getFieldByProp(block, propName)?.textContent?.trim();
   if (text) return text;
 
-  const attr = block.getAttribute(toDataAttributeName(propName));
+  const attr = attrByProp(block, propName);
   if (attr) return attr;
 
   return fallback;
@@ -49,10 +64,18 @@ function textByProp(block, propName, fallback = '') {
 
 function hrefByProp(block, propName) {
   const field = getFieldByProp(block, propName);
-  if (!field) return '';
+  if (field) {
+    const href = field.querySelector('a[href]')?.getAttribute('href')?.trim();
+    if (href) return href;
 
-  const href = field.querySelector('a[href]')?.getAttribute('href')?.trim();
-  return href || field.textContent?.trim() || '';
+    const textValue = field.textContent?.trim() || '';
+    if (textValue) return textValue;
+  }
+
+  const attr = attrByProp(block, propName);
+  if (attr) return `${attr}`.trim();
+
+  return '';
 }
 
 function normalizePath(path) {
@@ -214,6 +237,14 @@ function toResolvedCardItem(article) {
   };
 }
 
+async function safeGetVisibleArticles() {
+  try {
+    return (await getArticles()).filter(isVisibleArticle);
+  } catch (e) {
+    return [];
+  }
+}
+
 function toFallbackTitleFromPath(path) {
   const slug = normalizePath(path).split('/').filter(Boolean).pop() || '';
   if (!slug) return '';
@@ -226,7 +257,7 @@ function toFallbackTitleFromPath(path) {
 }
 
 async function getAutoArticles(mode) {
-  const all = (await getArticles()).filter(isVisibleArticle);
+  const all = await safeGetVisibleArticles();
   const currentArticle = extractCurrentArticle(all);
   const currentPath = normalizePath(window.location.pathname);
   const withoutCurrent = all.filter(
@@ -318,7 +349,7 @@ function parseLegacyManualItem(row, index) {
 }
 
 async function getManualItems(block) {
-  const allArticles = (await getArticles()).filter(isVisibleArticle);
+  const allArticles = await safeGetVisibleArticles();
 
   const manualRefInputs = ['manualArticle1', 'manualArticle2', 'manualArticle3']
     .map((propName, index) => ({
