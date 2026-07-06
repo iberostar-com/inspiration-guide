@@ -95,10 +95,35 @@
           "value": "manual"
         },
         {
+          "component": "text",
+          "valueType": "string",
+          "name": "cardCtaLabel",
+          "label": "Article CTA Text",
+          "value": "Leer artículo"
+        },
+        {
+          "component": "select",
+          "valueType": "string",
+          "name": "ctaTarget",
+          "label": "Article CTA Target",
+          "value": "_self",
+          "options": [
+            { "name": "Same tab", "value": "_self" },
+            { "name": "New tab", "value": "_blank" }
+          ]
+        },
+        {
           "component": "aem-content",
           "valueType": "string",
           "name": "manualArticle1",
           "label": "Manual Article 1"
+        },
+        {
+          "component": "text",
+          "valueType": "string",
+          "name": "manualArticle1Pretitle",
+          "label": "Manual Article 1 Pretitle",
+          "value": ""
         },
         {
           "component": "aem-content",
@@ -107,10 +132,24 @@
           "label": "Manual Article 2"
         },
         {
+          "component": "text",
+          "valueType": "string",
+          "name": "manualArticle2Pretitle",
+          "label": "Manual Article 2 Pretitle",
+          "value": ""
+        },
+        {
           "component": "aem-content",
           "valueType": "string",
           "name": "manualArticle3",
           "label": "Manual Article 3"
+        },
+        {
+          "component": "text",
+          "valueType": "string",
+          "name": "manualArticle3Pretitle",
+          "label": "Manual Article 3 Pretitle",
+          "value": ""
         }
       ]
     },
