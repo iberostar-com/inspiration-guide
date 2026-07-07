@@ -39,6 +39,16 @@ function getHrefValueFromElement(element) {
     || element.getAttribute?.('href')?.trim()
     || '';
 }
+
+function labelFromHref(href) {
+  const segment = `${href || ''}`.replace(/(^\/+|\/+$|(\.(html|plain\.html))$)/g, '').split('/').filter(Boolean).pop() || '';
+  return decodeURIComponent(segment)
+    .replace(/[-_]+/g, ' ')
+    .replace(/\s+/g, ' ')
+    .trim()
+    .replace(/\b\w/g, (letter) => letter.toUpperCase());
+}
+
 function getTitleFallback() {
   return getMetadata('og:title')
     || document.querySelector('h1')?.textContent?.trim()
@@ -55,15 +65,20 @@ async function getUiString(key, fallback) {
 function parseSubcategoryRow(row) {
   if (!row) return null;
 
-  const titleEl = row.querySelector('[data-aue-prop="title"]') || row.children[0] || row;
-  const urlEl = row.querySelector('[data-aue-prop="url"]') || row.children[1] || row;
+  const urlEl = row.querySelector('[data-aue-prop="url"]') || row.children[1] || row.children[0] || row;
+  const href = getHrefValueFromElement(urlEl);
+  if (!href) return null;
 
-  const title = titleEl?.textContent?.trim() || '';
-  const hrefFromField = getHrefValueFromElement(urlEl);
-  const hrefFromTitle = getHrefValueFromElement(titleEl);
-  const href = hrefFromField || hrefFromTitle || '';
+  // For legacy positional rows (plain.html source), children[0] may hold an explicit text label.
+  // If the row has no UE instrumentation and the first cell has no <a>, use its text.
+  const isInstrumented = Boolean(row.querySelector('[data-aue-prop]'));
+  const firstCell = row.children[0];
+  const firstCellText = !isInstrumented && !firstCell?.querySelector('a[href]')
+    ? firstCell?.textContent?.trim()
+    : '';
 
-  if (!title || !href) return null;
+  const title = firstCellText || labelFromHref(href);
+  if (!title) return null;
 
   return { title, href };
 }
@@ -91,12 +106,10 @@ function getSubcategories(block) {
 
   return Array.from({ length: MAX_SUBCATEGORIES }, (_, index) => index + 1)
     .map((index) => {
-      const title = getTextValue(block, `subcategory${index}Title`, -1, '');
       const urlEl = getFieldElement(block, `subcategory${index}Url`, -1);
       const href = getHrefValueFromElement(urlEl);
-
-      if (!title || !href) return null;
-      return { title, href };
+      if (!href) return null;
+      return { title: labelFromHref(href), href };
     })
     .filter(Boolean);
 }
@@ -104,6 +117,35 @@ function getSubcategories(block) {
 function sanitizeHeadingTag(value) {
   const normalized = `${value || 'h2'}`.trim().toLowerCase();
   return HEADING_TAGS.has(normalized) ? normalized : 'h2';
+}
+
+async function fetchPageTitle(href) {
+  try {
+    const resp = await fetch(href, { redirect: 'follow' });
+    if (!resp.ok) return null;
+    const text = await resp.text();
+    const ogMatch = text.match(/<meta[^>]+property=["']og:title["'][^>]+content=["']([^"']+)["']/i)
+      || text.match(/<meta[^>]+content=["']([^"']+)["'][^>]+property=["']og:title["']/i);
+    if (ogMatch?.[1]) return ogMatch[1].trim();
+    const titleMatch = text.match(/<title[^>]*>([^<]+)<\/title>/i);
+    return titleMatch?.[1]?.split('|')?.[0]?.trim() || null;
+  } catch {
+    return null;
+  }
+}
+
+async function enhanceSubcategoryTitles(list) {
+  const links = [...list.querySelectorAll('.category-hero-subcategories-link')];
+  if (!links.length) return;
+
+  const fetches = links.map((link) => fetchPageTitle(link.getAttribute('href')));
+  const titles = await Promise.all(fetches);
+
+  titles.forEach((pageTitle, index) => {
+    if (pageTitle && links[index]) {
+      links[index].textContent = pageTitle;
+    }
+  });
 }
 
 function hideSource(block) {
@@ -196,6 +238,8 @@ export default async function decorate(block) {
   );
   if (subcategorySection) {
     content.append(subcategorySection);
+    // Non-blocking: update link text with actual page titles after render
+    enhanceSubcategoryTitles(subcategorySection);
   }
 
   if (description?.textContent?.trim()) {
