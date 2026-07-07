@@ -137,6 +137,11 @@ function getText(field) {
   return field?.textContent?.trim() || '';
 }
 
+function isDebugEnabled() {
+  const query = new URLSearchParams(window.location.search).get('hotel-api-debug');
+  return query === '1' || query?.toLowerCase() === 'true';
+}
+
 function getLocaleSegment(pathname = window.location.pathname) {
   const segments = `${pathname || ''}`.split('/').filter(Boolean);
   const segment = segments.find((item) => /^[a-z]{2}-[a-z]{2}$/i.test(item));
@@ -178,7 +183,10 @@ function getHotelCodes(block) {
       const hotelCodeProp = row.querySelector('[data-aue-prop="hotelCode"]');
       const destinationProp = row.querySelector('[data-aue-prop="destination"]');
       const tagLabelProp = row.querySelector('[data-aue-prop="tag_tagLabel"]');
-      const hotelCode = getText(hotelCodeProp || row.querySelector('[data-hotel-code]'));
+      const cells = getCells(row);
+      const authoredHotelCode = getText(hotelCodeProp || row.querySelector('[data-hotel-code]'));
+      const positionalHotelCode = getText(cells[0]);
+      const hotelCode = authoredHotelCode || positionalHotelCode;
       const destination = getText(destinationProp || row.querySelector('[data-destination]') || getCells(row)[1]);
       const tagLabel = getText(tagLabelProp || getCells(row)[4]);
       const href = getItemHref(row);
@@ -528,6 +536,15 @@ export default async function decorate(block) {
   };
 
   const hotelCodesToFetch = getHotelCodes(block);
+
+  if (isDebugEnabled()) {
+    // eslint-disable-next-line no-console
+    console.info('[recommended-dynamic-hotels-grid] Parsed hotel codes', {
+      count: hotelCodesToFetch.length,
+      codes: hotelCodesToFetch.map(({ hotelCode }) => hotelCode),
+    });
+  }
+
   const rendered = document.createElement('div');
   rendered.className = 'recommended-dynamic-hotels-grid-rendered';
 
