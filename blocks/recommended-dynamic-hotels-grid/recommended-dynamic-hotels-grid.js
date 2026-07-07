@@ -1,12 +1,13 @@
 import {
   createHotelMiniCard,
 } from '../hotel-mini-card/hotel-mini-card.js';
-import { getTranslation } from '../../scripts/iberostar/i18n.js';
+import { getPlaceholder } from '../../scripts/iberostar/placeholders.js';
 import { toPageHref } from '../../scripts/iberostar/page-links.js';
 import {
   fetchHotelByCode,
   fetchHotelPriceByCode,
   getLocaleTagFromPath,
+  isValidHotelCode,
 } from '../../scripts/iberostar/hotels-api.js';
 import { moveInstrumentation } from '../../scripts/scripts.js';
 
@@ -136,6 +137,11 @@ function getText(field) {
   return field?.textContent?.trim() || '';
 }
 
+function isDebugEnabled() {
+  const query = new URLSearchParams(window.location.search).get('hotel-api-debug');
+  return query === '1' || query?.toLowerCase() === 'true';
+}
+
 function getLocaleSegment(pathname = window.location.pathname) {
   const segments = `${pathname || ''}`.split('/').filter(Boolean);
   const segment = segments.find((item) => /^[a-z]{2}-[a-z]{2}$/i.test(item));
@@ -177,22 +183,33 @@ function getHotelCodes(block) {
       const hotelCodeProp = row.querySelector('[data-aue-prop="hotelCode"]');
       const destinationProp = row.querySelector('[data-aue-prop="destination"]');
       const tagLabelProp = row.querySelector('[data-aue-prop="tag_tagLabel"]');
-      const hotelCode = getText(hotelCodeProp || row.querySelector('[data-hotel-code]') || getCells(row)[0]);
+      const cells = getCells(row);
+      const authoredHotelCode = getText(hotelCodeProp || row.querySelector('[data-hotel-code]'));
+      const positionalHotelCode = getText(cells[0]);
+      const hotelCode = authoredHotelCode || positionalHotelCode;
       const destination = getText(destinationProp || row.querySelector('[data-destination]') || getCells(row)[1]);
       const tagLabel = getText(tagLabelProp || getCells(row)[4]);
       const href = getItemHref(row);
       const target = getItemTarget(row);
+      const normalizedHotelCode = `${hotelCode || ''}`.trim();
+
+      if (normalizedHotelCode && !isValidHotelCode(normalizedHotelCode)) {
+        // eslint-disable-next-line no-console
+        console.warn('[hotels-api] Invalid hotelCode, skipping hotel fetch', {
+          hotelCode: normalizedHotelCode,
+        });
+      }
 
       return {
         destination: destination.trim(),
         href: href.trim(),
-        hotelCode: hotelCode.trim(),
+        hotelCode: normalizedHotelCode,
         source: row,
         target,
         tagLabel: tagLabel.trim(),
       };
     })
-    .filter(({ hotelCode }) => hotelCode);
+    .filter(({ hotelCode }) => isValidHotelCode(hotelCode));
 }
 
 function createNavButton(direction, label) {
@@ -427,10 +444,10 @@ function formatCurrencyValue(value, currency) {
 
 async function getPriceText(hotel, hotelCode, endpointPrice = null) {
   const [prefix, perNightLabel, personSingular, personPlural] = await Promise.all([
-    getTranslation('hotelPriceFromPrefix', 'Desde'),
-    getTranslation('hotelPricePerNight', '/ noche'),
-    getTranslation('hotelPricePersonSingular', 'persona'),
-    getTranslation('hotelPricePersonPlural', 'personas'),
+    getPlaceholder('hotelPriceFromPrefix', 'Desde'),
+    getPlaceholder('hotelPricePerNight', '/ noche'),
+    getPlaceholder('hotelPricePersonSingular', 'persona'),
+    getPlaceholder('hotelPricePersonPlural', 'personas'),
   ]);
 
   const resolvedEndpointPrice = endpointPrice || await fetchHotelPriceByCode(hotelCode);
@@ -500,11 +517,11 @@ export default async function decorate(block) {
     goTo,
     of,
   ] = await Promise.all([
-    getTranslation('hotelsCarousel', 'Recommended hotels'),
-    getTranslation('carouselPrevious', 'Previous hotels'),
-    getTranslation('carouselNext', 'Next hotels'),
-    getTranslation('carouselGoTo', 'Go to hotel group'),
-    getTranslation('carouselOf', 'of'),
+    getPlaceholder('hotelsCarousel', 'Recommended hotels'),
+    getPlaceholder('carouselPrevious', 'Previous hotels'),
+    getPlaceholder('carouselNext', 'Next hotels'),
+    getPlaceholder('carouselGoTo', 'Go to hotel group'),
+    getPlaceholder('carouselOf', 'of'),
   ]);
 
   const labels = {
@@ -519,6 +536,15 @@ export default async function decorate(block) {
   };
 
   const hotelCodesToFetch = getHotelCodes(block);
+
+  if (isDebugEnabled()) {
+    // eslint-disable-next-line no-console
+    console.info('[recommended-dynamic-hotels-grid] Parsed hotel codes', {
+      count: hotelCodesToFetch.length,
+      codes: hotelCodesToFetch.map(({ hotelCode }) => hotelCode),
+    });
+  }
+
   const rendered = document.createElement('div');
   rendered.className = 'recommended-dynamic-hotels-grid-rendered';
 

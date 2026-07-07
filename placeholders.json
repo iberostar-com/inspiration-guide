@@ -1,0 +1,20 @@
+{
+  "data": [
+    { "Key": "readArticle", "Text": "Read Article" },
+    { "Key": "featuredArticle", "Text": "Featured Article" },
+    { "Key": "featuredColumnTitle", "Text": "Featured" },
+    { "Key": "latestColumnTitle", "Text": "Latest Publications" },
+    { "Key": "hotelsCarousel", "Text": "Recommended hotels" },
+    { "Key": "carouselPrevious", "Text": "Previous hotels" },
+    { "Key": "carouselNext", "Text": "Next hotels" },
+    { "Key": "carouselGoTo", "Text": "Go to hotel group" },
+    { "Key": "carouselOf", "Text": "of" },
+    { "Key": "from", "Text": "From" },
+    { "Key": "night", "Text": "night" },
+    { "Key": "viewAllHotels", "Text": "View all hotels" },
+    { "Key": "hotelPriceFromPrefix", "Text": "From" },
+    { "Key": "hotelPricePerNight", "Text": "/ night" },
+    { "Key": "hotelPricePersonSingular", "Text": "person" },
+    { "Key": "hotelPricePersonPlural", "Text": "people" }
+  ]
+}

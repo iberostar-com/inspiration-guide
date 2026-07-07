@@ -1,0 +1,28 @@
+{
+  "data": [
+    { "Key": "readArticle", "Text": "Leer artículo" },
+    { "Key": "featuredArticle", "Text": "Artículo destacado" },
+    { "Key": "featuredColumnTitle", "Text": "En portada" },
+    { "Key": "latestColumnTitle", "Text": "Últimas publicaciones" },
+    { "Key": "category", "Text": "Categoría" },
+    { "Key": "readTime", "Text": "min de lectura" },
+    { "Key": "author", "Text": "Escrito por" },
+    { "Key": "publishedOn", "Text": "Publicado el" },
+    { "Key": "noArticles", "Text": "No hay artículos disponibles" },
+    { "Key": "relatedArticles", "Text": "Artículos relacionados" },
+    { "Key": "shareArticle", "Text": "Compartir artículo" },
+    { "Key": "tags", "Text": "Etiquetas" },
+    { "Key": "hotelsCarousel", "Text": "Hoteles recomendados" },
+    { "Key": "carouselPrevious", "Text": "Hoteles anteriores" },
+    { "Key": "carouselNext", "Text": "Hoteles siguientes" },
+    { "Key": "carouselGoTo", "Text": "Ir al grupo de hoteles" },
+    { "Key": "carouselOf", "Text": "de" },
+    { "Key": "from", "Text": "Desde" },
+    { "Key": "night", "Text": "noche" },
+    { "Key": "viewAllHotels", "Text": "Ver todos los hoteles" },
+    { "Key": "hotelPriceFromPrefix", "Text": "Desde" },
+    { "Key": "hotelPricePerNight", "Text": "/ noche" },
+    { "Key": "hotelPricePersonSingular", "Text": "persona" },
+    { "Key": "hotelPricePersonPlural", "Text": "personas" }
+  ]
+}

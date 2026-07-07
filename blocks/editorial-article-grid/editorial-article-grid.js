@@ -1,5 +1,5 @@
 import { createResponsiveImage } from '../../scripts/iberostar/media.js';
-import { getArticles } from '../../scripts/inspiration-data.js';
+import { getArticles, normalizeArticlePath } from '../../scripts/inspiration-data.js';
 import { moveInstrumentation } from '../../scripts/scripts.js';
 
 const MAX_ITEMS = 3;
@@ -116,26 +116,9 @@ function hrefByProp(block, propName) {
 }
 
 function normalizePath(path) {
-  if (!path) return '';
-
-  let normalized = `${path}`.trim();
-  if (/^(?:https?:)?\/\//i.test(normalized)) {
-    try {
-      normalized = new URL(normalized, window.location.origin).pathname;
-    } catch (e) {
-      // Keep the authored value and normalize it as a path below.
-    }
-  }
-
-  normalized = normalized
-    .split(/[?#]/, 1)[0]
-    .replace(/\/+/g, '/')
-    .replace(/\/+$/, '')
-    .replace(/\.html$/i, '')
+  const normalized = normalizeArticlePath(path)
     .replace(/^\/content\/inspiration-guide(?:\/|$)/i, '/');
-
-  const withLeadingSlash = normalized.startsWith('/') ? normalized : `/${normalized}`;
-  return withLeadingSlash.replace(/\/+$/, '') || '/';
+  return normalized || '';
 }
 
 function samePath(left, right) {
@@ -185,20 +168,11 @@ function toFetchCandidates(refPath) {
   }
 
   const normalized = normalizePath(rawPath);
-  const publicFromContent = rawPath.replace(/^\/content\/inspiration-guide(?:\/|$)/i, '/');
-
-  const withHtml = (path) => (path.endsWith('.html') ? path : `${path}.html`);
-  const withoutHtml = (path) => path.replace(/\.html$/i, '');
+  const publicFromContent = normalizePath(rawPath.replace(/^\/content\/inspiration-guide(?:\/|$)/i, '/'));
 
   return unique([
-    rawPath,
-    withHtml(rawPath),
-    withoutHtml(rawPath),
     normalized,
-    withHtml(normalized),
     publicFromContent,
-    withHtml(publicFromContent),
-    withoutHtml(publicFromContent),
   ]);
 }
 
@@ -457,19 +431,9 @@ function findArticleByRef(allArticles, refPath) {
   const target = normalizePath(refPath);
   if (!target) return null;
 
-  const exactMatch = allArticles.find(
+  return allArticles.find(
     (article) => normalizePath(article.path || article.href) === target,
   );
-  if (exactMatch) return exactMatch;
-
-  const targetSlug = target.split('/').filter(Boolean).pop() || '';
-  if (!targetSlug) return null;
-
-  return allArticles.find((article) => {
-    const candidate = normalizePath(article.path || article.href);
-    const candidateSlug = candidate.split('/').filter(Boolean).pop() || '';
-    return candidateSlug === targetSlug;
-  }) || null;
 }
 
 function getLegacyManualRows(block) {
