@@ -3,19 +3,8 @@ import { getTranslation } from '../../scripts/iberostar/i18n.js';
 import { getPlaceholder } from '../../scripts/iberostar/placeholders.js';
 
 const MAX_SUBCATEGORIES = 9;
-const LOCALE_PATTERN = /^[a-z]{2}-[a-z]{2}$/i;
-const CONTENT_PREFIX_PATTERN = /^\/content\/[^/]+/;
 const HEADING_TAGS = new Set(['h2', 'h3', 'h4', 'h5', 'h6']);
 const SUBCATEGORY_VARIANT_CLASS = 'subcategory';
-
-function normalizePath(path) {
-  const { pathname } = new URL(path || window.location.pathname, window.location);
-  return pathname
-    .replace(CONTENT_PREFIX_PATTERN, '')
-    .replace(/(\.plain)?\.html$/, '')
-    .replace(/\/index$/, '')
-    .replace(/\/$/, '') || '/';
-}
 
 function getSourceRows(block) {
   return [...block.children].filter((child) => !child.classList.contains('category-hero-rendered'));
@@ -50,31 +39,6 @@ function getHrefValueFromElement(element) {
     || element.getAttribute?.('href')?.trim()
     || '';
 }
-
-function getCurrentLocale(segments) {
-  return segments.find((segment) => LOCALE_PATTERN.test(segment)) || '';
-}
-
-function getGuideRoot(path) {
-  const segments = path.split('/').filter(Boolean);
-  const locale = getCurrentLocale(segments);
-  const guideIndex = segments.indexOf('inspiration-guide');
-
-  if (guideIndex > -1) {
-    return `/${segments.slice(0, guideIndex + 1).join('/')}`;
-  }
-
-  return locale ? `/${locale}` : '/';
-}
-
-function toLabel(segment) {
-  return decodeURIComponent(segment)
-    .replace(/[-_]+/g, ' ')
-    .replace(/\s+/g, ' ')
-    .trim()
-    .replace(/\b\w/g, (letter) => letter.toUpperCase());
-}
-
 function getTitleFallback() {
   return getMetadata('og:title')
     || document.querySelector('h1')?.textContent?.trim()
@@ -86,99 +50,6 @@ async function getUiString(key, fallback) {
   const translated = await getTranslation(key, '');
   if (translated) return translated;
   return getPlaceholder(key, fallback);
-}
-
-async function getSegmentLabel(segment) {
-  const map = {
-    category: { key: 'breadcrumbCategories', fallback: 'Categories' },
-    tag: { key: 'breadcrumbTags', fallback: 'Tags' },
-    articles: { key: 'breadcrumbArticles', fallback: 'Articles' },
-    article: { key: 'breadcrumbArticles', fallback: 'Articles' },
-  };
-
-  const config = map[segment];
-  if (!config) return toLabel(segment);
-
-  return getUiString(config.key, config.fallback);
-}
-
-async function buildBreadcrumbItems() {
-  const path = normalizePath(window.location.pathname);
-  const segments = path.split('/').filter(Boolean);
-  const locale = getCurrentLocale(segments);
-  const guideIndex = segments.indexOf('inspiration-guide');
-
-  if (guideIndex === -1) {
-    return [];
-  }
-
-  const visibleSegments = guideIndex > -1
-    ? segments.slice(guideIndex + 1)
-    : segments.filter((segment) => !LOCALE_PATTERN.test(segment));
-
-  const homeLabel = await getUiString('breadcrumbHome', 'Home');
-  const homeUrl = normalizePath(getGuideRoot(path));
-  const currentLabel = getTitleFallback();
-  const items = [{ label: homeLabel, url: homeUrl }];
-  const baseSegments = locale ? [locale, 'inspiration-guide'] : ['inspiration-guide'];
-
-  const labels = await Promise.all(visibleSegments.map((segment, index) => {
-    if (index === visibleSegments.length - 1 && currentLabel) {
-      return currentLabel;
-    }
-    return getSegmentLabel(segment);
-  }));
-
-  visibleSegments.forEach((segment, index) => {
-    const url = `/${[...baseSegments, ...visibleSegments.slice(0, index + 1)].join('/')}`;
-    items.push({
-      label: labels[index] || toLabel(segment),
-      url,
-    });
-  });
-
-  return items
-    .filter((item) => item.label)
-    .filter((item, index, list) => index === 0 || item.url !== list[index - 1].url);
-}
-
-function createBreadcrumbItem(item, isLast) {
-  const li = document.createElement('li');
-  li.className = 'category-hero-breadcrumb-item';
-
-  if (isLast || !item.url) {
-    const span = document.createElement('span');
-    span.textContent = item.label;
-    if (isLast) span.setAttribute('aria-current', 'page');
-    li.append(span);
-    return li;
-  }
-
-  const link = document.createElement('a');
-  link.href = item.url;
-  link.textContent = item.label;
-  li.append(link);
-  return li;
-}
-
-async function renderBreadcrumbs() {
-  const items = await buildBreadcrumbItems();
-  if (!items.length) return null;
-
-  const ariaLabel = await getUiString('breadcrumbAriaLabel', 'Breadcrumb');
-  const nav = document.createElement('nav');
-  nav.className = 'category-hero-breadcrumbs';
-  nav.setAttribute('aria-label', ariaLabel);
-
-  const list = document.createElement('ol');
-  list.className = 'category-hero-breadcrumb-list';
-
-  items.forEach((item, index) => {
-    list.append(createBreadcrumbItem(item, index === items.length - 1));
-  });
-
-  nav.append(list);
-  return nav;
 }
 
 function parseSubcategoryRow(row) {
@@ -286,9 +157,6 @@ export default async function decorate(block) {
 
   const heading = document.createElement('div');
   heading.className = 'category-hero-heading';
-
-  const breadcrumbs = await renderBreadcrumbs();
-  if (breadcrumbs) rendered.append(breadcrumbs);
 
   if (pretitle) {
     const pretitleEl = document.createElement('p');
