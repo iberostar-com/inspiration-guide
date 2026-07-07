@@ -115,7 +115,7 @@ export function getGraphqlOrigin() {
 export function buildHotelByCodeUrl({ rootPath, hotelCode }) {
   const origin = getGraphqlOrigin();
 
-  return `${origin}${GRAPHQL_QUERY_PATH};rootPath=${encodeURIComponent(rootPath)};hotelCode=${encodeURIComponent(hotelCode)}`;
+  return `${origin}${GRAPHQL_QUERY_PATH};rootPath=${rootPath};hotelCode=${hotelCode}`;
 }
 
 export function isValidHotelCode(value) {
@@ -198,6 +198,15 @@ function createRequestUrl(hotelCode, options = {}) {
 }
 
 function readHotelFromResponse(payload) {
+  if (Array.isArray(payload?.errors) && payload.errors.length) {
+    warnOnce(
+      `graphql-payload-errors:${payload.errors[0]?.message || 'unknown'}`,
+      '[hotels-api] GraphQL request failed',
+      { errors: payload.errors },
+    );
+    return null;
+  }
+
   const items = payload?.data?.hotelList?.items;
   if (!Array.isArray(items) || !items.length) return null;
 
