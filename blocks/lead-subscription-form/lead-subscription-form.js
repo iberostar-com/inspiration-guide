@@ -9,6 +9,8 @@ const DEFAULTS = {
   successDescription: 'Revisa tu bandeja de correo para confirmar tu email.',
 };
 
+const NEWSLETTER_PATH = '/bin/catalog/mulesoft/newsletter';
+const AEM_CLOUD_PUBLISH_ORIGIN = 'https://publish-p179213-e1886364.adobeaemcloud.com';
 const RESET_DELAY = 5000;
 
 function getText(cell, fallback = '') {
@@ -17,6 +19,18 @@ function getText(cell, fallback = '') {
 
 function getHtml(cell, fallback = '') {
   return cell?.innerHTML.trim() || fallback;
+}
+
+function getGroupedText(cell) {
+  if (!cell) {
+    return [];
+  }
+
+  const values = Array.from(cell.children)
+    .map((child) => child.textContent.trim())
+    .filter(Boolean);
+
+  return values.length ? values : [cell.textContent.trim()].filter(Boolean);
 }
 
 function getBackgroundVariant(value) {
@@ -34,7 +48,13 @@ function getCookie(name) {
   return parts.length === 2 ? parts.pop().split(';').shift() : '';
 }
 
-function getCountryOverride() {
+function getCountryFromPath(pathname = window.location.pathname) {
+  const localeMatch = pathname.match(/^\/([a-z]{2})-([a-z]{2})(?:\/|$)/i);
+  const country = localeMatch?.[2]?.toUpperCase() || '';
+  return isIso2CountryCode(country) ? country : '';
+}
+
+function getCountryOverride(pathname = window.location.pathname) {
   const pageParams = new URLSearchParams(window.location.search);
   const queryOverride = (pageParams.get('countryOverride') || '').trim().toUpperCase();
   if (isIso2CountryCode(queryOverride)) {
@@ -52,15 +72,45 @@ function getCountryOverride() {
     // Ignore malformed cookie values and submit without an override.
   }
 
-  return '';
+  return getCountryFromPath(pathname);
+}
+
+function isEdgeDeliveryHost(hostname) {
+  return hostname.endsWith('.aem.live') || hostname.endsWith('.aem.page');
+}
+
+function isLocalHost(hostname) {
+  return ['localhost', '127.0.0.1', '[::1]'].includes(hostname);
+}
+
+function shouldUseAemPublishOrigin(url, configuredEndpoint) {
+  if (url.pathname !== NEWSLETTER_PATH || configuredEndpoint?.startsWith('http')) {
+    return false;
+  }
+
+  return isEdgeDeliveryHost(window.location.hostname) || isLocalHost(window.location.hostname);
+}
+
+function ensureAuthorCountryCookie(url, country) {
+  if (!country || url.origin !== window.location.origin || !url.hostname.startsWith('author-')) {
+    return;
+  }
+
+  document.cookie = `x-aem-emulated-country=${encodeURIComponent(country)}; path=/; SameSite=Lax`;
 }
 
 function buildNewsletterUrl(endpoint) {
-  const url = new URL(endpoint || DEFAULTS.endpoint, window.location.origin);
+  const configuredEndpoint = endpoint || DEFAULTS.endpoint;
+  let url = new URL(configuredEndpoint, window.location.origin);
+  if (shouldUseAemPublishOrigin(url, configuredEndpoint)) {
+    url = new URL(NEWSLETTER_PATH, AEM_CLOUD_PUBLISH_ORIGIN);
+  }
+
   const countryOverride = getCountryOverride();
 
   if (countryOverride) {
     url.searchParams.set('countryOverride', countryOverride);
+    ensureAuthorCountryCookie(url, countryOverride);
   }
 
   return url.toString();
@@ -180,6 +230,7 @@ async function submitNewsletter(state) {
   try {
     setLoading(state, true);
 
+    const countryIso2 = getCountryOverride();
     const response = await fetch(buildNewsletterUrl(state.config.endpoint), {
       method: 'POST',
       headers: {
@@ -188,6 +239,7 @@ async function submitNewsletter(state) {
       body: JSON.stringify({
         email: state.emailField.value.trim().toLowerCase(),
         pagePath: window.location.pathname,
+        countryIso2,
       }),
     });
 
@@ -322,20 +374,21 @@ function buildForm(block, config) {
 export default async function decorate(block) {
   const sourceRows = Array.from(block.children);
   const cells = Array.from(block.querySelectorAll(':scope > div > div'));
+  const settings = getGroupedText(cells[3]);
 
   const config = {
     title: getText(cells[0]),
     description: getText(cells[1]),
     legalHTML: getHtml(cells[2]),
-    background: getBackgroundVariant(getText(cells[3], 'grey')),
-    placeholder: getText(cells[4], DEFAULTS.placeholder),
-    submitLabel: getText(cells[5], DEFAULTS.submitLabel),
-    errorGeneric: getText(cells[6], DEFAULTS.errorGeneric),
-    errorEmail: getText(cells[7], DEFAULTS.errorEmail),
-    errorCheck: getText(cells[8], DEFAULTS.errorCheck),
-    successTitle: getText(cells[9], DEFAULTS.successTitle),
-    successDescription: getText(cells[10], DEFAULTS.successDescription),
-    endpoint: getText(cells[11], DEFAULTS.endpoint),
+    background: getBackgroundVariant(settings[0] || getText(cells[3], 'grey')),
+    placeholder: settings[1] || getText(cells[4], DEFAULTS.placeholder),
+    submitLabel: settings[2] || getText(cells[5], DEFAULTS.submitLabel),
+    errorGeneric: settings[3] || getText(cells[6], DEFAULTS.errorGeneric),
+    errorEmail: settings[4] || getText(cells[7], DEFAULTS.errorEmail),
+    errorCheck: settings[5] || getText(cells[8], DEFAULTS.errorCheck),
+    successTitle: settings[6] || getText(cells[9], DEFAULTS.successTitle),
+    successDescription: settings[7] || getText(cells[10], DEFAULTS.successDescription),
+    endpoint: settings[8] || getText(cells[11], DEFAULTS.endpoint),
   };
 
   block.classList.remove('lead-subscription-form-grey', 'lead-subscription-form-white');
