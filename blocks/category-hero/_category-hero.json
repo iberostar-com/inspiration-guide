@@ -1,7 +1,7 @@
 {
   "definitions": [
     {
-      "title": "Category Hero",
+      "title": "Hero Editorial Navigation",
       "id": "category-hero",
       "plugins": {
         "xwalk": {
