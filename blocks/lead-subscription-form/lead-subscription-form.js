@@ -1,37 +1,241 @@
-const DEFAULT_PLACEHOLDER = 'Escribe aquí tu email';
-const DEFAULT_SUBMIT_LABEL = 'Suscribirme';
+const DEFAULTS = {
+  endpoint: '/bin/catalog/mulesoft/newsletter',
+  placeholder: 'Escribe aquí tu email',
+  submitLabel: 'Suscribirme',
+  errorGeneric: 'Ha habido un error. Por favor, inténtalo de nuevo más tarde.',
+  errorEmail: 'Por favor, introduce una dirección de correo electrónico válida',
+  errorCheck: 'Por favor, acepta nuestros Términos y Condiciones.',
+  successTitle: '¡Gracias por suscribirte!',
+  successDescription: 'Revisa tu bandeja de correo para confirmar tu email.',
+};
 
-/**
- * Lead Subscription Form block: title + description + email field + legal checkbox
- * Structure from AEM: cells[0]=title, cells[1]=description, cells[2]=legalText (richtext),
- * cells[3]=background (select: white/grey)
- * @param {Element} block The lead-subscription-form block element
- */
-export default async function decorate(block) {
-  const cells = Array.from(block.querySelectorAll(':scope > div > div'));
+const RESET_DELAY = 5000;
 
-  const title = cells[0]?.textContent.trim() || '';
-  const description = cells[1]?.textContent.trim() || '';
-  const legalHTML = cells[2]?.innerHTML.trim() || '';
-  const background = (cells[3]?.textContent.trim() || 'grey').toLowerCase();
+function getText(cell, fallback = '') {
+  return cell?.textContent.trim() || fallback;
+}
 
-  block.classList.add(`lead-subscription-form-${background === 'white' ? 'white' : 'grey'}`);
+function getHtml(cell, fallback = '') {
+  return cell?.innerHTML.trim() || fallback;
+}
 
-  const content = document.createElement('div');
-  content.className = 'lead-subscription-form-content';
-  if (title) {
-    const h2 = document.createElement('h2');
-    h2.textContent = title;
-    content.appendChild(h2);
+function getBackgroundVariant(value) {
+  const normalized = value.trim().toLowerCase();
+  return normalized === 'white' ? 'white' : 'grey';
+}
+
+function isIso2CountryCode(value) {
+  return /^[A-Z]{2}$/.test(value);
+}
+
+function getCookie(name) {
+  const value = `; ${document.cookie}`;
+  const parts = value.split(`; ${name}=`);
+  return parts.length === 2 ? parts.pop().split(';').shift() : '';
+}
+
+function getCountryOverride() {
+  const pageParams = new URLSearchParams(window.location.search);
+  const queryOverride = (pageParams.get('countryOverride') || '').trim().toUpperCase();
+  if (isIso2CountryCode(queryOverride)) {
+    return queryOverride;
   }
-  if (description) {
-    const p = document.createElement('p');
-    p.textContent = description;
-    content.appendChild(p);
+
+  try {
+    const emulatedCountry = decodeURIComponent(getCookie('x-aem-emulated-country') || '')
+      .trim()
+      .toUpperCase();
+    if (isIso2CountryCode(emulatedCountry)) {
+      return emulatedCountry;
+    }
+  } catch {
+    // Ignore malformed cookie values and submit without an override.
   }
 
+  return '';
+}
+
+function buildNewsletterUrl(endpoint) {
+  const url = new URL(endpoint || DEFAULTS.endpoint, window.location.origin);
+  const countryOverride = getCountryOverride();
+
+  if (countryOverride) {
+    url.searchParams.set('countryOverride', countryOverride);
+  }
+
+  return url.toString();
+}
+
+function isEmailValid(input) {
+  const value = input?.value.trim().toLowerCase() || '';
+
+  if (!value || /\s/.test(value)) {
+    return false;
+  }
+
+  const parts = value.split('@');
+  if (parts.length !== 2) {
+    return false;
+  }
+
+  const [localPart, domain] = parts;
+  if (!localPart || !domain) {
+    return false;
+  }
+
+  const dotIndex = domain.lastIndexOf('.');
+  return dotIndex > 0 && dotIndex < domain.length - 1;
+}
+
+function createAlert(type, text) {
+  const alert = document.createElement('p');
+  alert.className = `lead-subscription-form-alert lead-subscription-form-alert-${type}`;
+  alert.setAttribute('role', 'alert');
+  alert.setAttribute('aria-live', 'assertive');
+  alert.hidden = true;
+  alert.textContent = text;
+  return alert;
+}
+
+function showError(state, type) {
+  const error = state.errors[type];
+  if (!error) {
+    return;
+  }
+
+  error.hidden = false;
+
+  if (type === 'email') {
+    state.emailField?.focus();
+  }
+
+  if (type === 'check') {
+    state.checkbox?.focus();
+  }
+}
+
+function resetErrors(state) {
+  Object.values(state.errors).forEach((error) => {
+    if (error) {
+      error.hidden = true;
+    }
+  });
+}
+
+function setLoading(state, isLoading) {
+  state.isSubmitting = isLoading;
+
+  if (isLoading) {
+    state.submit.setAttribute('disabled', '');
+    state.submit.setAttribute('aria-busy', 'true');
+  } else {
+    state.submit.removeAttribute('disabled');
+    state.submit.setAttribute('aria-busy', 'false');
+  }
+}
+
+function resetModule(state) {
+  state.form.reset();
+  resetErrors(state);
+  state.success.hidden = true;
+  state.form.hidden = false;
+  setLoading(state, false);
+}
+
+function startResetTimer(state) {
+  if (state.resetTimer) {
+    clearTimeout(state.resetTimer);
+  }
+
+  state.resetTimer = setTimeout(() => resetModule(state), RESET_DELAY);
+}
+
+function handleSuccess(state) {
+  const email = state.emailField.value.trim().toLowerCase();
+
+  state.form.hidden = true;
+  state.success.hidden = false;
+  state.block.dispatchEvent(new CustomEvent('ibs:newsletter:success', {
+    bubbles: false,
+    detail: { email },
+  }));
+  startResetTimer(state);
+}
+
+function handleFailure(state, type = 'generic') {
+  const email = state.emailField.value.trim().toLowerCase();
+
+  showError(state, type);
+  state.block.dispatchEvent(new CustomEvent('ibs:newsletter:error', {
+    bubbles: false,
+    detail: {
+      errorType: type,
+      email,
+    },
+  }));
+  startResetTimer(state);
+}
+
+async function submitNewsletter(state) {
+  try {
+    setLoading(state, true);
+
+    const response = await fetch(buildNewsletterUrl(state.config.endpoint), {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        email: state.emailField.value.trim().toLowerCase(),
+        pagePath: window.location.pathname,
+      }),
+    });
+
+    if (response.ok) {
+      handleSuccess(state);
+      return;
+    }
+
+    handleFailure(state, 'generic');
+  } catch (error) {
+    // eslint-disable-next-line no-console
+    console.error('Newsletter error:', error);
+    handleFailure(state, 'generic');
+  } finally {
+    if (!state.form.hidden) {
+      setLoading(state, false);
+    }
+  }
+}
+
+function bindEvents(state) {
+  state.form.addEventListener('submit', (event) => {
+    event.preventDefault();
+
+    if (state.isSubmitting) {
+      return;
+    }
+
+    resetErrors(state);
+
+    if (!isEmailValid(state.emailField)) {
+      showError(state, 'email');
+      return;
+    }
+
+    if (state.checkbox && !state.checkbox.checked) {
+      showError(state, 'check');
+      return;
+    }
+
+    submitNewsletter(state);
+  });
+}
+
+function buildForm(block, config) {
   const form = document.createElement('form');
   form.className = 'lead-subscription-form-form';
+  form.noValidate = true;
 
   const fields = document.createElement('div');
   fields.className = 'lead-subscription-form-fields';
@@ -40,32 +244,125 @@ export default async function decorate(block) {
   emailField.type = 'email';
   emailField.name = 'email';
   emailField.required = true;
-  emailField.placeholder = DEFAULT_PLACEHOLDER;
-  fields.appendChild(emailField);
+  emailField.placeholder = config.placeholder;
+  emailField.setAttribute('aria-label', config.placeholder);
+  fields.append(emailField);
 
   const submit = document.createElement('button');
   submit.type = 'submit';
-  submit.textContent = DEFAULT_SUBMIT_LABEL;
-  fields.appendChild(submit);
+  submit.textContent = config.submitLabel;
+  submit.setAttribute('aria-busy', 'false');
+  fields.append(submit);
 
-  form.appendChild(fields);
+  form.append(fields);
 
-  if (legalHTML) {
+  const errors = {
+    generic: createAlert('generic', config.errorGeneric),
+    email: createAlert('email', config.errorEmail),
+    check: createAlert('check', config.errorCheck),
+  };
+  form.append(errors.generic, errors.email, errors.check);
+
+  let checkbox;
+  if (config.legalHTML) {
     const label = document.createElement('label');
     label.className = 'lead-subscription-form-legal';
 
-    const checkbox = document.createElement('input');
+    checkbox = document.createElement('input');
     checkbox.type = 'checkbox';
     checkbox.name = 'legal';
-    checkbox.required = true;
-    label.appendChild(checkbox);
+    label.append(checkbox);
 
     const legalSpan = document.createElement('span');
-    legalSpan.innerHTML = legalHTML;
-    label.appendChild(legalSpan);
+    legalSpan.innerHTML = config.legalHTML;
+    label.append(legalSpan);
 
-    form.appendChild(label);
+    form.append(label);
   }
 
-  block.replaceChildren(content, form);
+  const success = document.createElement('div');
+  success.className = 'lead-subscription-form-success';
+  success.hidden = true;
+
+  if (config.successTitle) {
+    const title = document.createElement('p');
+    title.className = 'lead-subscription-form-success-title';
+    title.textContent = config.successTitle;
+    success.append(title);
+  }
+
+  if (config.successDescription) {
+    const description = document.createElement('p');
+    description.className = 'lead-subscription-form-success-description';
+    description.textContent = config.successDescription;
+    success.append(description);
+  }
+
+  bindEvents({
+    block,
+    form,
+    emailField,
+    checkbox,
+    submit,
+    errors,
+    success,
+    config,
+    isSubmitting: false,
+    resetTimer: null,
+  });
+
+  return { form, success };
+}
+
+/**
+ * Lead Subscription Form block.
+ * Source rows are kept in place for Universal Editor and hidden via CSS.
+ * @param {Element} block The lead-subscription-form block element
+ */
+export default async function decorate(block) {
+  const sourceRows = Array.from(block.children);
+  const cells = Array.from(block.querySelectorAll(':scope > div > div'));
+
+  const config = {
+    title: getText(cells[0]),
+    description: getText(cells[1]),
+    legalHTML: getHtml(cells[2]),
+    background: getBackgroundVariant(getText(cells[3], 'grey')),
+    placeholder: getText(cells[4], DEFAULTS.placeholder),
+    submitLabel: getText(cells[5], DEFAULTS.submitLabel),
+    errorGeneric: getText(cells[6], DEFAULTS.errorGeneric),
+    errorEmail: getText(cells[7], DEFAULTS.errorEmail),
+    errorCheck: getText(cells[8], DEFAULTS.errorCheck),
+    successTitle: getText(cells[9], DEFAULTS.successTitle),
+    successDescription: getText(cells[10], DEFAULTS.successDescription),
+    endpoint: getText(cells[11], DEFAULTS.endpoint),
+  };
+
+  block.classList.remove('lead-subscription-form-grey', 'lead-subscription-form-white');
+  block.classList.add(`lead-subscription-form-${config.background}`);
+  sourceRows.forEach((row) => row.classList.add('lead-subscription-form-source'));
+
+  const rendered = document.createElement('div');
+  rendered.className = 'lead-subscription-form-rendered';
+
+  const content = document.createElement('div');
+  content.className = 'lead-subscription-form-content';
+  if (config.title) {
+    const h2 = document.createElement('h2');
+    h2.textContent = config.title;
+    content.append(h2);
+  }
+  if (config.description) {
+    const p = document.createElement('p');
+    p.textContent = config.description;
+    content.append(p);
+  }
+
+  const formArea = document.createElement('div');
+  formArea.className = 'lead-subscription-form-form-area';
+  const { form, success } = buildForm(block, config);
+  formArea.append(form, success);
+
+  rendered.append(content, formArea);
+  block.append(rendered);
 }
