@@ -2082,6 +2082,62 @@
           }
         ],
         "value": "grey"
+      },
+      {
+        "component": "text",
+        "valueType": "string",
+        "name": "background_placeholder",
+        "label": "Email placeholder",
+        "value": "Escribe aquí tu email"
+      },
+      {
+        "component": "text",
+        "valueType": "string",
+        "name": "background_buttonLabel",
+        "label": "Button label",
+        "value": "Suscribirme"
+      },
+      {
+        "component": "text",
+        "valueType": "string",
+        "name": "background_errorGenericMessage",
+        "label": "Generic error message",
+        "value": "Ha habido un error. Por favor, inténtalo de nuevo más tarde."
+      },
+      {
+        "component": "text",
+        "valueType": "string",
+        "name": "background_errorEmailMessage",
+        "label": "Email error message",
+        "value": "Por favor, introduce una dirección de correo electrónico válida"
+      },
+      {
+        "component": "text",
+        "valueType": "string",
+        "name": "background_errorCheckMessage",
+        "label": "Checkbox error message",
+        "value": "Por favor, acepta nuestros Términos y Condiciones."
+      },
+      {
+        "component": "text",
+        "valueType": "string",
+        "name": "background_successHeading",
+        "label": "Success heading",
+        "value": "¡Gracias por suscribirte!"
+      },
+      {
+        "component": "text",
+        "valueType": "string",
+        "name": "background_successMessage",
+        "label": "Success message",
+        "value": "Revisa tu bandeja de correo para confirmar tu email."
+      },
+      {
+        "component": "text",
+        "valueType": "string",
+        "name": "background_endpoint",
+        "label": "Newsletter endpoint",
+        "value": "/bin/catalog/mulesoft/newsletter"
       }
     ]
   },
