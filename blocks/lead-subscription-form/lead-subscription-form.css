@@ -1,99 +1,188 @@
 .lead-subscription-form {
+  --lead-subscription-form-bg-grey: #f5f5f5;
+  --lead-subscription-form-bg-white: #fff;
+  --lead-subscription-form-text: #1b2828;
+  --lead-subscription-form-muted: #636363;
+  --lead-subscription-form-border: #dedede;
+
+  width: 100vw;
+  margin-right: calc(50% - 50vw);
+  margin-left: calc(50% - 50vw);
+  background: var(--lead-subscription-form-bg-grey);
+}
+
+.lead-subscription-form-source {
+  display: none;
+}
+
+.lead-subscription-form-rendered {
   display: flex;
   flex-direction: column;
-  gap: var(--margin-margin-24);
-  padding: var(--padding-padding-32) var(--padding-padding-24);
+  align-items: stretch;
+  gap: 16px;
+  min-height: 388px;
+  box-sizing: border-box;
+  padding: 65px 16px;
 }
 
 .lead-subscription-form-grey {
-  background: var(--color-neutral-100);
+  background: var(--lead-subscription-form-bg-grey);
 }
 
 .lead-subscription-form-white {
-  background: var(--color-neutral-white);
+  background: var(--lead-subscription-form-bg-white);
 }
 
 .lead-subscription-form-content {
   display: flex;
   flex-direction: column;
-  gap: var(--margin-margin-8);
+  gap: 12px;
 }
 
 .lead-subscription-form-content h2 {
   margin: 0;
+  color: var(--lead-subscription-form-text);
+  font-family: noe-display, serif;
+  font-size: 32px;
+  font-weight: 400;
+  font-feature-settings: 'pnum' on, 'lnum' on;
+  line-height: 42px;
 }
 
 .lead-subscription-form-content p {
   margin: 0;
-  color: var(--color-neutral-700);
+  color: var(--lead-subscription-form-text);
+  font-family: inter, sans-serif;
+  font-size: 14px;
+  font-weight: 400;
+  line-height: 140%;
+}
+
+.lead-subscription-form-form-area {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
 }
 
 .lead-subscription-form-form {
   display: flex;
   flex-direction: column;
-  gap: var(--margin-margin-16);
+  gap: 8px;
 }
 
 .lead-subscription-form-fields {
   display: flex;
-  flex-direction: column;
-  gap: var(--margin-margin-12);
+  align-items: stretch;
+  width: 100%;
+  height: 64px;
+  box-sizing: border-box;
+  padding: 0;
+  overflow: hidden;
+  background: #fff;
+  border: 1px solid var(--lead-subscription-form-border);
+  border-radius: 8px;
 }
 
 .lead-subscription-form input[type="email"] {
-  padding: var(--padding-padding-12) var(--padding-padding-16);
-  border: 1px solid var(--color-neutral-400);
-  border-radius: var(--border-radius-radius-4);
-  font-family: var(--ibh-font-body);
-  font-size: var(--ibh-text-body-m);
-  width: 100%;
+  flex: 1;
+  min-width: 0;
   box-sizing: border-box;
-  background: var(--color-neutral-white);
-  color: var(--color-neutral-900);
+  width: 100%;
+  height: 62px;
+  padding: 21px 16px;
+  background: transparent;
+  border: 0;
+  border-radius: 0;
+  color: var(--lead-subscription-form-text);
+  font-family: inter, sans-serif;
+  font-size: 14px;
+  font-weight: 400;
+  line-height: 140%;
 }
 
 .lead-subscription-form input[type="email"]::placeholder {
-  color: var(--color-neutral-600);
+  color: var(--lead-subscription-form-muted);
 }
 
 .lead-subscription-form input[type="email"]:focus {
   outline: none;
-  border-color: var(--color-neutral-1000);
-  box-shadow: 0 0 0 2px var(--color-neutral-300);
+}
+
+.lead-subscription-form-fields:focus-within {
+  border-color: var(--lead-subscription-form-text);
+  box-shadow: 0 0 0 1px var(--lead-subscription-form-text);
+}
+
+.lead-subscription-form-alert {
+  margin: 0;
+  color: var(--color-feedback-error-500, #b00020);
+  font-size: var(--ibh-text-body-s);
 }
 
 .lead-subscription-form-legal {
   display: flex;
-  align-items: flex-start;
-  gap: var(--margin-margin-12);
-  font-size: var(--ibh-text-body-s);
-  color: var(--color-neutral-700);
-  cursor: pointer;
+  align-items: center;
+  gap: 8px;
+  min-height: 24px;
   margin: 0;
+  color: var(--lead-subscription-form-muted);
+  cursor: pointer;
+  font-family: inter, sans-serif;
+  font-size: 12px;
+  font-weight: 400;
+  line-height: 140%;
+}
+
+.lead-subscription-form-legal span,
+.lead-subscription-form-legal p {
+  min-width: 0;
+  margin: 0;
+  overflow-wrap: anywhere;
+}
+
+.lead-subscription-form-legal span {
+  flex: 1;
+}
+
+.lead-subscription-form-legal a {
+  color: inherit;
+  text-decoration: underline;
+  text-underline-offset: 2px;
 }
 
 .lead-subscription-form input[type="checkbox"] {
-  width: 18px;
-  height: 18px;
+  box-sizing: border-box;
+  width: 24px;
+  height: 24px;
   margin: 0;
   flex-shrink: 0;
+  accent-color: #000;
   cursor: pointer;
 }
 
 .lead-subscription-form input[type="checkbox"]:focus {
-  outline: 2px solid var(--color-neutral-1000);
+  outline: 2px solid var(--lead-subscription-form-text);
   outline-offset: 2px;
 }
 
 .lead-subscription-form-fields button {
-  padding: var(--padding-padding-12) var(--padding-padding-24);
-  background: var(--color-neutral-1000);
-  color: var(--color-neutral-white);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  align-self: center;
+  width: 122px;
+  min-width: 100px;
+  height: 48px;
+  margin: 8px;
+  padding: 12px;
+  background: #000;
+  color: #fff;
   border: none;
-  border-radius: var(--border-radius-radius-4);
-  font-family: var(--ibh-font-body);
-  font-size: var(--ibh-text-body-s);
-  font-weight: var(--ibh-weight-medium);
+  border-radius: 4px;
+  font-family: inter, sans-serif;
+  font-size: 16px;
+  font-weight: 400;
+  line-height: 140%;
   cursor: pointer;
   transition: background 0.2s ease;
   white-space: nowrap;
@@ -103,42 +192,85 @@
   background: var(--color-neutral-900);
 }
 
+.lead-subscription-form-fields button:disabled {
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+
 .lead-subscription-form-fields button:focus {
-  outline: 2px solid var(--color-neutral-1000);
+  outline: 2px solid var(--lead-subscription-form-text);
   outline-offset: 2px;
+}
+
+.lead-subscription-form-success {
+  display: flex;
+  flex-direction: column;
+  gap: var(--margin-margin-8);
+}
+
+.lead-subscription-form-success[hidden],
+.lead-subscription-form-form[hidden],
+.lead-subscription-form-alert[hidden] {
+  display: none;
+}
+
+.lead-subscription-form-success p {
+  margin: 0;
+}
+
+.lead-subscription-form-success-title {
+  color: var(--lead-subscription-form-text);
+  font-family: noe-display, serif;
+  font-size: 32px;
+  font-weight: 400;
+  line-height: 42px;
+}
+
+.lead-subscription-form-success-description {
+  color: var(--lead-subscription-form-muted);
+  font-family: inter, sans-serif;
+  font-size: 14px;
+  line-height: 140%;
 }
 
 /* Tablet and up: title/description left, form right */
 @media (width >= 600px) {
-  .lead-subscription-form {
-    flex-direction: row;
-    align-items: center;
-    justify-content: space-between;
-    gap: var(--margin-margin-32);
-  }
-
-  .lead-subscription-form-content {
-    flex: 1;
-  }
-
-  .lead-subscription-form-form {
-    flex: 1;
-    max-width: 420px;
-  }
-
-  .lead-subscription-form-fields {
-    flex-direction: row;
-    align-items: stretch;
-  }
-
-  .lead-subscription-form input[type="email"] {
-    flex: 1;
-    min-width: 0;
+  .lead-subscription-form-rendered {
+    padding-right: 32px;
+    padding-left: 32px;
   }
 }
 
 @media (width >= 900px) {
-  .lead-subscription-form {
-    padding: var(--padding-padding-48) var(--padding-padding-64);
+  .lead-subscription-form-rendered {
+    display: grid;
+    grid-template-columns: minmax(0, 629px) minmax(380px, 453px);
+    align-items: center;
+    justify-content: space-between;
+    min-height: 234px;
+    padding: 73px 141px 65px 83px;
+  }
+
+  .lead-subscription-form-content h2 {
+    font-size: 40px;
+    line-height: 54px;
+  }
+
+  .lead-subscription-form-form-area {
+    width: 453px;
+  }
+
+  .lead-subscription-form-fields {
+    border-radius: 4px;
+  }
+
+  .lead-subscription-form-legal {
+    font-size: 14px;
+  }
+}
+
+@media (width >= 1200px) {
+  .lead-subscription-form-rendered {
+    grid-template-columns: 629px 453px;
   }
 }
