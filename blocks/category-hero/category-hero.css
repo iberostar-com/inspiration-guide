@@ -1,3 +1,7 @@
+main > .section > .category-hero-wrapper {
+  margin-top: 14px;
+}
+
 main .category-hero .category-hero-source {
   display: none;
 }
