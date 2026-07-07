@@ -42,7 +42,8 @@
       "recommended-hotels-grid",
       "text",
       "title",
-      "topic-tag-cloud"
+      "topic-tag-cloud",
+      "category-hero"
     ]
   },
   {
@@ -465,6 +466,12 @@
     "id": "carousel-category-gallery",
     "components": [
       "carousel-category-gallery-card"
+    ]
+  },
+  {
+    "id": "category-hero",
+    "components": [
+      "category-hero-subcategory"
     ]
   },
   {

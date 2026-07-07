@@ -419,11 +419,51 @@
     "id": "article-content-video",
     "fields": [
       {
+        "component": "select",
+        "valueType": "string",
+        "name": "videoType",
+        "label": "Video Type",
+        "value": "dam",
+        "options": [
+          {
+            "name": "DAM",
+            "value": "dam"
+          },
+          {
+            "name": "YouTube",
+            "value": "youtube"
+          }
+        ]
+      },
+      {
         "component": "aem-content",
         "valueType": "string",
-        "name": "videoCf",
-        "label": "Video (Content Fragment or URL)",
-        "description": "Select an AEM video reference or contribute a direct video URL."
+        "name": "videoDam",
+        "label": "Video DAM",
+        "description": "Select an AEM DAM video reference or contribute a direct video URL.",
+        "condition": {
+          "==": [
+            {
+              "var": "videoType"
+            },
+            "dam"
+          ]
+        }
+      },
+      {
+        "component": "text",
+        "valueType": "string",
+        "name": "youtubeVideoId",
+        "label": "YouTube Video (ID or URL)",
+        "value": "",
+        "condition": {
+          "==": [
+            {
+              "var": "videoType"
+            },
+            "youtube"
+          ]
+        }
       },
       {
         "component": "reference",
@@ -728,6 +768,78 @@
         "name": "link",
         "label": "Link URL",
         "value": ""
+      }
+    ]
+  },
+  {
+    "id": "category-hero",
+    "fields": [
+      {
+        "component": "text",
+        "valueType": "string",
+        "name": "pretitle",
+        "label": "Antetítulo",
+        "value": ""
+      },
+      {
+        "component": "text",
+        "valueType": "string",
+        "name": "title",
+        "label": "Título",
+        "value": ""
+      },
+      {
+        "component": "richtext",
+        "name": "description",
+        "label": "Descripción",
+        "value": ""
+      },
+      {
+        "component": "select",
+        "valueType": "string",
+        "name": "subcategoriesHeadingTag",
+        "label": "Encabezado SEO de las subcategorías",
+        "value": "h2",
+        "options": [
+          {
+            "name": "H2",
+            "value": "h2"
+          },
+          {
+            "name": "H3",
+            "value": "h3"
+          },
+          {
+            "name": "H4",
+            "value": "h4"
+          },
+          {
+            "name": "H5",
+            "value": "h5"
+          },
+          {
+            "name": "H6",
+            "value": "h6"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "category-hero-subcategory",
+    "fields": [
+      {
+        "component": "text",
+        "valueType": "string",
+        "name": "title",
+        "label": "Título",
+        "value": ""
+      },
+      {
+        "component": "aem-content",
+        "valueType": "string",
+        "name": "url",
+        "label": "URL"
       }
     ]
   },

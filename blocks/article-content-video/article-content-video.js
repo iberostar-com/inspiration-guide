@@ -3,6 +3,7 @@ import { getTranslation } from '../../scripts/iberostar/i18n.js';
 
 const VIDEO_EXTENSIONS = /\.(mp4|webm|ogg|mov)(\?.*)?$/i;
 const ALIGNMENTS = ['left', 'center', 'right'];
+const YOUTUBE_ID_REGEX = /^[A-Za-z0-9_-]{11}$/;
 
 function getSourceRows(block) {
   return [...block.children]
@@ -16,11 +17,29 @@ function getPropElement(block, propName) {
     .find(Boolean) || null;
 }
 
+function getPropElementByNames(block, propNames) {
+  return propNames
+    .map((propName) => getPropElement(block, propName))
+    .find(Boolean) || null;
+}
+
 function getVideoUrl(block) {
-  const videoField = getPropElement(block, 'videoCf');
+  const videoField = getPropElementByNames(block, ['videoDam', 'youtubeVideoId', 'videoCf', 'video']);
   const directSource = videoField?.querySelector('source[src]')?.getAttribute('src')
     || videoField?.querySelector('video[src]')?.getAttribute('src');
   if (directSource) return directSource;
+
+  const datasetSource = videoField?.dataset?.src
+    || videoField?.dataset?.videoSrc
+    || videoField?.dataset?.assetReference
+    || videoField?.getAttribute('data-src')
+    || videoField?.getAttribute('data-video-src');
+  if (datasetSource) return datasetSource;
+
+  const textSource = videoField?.textContent?.trim();
+  if (textSource) {
+    return textSource;
+  }
 
   const fieldLinks = [...(videoField?.querySelectorAll('a[href]') || [])];
   const videoLink = fieldLinks.find((link) => VIDEO_EXTENSIONS.test(link.getAttribute('href')));
@@ -36,23 +55,174 @@ function getVideoUrl(block) {
     .find((href) => VIDEO_EXTENSIONS.test(href)) || '';
 }
 
+function getVideoType(block) {
+  const typeField = getPropElement(block, 'videoType');
+  const value = typeField?.textContent?.trim().toLowerCase() || '';
+  return ['dam', 'youtube'].includes(value) ? value : 'dam';
+}
+
+function getFieldValue(block, propNames) {
+  const field = getPropElementByNames(block, propNames);
+  if (!field) return '';
+
+  const directSource = field.querySelector('source[src]')?.getAttribute('src')
+    || field.querySelector('video[src]')?.getAttribute('src');
+  if (directSource) return directSource;
+
+  const datasetSource = field.dataset?.src
+    || field.dataset?.videoSrc
+    || field.dataset?.assetReference
+    || field.getAttribute('data-src')
+    || field.getAttribute('data-video-src');
+  if (datasetSource) return datasetSource;
+
+  const links = [...field.querySelectorAll('a[href]')].map((link) => link.getAttribute('href'));
+  if (links[0]) return links[0];
+
+  return field.textContent?.trim() || '';
+}
+
+function getVideoReference(block) {
+  const videoType = getVideoType(block);
+  if (videoType === 'youtube') {
+    return getFieldValue(block, ['youtubeVideoId', 'videoCf', 'video']);
+  }
+  return getFieldValue(block, ['videoDam', 'videoCf', 'video']);
+}
+
+function isLikelyVideoUrl(url) {
+  if (!url) return false;
+  if (VIDEO_EXTENSIONS.test(url)) return true;
+  return /\/content\/dam\//.test(url) && !/\.(json|html?|md|txt)(\?.*)?$/i.test(url);
+}
+
+function parseJsonForVideo(value) {
+  if (typeof value === 'string') {
+    if (VIDEO_EXTENSIONS.test(value)) return value;
+    return '';
+  }
+  if (!value || typeof value !== 'object') return '';
+  const values = Object.values(value);
+  return values
+    .map((entry) => parseJsonForVideo(entry))
+    .find(Boolean) || '';
+}
+
+function extractVideoFromHtml(html) {
+  if (!html) return '';
+  const parser = new DOMParser();
+  const doc = parser.parseFromString(html, 'text/html');
+  const source = doc.querySelector('source[src]')?.getAttribute('src')
+    || doc.querySelector('video[src]')?.getAttribute('src');
+  if (source) return source;
+
+  return [...doc.querySelectorAll('a[href]')]
+    .map((a) => a.getAttribute('href'))
+    .find((href) => VIDEO_EXTENSIONS.test(href)) || '';
+}
+
+async function fetchResolvedVideo(candidateUrl) {
+  if (!candidateUrl) return '';
+
+  try {
+    const response = await fetch(candidateUrl);
+    if (!response.ok) return '';
+
+    const contentType = response.headers.get('content-type') || '';
+    if (contentType.includes('video/')) return candidateUrl;
+
+    if (contentType.includes('application/json')) {
+      const data = await response.json();
+      return parseJsonForVideo(data);
+    }
+
+    if (contentType.includes('text/html')) {
+      const html = await response.text();
+      return extractVideoFromHtml(html);
+    }
+  } catch (e) {
+    // Ignore resolution failures and fallback to the next candidate.
+  }
+
+  return '';
+}
+
+async function resolveVideoUrl(videoRef) {
+  if (!videoRef) return '';
+
+  if (isLikelyVideoUrl(videoRef)) return videoRef;
+
+  const candidates = [
+    videoRef,
+    `${videoRef}.json`,
+  ];
+
+  const resolutions = await Promise.all(candidates.map((url) => fetchResolvedVideo(url)));
+  return resolutions.find(Boolean) || '';
+}
+
+function getYoutubeId(input) {
+  const value = (input || '').trim();
+  if (!value) return '';
+  if (YOUTUBE_ID_REGEX.test(value)) return value;
+
+  try {
+    const parsed = new URL(value);
+    const host = parsed.hostname.toLowerCase();
+
+    if (host.endsWith('youtu.be')) {
+      const candidate = parsed.pathname.split('/').filter(Boolean)[0] || '';
+      return YOUTUBE_ID_REGEX.test(candidate) ? candidate : '';
+    }
+
+    if (host.includes('youtube.com')) {
+      const queryId = parsed.searchParams.get('v') || '';
+      if (YOUTUBE_ID_REGEX.test(queryId)) return queryId;
+
+      const pathParts = parsed.pathname.split('/').filter(Boolean);
+      const embedIndex = pathParts.findIndex((part) => ['embed', 'shorts', 'live'].includes(part));
+      if (embedIndex >= 0) {
+        const candidate = pathParts[embedIndex + 1] || '';
+        return YOUTUBE_ID_REGEX.test(candidate) ? candidate : '';
+      }
+    }
+  } catch (e) {
+    // Non-URL values may still be valid IDs.
+  }
+
+  const match = value.match(/(?:v=|youtu\.be\/|youtube\.com\/(?:embed|shorts|live)\/)([A-Za-z0-9_-]{11})/);
+  return match?.[1] || '';
+}
+
+function createYoutubeEmbedUrl(videoId, autoplay = false) {
+  const params = new URLSearchParams({
+    rel: '0',
+    modestbranding: '1',
+    playsinline: '1',
+  });
+  if (autoplay) params.set('autoplay', '1');
+  return `https://www.youtube.com/embed/${videoId}?${params.toString()}`;
+}
+
 function getPosterImage(block) {
-  const posterField = getPropElement(block, 'poster');
+  const posterField = getPropElementByNames(block, ['poster', 'posterImage']);
   return posterField?.querySelector('img')
     || getSourceRows(block).map((row) => row.querySelector('img')).find(Boolean)
     || null;
 }
 
 function getPosterSrc(block) {
-  const posterField = getPropElement(block, 'poster');
+  const posterField = getPropElementByNames(block, ['poster', 'posterImage']);
   return getPosterImage(block)?.src
     || posterField?.querySelector('a[href]')?.getAttribute('href')?.trim()
+    || posterField?.dataset?.src
+    || posterField?.dataset?.assetReference
     || posterField?.textContent?.trim()
     || '';
 }
 
 function getPosterAlt(block) {
-  const altField = getPropElement(block, 'posterAlt');
+  const altField = getPropElementByNames(block, ['posterAlt', 'videoAlt']);
   return altField?.textContent?.trim()
     || getPosterImage(block)?.alt?.trim()
     || '';
@@ -89,9 +259,10 @@ function createPlayButton(label) {
   button.className = 'article-content-video-play';
   button.setAttribute('aria-label', label);
 
-  const icon = document.createElement('i');
-  icon.className = 'ibh-icon-play-arrow';
+  const icon = document.createElement('span');
+  icon.className = 'article-content-video-play-icon';
   icon.setAttribute('aria-hidden', 'true');
+  icon.textContent = '\u25B6';
 
   button.append(icon);
   return button;
@@ -106,15 +277,38 @@ function activateVideo(figure, videoUrl) {
   video.controls = true;
   video.autoplay = true;
   video.playsInline = true;
+  video.muted = false;
   video.className = 'article-content-video-player';
+
+  // Restore the original poster state when playback completes.
+  video.addEventListener('ended', () => {
+    video.replaceWith(poster);
+  }, { once: true });
+
   poster.replaceWith(video);
   video.play().catch(() => {
     // Native controls remain available when the browser blocks autoplay.
   });
 }
 
+function activateYoutube(figure, youtubeId) {
+  const poster = figure.querySelector('.article-content-video-poster');
+  if (!poster || !youtubeId) return;
+
+  const iframe = document.createElement('iframe');
+  iframe.src = createYoutubeEmbedUrl(youtubeId, true);
+  iframe.className = 'article-content-video-embed';
+  iframe.title = 'YouTube video player';
+  iframe.loading = 'lazy';
+  iframe.allow = 'accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share';
+  iframe.allowFullscreen = true;
+  poster.replaceWith(iframe);
+}
+
 export default async function decorate(block) {
-  const videoUrl = getVideoUrl(block);
+  const videoRef = getVideoReference(block) || getVideoUrl(block);
+  const youtubeId = getYoutubeId(videoRef);
+  const videoUrl = youtubeId ? '' : await resolveVideoUrl(videoRef);
   const posterSrc = getPosterSrc(block);
   const posterAlt = getPosterAlt(block);
   const caption = getCaption(block);
@@ -129,7 +323,7 @@ export default async function decorate(block) {
   ALIGNMENTS.forEach((a) => block.classList.remove(`article-content-video-${a}`));
   block.classList.add(`article-content-video-${alignment}`);
 
-  if (!videoUrl && !posterSrc && !caption) return;
+  if (!videoRef && !videoUrl && !posterSrc && !caption) return;
 
   const figure = document.createElement('figure');
   figure.className = 'article-content-video-figure';
@@ -146,10 +340,19 @@ export default async function decorate(block) {
       }));
     }
 
-    if (videoUrl) {
+    if (videoUrl || videoRef) {
       const playLabel = await getTranslation('playVideo', 'Play video');
       const playButton = createPlayButton(playLabel);
-      playButton.addEventListener('click', () => activateVideo(figure, videoUrl));
+      playButton.addEventListener('click', async () => {
+        if (youtubeId) {
+          activateYoutube(figure, youtubeId);
+          return;
+        }
+
+        const resolvedUrl = videoUrl || await resolveVideoUrl(videoRef);
+        if (!resolvedUrl) return;
+        activateVideo(figure, resolvedUrl);
+      });
       poster.append(playButton);
     }
     figure.append(poster);
