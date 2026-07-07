@@ -1,3 +1,7 @@
+main > .section > .category-hero-wrapper {
+  margin-top: 14px;
+}
+
 main .category-hero .category-hero-source {
   display: none;
 }
@@ -130,14 +134,15 @@ main .category-hero .category-hero-subcategories-title {
 main .category-hero .category-hero-subcategories-list {
   display: flex;
   flex-wrap: nowrap;
-  align-items: center;
-  gap: 12px;
+  align-items: stretch;
+  gap: 8px;
   margin: 0;
-  padding: 0 0 var(--padding-padding-12);
+  padding: 0 var(--padding-padding-16);
   list-style: none;
   overflow-x: auto;
   overscroll-behavior-x: contain;
-  scrollbar-width: thin;
+  scrollbar-width: none;
+  -webkit-overflow-scrolling: touch;
 }
 
 main .category-hero .category-hero-subcategories-item {
@@ -148,13 +153,11 @@ main .category-hero .category-hero-subcategories-link {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  min-height: 80px;
-  padding: 8px 12px;
-  border: 0;
-  border-radius: 0;
+  height: 80px;
+  padding: 0 16px;
   background: transparent;
   color: var(--color-neutral-900, var(--text-color));
-  font-size: 16px;
+  font-size: var(--ibh-text-body-m, 16px);
   font-weight: 400;
   line-height: 1.4;
   text-decoration: none;
@@ -194,11 +197,16 @@ main .category-hero .category-hero-rendered::after {
   }
 
   main .category-hero .category-hero-subcategories-list {
-    gap: 8px;
     flex-wrap: wrap;
     justify-content: center;
     overflow-x: visible;
-    padding-bottom: 0;
+    padding-right: 0;
+    padding-left: 0;
+  }
+
+  main .category-hero .category-hero-subcategories-link {
+    height: auto;
+    padding: 8px 16px;
   }
 }
 
