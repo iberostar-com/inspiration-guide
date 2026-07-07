@@ -1200,6 +1200,14 @@
           {
             "name": "Home",
             "value": "home"
+          },
+          {
+            "name": "Tag",
+            "value": "tag"
+          },
+          {
+            "name": "Category",
+            "value": "category"
           }
         ]
       },

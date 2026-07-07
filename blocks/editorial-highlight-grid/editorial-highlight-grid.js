@@ -43,7 +43,7 @@ function sanitizeHeading(value, fallback) {
 function readVariant(block) {
   const byProp = textByProp(block, 'variant').toLowerCase();
   if (byProp) return byProp;
-  const known = new Set(['home', 'default']);
+  const known = new Set(['home', 'default', 'tag', 'category']);
   const found = getConfigRows(block)
     .map((row) => row.textContent?.trim().toLowerCase())
     .find((text) => known.has(text));
@@ -281,9 +281,202 @@ async function decorateHome(block) {
   block.replaceChildren(rendered);
 }
 
+// ---------- tag variant (feed of articles for the current tag page) ----------
+
+const SORT_PREFIX = 'Orden:';
+const TAG_SORTS = [
+  { value: 'recent', label: 'Los más recientes' },
+  { value: 'oldest', label: 'Los más antiguos' },
+];
+
+function sortButtonLabel(label) {
+  return `${SORT_PREFIX} ${label.charAt(0).toLowerCase()}${label.slice(1)}`;
+}
+
+function articleTimestamp(article) {
+  const ts = Number.parseInt(article.publicationTimestamp, 10);
+  if (Number.isFinite(ts) && ts) return ts;
+  const parsed = Date.parse(article.publicationDate || article.publishDate || '');
+  return Number.isFinite(parsed) ? parsed : 0;
+}
+
+function sortArticles(articles, order) {
+  return [...articles].sort((a, b) => (order === 'oldest'
+    ? articleTimestamp(a) - articleTimestamp(b)
+    : articleTimestamp(b) - articleTimestamp(a)));
+}
+
+function articleHasTag(article, tag) {
+  const target = tag.trim().toLowerCase();
+  return (article.tags || []).some((value) => `${value}`.trim().toLowerCase() === target);
+}
+
+function readPageSize(block) {
+  const value = textByProp(block, 'pageSize') || block.getAttribute('data-page-size') || '';
+  const parsed = Number.parseInt(value, 10);
+  return Number.isFinite(parsed) && parsed > 0 ? parsed : 4;
+}
+
+function articleHasCategory(article, category) {
+  const target = category.trim().toLowerCase();
+  return [article.categorySlug, article.category]
+    .some((value) => `${value || ''}`.trim().toLowerCase() === target);
+}
+
+function buildFeed(block, matched, pageSize) {
+  block.classList.add('editorial-highlight-grid-home', 'editorial-highlight-grid-listing');
+
+  const configRows = getConfigRows(block);
+  const title = textByProp(block, 'title') || configRows[1]?.textContent?.trim() || '';
+  const levels = configRows
+    .map((row) => row.textContent?.trim().toLowerCase())
+    .filter((text) => HEADING_TAGS.has(text));
+  const titleHeading = sanitizeHeading(levels[0], 'h2');
+  const cardHeading = sanitizeHeading(levels[1], 'h3');
+
+  const rendered = document.createElement('div');
+  rendered.className = 'editorial-highlight-grid-rendered';
+
+  const feed = document.createElement('div');
+  feed.className = 'editorial-highlight-grid-feed';
+
+  if (title) {
+    const heading = document.createElement(titleHeading);
+    heading.className = 'editorial-highlight-grid-title';
+    heading.textContent = title;
+    feed.append(heading);
+  }
+
+  const toolbar = document.createElement('div');
+  toolbar.className = 'editorial-highlight-grid-toolbar';
+
+  const sort = document.createElement('div');
+  sort.className = 'editorial-highlight-grid-sort';
+
+  const sortButton = document.createElement('button');
+  sortButton.type = 'button';
+  sortButton.className = 'editorial-highlight-grid-sort-button';
+  sortButton.setAttribute('aria-expanded', 'false');
+
+  const sortLabel = document.createElement('span');
+  sortLabel.className = 'editorial-highlight-grid-sort-label';
+  sortLabel.textContent = sortButtonLabel(TAG_SORTS[0].label);
+
+  const sortIcon = document.createElement('i');
+  sortIcon.className = 'editorial-highlight-grid-sort-icon ibh-icon-keyboard-arrow-down';
+  sortIcon.setAttribute('aria-hidden', 'true');
+  sortButton.append(sortLabel, sortIcon);
+
+  const sortMenu = document.createElement('ul');
+  sortMenu.className = 'editorial-highlight-grid-sort-menu';
+
+  const list = document.createElement('ul');
+  list.className = 'editorial-highlight-grid-list';
+
+  const moreButton = document.createElement('button');
+  moreButton.type = 'button';
+  moreButton.className = 'editorial-highlight-grid-more';
+  moreButton.textContent = 'Ver más artículos';
+
+  const state = { order: TAG_SORTS[0].value, shown: pageSize };
+
+  const renderCards = () => {
+    const items = sortArticles(matched, state.order).slice(0, state.shown).map((article) => {
+      const li = document.createElement('li');
+      li.className = 'editorial-highlight-grid-item';
+      const card = createArticleCard(toCardData(article), { headingTag: cardHeading });
+      enhanceCard(card);
+      li.append(card);
+      return li;
+    });
+    list.replaceChildren(...items);
+    moreButton.hidden = state.shown >= matched.length;
+  };
+
+  const optionButtons = TAG_SORTS.map((option, index) => {
+    const li = document.createElement('li');
+    const optionButton = document.createElement('button');
+    optionButton.type = 'button';
+    optionButton.className = 'editorial-highlight-grid-sort-option';
+    if (index === 0) optionButton.classList.add('is-selected');
+    optionButton.textContent = option.label;
+    li.append(optionButton);
+    sortMenu.append(li);
+    return optionButton;
+  });
+
+  optionButtons.forEach((optionButton, index) => {
+    optionButton.addEventListener('click', () => {
+      state.order = TAG_SORTS[index].value;
+      sortLabel.textContent = sortButtonLabel(TAG_SORTS[index].label);
+      sortButton.setAttribute('aria-expanded', 'false');
+      optionButtons.forEach((button) => button.classList.remove('is-selected'));
+      optionButton.classList.add('is-selected');
+      renderCards();
+    });
+  });
+
+  sortButton.addEventListener('click', () => {
+    const expanded = sortButton.getAttribute('aria-expanded') === 'true';
+    sortButton.setAttribute('aria-expanded', expanded ? 'false' : 'true');
+  });
+
+  document.addEventListener('click', (event) => {
+    if (!sort.contains(event.target)) sortButton.setAttribute('aria-expanded', 'false');
+  });
+
+  moreButton.addEventListener('click', () => {
+    state.shown += pageSize;
+    renderCards();
+  });
+
+  sort.append(sortButton, sortMenu);
+  toolbar.append(sort);
+  feed.append(toolbar, list);
+  rendered.append(feed, moreButton);
+
+  renderCards();
+  block.replaceChildren(rendered);
+}
+
+async function decorateTag(block) {
+  const tag = getContextTag();
+  const all = await getArticles();
+  const matched = tag ? all.filter((article) => articleHasTag(article, tag)) : all;
+  buildFeed(block, matched, readPageSize(block));
+}
+
+async function decorateCategory(block) {
+  const all = await getArticles();
+  const refRows = getArticleRows(block);
+
+  let matched;
+  if (refRows.length) {
+    matched = refRows
+      .map((row) => findArticle(all, getRefPath(row)))
+      .filter(Boolean);
+  } else {
+    const category = getContextCategory();
+    matched = category
+      ? all.filter((article) => articleHasCategory(article, category))
+      : all;
+  }
+
+  buildFeed(block, matched, readPageSize(block));
+}
+
 export default async function decorate(block) {
-  if (readVariant(block) === 'home') {
+  const variant = readVariant(block);
+  if (variant === 'home') {
     await decorateHome(block);
+    return;
+  }
+  if (variant === 'tag') {
+    await decorateTag(block);
+    return;
+  }
+  if (variant === 'category') {
+    await decorateCategory(block);
     return;
   }
   await decorateDefault(block);

@@ -44,7 +44,9 @@
           "value": "default",
           "options": [
             { "name": "Default", "value": "default" },
-            { "name": "Home", "value": "home" }
+            { "name": "Home", "value": "home" },
+            { "name": "Tag", "value": "tag" },
+            { "name": "Category", "value": "category" }
           ]
         },
         {
