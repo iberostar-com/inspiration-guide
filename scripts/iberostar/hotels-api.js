@@ -1,9 +1,32 @@
 import getEnvironmentConfig from './environment-config.js';
 
-const DEFAULT_LOCALE = 'en_us';
 const DEFAULT_LOCALE_HYPHENATED = 'en-us';
 const GRAPHQL_REQUEST_CACHE = new Map();
 const HOTEL_PRICE_REQUEST_CACHE = new Map();
+const HOTEL_API_WARNINGS = new Set();
+
+const GRAPHQL_QUERY_PATH = '/graphql/execute.json/iberostar-com/HotelByCode';
+
+const GRAPHQL_ORIGINS_BY_HOST = {
+  'aem-grspre.iberostar.com': '',
+  'aem-grsdev.iberostar.com': '',
+
+  'main--inspiration-guide--iberostar-com.aem.live': 'https://publish-p179213-e1886364.adobeaemcloud.com',
+  'main--inspiration-guide--iberostar-com.aem.page': 'https://publish-p179213-e1886364.adobeaemcloud.com',
+
+  'main--inspiration-guide-dev--iberostar-com.aem.live': 'https://publish-p179213-e1898042.adobeaemcloud.com',
+  'main--inspiration-guide-dev--iberostar-com.aem.page': 'https://publish-p179213-e1898042.adobeaemcloud.com',
+};
+
+function warnOnce(key, message, details = null) {
+  if (HOTEL_API_WARNINGS.has(key)) return;
+  HOTEL_API_WARNINGS.add(key);
+
+  // eslint-disable-next-line no-console
+  if (details) console.warn(message, details);
+  // eslint-disable-next-line no-console
+  else console.warn(message);
+}
 
 function getMetaContent(name) {
   return document.querySelector(`meta[name="${name}"]`)?.content?.trim() || '';
@@ -29,12 +52,6 @@ function getHotelsConfig() {
     graphqlHost: getMetaContent('hotel-graphql-host')
       || configuredHotels.graphqlHost
       || '',
-    graphqlEndpoint: getMetaContent('hotel-graphql-endpoint')
-      || configuredHotels.graphqlEndpoint
-      || '/graphql/execute.json/iberostar-com/HotelByCode',
-    graphqlOperationName: getMetaContent('hotel-graphql-operation-name')
-      || configuredHotels.graphqlOperationName
-      || 'HotelByCode',
     priceFromChannel: getMetaContent('hotel-price-channel')
       || configuredHotels.priceFromChannel
       || 'b2c-web',
@@ -44,76 +61,65 @@ function getHotelsConfig() {
   };
 }
 
-function normalizeEndpointPath(endpoint) {
-  const value = `${endpoint || ''}`.trim();
-  if (!value) return '';
-  if (/^https?:\/\//i.test(value)) return value;
-  return value.startsWith('/') ? value : `/${value}`;
+function normalizeLocaleTag(locale) {
+  const value = `${locale || ''}`.trim().toLowerCase().replace('_', '-');
+  if (/^[a-z]{2}-[a-z]{2}$/.test(value)) return value;
+  return DEFAULT_LOCALE_HYPHENATED;
 }
 
-function isEdsPublicHostname(hostname = window.location.hostname) {
-  return hostname.endsWith('.aem.page') || hostname.endsWith('.aem.live');
-}
-
-function isPublishHostname(hostname = window.location.hostname) {
-  return /^publish-p\d+-e\d+\./i.test(hostname);
-}
-
-function isAuthorHostname(hostname = window.location.hostname) {
-  return /^author-p\d+-e\d+\./i.test(hostname);
-}
-
-function resolveGraphqlHost(options, hotelsConfig) {
-  if (options.graphqlHost) return options.graphqlHost;
-
-  if (isAuthorHostname()) {
-    // In author context use same-origin to avoid unnecessary cross-domain CORS hops.
-    return window.location.origin;
-  }
-
-  if (isPublishHostname()) {
-    return window.location.origin;
-  }
-
-  const configuredHost = hotelsConfig.graphqlHost || hotelsConfig.aemAssetHost || '';
-  if (configuredHost) return configuredHost;
-
-  if (isEdsPublicHostname()) {
-    // EDS hosts don't usually expose the AEM GraphQL endpoint.
-    // eslint-disable-next-line no-console
-    console.warn('[hotels-api] Missing graphqlHost configuration for EDS host.');
-  }
-
-  return window.location.origin;
-}
-
-function normalizeLocale(locale) {
-  return `${locale || ''}`.trim().toLowerCase().replace('-', '_');
+function normalizeAemLocale(locale) {
+  return normalizeLocaleTag(locale).replace('-', '_');
 }
 
 export function getLocaleFromPath(pathname = window.location.pathname) {
   const segments = `${pathname || ''}`.split('/').filter(Boolean);
   const localeSegment = segments.find((segment) => /^[a-z]{2}-[a-z]{2}$/i.test(segment));
-  const locale = normalizeLocale(localeSegment);
-
-  return locale || DEFAULT_LOCALE;
+  return normalizeLocaleTag(localeSegment);
 }
 
 export function getLocaleTagFromPath(pathname = window.location.pathname) {
-  const segments = `${pathname || ''}`.split('/').filter(Boolean);
-  const localeSegment = segments.find((segment) => /^[a-z]{2}-[a-z]{2}$/i.test(segment));
-  return localeSegment?.toLowerCase() || DEFAULT_LOCALE_HYPHENATED;
+  return getLocaleFromPath(pathname);
+}
+
+export function getAemLocaleFromPath(pathname = window.location.pathname) {
+  return normalizeAemLocale(getLocaleFromPath(pathname));
 }
 
 export function getCountryCodeFromPath(pathname = window.location.pathname) {
-  const localeTag = getLocaleTagFromPath(pathname);
+  const localeTag = getLocaleFromPath(pathname);
   const [, market = 'us'] = localeTag.split('-');
   return market.toUpperCase();
 }
 
 export function getHotelsRootPathFromLocale(locale) {
-  const normalizedLocale = normalizeLocale(locale) || DEFAULT_LOCALE;
+  const normalizedLocale = normalizeAemLocale(locale || DEFAULT_LOCALE_HYPHENATED);
   return `/content/dam/iberostar-com/${normalizedLocale}`;
+}
+
+export function getGraphqlOrigin() {
+  const configuredOrigin = window.iberostarConfig?.graphqlOrigin;
+
+  if (configuredOrigin !== undefined) {
+    return configuredOrigin;
+  }
+
+  const { hostname } = window.location;
+
+  if (hostname === 'localhost' || hostname === '127.0.0.1') {
+    return 'https://publish-p179213-e1886364.adobeaemcloud.com';
+  }
+
+  return GRAPHQL_ORIGINS_BY_HOST[hostname] ?? '';
+}
+
+export function buildHotelByCodeUrl({ rootPath, hotelCode }) {
+  const origin = getGraphqlOrigin();
+
+  return `${origin}${GRAPHQL_QUERY_PATH};rootPath=${encodeURIComponent(rootPath)};hotelCode=${encodeURIComponent(hotelCode)}`;
+}
+
+export function isValidHotelCode(value) {
+  return /^[A-Za-z0-9_-]{1,20}$/.test(`${value || ''}`.trim());
 }
 
 function normalizeHotelStars(value) {
@@ -171,34 +177,23 @@ function normalizeHotel(rawHotel) {
 function getRootPath(options = {}) {
   if (options.rootPath) return options.rootPath;
 
-  const locale = normalizeLocale(options.locale)
+  const locale = options.locale
     || getLocaleFromPath(options.pathname || window.location.pathname);
 
   return getHotelsRootPathFromLocale(locale);
 }
 
-function getPersistedQueryPath(options = {}) {
-  const hotelsConfig = getHotelsConfig();
-  return options.persistedQueryPath
-    || options.persistedQueryUrl
-    || options.endpoint
-    || hotelsConfig.graphqlEndpoint;
-}
-
 function createRequestUrl(hotelCode, options = {}) {
-  const persistedQueryPath = normalizeEndpointPath(getPersistedQueryPath(options));
   const rootPath = getRootPath(options);
-  const hotelsConfig = getHotelsConfig();
-  const graphqlHost = resolveGraphqlHost(options, hotelsConfig);
-
-  const url = new URL(persistedQueryPath, graphqlHost);
-  const normalizedCode = `${hotelCode}`.trim();
-  url.pathname = `${url.pathname};rootPath=${rootPath};hotelCode=${normalizedCode}`;
+  const normalizedCode = `${hotelCode || ''}`.trim();
+  const requestUrl = buildHotelByCodeUrl({
+    hotelCode: normalizedCode,
+    rootPath,
+  });
 
   return {
-    requestUrl: url,
+    requestUrl,
     rootPath,
-    persistedQueryPath: url.pathname,
   };
 }
 
@@ -210,11 +205,18 @@ function readHotelFromResponse(payload) {
 }
 
 export async function fetchHotelByCode(hotelCode, options = {}) {
-  const normalizedCode = `${hotelCode || ''}`.trim();
-  if (!normalizedCode) return null;
+  const normalizedHotelCode = `${hotelCode || ''}`.trim();
+  if (!isValidHotelCode(normalizedHotelCode)) {
+    warnOnce(
+      `invalid-hotel-code:${normalizedHotelCode}`,
+      '[hotels-api] Invalid hotelCode, skipping hotel fetch',
+      { hotelCode },
+    );
+    return null;
+  }
 
-  const { requestUrl, rootPath, persistedQueryPath } = createRequestUrl(normalizedCode, options);
-  const cacheKey = `${persistedQueryPath}|${rootPath}|${normalizedCode}`;
+  const { requestUrl, rootPath } = createRequestUrl(normalizedHotelCode, options);
+  const cacheKey = requestUrl;
   const cached = GRAPHQL_REQUEST_CACHE.get(cacheKey);
 
   if (cached !== undefined) {
@@ -230,31 +232,42 @@ export async function fetchHotelByCode(hotelCode, options = {}) {
   })
     .then(async (response) => {
       if (!response.ok) {
-        // eslint-disable-next-line no-console
-        console.warn(`[hotels-api] Hotel query failed (${response.status})`, {
-          hotelCode: normalizedCode,
-          requestUrl: requestUrl.toString(),
-          rootPath,
-        });
+        warnOnce(
+          `graphql-response-failed:${response.status}:${requestUrl}`,
+          '[hotels-api] GraphQL request failed',
+          {
+            hotelCode: normalizedHotelCode,
+            requestUrl,
+            rootPath,
+            status: response.status,
+          },
+        );
         return null;
       }
 
       const payload = await response.json().catch(() => null);
       const hotel = readHotelFromResponse(payload);
       if (!hotel) {
-        // eslint-disable-next-line no-console
-        console.warn('[hotels-api] Hotel not found for code', normalizedCode);
+        warnOnce(
+          `hotel-not-found:${normalizedHotelCode}`,
+          '[hotels-api] Hotel not found for code',
+          normalizedHotelCode,
+        );
         return null;
       }
 
       return hotel;
     })
     .catch((error) => {
-      // eslint-disable-next-line no-console
-      console.warn('[hotels-api] Unexpected error fetching hotel', {
-        hotelCode: normalizedCode,
-        error,
-      });
+      warnOnce(
+        `graphql-fetch-error:${requestUrl}`,
+        '[hotels-api] GraphQL request failed',
+        {
+          hotelCode: normalizedHotelCode,
+          error,
+          requestUrl,
+        },
+      );
       return null;
     });
 
@@ -265,13 +278,23 @@ export async function fetchHotelByCode(hotelCode, options = {}) {
 }
 
 export async function fetchHotelsByCodes(hotelCodes, options = {}) {
-  const codes = (Array.isArray(hotelCodes) ? hotelCodes : [])
+  const uniqueCodes = [...new Set((Array.isArray(hotelCodes) ? hotelCodes : [])
     .map((hotelCode) => `${hotelCode || ''}`.trim())
-    .filter(Boolean);
+    .filter((hotelCode) => {
+      const valid = isValidHotelCode(hotelCode);
+      if (!valid) {
+        warnOnce(
+          `invalid-hotel-code-list:${hotelCode}`,
+          '[hotels-api] Invalid hotelCode, skipping hotel fetch',
+          { hotelCode },
+        );
+      }
+      return valid;
+    }))];
 
-  if (!codes.length) return [];
+  if (!uniqueCodes.length) return [];
 
-  const hotels = await Promise.all(codes.map((code) => fetchHotelByCode(code, options)));
+  const hotels = await Promise.all(uniqueCodes.map((code) => fetchHotelByCode(code, options)));
   return hotels.filter(Boolean);
 }
 
@@ -299,7 +322,7 @@ function normalizePriceResponse(payload) {
 
 export async function fetchHotelPriceByCode(hotelCode, options = {}) {
   const normalizedCode = `${hotelCode || ''}`.trim();
-  if (!normalizedCode) return null;
+  if (!isValidHotelCode(normalizedCode)) return null;
 
   const hotelsConfig = getHotelsConfig();
   const endpoint = options.priceFromEndpoint
@@ -344,11 +367,14 @@ export async function fetchHotelPriceByCode(hotelCode, options = {}) {
   })
     .then(async (response) => {
       if (!response.ok) {
-        // eslint-disable-next-line no-console
-        console.warn(`[hotels-api] Hotel price query failed (${response.status})`, {
-          body,
-          requestUrl: requestUrl.toString(),
-        });
+        warnOnce(
+          `price-query-failed:${response.status}:${requestUrl.toString()}`,
+          `[hotels-api] Hotel price query failed (${response.status})`,
+          {
+            body,
+            requestUrl: requestUrl.toString(),
+          },
+        );
         return null;
       }
 
@@ -364,19 +390,25 @@ export async function fetchHotelPriceByCode(hotelCode, options = {}) {
       }
 
       if (!price) {
-        // eslint-disable-next-line no-console
-        console.warn('[hotels-api] No price available for hotel', normalizedCode);
+        warnOnce(
+          `price-not-available:${normalizedCode}`,
+          '[hotels-api] No price available for hotel',
+          normalizedCode,
+        );
         return null;
       }
 
       return price;
     })
     .catch((error) => {
-      // eslint-disable-next-line no-console
-      console.warn('[hotels-api] Unexpected error fetching hotel price', {
-        body,
-        error,
-      });
+      warnOnce(
+        `price-unexpected-error:${requestUrl.toString()}:${normalizedCode}`,
+        '[hotels-api] Unexpected error fetching hotel price',
+        {
+          body,
+          error,
+        },
+      );
       return null;
     });
 

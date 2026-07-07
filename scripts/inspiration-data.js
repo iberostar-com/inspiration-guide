@@ -74,6 +74,7 @@ const MOCK_ARTICLES = [
 ];
 
 const AEM_REQUEST_CACHE = new Map();
+const ARTICLE_PATH_WARNINGS = new Set();
 
 function isLocalhost() {
   return window.location.hostname.includes('localhost');
@@ -95,6 +96,78 @@ function getCurrentLanguageRoot() {
   const segments = window.location.pathname.split('/').filter(Boolean);
   const locale = segments.find((segment) => /^[a-z]{2}-[a-z]{2}$/i.test(segment));
   return locale ? `/${locale.toLowerCase()}` : '';
+}
+
+function warnInvalidArticlePathOnce(path) {
+  const key = `${path || ''}`.trim();
+  if (!key || ARTICLE_PATH_WARNINGS.has(key)) return;
+  ARTICLE_PATH_WARNINGS.add(key);
+  // eslint-disable-next-line no-console
+  console.warn('[inspiration-data] Invalid article path', { path });
+}
+
+function toPathname(value) {
+  const raw = `${value || ''}`.trim();
+  if (!raw) return '';
+
+  if (/^(?:https?:)?\/\//i.test(raw)) {
+    try {
+      return new URL(raw, window.location.origin).pathname || '';
+    } catch {
+      return '';
+    }
+  }
+
+  return raw;
+}
+
+function normalizePathString(path) {
+  const normalized = `${path || ''}`
+    .trim()
+    .split(/[?#]/, 1)[0]
+    .replace(/\/+/g, '/')
+    .replace(/\.html$/i, '')
+    .replace(/\/$/, '');
+
+  if (!normalized) return '';
+  return normalized.startsWith('/') ? normalized : `/${normalized}`;
+}
+
+export function normalizeArticlePath(article) {
+  const localeRoot = getCurrentLanguageRoot();
+  const rawPath = typeof article === 'string'
+    ? article
+    : article?.path || article?.url || article?.href || '';
+  const resolvedPath = normalizePathString(toPathname(rawPath));
+
+  if (!resolvedPath) {
+    const fallbackSlug = `${typeof article === 'string' ? '' : article?.slug || article?.id || ''}`
+      .trim()
+      .replace(/\.html$/i, '')
+      .replace(/^\/+/, '');
+
+    if (!fallbackSlug) {
+      warnInvalidArticlePathOnce(rawPath);
+      return '';
+    }
+
+    return `${localeRoot}/inspiration-guide/articles/${fallbackSlug}`;
+  }
+
+  if (/^\/[a-z]{2}-[a-z]{2}\/inspiration-guide\//i.test(resolvedPath)) {
+    return resolvedPath;
+  }
+
+  if (/^\/inspiration-guide\//i.test(resolvedPath)) {
+    return `${localeRoot}${resolvedPath}`;
+  }
+
+  if (/^[^/]+$/.test(resolvedPath.replace(/^\//, ''))) {
+    const slug = resolvedPath.replace(/^\//, '');
+    return `${localeRoot}/inspiration-guide/articles/${slug}`;
+  }
+
+  return resolvedPath;
 }
 
 function normalizeTagPath(value) {
@@ -170,7 +243,7 @@ function normalizeArticle(raw, index) {
   const id = firstDefined(raw.id, raw.articleId, raw.slug, raw.path, `aem-article-${index + 1}`);
   const title = firstDefined(raw.title, raw.name, raw.headline, raw.articleTitle, 'Untitled');
   const summary = firstDefined(raw.summary, raw.description, raw.excerpt, raw.teaser, '');
-  const path = firstDefined(raw.path, raw.url, raw.href, raw.articleUrl, '');
+  const rawPath = firstDefined(raw.path, raw.articleUrl, raw.url, raw.href, '');
   const image = firstDefined(
     raw.image,
     raw.imagePath,
@@ -217,7 +290,13 @@ function normalizeArticle(raw, index) {
   const readingTime = Number.parseInt(readingTimeRaw, 10) || 0;
   const readTime = normalizeReadTime(firstDefined(raw.readTime, raw.readingTime, raw.minutesToRead, ''));
   const tags = normalizeTags(firstDefined(raw.tags, raw.tagList, raw.keywords, []));
-  const url = firstDefined(raw.url, raw.href, raw.path, path ? String(path) : `/inspiration-guide/article/${id}`);
+  const normalizedPath = normalizeArticlePath({
+    href: raw.href,
+    id,
+    path: rawPath,
+    slug: raw.slug,
+    url: raw.url,
+  }) || `${getCurrentLanguageRoot()}/inspiration-guide/article/${id}`;
 
   return {
     id: String(id),
@@ -253,9 +332,9 @@ function normalizeArticle(raw, index) {
     readingTime,
     readTime,
     tags,
-    path: String(path || url),
-    href: String(url),
-    url: String(url),
+    path: String(normalizedPath),
+    href: String(normalizedPath),
+    url: String(normalizedPath),
     robots: String(firstDefined(raw.robots, '')),
     lastModified: String(firstDefined(raw.lastModified, '')),
     visible: isVisible(raw.visible),

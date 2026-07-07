@@ -1,9 +1,10 @@
 import { createHotelMiniCard } from '../hotel-mini-card/hotel-mini-card.js';
-import { getTranslation } from '../../scripts/iberostar/i18n.js';
+import { getPlaceholder } from '../../scripts/iberostar/placeholders.js';
 import {
   fetchHotelByCode,
   fetchHotelPriceByCode,
   getLocaleTagFromPath,
+  isValidHotelCode,
 } from '../../scripts/iberostar/hotels-api.js';
 
 const FIELD_POSITIONS = {
@@ -212,10 +213,10 @@ function formatCurrencyValue(value, currency) {
 
 async function getPriceText(hotel, hotelCode) {
   const [prefix, perNightLabel, personSingular, personPlural] = await Promise.all([
-    getTranslation('hotelPriceFromPrefix', 'Desde'),
-    getTranslation('hotelPricePerNight', '/ noche'),
-    getTranslation('hotelPricePersonSingular', 'persona'),
-    getTranslation('hotelPricePersonPlural', 'personas'),
+    getPlaceholder('hotelPriceFromPrefix', 'Desde'),
+    getPlaceholder('hotelPricePerNight', '/ noche'),
+    getPlaceholder('hotelPricePersonSingular', 'persona'),
+    getPlaceholder('hotelPricePersonPlural', 'personas'),
   ]);
 
   const endpointPrice = await fetchHotelPriceByCode(hotelCode);
@@ -303,9 +304,9 @@ export default async function decorate(block) {
   const runId = (block.hotelGraphqlMiniCardRunId || 0) + 1;
   block.hotelGraphqlMiniCardRunId = runId;
 
-  const hotelCode = getText(block, 'hotelCode');
+  const hotelCode = `${getText(block, 'hotelCode') || ''}`.trim();
   const destinationText = getText(block, 'destination');
-  const fallbackCtaText = await getTranslation('hotelGraphqlMiniCardCta', 'View hotel');
+  const fallbackCtaText = await getPlaceholder('hotelGraphqlMiniCardCta', 'View hotel');
   const cta = {
     href: getHref(block, 'cta_link'),
     target: normalizeTarget(getText(block, 'cta_linkTarget')),
@@ -322,6 +323,17 @@ export default async function decorate(block) {
       rendered.append(createEmptyState('Add a hotel code to load hotel data.'));
     }
 
+    block.append(rendered);
+    observeAuthorChanges(block);
+    return;
+  }
+
+  if (!isValidHotelCode(hotelCode)) {
+    // eslint-disable-next-line no-console
+    console.warn('[hotels-api] Invalid hotelCode, skipping hotel fetch', { hotelCode });
+    if (isAuthoringPage(block)) {
+      rendered.append(createEmptyState(`Invalid hotel code: ${hotelCode}`));
+    }
     block.append(rendered);
     observeAuthorChanges(block);
     return;
