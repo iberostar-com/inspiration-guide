@@ -824,121 +824,58 @@
         ]
       },
       {
-        "component": "text",
-        "valueType": "string",
-        "name": "subcategory1Title",
-        "label": "Subcategoría 1 - Título",
-        "value": ""
-      },
-      {
         "component": "aem-content",
         "valueType": "string",
         "name": "subcategory1Url",
-        "label": "Subcategoría 1 - URL"
-      },
-      {
-        "component": "text",
-        "valueType": "string",
-        "name": "subcategory2Title",
-        "label": "Subcategoría 2 - Título",
-        "value": ""
+        "label": "Subcategoría 1"
       },
       {
         "component": "aem-content",
         "valueType": "string",
         "name": "subcategory2Url",
-        "label": "Subcategoría 2 - URL"
-      },
-      {
-        "component": "text",
-        "valueType": "string",
-        "name": "subcategory3Title",
-        "label": "Subcategoría 3 - Título",
-        "value": ""
+        "label": "Subcategoría 2"
       },
       {
         "component": "aem-content",
         "valueType": "string",
         "name": "subcategory3Url",
-        "label": "Subcategoría 3 - URL"
-      },
-      {
-        "component": "text",
-        "valueType": "string",
-        "name": "subcategory4Title",
-        "label": "Subcategoría 4 - Título",
-        "value": ""
+        "label": "Subcategoría 3"
       },
       {
         "component": "aem-content",
         "valueType": "string",
         "name": "subcategory4Url",
-        "label": "Subcategoría 4 - URL"
-      },
-      {
-        "component": "text",
-        "valueType": "string",
-        "name": "subcategory5Title",
-        "label": "Subcategoría 5 - Título",
-        "value": ""
+        "label": "Subcategoría 4"
       },
       {
         "component": "aem-content",
         "valueType": "string",
         "name": "subcategory5Url",
-        "label": "Subcategoría 5 - URL"
-      },
-      {
-        "component": "text",
-        "valueType": "string",
-        "name": "subcategory6Title",
-        "label": "Subcategoría 6 - Título",
-        "value": ""
+        "label": "Subcategoría 5"
       },
       {
         "component": "aem-content",
         "valueType": "string",
         "name": "subcategory6Url",
-        "label": "Subcategoría 6 - URL"
-      },
-      {
-        "component": "text",
-        "valueType": "string",
-        "name": "subcategory7Title",
-        "label": "Subcategoría 7 - Título",
-        "value": ""
+        "label": "Subcategoría 6"
       },
       {
         "component": "aem-content",
         "valueType": "string",
         "name": "subcategory7Url",
-        "label": "Subcategoría 7 - URL"
-      },
-      {
-        "component": "text",
-        "valueType": "string",
-        "name": "subcategory8Title",
-        "label": "Subcategoría 8 - Título",
-        "value": ""
+        "label": "Subcategoría 7"
       },
       {
         "component": "aem-content",
         "valueType": "string",
         "name": "subcategory8Url",
-        "label": "Subcategoría 8 - URL"
-      },
-      {
-        "component": "text",
-        "valueType": "string",
-        "name": "subcategory9Title",
-        "label": "Subcategoría 9 - Título",
-        "value": ""
+        "label": "Subcategoría 8"
       },
       {
         "component": "aem-content",
         "valueType": "string",
         "name": "subcategory9Url",
-        "label": "Subcategoría 9 - URL"
+        "label": "Subcategoría 9"
       }
     ]
   },
@@ -946,17 +883,10 @@
     "id": "category-hero-subcategory",
     "fields": [
       {
-        "component": "text",
-        "valueType": "string",
-        "name": "title",
-        "label": "Título",
-        "value": ""
-      },
-      {
         "component": "aem-content",
         "valueType": "string",
         "name": "url",
-        "label": "URL"
+        "label": "Página de subcategoría"
       }
     ]
   },
