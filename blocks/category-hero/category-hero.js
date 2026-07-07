@@ -82,10 +82,23 @@ function getSubcategoryRows(block) {
 }
 
 function getSubcategories(block) {
-  return getSubcategoryRows(block)
+  const fromRows = getSubcategoryRows(block)
     .map(parseSubcategoryRow)
     .filter(Boolean)
     .slice(0, MAX_SUBCATEGORIES);
+
+  if (fromRows.length) return fromRows;
+
+  return Array.from({ length: MAX_SUBCATEGORIES }, (_, index) => index + 1)
+    .map((index) => {
+      const title = getTextValue(block, `subcategory${index}Title`, -1, '');
+      const urlEl = getFieldElement(block, `subcategory${index}Url`, -1);
+      const href = getHrefValueFromElement(urlEl);
+
+      if (!title || !href) return null;
+      return { title, href };
+    })
+    .filter(Boolean);
 }
 
 function sanitizeHeadingTag(value) {
