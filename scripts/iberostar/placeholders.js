@@ -1,9 +1,18 @@
 const PLACEHOLDER_CACHE = new Map();
+const PLACEHOLDER_WARNINGS = new Set();
+const DEFAULT_LOCALE = 'en-us';
 
-function getLocaleRoot() {
-  const segments = window.location.pathname.split('/').filter(Boolean);
+function warnOnce(key, message) {
+  if (PLACEHOLDER_WARNINGS.has(key)) return;
+  PLACEHOLDER_WARNINGS.add(key);
+  // eslint-disable-next-line no-console
+  console.warn(message);
+}
+
+export function getLocaleFromPath(pathname = window.location.pathname) {
+  const segments = `${pathname || ''}`.split('/').filter(Boolean);
   const locale = segments.find((segment) => /^[a-z]{2}-[a-z]{2}$/i.test(segment));
-  return locale ? `/${locale}` : '';
+  return locale ? locale.toLowerCase() : DEFAULT_LOCALE;
 }
 
 function normalizeKey(value) {
@@ -54,16 +63,41 @@ function getPlaceholderValue(payload, key) {
   return getRowValue(row);
 }
 
-export async function getPlaceholder(key, fallback = '') {
-  const paths = [
-    `${getLocaleRoot()}/placeholders.json`,
-    '/placeholders.json',
-  ];
+function getLocaleRoot(locale = getLocaleFromPath()) {
+  const normalizedLocale = getLocaleFromPath(`/${locale}`);
+  return `/${normalizedLocale}`;
+}
 
-  const payloads = await Promise.all(paths.map((path) => fetchPlaceholders(path)));
-  const value = payloads
-    .map((payload) => getPlaceholderValue(payload, key))
-    .find(Boolean);
+export async function loadPlaceholders(locale = getLocaleFromPath()) {
+  const normalizedLocale = getLocaleFromPath(`/${locale}`);
+  const cacheKey = `locale:${normalizedLocale}`;
+
+  if (PLACEHOLDER_CACHE.has(cacheKey)) {
+    return PLACEHOLDER_CACHE.get(cacheKey);
+  }
+
+  const requestPromise = (async () => {
+    const localizedPath = `${getLocaleRoot(normalizedLocale)}/placeholders.json`;
+    const localizedPayload = await fetchPlaceholders(localizedPath);
+    if (localizedPayload) return localizedPayload;
+
+    const globalPayload = await fetchPlaceholders('/placeholders.json');
+    if (globalPayload) return globalPayload;
+
+    warnOnce(
+      `load-failed:${normalizedLocale}`,
+      '[placeholders] Failed to load placeholders, using fallback',
+    );
+    return {};
+  })();
+
+  PLACEHOLDER_CACHE.set(cacheKey, requestPromise);
+  return requestPromise;
+}
+
+export async function getPlaceholder(key, fallback = '') {
+  const payload = await loadPlaceholders();
+  const value = getPlaceholderValue(payload, key);
 
   return value || fallback;
 }
