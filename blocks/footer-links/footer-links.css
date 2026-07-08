@@ -11,7 +11,7 @@
 
 .footer-links .footer-links-group {
   margin: 0;
-  padding: 8px 0;
+  padding: 10px 0;
   border-top: 1px solid #dedede;
 }
 
@@ -31,11 +31,11 @@
 
 .footer-links .footer-column-title {
   font-size: 0.75rem;
-  font-weight: 500;
+  font-weight: 600;
   line-height: 1.4;
-  letter-spacing: 0.02em;
+  letter-spacing: 0.04em;
   text-transform: uppercase;
-  color: #636363;
+  color: #6b6b6b;
 }
 
 .footer-links .footer-accordion-chevron {
@@ -61,22 +61,28 @@
 }
 
 .footer-links .footer-links-list {
-  display: none;
+  display: flex;
   margin: 0;
-  padding: 16px 0 8px;
+  padding: 0;
   list-style: none;
   flex-direction: column;
-  gap: 16px;
+  gap: 10px;
+  max-height: 0;
+  overflow: hidden;
+  opacity: 0;
+  transition: max-height 0.28s ease, padding-top 0.28s ease, padding-bottom 0.28s ease, opacity 0.2s ease;
 }
 
 .footer-links .footer-links-group[open] .footer-links-list {
-  display: flex;
+  max-height: 520px;
+  padding: 14px 0 6px;
+  opacity: 1;
 }
 
 .footer-links .footer-links-item a:any-link {
   font-size: 0.875rem;
-  font-weight: 500;
-  line-height: 1.4;
+  font-weight: 400;
+  line-height: 1.45;
   color: #1b2828;
   text-decoration: none;
 }
@@ -107,14 +113,17 @@
 
   .footer-links .footer-links-list,
   .footer-links .footer-links-group[open] .footer-links-list {
-    display: flex;
-    padding: 12px 0 0;
+    max-height: none;
+    overflow: visible;
+    opacity: 1;
+    transition: none;
+    padding: 10px 0 0;
   }
 }
 
 @media (width >= 900px) {
   .footer-links .footer-links-rendered {
     grid-template-columns: repeat(4, minmax(0, 1fr));
-    column-gap: 48px;
+    column-gap: 56px;
   }
 }
