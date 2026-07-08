@@ -98,9 +98,14 @@ export function getHotelsRootPathFromLocale(locale) {
 
 export function getGraphqlOrigin() {
   const configuredOrigin = window.iberostarConfig?.graphqlOrigin;
+  const { graphqlHost } = getHotelsConfig();
 
   if (configuredOrigin !== undefined) {
     return configuredOrigin;
+  }
+
+  if (graphqlHost) {
+    return graphqlHost;
   }
 
   const { hostname } = window.location;
