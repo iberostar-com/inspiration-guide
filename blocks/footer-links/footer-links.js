@@ -51,34 +51,31 @@ function getHrefFromField(field) {
 function getItemsFromLinksContainer(linksContainer) {
   if (!linksContainer) return [];
 
-  // Try to find items with data-aue-prop attributes (Universal Editor)
-  const itemsByProp = [...linksContainer.querySelectorAll('[data-aue-prop="linkLabel"]')]
-    .map((labelEl) => {
-      const parent = labelEl.closest('[data-aue-model], [data-aue-prop]')?.parentElement || labelEl.parentElement;
-      return {
-        labelEl,
-        urlEl: parent?.querySelector('[data-aue-prop="linkUrl"]'),
-        newTabEl: parent?.querySelector('[data-aue-prop="linkNewTab"]'),
-        nofollowEl: parent?.querySelector('[data-aue-prop="linkNofollow"]'),
-      };
-    });
+  // Strategy 1: Look for direct children with linkLabel props (UE items)
+  const directItems = [...linksContainer.children]
+    .filter((child) => child.querySelector('[data-aue-prop="linkLabel"]') || child.textContent?.includes('true') || child.textContent?.includes('false'));
 
-  if (itemsByProp.length > 0) {
-    return itemsByProp
-      .map((
-        {
-          labelEl, urlEl, newTabEl, nofollowEl,
-        },
-      ) => ({
-        label: labelEl?.textContent?.trim() || '',
-        url: getHrefFromField(urlEl) || '#',
-        newTab: isTrueValue(newTabEl?.textContent || ''),
-        nofollow: isTrueValue(nofollowEl?.textContent || ''),
-      }))
+  if (directItems.length > 0) {
+    return directItems
+      .map((itemContainer) => {
+        const labelEl = itemContainer.querySelector('[data-aue-prop="linkLabel"]');
+        const urlEl = itemContainer.querySelector('[data-aue-prop="linkUrl"]');
+        const newTabEl = itemContainer.querySelector('[data-aue-prop="linkNewTab"]');
+        const nofollowEl = itemContainer.querySelector('[data-aue-prop="linkNofollow"]');
+
+        const label = labelEl?.textContent?.trim() || '';
+        const url = getHrefFromField(urlEl) || '#';
+        const newTab = isTrueValue(newTabEl?.textContent || '');
+        const nofollow = isTrueValue(nofollowEl?.textContent || '');
+
+        return {
+          label, url, newTab, nofollow,
+        };
+      })
       .filter((item) => item.label);
   }
 
-  // Fallback: legacy prop method
+  // Strategy 2: Legacy prop method
   const labels = getPropValues(linksContainer, 'linkLabel');
   const urls = getPropValues(linksContainer, 'linkUrl', getHrefFromField);
   const newTabs = getPropValues(linksContainer, 'linkNewTab').map((v) => isTrueValue(v));
@@ -178,17 +175,18 @@ function collectGroups(block) {
 
   if (groups.length) {
     return groups.map((group) => {
-      const titleEl = getPropElement(group, 'title') || group;
+      // Extract ONLY the title element (with data-aue-prop="title")
+      const titleEl = getPropElement(group, 'title');
       const linksContainer = getLinksContainer(group);
-      // Look for items either by data-aue-model or within the links container
-      const linkRows = linksContainer
-        ? [...linksContainer.querySelectorAll('[data-aue-model="footer-link-item"], [data-aue-prop*="linkLabel"]')]
-        : [...group.querySelectorAll('[data-aue-model="footer-link-item"]')];
+
+      // Get title text from the title element only
+      const titleText = titleEl?.textContent?.trim() || '';
 
       return {
         titleElement: titleEl,
+        titleText,
         sourceNodes: [group],
-        linkRows,
+        linkRows: [],
         linksContainer,
       };
     });
@@ -199,12 +197,18 @@ function collectGroups(block) {
     .filter((group) => !group.closest('.footer-links-rendered'));
 
   if (classGroups.length) {
-    return classGroups.map((group) => ({
-      titleElement: group.querySelector('.footer-links-group-title') || group.firstElementChild || group,
-      sourceNodes: [group],
-      linkRows: [...group.querySelectorAll('.footer-link-item')],
-      linksContainer: group.querySelector('.footer-links-links') || null,
-    }));
+    return classGroups.map((group) => {
+      const titleEl = group.querySelector('.footer-links-group-title') || group.firstElementChild;
+      const titleText = titleEl?.textContent?.trim() || '';
+
+      return {
+        titleElement: titleEl,
+        titleText,
+        sourceNodes: [group],
+        linkRows: [...group.querySelectorAll('.footer-link-item')],
+        linksContainer: group.querySelector('.footer-links-links') || null,
+      };
+    });
   }
 
   // Priority 3: Legacy fallback - direct children as groups
@@ -212,8 +216,12 @@ function collectGroups(block) {
   if (!rows.length) return [];
 
   const titleRow = rows[0];
+  const titleEl = getPropElement(titleRow, 'title') || titleRow;
+  const titleText = titleEl?.textContent?.trim() || '';
+
   return [{
-    titleElement: getPropElement(titleRow, 'title') || titleRow,
+    titleElement: titleEl,
+    titleText,
     sourceNodes: rows,
     linkRows: rows.slice(1),
     linksContainer: null,
@@ -283,7 +291,8 @@ export default function decorate(block) {
   rendered.className = 'footer-links-rendered';
 
   groups.forEach((group) => {
-    const titleText = group.titleElement?.textContent?.trim() || '';
+    // Use pre-computed titleText to avoid getting whole group content
+    const titleText = group.titleText || group.titleElement?.textContent?.trim() || '';
     if (!titleText) return; // Skip groups without title
 
     const details = document.createElement('details');
@@ -295,14 +304,17 @@ export default function decorate(block) {
 
     const titleSpan = document.createElement('span');
     titleSpan.className = 'footer-column-title';
-    titleSpan.textContent = titleText;
+    titleSpan.textContent = titleText; // Only the title text
 
     const chevron = document.createElement('span');
     chevron.className = 'footer-accordion-chevron';
     chevron.setAttribute('aria-hidden', 'true');
 
     summary.append(titleSpan, chevron);
-    moveInstrumentation(group.titleElement, summary);
+    // Move instrumentation ONLY from the title element
+    if (group.titleElement) {
+      moveInstrumentation(group.titleElement, titleSpan);
+    }
 
     const ul = document.createElement('ul');
     ul.className = 'footer-links-list';
