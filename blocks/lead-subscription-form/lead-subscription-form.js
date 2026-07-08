@@ -39,12 +39,16 @@ function getBackgroundVariant(value) {
   return normalized === 'white' ? 'white' : 'grey';
 }
 
+function isLocalHost(hostname) {
+  return ['localhost', '127.0.0.1', '[::1]'].includes(hostname);
+}
+
 function isEdgeDeliveryHost(hostname) {
   return hostname.endsWith('.aem.live') || hostname.endsWith('.aem.page');
 }
 
-function isLocalHost(hostname) {
-  return ['localhost', '127.0.0.1', '[::1]'].includes(hostname);
+function isAuthorHost(hostname) {
+  return hostname.startsWith('author-');
 }
 
 function shouldUseAemPublishOrigin(url) {
@@ -54,6 +58,15 @@ function shouldUseAemPublishOrigin(url) {
 
   return isEdgeDeliveryHost(window.location.hostname) || isLocalHost(window.location.hostname);
 }
+
+function ensureAuthorCountryCookie(country) {
+  if (!country || !isAuthorHost(window.location.hostname)) {
+    return;
+  }
+
+  document.cookie = `x-aem-emulated-country=${encodeURIComponent(country)}; path=/; SameSite=Lax`;
+}
+
 function buildNewsletterUrl() {
   let url = new URL(NEWSLETTER_PATH, window.location.origin);
   if (shouldUseAemPublishOrigin(url)) {
@@ -178,11 +191,22 @@ async function submitNewsletter(state) {
     setLoading(state, true);
 
     const country = await getClientCountry();
-    const response = await fetch(buildNewsletterUrl(), {
-      method: 'POST',
-      headers: {
+    ensureAuthorCountryCookie(country);
+    const requestUrl = buildNewsletterUrl();
+    const requestOrigin = new URL(requestUrl, window.location.origin).origin;
+    const isCrossOrigin = requestOrigin !== window.location.origin;
+    const headers = isCrossOrigin
+      ? {
+        Accept: 'application/json',
+      }
+      : {
+        Accept: 'application/json',
         'Content-Type': 'application/json',
-      },
+      };
+
+    const response = await fetch(requestUrl, {
+      method: 'POST',
+      headers,
       body: JSON.stringify({
         email: state.emailField.value.trim().toLowerCase(),
         pagePath: window.location.pathname,
