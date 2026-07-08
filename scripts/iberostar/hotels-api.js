@@ -11,11 +11,11 @@ const GRAPHQL_ORIGINS_BY_HOST = {
   'aem-grspre.iberostar.com': '',
   'aem-grsdev.iberostar.com': '',
 
-  'main--inspiration-guide--iberostar-com.aem.live': 'https://publish-p179213-e1886364.adobeaemcloud.com',
-  'main--inspiration-guide--iberostar-com.aem.page': 'https://publish-p179213-e1886364.adobeaemcloud.com',
+  // 'main--inspiration-guide--iberostar-com.aem.live': 'https://publish-p179213-e1886364.adobeaemcloud.com',
+  // 'main--inspiration-guide--iberostar-com.aem.page': 'https://publish-p179213-e1886364.adobeaemcloud.com',
 
-  'main--inspiration-guide-dev--iberostar-com.aem.live': 'https://publish-p179213-e1898042.adobeaemcloud.com',
-  'main--inspiration-guide-dev--iberostar-com.aem.page': 'https://publish-p179213-e1898042.adobeaemcloud.com',
+  // 'main--inspiration-guide-dev--iberostar-com.aem.live': 'https://publish-p179213-e1898042.adobeaemcloud.com',
+  // 'main--inspiration-guide-dev--iberostar-com.aem.page': 'https://publish-p179213-e1898042.adobeaemcloud.com',
 };
 
 function warnOnce(key, message, details = null) {
