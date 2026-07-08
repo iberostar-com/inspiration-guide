@@ -344,7 +344,15 @@ function sortArticles(articles, order) {
 
 function articleHasTag(article, tag) {
   const target = tag.trim().toLowerCase();
-  return (article.tags || []).some((value) => `${value}`.trim().toLowerCase() === target);
+  if (!target) return false;
+
+  return (article.tags || []).some((value) => {
+    const normalized = `${value || ''}`.trim().toLowerCase();
+    if (!normalized) return false;
+    if (normalized === target) return true;
+    return normalized.split('/').pop().trim() === target
+      || normalized.split(':').pop().trim() === target;
+  });
 }
 
 function readPageSize(block) {
