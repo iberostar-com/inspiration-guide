@@ -1,7 +1,9 @@
+import { moveInstrumentation } from '../../scripts/scripts.js';
 import { resolveFragmentPath } from '../../scripts/iberostar/fragments.js';
 import { loadFragment } from '../fragment/fragment.js';
 
 const DEFAULT_FOOTER_PATH = '/footer';
+let accordionCount = 0;
 
 function resolveFooterPath() {
   return resolveFragmentPath('footer', DEFAULT_FOOTER_PATH);
@@ -40,6 +42,46 @@ function classifySections(sections) {
   };
 }
 
+function decorateColumnAccordion(section) {
+  const wrapper = section.querySelector('.default-content-wrapper');
+  if (!wrapper) return;
+
+  const titleEl = wrapper.querySelector('p, h2, h3, h4, h5, h6');
+  if (!titleEl) return;
+
+  const list = wrapper.querySelector('ul');
+  if (!list) return;
+
+  accordionCount += 1;
+  const listId = `footer-links-${accordionCount}`;
+  list.id = listId;
+
+  const btn = document.createElement('button');
+  btn.className = 'footer-accordion-toggle';
+  btn.type = 'button';
+  btn.setAttribute('aria-expanded', 'false');
+  btn.setAttribute('aria-controls', listId);
+
+  const titleSpan = document.createElement('span');
+  titleSpan.className = 'footer-column-title';
+  titleSpan.textContent = titleEl.textContent;
+
+  const chevron = document.createElement('span');
+  chevron.className = 'footer-accordion-chevron';
+  chevron.setAttribute('aria-hidden', 'true');
+
+  btn.append(titleSpan, chevron);
+
+  // Transfer UE instrumentation so the rendered button remains editable
+  moveInstrumentation(titleEl, btn);
+  titleEl.replaceWith(btn);
+
+  btn.addEventListener('click', () => {
+    const expanded = btn.getAttribute('aria-expanded') === 'true';
+    btn.setAttribute('aria-expanded', expanded ? 'false' : 'true');
+  });
+}
+
 function decorateFooterSections(footer) {
   const sections = [...footer.children];
   const { brand, columns, meta } = classifySections(sections);
@@ -60,6 +102,7 @@ function decorateFooterSections(footer) {
 
     columns.forEach((section, index) => {
       section.classList.add('footer-section', 'footer-column', `footer-column-${index + 1}`);
+      decorateColumnAccordion(section);
       links.append(section);
     });
 
