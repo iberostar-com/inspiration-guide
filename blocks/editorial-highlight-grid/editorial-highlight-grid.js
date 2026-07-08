@@ -52,16 +52,20 @@ function readVariant(block) {
 
 // ---------- default variant (auto/manual list with "load more") ----------
 
-function getContextTag() {
+function getContextSegment(name) {
   const segments = window.location.pathname.split('/').filter(Boolean);
-  const idx = segments.indexOf('tag');
-  return idx > -1 ? segments[idx + 1] || '' : '';
+  const idx = segments.indexOf(name);
+  if (idx < 0) return '';
+  const value = segments[idx + 1] || '';
+  return decodeURIComponent(value).replace(/\.html?$/i, '').trim().toLowerCase();
+}
+
+function getContextTag() {
+  return getContextSegment('tag');
 }
 
 function getContextCategory() {
-  const segments = window.location.pathname.split('/').filter(Boolean);
-  const idx = segments.indexOf('category');
-  return idx > -1 ? segments[idx + 1] || '' : '';
+  return getContextSegment('category');
 }
 
 function manualItems(block) {
@@ -319,8 +323,16 @@ function readPageSize(block) {
 
 function articleHasCategory(article, category) {
   const target = category.trim().toLowerCase();
-  return [article.categorySlug, article.category]
-    .some((value) => `${value || ''}`.trim().toLowerCase() === target);
+  if (!target) return false;
+
+  return [article.categorySlug, article.category, article.categoryPath]
+    .some((value) => {
+      const normalized = `${value || ''}`.trim().toLowerCase();
+      if (!normalized) return false;
+      if (normalized === target) return true;
+      return normalized.split('/').pop() === target
+        || normalized.split(':').pop().trim() === target;
+    });
 }
 
 function buildFeed(block, matched, pageSize) {
