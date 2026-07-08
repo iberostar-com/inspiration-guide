@@ -1,7 +1,7 @@
 const HEADING_TAGS = new Set(['h1', 'h2', 'h3']);
 
 function getSourceRows(block) {
-  return [...block.children].filter((row) => !row.classList.contains('tag-header-rendered'));
+  return [...block.children].filter((row) => !row.classList.contains('hero-tag-name-rendered'));
 }
 
 function propText(block, prop) {
@@ -59,18 +59,18 @@ export default function decorate(block) {
   const title = authored || tagLabel(getCurrentTag());
 
   rows.forEach((row) => {
-    row.classList.add('tag-header-source');
+    row.classList.add('hero-tag-name-source');
     row.setAttribute('aria-hidden', 'true');
   });
 
   const rendered = document.createElement('div');
-  rendered.className = 'tag-header-rendered';
+  rendered.className = 'hero-tag-name-rendered';
 
   const heading = document.createElement('div');
-  heading.className = 'tag-header-heading';
+  heading.className = 'hero-tag-name-heading';
 
   const titleEl = document.createElement(headingTag);
-  titleEl.className = 'tag-header-title';
+  titleEl.className = 'hero-tag-name-title';
   titleEl.textContent = title;
 
   heading.append(titleEl);

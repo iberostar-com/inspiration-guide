@@ -1550,7 +1550,7 @@
         "value": ""
       },
       {
-        "component": "reference",
+        "component": "aem-content",
         "valueType": "string",
         "name": "linkUrl",
         "label": "URL",
@@ -1597,7 +1597,7 @@
         "value": ""
       },
       {
-        "component": "reference",
+        "component": "aem-content",
         "valueType": "string",
         "name": "linkUrl",
         "label": "URL",
@@ -1841,6 +1841,35 @@
           {
             "name": "Heading 4",
             "value": "h4"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "hero-tag-name",
+    "fields": [
+      {
+        "component": "text",
+        "valueType": "string",
+        "name": "title",
+        "label": "Title (optional, overrides current tag)",
+        "value": ""
+      },
+      {
+        "component": "select",
+        "valueType": "string",
+        "name": "titleHeading",
+        "label": "Title Heading Level",
+        "value": "h1",
+        "options": [
+          {
+            "name": "H1",
+            "value": "h1"
+          },
+          {
+            "name": "H2",
+            "value": "h2"
           }
         ]
       }
@@ -2529,35 +2558,6 @@
           {
             "name": "New tab",
             "value": "_blank"
-          }
-        ]
-      }
-    ]
-  },
-  {
-    "id": "tag-header",
-    "fields": [
-      {
-        "component": "text",
-        "valueType": "string",
-        "name": "title",
-        "label": "Title (optional, overrides current tag)",
-        "value": ""
-      },
-      {
-        "component": "select",
-        "valueType": "string",
-        "name": "titleHeading",
-        "label": "Title Heading Level",
-        "value": "h1",
-        "options": [
-          {
-            "name": "H1",
-            "value": "h1"
-          },
-          {
-            "name": "H2",
-            "value": "h2"
           }
         ]
       }
