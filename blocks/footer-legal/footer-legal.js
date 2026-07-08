@@ -1,26 +1,54 @@
 import { moveInstrumentation } from '../../scripts/scripts.js';
 
 function getSourceRows(block) {
+  const modelRows = [...block.querySelectorAll('[data-aue-model="footer-legal-item"]')]
+    .filter((row) => !row.closest('.footer-legal-nav'));
+
+  if (modelRows.length) {
+    return modelRows;
+  }
+
+  const classRows = [...block.querySelectorAll('.footer-legal-item-source')]
+    .filter((row) => !row.closest('.footer-legal-nav'));
+
+  if (classRows.length) {
+    return classRows;
+  }
+
   return [...block.children].filter((row) => !row.classList.contains('footer-legal-nav'));
 }
 
-function getCellText(row, index) {
-  const cells = [...row.children];
+function getCellText(container, index) {
+  const cells = [...container.children];
   return cells[index]?.textContent?.trim() || '';
 }
 
-function isChecked(row, index) {
-  const text = getCellText(row, index).toLowerCase();
+function getPropElement(container, prop) {
+  if (container?.matches?.(`[data-aue-prop="${prop}"]`)) return container;
+  return container?.querySelector?.(`[data-aue-prop="${prop}"]`) || null;
+}
+
+function isChecked(row, prop, fallbackIndex) {
+  const rawValue = getPropElement(row, prop)?.textContent?.trim()
+    || getCellText(row, fallbackIndex);
+  const text = rawValue.toLowerCase();
   return text === 'true' || text === 'on' || text === 'yes';
 }
 
+function getHref(row) {
+  const propEl = getPropElement(row, 'linkUrl');
+  const anchor = propEl?.querySelector?.('a[href]') || row.querySelector?.('a[href]');
+  if (anchor) return anchor.getAttribute('href')?.trim() || '#';
+  return getCellText(row, 1) || '#';
+}
+
 function buildLinkItem(row) {
-  const label = getCellText(row, 0);
+  const label = getPropElement(row, 'linkLabel')?.textContent?.trim() || getCellText(row, 0);
   if (!label) return null;
 
-  const url = getCellText(row, 1) || '#';
-  const newTab = isChecked(row, 2);
-  const nofollow = isChecked(row, 3);
+  const url = getHref(row);
+  const newTab = isChecked(row, 'linkNewTab', 2);
+  const nofollow = isChecked(row, 'linkNofollow', 3);
 
   const li = document.createElement('li');
   li.className = 'footer-legal-item';

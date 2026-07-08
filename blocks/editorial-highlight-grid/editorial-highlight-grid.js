@@ -484,8 +484,14 @@ function buildFeed(block, matched, pageSize) {
 }
 
 async function decorateTag(block) {
-  const tags = getCurrentTags();
   const all = await getArticles();
+
+  if (getArticleRows(block).length) {
+    renderManualGrid(block, all);
+    return;
+  }
+
+  const tags = getCurrentTags();
   const matched = tags.length
     ? all.filter((article) => tags.some((tag) => articleHasTag(article, tag)))
     : all;
