@@ -476,6 +476,84 @@
           }
         },
         {
+          "title": "Footer Legal",
+          "id": "footer-legal",
+          "plugins": {
+            "xwalk": {
+              "page": {
+                "resourceType": "core/franklin/components/block/v1/block",
+                "template": {
+                  "name": "Footer Legal",
+                  "model": "footer-legal",
+                  "filter": "footer-legal"
+                }
+              }
+            }
+          }
+        },
+        {
+          "title": "Footer Legal Item",
+          "id": "footer-legal-item",
+          "plugins": {
+            "xwalk": {
+              "page": {
+                "resourceType": "core/franklin/components/block/v1/block/item",
+                "template": {
+                  "name": "Legal Link",
+                  "model": "footer-legal-item"
+                }
+              }
+            }
+          }
+        },
+        {
+          "title": "Footer Links",
+          "id": "footer-links",
+          "plugins": {
+            "xwalk": {
+              "page": {
+                "resourceType": "core/franklin/components/block/v1/block",
+                "template": {
+                  "name": "Footer Links",
+                  "model": "footer-links",
+                  "filter": "footer-links"
+                }
+              }
+            }
+          }
+        },
+        {
+          "title": "Footer Link Item",
+          "id": "footer-link-item",
+          "plugins": {
+            "xwalk": {
+              "page": {
+                "resourceType": "core/franklin/components/block/v1/block/item",
+                "template": {
+                  "name": "Link",
+                  "model": "footer-link-item"
+                }
+              }
+            }
+          }
+        },
+        {
+          "title": "Footer Logo",
+          "id": "footer-logo",
+          "plugins": {
+            "xwalk": {
+              "page": {
+                "resourceType": "core/franklin/components/block/v1/block",
+                "template": {
+                  "name": "Footer Logo",
+                  "model": "footer-logo",
+                  "filter": "footer-logo"
+                }
+              }
+            }
+          }
+        },
+        {
           "title": "Form",
           "id": "form",
           "plugins": {

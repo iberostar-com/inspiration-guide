@@ -98,7 +98,7 @@ function decorateFooterSections(footer) {
 
   if (columns.length) {
     const links = document.createElement('div');
-    links.className = 'footer-links';
+    links.className = 'footer-columns';
 
     columns.forEach((section, index) => {
       section.classList.add('footer-section', 'footer-column', `footer-column-${index + 1}`);

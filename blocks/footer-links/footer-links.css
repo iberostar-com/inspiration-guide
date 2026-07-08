@@ -1,0 +1,4 @@
+/* footer-links block — source rows hidden, accordion styles inherited from footer.css */
+.footer-links [aria-hidden='true'] {
+  display: none;
+}

@@ -1,0 +1,11 @@
+/* footer-logo — container for the Header Brand child block */
+
+.footer-logo {
+  display: flex;
+  align-items: flex-start;
+}
+
+/* Allow extra logo sizing when inside footer vs header */
+.footer-logo .header-brand.in-footer .header-brand-link img {
+  width: 160px;
+}

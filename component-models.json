@@ -1518,6 +1518,88 @@
     ]
   },
   {
+    "id": "footer-legal",
+    "fields": []
+  },
+  {
+    "id": "footer-legal-item",
+    "fields": [
+      {
+        "component": "text",
+        "valueType": "string",
+        "name": "linkLabel",
+        "label": "Label",
+        "value": ""
+      },
+      {
+        "component": "text",
+        "valueType": "string",
+        "name": "linkUrl",
+        "label": "URL",
+        "value": ""
+      },
+      {
+        "component": "checkbox",
+        "valueType": "boolean",
+        "name": "linkNewTab",
+        "label": "Open in new tab"
+      },
+      {
+        "component": "checkbox",
+        "valueType": "boolean",
+        "name": "linkNofollow",
+        "label": "rel=nofollow"
+      }
+    ]
+  },
+  {
+    "id": "footer-links",
+    "fields": [
+      {
+        "component": "text",
+        "valueType": "string",
+        "name": "title",
+        "label": "Column Title",
+        "value": ""
+      }
+    ]
+  },
+  {
+    "id": "footer-link-item",
+    "fields": [
+      {
+        "component": "text",
+        "valueType": "string",
+        "name": "linkLabel",
+        "label": "Label",
+        "value": ""
+      },
+      {
+        "component": "text",
+        "valueType": "string",
+        "name": "linkUrl",
+        "label": "URL",
+        "value": ""
+      },
+      {
+        "component": "checkbox",
+        "valueType": "boolean",
+        "name": "linkNewTab",
+        "label": "Open in new tab"
+      },
+      {
+        "component": "checkbox",
+        "valueType": "boolean",
+        "name": "linkNofollow",
+        "label": "rel=nofollow"
+      }
+    ]
+  },
+  {
+    "id": "footer-logo",
+    "fields": []
+  },
+  {
     "id": "form",
     "fields": [
       {

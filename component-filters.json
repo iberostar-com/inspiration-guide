@@ -43,7 +43,10 @@
       "text",
       "title",
       "topic-tag-cloud",
-      "category-hero"
+      "category-hero",
+      "footer-links",
+      "footer-logo",
+      "footer-legal"
     ]
   },
   {
@@ -709,6 +712,24 @@
     "id": "featured-articles",
     "components": [
       "featured-article"
+    ]
+  },
+  {
+    "id": "footer-legal",
+    "components": [
+      "footer-legal-item"
+    ]
+  },
+  {
+    "id": "footer-links",
+    "components": [
+      "footer-link-item"
+    ]
+  },
+  {
+    "id": "footer-logo",
+    "components": [
+      "header-brand"
     ]
   },
   {
