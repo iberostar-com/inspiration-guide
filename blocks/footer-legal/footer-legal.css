@@ -1,0 +1,56 @@
+/* footer-legal — flat list of legal links
+   Figma ref: 194:15488 (mobile) / 135:1472 (desktop)
+   Typography: Inter Regular 14px #1b2828
+   Separators: · with 16px gap each side (mobile), 24px (desktop) */
+
+.footer-legal [aria-hidden='true'] {
+  display: none;
+}
+
+.footer-legal-nav {
+  display: flex;
+  align-items: center;
+}
+
+.footer-legal-list {
+  display: flex;
+  flex-wrap: wrap;
+  row-gap: 8px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.footer-legal-item {
+  display: inline-flex;
+  align-items: center;
+  font-size: 0.875rem;   /* 14px */
+  font-weight: 400;       /* Regular */
+  line-height: 1.4;
+  color: #1b2828;
+}
+
+/* Dot separator — 16px each side on mobile to match Figma gap: 16px */
+.footer-legal-item:not(:last-child)::after {
+  content: '·';
+  display: inline-block;
+  margin: 0 16px;
+  color: #1b2828;
+}
+
+.footer-legal-item a:any-link {
+  color: inherit;
+  text-decoration: none;
+}
+
+.footer-legal-item a:hover,
+.footer-legal-item a:focus-visible {
+  text-decoration: underline;
+}
+
+/* Desktop: wider dot gap to match Figma gap: 24px */
+@media (width >= 900px) {
+  .footer-legal-item:not(:last-child)::after {
+    margin: 0 24px;
+  }
+}

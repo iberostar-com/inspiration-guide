@@ -87,7 +87,10 @@
         "text",
         "title",
         "topic-tag-cloud",
-        "category-hero"
+        "category-hero",
+        "footer-links",
+        "footer-logo",
+        "footer-legal"
       ]
     }
   ]
