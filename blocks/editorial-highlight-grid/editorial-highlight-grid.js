@@ -231,7 +231,7 @@ function enhanceCard(card) {
   }
 }
 
-async function decorateHome(block) {
+function renderManualGrid(block, all) {
   const configRows = getConfigRows(block);
   const title = textByProp(block, 'title') || configRows[1]?.textContent?.trim() || '';
   const levels = configRows
@@ -240,7 +240,6 @@ async function decorateHome(block) {
   const titleHeading = sanitizeHeading(levels[0], 'h2');
   const cardHeading = sanitizeHeading(levels[1], 'h3');
 
-  const all = await getArticles();
   const isEditor = !!block.closest('[data-aue-resource]');
 
   block.classList.add('editorial-highlight-grid-home');
@@ -283,6 +282,11 @@ async function decorateHome(block) {
   rendered.append(list);
 
   block.replaceChildren(rendered);
+}
+
+async function decorateHome(block) {
+  const all = await getArticles();
+  renderManualGrid(block, all);
 }
 
 // ---------- tag variant (feed of articles for the current tag page) ----------
@@ -460,20 +464,16 @@ async function decorateTag(block) {
 
 async function decorateCategory(block) {
   const all = await getArticles();
-  const refRows = getArticleRows(block);
 
-  let matched;
-  if (refRows.length) {
-    matched = refRows
-      .map((row) => findArticle(all, getRefPath(row)))
-      .filter(Boolean);
-  } else {
-    const category = getContextCategory();
-    matched = category
-      ? all.filter((article) => articleHasCategory(article, category))
-      : all;
+  if (getArticleRows(block).length) {
+    renderManualGrid(block, all);
+    return;
   }
 
+  const category = getContextCategory();
+  const matched = category
+    ? all.filter((article) => articleHasCategory(article, category))
+    : all;
   buildFeed(block, matched, readPageSize(block));
 }
 
