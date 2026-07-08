@@ -16,7 +16,8 @@ function sanitizeHeading(value, fallback) {
 function getCurrentTag() {
   const segments = window.location.pathname.split('/').filter(Boolean);
   const idx = segments.indexOf('tag');
-  return idx > -1 ? decodeURIComponent(segments[idx + 1] || '') : '';
+  if (idx < 0) return '';
+  return decodeURIComponent(segments[idx + 1] || '').replace(/\.html?$/i, '');
 }
 
 function tagLabel(slug) {
