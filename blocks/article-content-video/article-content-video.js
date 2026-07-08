@@ -23,6 +23,26 @@ function getPropElementByNames(block, propNames) {
     .find(Boolean) || null;
 }
 
+function getRowValue(row) {
+  if (!row) return '';
+
+  const directSource = row.querySelector('source[src]')?.getAttribute('src')
+    || row.querySelector('video[src]')?.getAttribute('src');
+  if (directSource) return directSource;
+
+  const datasetSource = row.dataset?.src
+    || row.dataset?.videoSrc
+    || row.dataset?.assetReference
+    || row.getAttribute('data-src')
+    || row.getAttribute('data-video-src');
+  if (datasetSource) return datasetSource;
+
+  const link = row.querySelector('a[href]')?.getAttribute('href');
+  if (link) return link;
+
+  return row.textContent?.trim() || '';
+}
+
 function getVideoUrl(block) {
   const videoField = getPropElementByNames(block, ['videoDam', 'youtubeVideoId', 'videoCf', 'video']);
   const directSource = videoField?.querySelector('source[src]')?.getAttribute('src')
@@ -58,6 +78,12 @@ function getVideoUrl(block) {
 function getVideoType(block) {
   const typeField = getPropElement(block, 'videoType');
   const value = typeField?.textContent?.trim().toLowerCase() || '';
+  if (['dam', 'youtube'].includes(value)) return value;
+
+  // In CDN pages data-aue-prop can be stripped; fallback to authored row order.
+  const fallbackType = getRowValue(getSourceRows(block)[0]).toLowerCase();
+  if (['dam', 'youtube'].includes(fallbackType)) return fallbackType;
+
   return ['dam', 'youtube'].includes(value) ? value : 'dam';
 }
 
@@ -84,10 +110,18 @@ function getFieldValue(block, propNames) {
 
 function getVideoReference(block) {
   const videoType = getVideoType(block);
+  const fromProps = videoType === 'youtube'
+    ? getFieldValue(block, ['youtubeVideoId', 'videoCf', 'video'])
+    : getFieldValue(block, ['videoDam', 'videoCf', 'video']);
+
+  if (fromProps) return fromProps;
+
+  const sourceRows = getSourceRows(block);
   if (videoType === 'youtube') {
-    return getFieldValue(block, ['youtubeVideoId', 'videoCf', 'video']);
+    return getRowValue(sourceRows[2]) || getRowValue(sourceRows[1]);
   }
-  return getFieldValue(block, ['videoDam', 'videoCf', 'video']);
+
+  return getRowValue(sourceRows[1]) || getRowValue(sourceRows[2]);
 }
 
 function isLikelyVideoUrl(url) {
