@@ -25,23 +25,7 @@
             "resourceType": "core/franklin/components/block/v1/block",
             "template": {
               "name": "List Group",
-              "model": "footer-links-group",
-              "filter": "footer-links-group"
-            }
-          }
-        }
-      }
-    },
-    {
-      "title": "Footer Link Item",
-      "id": "footer-link-item",
-      "plugins": {
-        "xwalk": {
-          "page": {
-            "resourceType": "core/franklin/components/block/v1/block/item",
-            "template": {
-              "name": "Link",
-              "model": "footer-link-item"
+              "model": "footer-links-group"
             }
           }
         }
@@ -62,37 +46,40 @@
           "name": "title",
           "label": "List Title",
           "value": ""
-        }
-      ]
-    },
-    {
-      "id": "footer-link-item",
-      "fields": [
-        {
-          "component": "text",
-          "valueType": "string",
-          "name": "linkLabel",
-          "label": "Label",
-          "value": ""
         },
         {
-          "component": "aem-content",
-          "valueType": "string",
-          "name": "linkUrl",
-          "label": "URL",
-          "value": ""
-        },
-        {
-          "component": "checkbox",
-          "valueType": "boolean",
-          "name": "linkNewTab",
-          "label": "Open in new tab"
-        },
-        {
-          "component": "checkbox",
-          "valueType": "boolean",
-          "name": "linkNofollow",
-          "label": "rel=nofollow"
+          "component": "container",
+          "name": "links",
+          "label": "Links",
+          "multi": true,
+          "fields": [
+            {
+              "component": "text",
+              "valueType": "string",
+              "name": "linkLabel",
+              "label": "Label",
+              "value": ""
+            },
+            {
+              "component": "aem-content",
+              "valueType": "string",
+              "name": "linkUrl",
+              "label": "URL",
+              "value": ""
+            },
+            {
+              "component": "checkbox",
+              "valueType": "boolean",
+              "name": "linkNewTab",
+              "label": "Open in new tab"
+            },
+            {
+              "component": "checkbox",
+              "valueType": "boolean",
+              "name": "linkNofollow",
+              "label": "rel=nofollow"
+            }
+          ]
         }
       ]
     }
@@ -102,12 +89,6 @@
       "id": "footer-links",
       "components": [
         "footer-links-group"
-      ]
-    },
-    {
-      "id": "footer-links-group",
-      "components": [
-        "footer-link-item"
       ]
     }
   ]

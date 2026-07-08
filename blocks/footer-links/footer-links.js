@@ -15,6 +15,10 @@ function getModelElement(container, model) {
   return container?.querySelector?.(`[data-aue-model="${model}"]`) || null;
 }
 
+function getLinksContainer(group) {
+  return getPropElement(group, 'links') || group.querySelector?.('[data-aue-prop="links"]') || null;
+}
+
 function getBoolFromRow(row, prop, fallbackIndex) {
   const propEl = getPropElement(row, prop);
   const text = (propEl?.textContent?.trim() || getCellText(row, fallbackIndex)).toLowerCase();
@@ -66,6 +70,7 @@ function collectGroups(block) {
       titleElement: getPropElement(group, 'title') || group,
       sourceNodes: [group],
       linkRows: [...group.querySelectorAll('[data-aue-model="footer-link-item"]')],
+      linksContainer: getLinksContainer(group),
     }));
   }
 
@@ -77,6 +82,7 @@ function collectGroups(block) {
       titleElement: group.querySelector('.footer-links-group-title') || group.firstElementChild || group,
       sourceNodes: [group],
       linkRows: [...group.querySelectorAll('.footer-link-item')],
+      linksContainer: group.querySelector('.footer-links-links') || null,
     }));
   }
 
@@ -89,6 +95,7 @@ function collectGroups(block) {
     titleElement: getPropElement(titleRow, 'title') || titleRow,
     sourceNodes: rows,
     linkRows: rows.slice(1),
+    linksContainer: null,
   }];
 }
 
@@ -127,7 +134,11 @@ export default function decorate(block) {
     const ul = document.createElement('ul');
     ul.className = 'footer-links-list';
 
-    group.linkRows.forEach((row) => {
+    const linkRows = group.linksContainer
+      ? [...group.linksContainer.children]
+      : group.linkRows;
+
+    linkRows.forEach((row) => {
       const li = buildLinkItem(getModelElement(row, 'footer-link-item') || row);
       if (li) ul.append(li);
     });
