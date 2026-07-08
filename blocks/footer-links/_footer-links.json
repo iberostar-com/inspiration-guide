@@ -17,6 +17,22 @@
       }
     },
     {
+      "title": "Footer Links Group",
+      "id": "footer-links-group",
+      "plugins": {
+        "xwalk": {
+          "page": {
+            "resourceType": "core/franklin/components/block/v1/block/item",
+            "template": {
+              "name": "List Group",
+              "model": "footer-links-group",
+              "filter": "footer-links-group"
+            }
+          }
+        }
+      }
+    },
+    {
       "title": "Footer Link Item",
       "id": "footer-link-item",
       "plugins": {
@@ -35,12 +51,16 @@
   "models": [
     {
       "id": "footer-links",
+      "fields": []
+    },
+    {
+      "id": "footer-links-group",
       "fields": [
         {
           "component": "text",
           "valueType": "string",
           "name": "title",
-          "label": "Column Title",
+          "label": "List Title",
           "value": ""
         }
       ]
@@ -56,7 +76,7 @@
           "value": ""
         },
         {
-          "component": "text",
+          "component": "reference",
           "valueType": "string",
           "name": "linkUrl",
           "label": "URL",
@@ -80,6 +100,12 @@
   "filters": [
     {
       "id": "footer-links",
+      "components": [
+        "footer-links-group"
+      ]
+    },
+    {
+      "id": "footer-links-group",
       "components": [
         "footer-link-item"
       ]

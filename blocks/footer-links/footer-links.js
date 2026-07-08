@@ -1,30 +1,43 @@
 import { moveInstrumentation } from '../../scripts/scripts.js';
 
-let accordionCount = 0;
-
-function getSourceRows(block) {
-  return [...block.children].filter((row) => !row.classList.contains('footer-links-rendered'));
-}
-
-function getCellText(row, index) {
-  const cells = [...row.children];
+function getCellText(container, index) {
+  const cells = [...container.children];
   return cells[index]?.textContent?.trim() || '';
 }
 
-function isChecked(row, index) {
-  const text = getCellText(row, index).toLowerCase();
+function getPropElement(container, prop) {
+  if (container?.matches?.(`[data-aue-prop="${prop}"]`)) return container;
+  return container?.querySelector?.(`[data-aue-prop="${prop}"]`) || null;
+}
+
+function getModelElement(container, model) {
+  if (container?.matches?.(`[data-aue-model="${model}"]`)) return container;
+  return container?.querySelector?.(`[data-aue-model="${model}"]`) || null;
+}
+
+function getBoolFromRow(row, prop, fallbackIndex) {
+  const propEl = getPropElement(row, prop);
+  const text = (propEl?.textContent?.trim() || getCellText(row, fallbackIndex)).toLowerCase();
   return text === 'true' || text === 'on' || text === 'yes';
 }
 
+function getHrefFromRow(row, prop, fallbackIndex) {
+  const propEl = getPropElement(row, prop);
+  const anchor = propEl?.querySelector?.('a[href]') || row.querySelector?.('a[href]');
+  if (anchor) return anchor.getAttribute('href')?.trim() || '#';
+  return getCellText(row, fallbackIndex) || '#';
+}
+
 function buildLinkItem(row) {
-  const label = getCellText(row, 0);
+  const label = getPropElement(row, 'linkLabel')?.textContent?.trim() || getCellText(row, 0);
   if (!label) return null;
 
-  const url = getCellText(row, 1) || '#';
-  const newTab = isChecked(row, 2);
-  const nofollow = isChecked(row, 3);
+  const url = getHrefFromRow(row, 'linkUrl', 1);
+  const newTab = getBoolFromRow(row, 'linkNewTab', 2);
+  const nofollow = getBoolFromRow(row, 'linkNofollow', 3);
 
   const li = document.createElement('li');
+  li.className = 'footer-links-item';
   const a = document.createElement('a');
   a.href = url;
   a.textContent = label;
@@ -44,57 +57,86 @@ function buildLinkItem(row) {
   return li;
 }
 
-/**
- * Footer Links block — renders a column title with an accordion-style
- * toggle on mobile and a flat list on tablet/desktop.
- * Content model: row[0] = title, row[1..n] = link items.
- * @param {Element} block
- */
-export default function decorate(block) {
-  const rows = getSourceRows(block);
-  if (!rows.length) return;
+function collectGroups(block) {
+  const groups = [...block.querySelectorAll('[data-aue-model="footer-links-group"]')]
+    .filter((group) => !group.closest('.footer-links-rendered'));
+
+  if (groups.length) {
+    return groups.map((group) => ({
+      titleElement: getPropElement(group, 'title') || group,
+      sourceNodes: [group],
+      linkRows: [...group.querySelectorAll('[data-aue-model="footer-link-item"]')],
+    }));
+  }
+
+  const classGroups = [...block.querySelectorAll('.footer-links-group')]
+    .filter((group) => !group.closest('.footer-links-rendered'));
+
+  if (classGroups.length) {
+    return classGroups.map((group) => ({
+      titleElement: group.querySelector('.footer-links-group-title') || group.firstElementChild || group,
+      sourceNodes: [group],
+      linkRows: [...group.querySelectorAll('.footer-link-item')],
+    }));
+  }
+
+  // Legacy fallback: first row is title, remaining rows are links.
+  const rows = [...block.children].filter((row) => !row.classList.contains('footer-links-rendered'));
+  if (!rows.length) return [];
 
   const titleRow = rows[0];
-  const titleText = getCellText(titleRow, 0);
-  const itemRows = rows.slice(1);
+  return [{
+    titleElement: getPropElement(titleRow, 'title') || titleRow,
+    sourceNodes: rows,
+    linkRows: rows.slice(1),
+  }];
+}
 
-  accordionCount += 1;
-  const listId = `footer-links-list-${accordionCount}`;
-
-  const btn = document.createElement('button');
-  btn.type = 'button';
-  btn.className = 'footer-accordion-toggle';
-  btn.setAttribute('aria-expanded', 'false');
-  btn.setAttribute('aria-controls', listId);
-
-  const titleSpan = document.createElement('span');
-  titleSpan.className = 'footer-column-title';
-  titleSpan.textContent = titleText;
-
-  const chevron = document.createElement('span');
-  chevron.className = 'footer-accordion-chevron';
-  chevron.setAttribute('aria-hidden', 'true');
-
-  btn.append(titleSpan, chevron);
-  moveInstrumentation(titleRow, btn);
-
-  const ul = document.createElement('ul');
-  ul.id = listId;
-
-  itemRows.forEach((row) => {
-    const li = buildLinkItem(row);
-    if (li) ul.append(li);
-  });
+/**
+ * Footer Links block — renders multiple list groups (title + links)
+ * with CSS-driven accordion behavior on mobile.
+ * @param {Element} block The block element
+ */
+export default function decorate(block) {
+  const groups = collectGroups(block);
+  if (!groups.length) return;
 
   const rendered = document.createElement('div');
   rendered.className = 'footer-links-rendered';
-  rendered.append(btn, ul);
 
-  rows.forEach((row) => row.setAttribute('aria-hidden', 'true'));
-  block.append(rendered);
+  groups.forEach((group) => {
+    const titleText = group.titleElement?.textContent?.trim() || '';
+    const details = document.createElement('details');
+    details.className = 'footer-links-group';
+    details.open = true;
 
-  btn.addEventListener('click', () => {
-    const expanded = btn.getAttribute('aria-expanded') === 'true';
-    btn.setAttribute('aria-expanded', expanded ? 'false' : 'true');
+    const summary = document.createElement('summary');
+    summary.className = 'footer-accordion-toggle';
+
+    const titleSpan = document.createElement('span');
+    titleSpan.className = 'footer-column-title';
+    titleSpan.textContent = titleText;
+
+    const chevron = document.createElement('span');
+    chevron.className = 'footer-accordion-chevron';
+    chevron.setAttribute('aria-hidden', 'true');
+
+    summary.append(titleSpan, chevron);
+    moveInstrumentation(group.titleElement, summary);
+
+    const ul = document.createElement('ul');
+    ul.className = 'footer-links-list';
+
+    group.linkRows.forEach((row) => {
+      const li = buildLinkItem(getModelElement(row, 'footer-link-item') || row);
+      if (li) ul.append(li);
+    });
+
+    details.append(summary, ul);
+    rendered.append(details);
+
+    group.sourceNodes.forEach((node) => node.setAttribute('aria-hidden', 'true'));
   });
+
+  block.append(rendered);
 }

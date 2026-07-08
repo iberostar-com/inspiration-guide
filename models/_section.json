@@ -41,6 +41,10 @@
             {
               "name": "Article Sidebar",
               "value": "article-sidebar"
+            },
+            {
+              "name": "Footer Main",
+              "value": "footer-main"
             }
           ]
         }
@@ -90,7 +94,6 @@
         "topic-tag-cloud",
         "category-hero",
         "footer-links",
-        "footer-logo",
         "footer-legal"
       ]
     }
