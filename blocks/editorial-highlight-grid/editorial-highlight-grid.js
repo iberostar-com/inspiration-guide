@@ -68,6 +68,34 @@ function getContextCategory() {
   return getContextSegment('category');
 }
 
+// The current tag/category comes from the page metadata (Article Primary Category /
+// Article Tags), emitted as meta tags. URL segments are only a fallback.
+function getPageMeta(name) {
+  return document.querySelector(`meta[name="${name}"]`)?.content?.trim() || '';
+}
+
+function normalizeSlug(value) {
+  const raw = `${value || ''}`.trim().toLowerCase();
+  if (!raw) return '';
+  const afterNamespace = raw.includes(':') ? raw.split(':').pop() : raw;
+  return afterNamespace.split('/').pop().trim();
+}
+
+function getCurrentCategory() {
+  const fromMeta = normalizeSlug(getPageMeta('article-category') || getPageMeta('article-category-path'));
+  return fromMeta || getContextCategory();
+}
+
+function getCurrentTags() {
+  const fromMeta = getPageMeta('article-tags')
+    .split(/[|,;]/)
+    .map(normalizeSlug)
+    .filter(Boolean);
+  if (fromMeta.length) return fromMeta;
+  const fromUrl = getContextTag();
+  return fromUrl ? [fromUrl] : [];
+}
+
 function manualItems(block) {
   return getArticleRows(block).map((row, index) => {
     const cells = [...row.children];
@@ -456,9 +484,11 @@ function buildFeed(block, matched, pageSize) {
 }
 
 async function decorateTag(block) {
-  const tag = getContextTag();
+  const tags = getCurrentTags();
   const all = await getArticles();
-  const matched = tag ? all.filter((article) => articleHasTag(article, tag)) : all;
+  const matched = tags.length
+    ? all.filter((article) => tags.some((tag) => articleHasTag(article, tag)))
+    : all;
   buildFeed(block, matched, readPageSize(block));
 }
 
@@ -470,7 +500,7 @@ async function decorateCategory(block) {
     return;
   }
 
-  const category = getContextCategory();
+  const category = getCurrentCategory();
   const matched = category
     ? all.filter((article) => articleHasCategory(article, category))
     : all;

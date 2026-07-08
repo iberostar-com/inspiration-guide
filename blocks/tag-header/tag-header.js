@@ -13,11 +13,29 @@ function sanitizeHeading(value, fallback) {
   return HEADING_TAGS.has(tag) ? tag : fallback;
 }
 
+function getPageMeta(name) {
+  return document.querySelector(`meta[name="${name}"]`)?.content?.trim() || '';
+}
+
+function normalizeSlug(value) {
+  const first = `${value || ''}`.split(/[|,;]/)[0].trim().toLowerCase();
+  if (!first) return '';
+  const afterNamespace = first.includes(':') ? first.split(':').pop() : first;
+  return afterNamespace.split('/').pop().trim();
+}
+
 function getCurrentTag() {
+  const fromMeta = normalizeSlug(
+    getPageMeta('article-tags')
+      || getPageMeta('article-category')
+      || getPageMeta('article-category-path'),
+  );
+  if (fromMeta) return fromMeta;
+
   const segments = window.location.pathname.split('/').filter(Boolean);
-  const idx = segments.indexOf('tag');
+  const idx = Math.max(segments.indexOf('tag'), segments.indexOf('category'));
   if (idx < 0) return '';
-  return decodeURIComponent(segments[idx + 1] || '').replace(/\.html?$/i, '');
+  return decodeURIComponent(segments[idx + 1] || '').replace(/\.html?$/i, '').toLowerCase();
 }
 
 function tagLabel(slug) {
