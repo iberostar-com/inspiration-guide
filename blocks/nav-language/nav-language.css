@@ -12,6 +12,11 @@
   color: inherit;
 }
 
+.nav-language-trigger-link {
+  display: inline-block;
+  text-decoration: none;
+}
+
 .nav-language-trigger::after {
   content: "\f19f";
   display: inline-block;
@@ -22,6 +27,10 @@
   font-size: 1em;
   line-height: 1;
   color: currentcolor;
+}
+
+.nav-language-trigger-link::after {
+  display: none;
 }
 
 .nav-language-trigger[aria-expanded='true']::after {

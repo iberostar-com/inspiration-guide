@@ -25,6 +25,48 @@ function getBoolFromRow(row, prop, fallbackIndex) {
   return text === 'true' || text === 'on' || text === 'yes';
 }
 
+function isTrueValue(value = '') {
+  const text = value.toLowerCase();
+  return text === 'true' || text === 'on' || text === 'yes';
+}
+
+function getPropValues(container, propName, getter = (el) => el.textContent?.trim() || '') {
+  if (!container) return [];
+
+  const fields = [...container.querySelectorAll('[data-aue-prop]')]
+    .filter((el) => {
+      const prop = el.getAttribute('data-aue-prop') || '';
+      return prop === propName || prop.endsWith(`_${propName}`);
+    });
+
+  return fields.map(getter).filter((value) => value !== '');
+}
+
+function getHrefFromField(field) {
+  const anchor = field?.querySelector?.('a[href]');
+  if (anchor) return anchor.getAttribute('href')?.trim() || '';
+  return field?.textContent?.trim() || '';
+}
+
+function getItemsFromLinksContainer(linksContainer) {
+  if (!linksContainer) return [];
+
+  const labels = getPropValues(linksContainer, 'linkLabel');
+  const urls = getPropValues(linksContainer, 'linkUrl', getHrefFromField);
+  const newTabs = getPropValues(linksContainer, 'linkNewTab').map((v) => isTrueValue(v));
+  const nofollows = getPropValues(linksContainer, 'linkNofollow').map((v) => isTrueValue(v));
+
+  const size = Math.max(labels.length, urls.length);
+  if (!size) return [];
+
+  return Array.from({ length: size }, (_, i) => ({
+    label: labels[i] || '',
+    url: urls[i] || '#',
+    newTab: newTabs[i] || false,
+    nofollow: nofollows[i] || false,
+  })).filter((item) => item.label);
+}
+
 function getHrefFromRow(row, prop, fallbackIndex) {
   const propEl = getPropElement(row, prop);
   const anchor = propEl?.querySelector?.('a[href]') || row.querySelector?.('a[href]');
@@ -57,6 +99,31 @@ function buildLinkItem(row) {
   }
 
   moveInstrumentation(row, li);
+  li.append(a);
+  return li;
+}
+
+function buildLinkItemFromData(item) {
+  const label = item?.label?.trim() || '';
+  if (!label) return null;
+
+  const li = document.createElement('li');
+  li.className = 'footer-links-item';
+
+  const a = document.createElement('a');
+  a.href = item.url?.trim() || '#';
+  a.textContent = label;
+
+  if (item.newTab && item.nofollow) {
+    a.target = '_blank';
+    a.rel = 'noopener nofollow';
+  } else if (item.newTab) {
+    a.target = '_blank';
+    a.rel = 'noopener';
+  } else if (item.nofollow) {
+    a.rel = 'nofollow';
+  }
+
   li.append(a);
   return li;
 }
@@ -99,6 +166,61 @@ function collectGroups(block) {
   }];
 }
 
+function setupAccordionBehavior(rendered) {
+  const detailsList = [...rendered.querySelectorAll('.footer-links-group')];
+  if (!detailsList.length) return;
+
+  const desktopQuery = window.matchMedia('(min-width: 600px)');
+
+  const syncExpandedState = (details) => {
+    const summary = details.querySelector(':scope > .footer-accordion-toggle');
+    if (!summary) return;
+    summary.setAttribute('aria-expanded', details.open ? 'true' : 'false');
+  };
+
+  const applyViewportMode = () => {
+    const isDesktop = desktopQuery.matches;
+
+    detailsList.forEach((details) => {
+      details.open = isDesktop;
+      syncExpandedState(details);
+    });
+  };
+
+  detailsList.forEach((details) => {
+    const summary = details.querySelector(':scope > .footer-accordion-toggle');
+    if (summary) {
+      summary.setAttribute('role', 'button');
+      syncExpandedState(details);
+    }
+
+    details.addEventListener('toggle', () => {
+      if (desktopQuery.matches) {
+        details.open = true;
+      }
+
+      if (!desktopQuery.matches && details.open) {
+        detailsList.forEach((other) => {
+          if (other !== details) {
+            other.open = false;
+            syncExpandedState(other);
+          }
+        });
+      }
+
+      syncExpandedState(details);
+    });
+  });
+
+  if (desktopQuery.addEventListener) {
+    desktopQuery.addEventListener('change', applyViewportMode);
+  } else {
+    desktopQuery.addListener(applyViewportMode);
+  }
+
+  applyViewportMode();
+}
+
 /**
  * Footer Links block — renders multiple list groups (title + links)
  * with CSS-driven accordion behavior on mobile.
@@ -115,7 +237,7 @@ export default function decorate(block) {
     const titleText = group.titleElement?.textContent?.trim() || '';
     const details = document.createElement('details');
     details.className = 'footer-links-group';
-    details.open = true;
+    details.open = false;
 
     const summary = document.createElement('summary');
     summary.className = 'footer-accordion-toggle';
@@ -134,14 +256,22 @@ export default function decorate(block) {
     const ul = document.createElement('ul');
     ul.className = 'footer-links-list';
 
-    const linkRows = group.linksContainer
-      ? [...group.linksContainer.children]
-      : group.linkRows;
+    const containerItems = getItemsFromLinksContainer(group.linksContainer);
+    if (containerItems.length) {
+      containerItems.forEach((item) => {
+        const li = buildLinkItemFromData(item);
+        if (li) ul.append(li);
+      });
+    } else {
+      const linkRows = group.linksContainer
+        ? [...group.linksContainer.children]
+        : group.linkRows;
 
-    linkRows.forEach((row) => {
-      const li = buildLinkItem(getModelElement(row, 'footer-link-item') || row);
-      if (li) ul.append(li);
-    });
+      linkRows.forEach((row) => {
+        const li = buildLinkItem(getModelElement(row, 'footer-link-item') || row);
+        if (li) ul.append(li);
+      });
+    }
 
     details.append(summary, ul);
     rendered.append(details);
@@ -150,4 +280,5 @@ export default function decorate(block) {
   });
 
   block.append(rendered);
+  setupAccordionBehavior(rendered);
 }
