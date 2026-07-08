@@ -1,0 +1,80 @@
+{
+  "definitions": [
+    {
+      "title": "Footer Legal",
+      "id": "footer-legal",
+      "plugins": {
+        "xwalk": {
+          "page": {
+            "resourceType": "core/franklin/components/block/v1/block",
+            "template": {
+              "name": "Footer Legal",
+              "model": "footer-legal",
+              "filter": "footer-legal"
+            }
+          }
+        }
+      }
+    },
+    {
+      "title": "Footer Legal Item",
+      "id": "footer-legal-item",
+      "plugins": {
+        "xwalk": {
+          "page": {
+            "resourceType": "core/franklin/components/block/v1/block/item",
+            "template": {
+              "name": "Legal Link",
+              "model": "footer-legal-item"
+            }
+          }
+        }
+      }
+    }
+  ],
+  "models": [
+    {
+      "id": "footer-legal",
+      "fields": []
+    },
+    {
+      "id": "footer-legal-item",
+      "fields": [
+        {
+          "component": "text",
+          "valueType": "string",
+          "name": "linkLabel",
+          "label": "Label",
+          "value": ""
+        },
+        {
+          "component": "text",
+          "valueType": "string",
+          "name": "linkUrl",
+          "label": "URL",
+          "value": ""
+        },
+        {
+          "component": "checkbox",
+          "valueType": "boolean",
+          "name": "linkNewTab",
+          "label": "Open in new tab"
+        },
+        {
+          "component": "checkbox",
+          "valueType": "boolean",
+          "name": "linkNofollow",
+          "label": "rel=nofollow"
+        }
+      ]
+    }
+  ],
+  "filters": [
+    {
+      "id": "footer-legal",
+      "components": [
+        "footer-legal-item"
+      ]
+    }
+  ]
+}
