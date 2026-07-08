@@ -1,5 +1,6 @@
+import { getClientCountry } from '../../scripts/iberostar/client-country.js';
+
 const DEFAULTS = {
-  endpoint: '/bin/catalog/mulesoft/newsletter',
   placeholder: 'Escribe aquí tu email',
   submitLabel: 'Suscribirme',
   errorGeneric: 'Ha habido un error. Por favor, inténtalo de nuevo más tarde.',
@@ -38,43 +39,6 @@ function getBackgroundVariant(value) {
   return normalized === 'white' ? 'white' : 'grey';
 }
 
-function isIso2CountryCode(value) {
-  return /^[A-Z]{2}$/.test(value);
-}
-
-function getCookie(name) {
-  const value = `; ${document.cookie}`;
-  const parts = value.split(`; ${name}=`);
-  return parts.length === 2 ? parts.pop().split(';').shift() : '';
-}
-
-function getCountryFromPath(pathname = window.location.pathname) {
-  const localeMatch = pathname.match(/^\/([a-z]{2})-([a-z]{2})(?:\/|$)/i);
-  const country = localeMatch?.[2]?.toUpperCase() || '';
-  return isIso2CountryCode(country) ? country : '';
-}
-
-function getCountryOverride(pathname = window.location.pathname) {
-  const pageParams = new URLSearchParams(window.location.search);
-  const queryOverride = (pageParams.get('countryOverride') || '').trim().toUpperCase();
-  if (isIso2CountryCode(queryOverride)) {
-    return queryOverride;
-  }
-
-  try {
-    const emulatedCountry = decodeURIComponent(getCookie('x-aem-emulated-country') || '')
-      .trim()
-      .toUpperCase();
-    if (isIso2CountryCode(emulatedCountry)) {
-      return emulatedCountry;
-    }
-  } catch {
-    // Ignore malformed cookie values and submit without an override.
-  }
-
-  return getCountryFromPath(pathname);
-}
-
 function isEdgeDeliveryHost(hostname) {
   return hostname.endsWith('.aem.live') || hostname.endsWith('.aem.page');
 }
@@ -83,34 +47,17 @@ function isLocalHost(hostname) {
   return ['localhost', '127.0.0.1', '[::1]'].includes(hostname);
 }
 
-function shouldUseAemPublishOrigin(url, configuredEndpoint) {
-  if (url.pathname !== NEWSLETTER_PATH || configuredEndpoint?.startsWith('http')) {
+function shouldUseAemPublishOrigin(url) {
+  if (url.pathname !== NEWSLETTER_PATH) {
     return false;
   }
 
   return isEdgeDeliveryHost(window.location.hostname) || isLocalHost(window.location.hostname);
 }
-
-function ensureAuthorCountryCookie(url, country) {
-  if (!country || url.origin !== window.location.origin || !url.hostname.startsWith('author-')) {
-    return;
-  }
-
-  document.cookie = `x-aem-emulated-country=${encodeURIComponent(country)}; path=/; SameSite=Lax`;
-}
-
-function buildNewsletterUrl(endpoint) {
-  const configuredEndpoint = endpoint || DEFAULTS.endpoint;
-  let url = new URL(configuredEndpoint, window.location.origin);
-  if (shouldUseAemPublishOrigin(url, configuredEndpoint)) {
+function buildNewsletterUrl() {
+  let url = new URL(NEWSLETTER_PATH, window.location.origin);
+  if (shouldUseAemPublishOrigin(url)) {
     url = new URL(NEWSLETTER_PATH, AEM_CLOUD_PUBLISH_ORIGIN);
-  }
-
-  const countryOverride = getCountryOverride();
-
-  if (countryOverride) {
-    url.searchParams.set('countryOverride', countryOverride);
-    ensureAuthorCountryCookie(url, countryOverride);
   }
 
   return url.toString();
@@ -230,8 +177,8 @@ async function submitNewsletter(state) {
   try {
     setLoading(state, true);
 
-    const countryIso2 = getCountryOverride();
-    const response = await fetch(buildNewsletterUrl(state.config.endpoint), {
+    const country = await getClientCountry();
+    const response = await fetch(buildNewsletterUrl(), {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -239,7 +186,8 @@ async function submitNewsletter(state) {
       body: JSON.stringify({
         email: state.emailField.value.trim().toLowerCase(),
         pagePath: window.location.pathname,
-        countryIso2,
+        country,
+        countryIso2: country.toUpperCase(),
       }),
     });
 
@@ -388,7 +336,6 @@ export default async function decorate(block) {
     errorCheck: settings[5] || getText(cells[8], DEFAULTS.errorCheck),
     successTitle: settings[6] || getText(cells[9], DEFAULTS.successTitle),
     successDescription: settings[7] || getText(cells[10], DEFAULTS.successDescription),
-    endpoint: settings[8] || getText(cells[11], DEFAULTS.endpoint),
   };
 
   block.classList.remove('lead-subscription-form-grey', 'lead-subscription-form-white');
