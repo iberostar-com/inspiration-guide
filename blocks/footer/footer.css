@@ -45,14 +45,15 @@ footer .footer a:focus-visible {
 }
 
 /* ============================================================
-   Section 1 (footer-main): Header Brand + Footer Links
+   Single Section (footer-main): All footer blocks
    ============================================================ */
 footer .footer .section.footer-main {
   display: flex;
   flex-direction: column;
+  background: none;
 }
 
-/* Header-brand logo spacing before first footer-links list */
+/* Header-brand logo spacing before footer-links */
 footer .footer .section.footer-main .header-brand-wrapper {
   margin-bottom: 28px;
 }
@@ -70,33 +71,35 @@ footer .footer .section.footer-main .header-brand img {
   height: auto;
 }
 
-/* ============================================================
-   Section 2+: meta area (language + legal)
-   ============================================================ */
-footer .footer .section.footer-meta {
-  margin-top: 28px;
+/* Footer links block within single section */
+footer .footer .section.footer-main .footer-links-wrapper {
+  margin-bottom: 28px;
 }
 
-/* Mobile: divider between nav-language and footer-legal */
-footer .footer .section.footer-meta .footer-legal-wrapper {
-  margin-top: 20px;
+/* Language selector wrapper */
+footer .footer .section.footer-main .nav-language-selector-wrapper {
+  margin-bottom: 20px;
+}
+
+/* Legal links wrapper - add top divider */
+footer .footer .section.footer-main .footer-legal-wrapper {
   padding-top: 20px;
   border-top: 1px solid #dedede;
 }
 
 /* Keep nav-language dropdown opening upward in footer */
-footer .footer .section.footer-meta .nav-language {
+footer .footer .section.footer-main .nav-language {
   align-self: flex-start;
 }
 
-footer .footer .section.footer-meta .nav-language .nav-language-menu {
+footer .footer .section.footer-main .nav-language .nav-language-menu {
   top: auto;
   right: 0;
   bottom: calc(100% + 8px);
 }
 
 /* Hide currency selector for Inspiration Guide footer */
-footer .footer .section.footer-meta .footer-currency {
+footer .footer .section.footer-main .footer-currency {
   display: none;
 }
 
@@ -122,42 +125,47 @@ footer .footer .section.footer-meta .footer-currency {
   }
 
   footer .footer .section.footer-main {
-    flex-direction: row;
-    align-items: flex-start;
-    gap: 68px;
+    display: grid;
+    grid-template-columns: 190px 1fr;
+    gap: 68px 0;
+    align-items: start;
   }
 
+  /* Header brand in top-left */
   footer .footer .section.footer-main .header-brand-wrapper {
-    flex: 0 0 190px;
+    grid-column: 1;
+    grid-row: 1;
     margin-bottom: 0;
     padding-top: 2px;
   }
 
+  /* Footer links in top-right */
   footer .footer .section.footer-main .footer-links-wrapper {
-    flex: 1;
-    min-width: 0;
+    grid-column: 2;
+    grid-row: 1;
+    margin-bottom: 0;
   }
 
-  footer .footer .section.footer-meta {
-    display: flex;
-    flex-wrap: wrap;
-    align-items: center;
-    justify-content: space-between;
-    gap: 8px 20px;
+  /* Nav language in bottom-left */
+  footer .footer .section.footer-main .nav-language-selector-wrapper {
+    grid-column: 1 / -1;
+    grid-row: 2;
+    margin-bottom: 0;
     margin-top: 22px;
     padding-top: 20px;
     border-top: 1px solid #dedede;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
   }
 
-  footer .footer .section.footer-meta .footer-legal-wrapper {
-    margin-top: 0;
-    padding-top: 0;
-    border-top: none;
-    order: 1;
-  }
-
-  footer .footer .section.footer-meta .nav-language-wrapper {
-    order: 2;
+  /* Footer legal in bottom area */
+  footer .footer .section.footer-main .footer-legal-wrapper {
+    grid-column: 1 / -1;
+    grid-row: 2;
+    margin-top: 22px;
+    padding-top: 20px;
+    border-top: 1px solid #dedede;
   }
 }
 

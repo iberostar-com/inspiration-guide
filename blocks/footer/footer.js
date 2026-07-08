@@ -42,12 +42,7 @@ function decorateFooterSections(footer) {
   const sections = [...footer.children];
 
   sections.forEach((section) => {
-    section.classList.add('footer-section');
-    if (section.classList.contains('footer-main')) {
-      section.classList.add('footer-brand');
-    } else {
-      section.classList.add('footer-meta');
-    }
+    section.classList.add('footer-section', 'footer-main', 'footer-brand');
   });
 }
 
