@@ -2083,13 +2083,6 @@
         "name": "background_successMessage",
         "label": "Success message",
         "value": "Revisa tu bandeja de correo para confirmar tu email."
-      },
-      {
-        "component": "text",
-        "valueType": "string",
-        "name": "background_endpoint",
-        "label": "Newsletter endpoint",
-        "value": "/bin/catalog/mulesoft/newsletter"
       }
     ]
   },
