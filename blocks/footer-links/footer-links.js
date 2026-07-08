@@ -53,7 +53,7 @@ function getItemsFromLinksContainer(linksContainer) {
 
   // Strategy 1: Look for direct children with linkLabel props (UE items)
   const directItems = [...linksContainer.children]
-    .filter((child) => child.querySelector('[data-aue-prop="linkLabel"]') || child.textContent?.includes('true') || child.textContent?.includes('false'));
+    .filter((child) => child.querySelector('[data-aue-prop="linkLabel"]'));
 
   if (directItems.length > 0) {
     return directItems
@@ -319,26 +319,17 @@ export default function decorate(block) {
     const ul = document.createElement('ul');
     ul.className = 'footer-links-list';
 
-    // Try container items first (Universal Editor structured data)
-    const containerItems = getItemsFromLinksContainer(group.linksContainer);
-    if (containerItems.length > 0) {
-      containerItems.forEach((item) => {
-        const li = buildLinkItemFromData(item);
-        if (li) ul.append(li);
-      });
-    } else {
-      // Fallback to processing individual link rows
-      const linkRows = group.linksContainer
-        ? [...group.linksContainer.children]
-        : group.linkRows;
+    // Build links — use buildLinkItem so UE instrumentation (data-aue-*) is preserved
+    const linkRows = group.linksContainer
+      ? [...group.linksContainer.children]
+      : group.linkRows;
 
-      linkRows.forEach((row) => {
-        const li = buildLinkItem(
-          getModelElement(row, 'footer-link-item') || row,
-        );
-        if (li) ul.append(li);
-      });
-    }
+    linkRows.forEach((row) => {
+      const li = buildLinkItem(
+        getModelElement(row, 'footer-links-item') || row,
+      );
+      if (li) ul.append(li);
+    });
 
     details.append(summary, ul);
     rendered.append(details);
