@@ -6,7 +6,7 @@ const COUNTRY_COOKIE_KEYS = [
   'x-iberostar-client-country',
   'x-aem-client-country',
 ];
-const GRS_HOSTS = ['aem-grspre.iberostar.com', 'aem-grsdev.iberostar.com'];
+const GRS_HOSTS = ['aem-grspre.iberostar.com', 'aem-grsdev.iberostar.com', 'aem-grsqa.iberostar.com'];
 const COUNTRY_WARNING_KEYS = new Set();
 
 let cachedClientCountryResult = null;

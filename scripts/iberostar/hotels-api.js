@@ -10,6 +10,7 @@ const GRAPHQL_QUERY_PATH = '/graphql/execute.json/iberostar-com/HotelByCode';
 const GRAPHQL_ORIGINS_BY_HOST = {
   'aem-grspre.iberostar.com': '',
   'aem-grsdev.iberostar.com': '',
+  'aem-grsqa.iberostar.com': '',
 
   // 'main--inspiration-guide--iberostar-com.aem.live': 'https://publish-p179213-e1886364.adobeaemcloud.com',
   // 'main--inspiration-guide--iberostar-com.aem.page': 'https://publish-p179213-e1886364.adobeaemcloud.com',
