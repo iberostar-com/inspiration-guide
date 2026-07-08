@@ -45,7 +45,6 @@
       "topic-tag-cloud",
       "category-hero",
       "footer-links",
-      "footer-logo",
       "footer-legal"
     ]
   },
@@ -723,13 +722,13 @@
   {
     "id": "footer-links",
     "components": [
-      "footer-link-item"
+      "footer-links-group"
     ]
   },
   {
-    "id": "footer-logo",
+    "id": "footer-links-group",
     "components": [
-      "header-brand"
+      "footer-link-item"
     ]
   },
   {

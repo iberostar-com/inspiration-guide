@@ -274,6 +274,10 @@
           {
             "name": "Article Sidebar",
             "value": "article-sidebar"
+          },
+          {
+            "name": "Footer Main",
+            "value": "footer-main"
           }
         ]
       }
@@ -1532,7 +1536,7 @@
         "value": ""
       },
       {
-        "component": "text",
+        "component": "reference",
         "valueType": "string",
         "name": "linkUrl",
         "label": "URL",
@@ -1554,12 +1558,16 @@
   },
   {
     "id": "footer-links",
+    "fields": []
+  },
+  {
+    "id": "footer-links-group",
     "fields": [
       {
         "component": "text",
         "valueType": "string",
         "name": "title",
-        "label": "Column Title",
+        "label": "List Title",
         "value": ""
       }
     ]
@@ -1575,7 +1583,7 @@
         "value": ""
       },
       {
-        "component": "text",
+        "component": "reference",
         "valueType": "string",
         "name": "linkUrl",
         "label": "URL",
@@ -1594,10 +1602,6 @@
         "label": "rel=nofollow"
       }
     ]
-  },
-  {
-    "id": "footer-logo",
-    "fields": []
   },
   {
     "id": "form",
