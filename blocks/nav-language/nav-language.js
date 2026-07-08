@@ -31,21 +31,8 @@ function createOptionData(row) {
   return { label, url };
 }
 
-function createOption(data) {
-  const { label, url } = data;
-
-  const li = document.createElement('li');
-  li.className = 'nav-language-menu-item';
-  const a = document.createElement('a');
-  a.href = url;
-  a.textContent = label;
-  li.append(a);
-  return li;
-}
-
 /**
- * Nav Language Selector block: dropdown trigger (current language) + list of
- * language options (collection items).
+ * Nav Language Selector block: modal trigger + language options modal.
  * @param {Element} block The nav-language block element
  */
 export default function decorate(block) {
@@ -57,40 +44,108 @@ export default function decorate(block) {
 
   rows.forEach((row) => row.setAttribute('aria-hidden', 'true'));
 
-  const triggerLabel = document.createElement('span');
-  triggerLabel.className = 'nav-language-trigger-label';
-  triggerLabel.textContent = currentLabel;
-
   if (options.length <= 1) {
     const onlyOption = options[0];
     const triggerLink = document.createElement('a');
     triggerLink.className = 'nav-language-trigger nav-language-trigger-link';
     triggerLink.href = onlyOption?.url || '#';
-    triggerLink.append(triggerLabel);
-
+    triggerLink.textContent = currentLabel;
     block.replaceChildren(triggerLink);
     return;
   }
 
+  // Create trigger button
   const trigger = document.createElement('button');
   trigger.type = 'button';
-  trigger.className = 'nav-language-trigger nav-drop';
+  trigger.className = 'nav-language-trigger';
   trigger.setAttribute('aria-expanded', 'false');
+  trigger.setAttribute('aria-haspopup', 'dialog');
+  trigger.textContent = currentLabel;
 
-  const triggerIcon = document.createElement('i');
-  triggerIcon.className = 'nav-language-trigger-icon ibh-icon-keyboard-arrow-down';
-  triggerIcon.setAttribute('aria-hidden', 'true');
+  // Create modal backdrop
+  const backdrop = document.createElement('div');
+  backdrop.className = 'nav-language-modal-backdrop';
+  backdrop.hidden = true;
+  backdrop.setAttribute('aria-hidden', 'true');
 
-  trigger.append(triggerLabel, triggerIcon);
+  // Create modal
+  const modal = document.createElement('div');
+  modal.className = 'nav-language-modal';
+  modal.setAttribute('role', 'dialog');
+  modal.setAttribute('aria-modal', 'true');
+  modal.setAttribute('aria-label', 'Seleccionar idioma');
 
-  const menu = document.createElement('ul');
-  menu.className = 'nav-language-menu';
-  options.forEach((option) => menu.append(createOption(option)));
+  // Modal header
+  const header = document.createElement('div');
+  header.className = 'nav-language-modal-header';
 
-  trigger.addEventListener('click', () => {
-    const expanded = trigger.getAttribute('aria-expanded') === 'true';
-    trigger.setAttribute('aria-expanded', expanded ? 'false' : 'true');
+  const title = document.createElement('h2');
+  title.className = 'nav-language-modal-title';
+  title.textContent = 'Selecciona un idioma';
+
+  const closeBtn = document.createElement('button');
+  closeBtn.type = 'button';
+  closeBtn.className = 'nav-language-modal-close';
+  closeBtn.setAttribute('aria-label', 'Cerrar');
+  closeBtn.textContent = '✕';
+
+  header.append(title, closeBtn);
+
+  // Modal options grid
+  const optionsContainer = document.createElement('div');
+  optionsContainer.className = 'nav-language-modal-options';
+
+  options.forEach((option) => {
+    const optionBtn = document.createElement('a');
+    optionBtn.href = option.url;
+    optionBtn.className = 'nav-language-option-button';
+    optionBtn.textContent = option.label;
+    optionsContainer.append(optionBtn);
   });
 
-  block.replaceChildren(trigger, menu);
+  modal.append(header, optionsContainer);
+  backdrop.append(modal);
+
+  // Event listeners
+  trigger.addEventListener('click', () => {
+    const expanded = trigger.getAttribute('aria-expanded') === 'true';
+    if (!expanded) {
+      backdrop.hidden = false;
+      backdrop.setAttribute('aria-hidden', 'false');
+      trigger.setAttribute('aria-expanded', 'true');
+      modal.focus();
+    } else {
+      backdrop.hidden = true;
+      backdrop.setAttribute('aria-hidden', 'true');
+      trigger.setAttribute('aria-expanded', 'false');
+    }
+  });
+
+  closeBtn.addEventListener('click', () => {
+    backdrop.hidden = true;
+    backdrop.setAttribute('aria-hidden', 'true');
+    trigger.setAttribute('aria-expanded', 'false');
+    trigger.focus();
+  });
+
+  backdrop.addEventListener('click', (e) => {
+    if (e.target === backdrop) {
+      backdrop.hidden = true;
+      backdrop.setAttribute('aria-hidden', 'true');
+      trigger.setAttribute('aria-expanded', 'false');
+      trigger.focus();
+    }
+  });
+
+  // Close on Escape key
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape' && !backdrop.hidden) {
+      backdrop.hidden = true;
+      backdrop.setAttribute('aria-hidden', 'true');
+      trigger.setAttribute('aria-expanded', 'false');
+      trigger.focus();
+    }
+  });
+
+  block.replaceChildren(trigger, backdrop);
 }
