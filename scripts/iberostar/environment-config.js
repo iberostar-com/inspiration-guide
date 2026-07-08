@@ -32,7 +32,7 @@ const CLOUD_ENVIRONMENT_OVERRIDES = [
   },
   {
     key: 'dev',
-    pattern: /-e1898042\./i,
+    pattern: /(?:-e1898042\.|main--inspiration-guide-dev--iberostar-com\.aem\.(?:live|page)$)/i,
     overrides: {
       hotels: {
         graphqlHost: 'https://publish-p179213-e1898042.adobeaemcloud.com',
@@ -40,6 +40,19 @@ const CLOUD_ENVIRONMENT_OVERRIDES = [
       dynamicMedia: {
         assetHost: 'https://publish-p179213-e1898042.adobeaemcloud.com',
         imageServer: 'https://delivery-p179213-e1898042.adobeaemcloud.com',
+      },
+    },
+  },
+  {
+    key: 'qa',
+    pattern: /(?:-e1898096\.|main--inspiration-guide-qa--iberostar-com\.aem\.(?:live|page)$)/i,
+    overrides: {
+      hotels: {
+        graphqlHost: 'https://author-p179213-e1898096.adobeaemcloud.com',
+      },
+      dynamicMedia: {
+        assetHost: 'https://author-p179213-e1898096.adobeaemcloud.com',
+        imageServer: 'https://delivery-p179213-e1898096.adobeaemcloud.com',
       },
     },
   },
