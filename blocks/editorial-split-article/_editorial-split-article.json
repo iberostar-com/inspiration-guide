@@ -22,26 +22,34 @@
       "fields": [
         {
           "component": "text",
+          "valueType": "string",
           "name": "eyebrow",
           "label": "Eyebrow",
-          "value": "Featured"
+          "value": ""
         },
         {
           "component": "text",
+          "valueType": "string",
           "name": "title",
           "label": "Title",
           "value": ""
         },
         {
-          "component": "textarea",
-          "name": "summary",
-          "label": "Summary",
-          "value": ""
+          "component": "select",
+          "valueType": "string",
+          "name": "titleHeading",
+          "label": "Title Heading Level",
+          "value": "h2",
+          "options": [
+            { "name": "H2", "value": "h2" },
+            { "name": "H3", "value": "h3" }
+          ]
         },
         {
-          "component": "text",
-          "name": "link",
-          "label": "Article Link",
+          "component": "richtext",
+          "valueType": "string",
+          "name": "text",
+          "label": "Body",
           "value": ""
         }
       ]

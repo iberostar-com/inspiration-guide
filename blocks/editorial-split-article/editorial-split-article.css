@@ -1,30 +1,167 @@
-main .editorial-split-article {
-  display: grid;
-  gap: 1rem;
-  border: 1px solid var(--light-color);
-  background-color: var(--background-color);
+main .editorial-split-article .editorial-split-article-source {
+  display: none;
 }
 
-main .editorial-split-article .editorial-split-media picture,
-main .editorial-split-article .editorial-split-media img {
+main .editorial-split-article .editorial-split-article-rendered {
+  display: flex;
+  flex-direction: column;
+  gap: 40px;
+}
+
+main .editorial-split-article .editorial-split-article-heading {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+main .editorial-split-article .editorial-split-article-eyebrow {
+  margin: 0;
+  color: #1b2828;
+  font-family: inter, sans-serif;
+  font-size: 12px;
+  font-weight: 500;
+  letter-spacing: 0.02em;
+  line-height: 1.4;
+  text-transform: uppercase;
+}
+
+main .editorial-split-article .editorial-split-article-title {
+  margin: 0;
+  color: #1b2828;
+  font-family: noe-display, serif;
+  font-size: 28px;
+  font-weight: 400;
+  line-height: 38px;
+}
+
+main .editorial-split-article .editorial-split-article-body {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  color: #1b2828;
+  font-family: inter, sans-serif;
+  font-size: 16px;
+  font-weight: 400;
+  line-height: 1.4;
+}
+
+main .editorial-split-article .editorial-split-article-body p {
+  margin: 0;
+}
+
+main .editorial-split-article .editorial-split-article-body strong,
+main .editorial-split-article .editorial-split-article-body b {
+  font-weight: 700;
+}
+
+main .editorial-split-article .editorial-split-article-body h2,
+main .editorial-split-article .editorial-split-article-body h3,
+main .editorial-split-article .editorial-split-article-body h4 {
+  margin: 0;
+  color: #1b2828;
+  font-family: inter, sans-serif;
+  font-size: inherit;
+  font-weight: 700;
+  line-height: 1.4;
+}
+
+main .editorial-split-article .editorial-split-article-body a {
+  color: #1b2828;
+  text-decoration: underline;
+}
+
+main .editorial-split-article .editorial-split-article-figure {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+  margin: 0;
+  padding: 32px 0;
+}
+
+main .editorial-split-article .editorial-split-article-image {
+  overflow: hidden;
+  width: 100%;
+  border-radius: 4px;
+}
+
+main .editorial-split-article .editorial-split-article-image picture,
+main .editorial-split-article .editorial-split-article-image img {
   display: block;
   width: 100%;
-  height: auto;
+  aspect-ratio: 328 / 193;
+  object-fit: cover;
 }
 
-main .editorial-split-article .editorial-split-body {
-  padding: 1rem;
+main .editorial-split-article .editorial-split-article-caption {
+  color: #636363;
+  font-family: inter, sans-serif;
+  font-size: 12px;
+  font-weight: 400;
+  line-height: 1.4;
+  text-align: center;
 }
 
-main .editorial-split-article .editorial-split-eyebrow {
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
-  font-size: var(--body-font-size-xs);
+@media (width >= 576px) {
+  main .editorial-split-article .editorial-split-article-title {
+    font-size: 32px;
+    line-height: 42px;
+  }
 }
 
-@media (width >= 900px) {
-  main .editorial-split-article {
-    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
-    align-items: stretch;
+@media (width >= 820px) {
+  main > .section:has(.editorial-split-article) > div {
+    padding-inline: 24px;
+  }
+
+  main .editorial-split-article .editorial-split-article-rendered {
+    gap: 76px;
+  }
+
+  main .editorial-split-article .editorial-split-article-title {
+    font-size: 40px;
+    line-height: 54px;
+  }
+
+  main .editorial-split-article .editorial-split-article-body {
+    font-size: 18px;
+  }
+
+  main .editorial-split-article .editorial-split-article-image {
+    max-width: 495px;
+  }
+}
+
+@media (width >= 1440px) {
+  main > .section:has(.editorial-split-article) > div {
+    max-width: 1440px;
+    padding-inline: 83px;
+  }
+
+  main .editorial-split-article .editorial-split-article-rendered {
+    flex-direction: row;
+    align-items: flex-start;
+    gap: 76px;
+  }
+
+  main .editorial-split-article .editorial-split-article-heading {
+    flex: 0 0 453px;
+  }
+
+  main .editorial-split-article .editorial-split-article-content {
+    flex: 1 1 0;
+    min-width: 0;
+  }
+
+  main .editorial-split-article .editorial-split-article-title {
+    font-size: 48px;
+    line-height: 64px;
+  }
+}
+
+@media (width >= 1920px) {
+  main > .section:has(.editorial-split-article) > div {
+    max-width: 1920px;
+    padding-inline: 235px;
   }
 }
