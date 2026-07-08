@@ -538,6 +538,21 @@
           }
         },
         {
+          "title": "Footer Links Item",
+          "id": "footer-links-item",
+          "plugins": {
+            "xwalk": {
+              "page": {
+                "resourceType": "core/franklin/components/block/v1/block/item",
+                "template": {
+                  "name": "Link Item",
+                  "model": "footer-links-item"
+                }
+              }
+            }
+          }
+        },
+        {
           "title": "Form",
           "id": "form",
           "plugins": {
