@@ -6,16 +6,16 @@
    ============================================================ */
 
 footer {
-  background: #f5f5f5;
+  background: #f3f3f3;
   color: #1b2828;
-  font-size: 0.875rem;
+  font-size: var(--body-font-size-xs);
   line-height: 1.4;
 }
 
 footer .footer {
   max-width: 1440px;
   margin: 0 auto;
-  padding: 48px 16px;
+  padding: 40px 16px 32px;
 }
 
 footer .footer p,
@@ -45,16 +45,17 @@ footer .footer a:focus-visible {
 }
 
 /* ============================================================
-   Section 1 (footer-main): Header Brand + Footer Links
+   Single Section (footer-main): All footer blocks
    ============================================================ */
 footer .footer .section.footer-main {
   display: flex;
   flex-direction: column;
+  background: none;
 }
 
-/* Header-brand logo spacing before first footer-links list */
+/* Header-brand logo spacing before footer-links */
 footer .footer .section.footer-main .header-brand-wrapper {
-  margin-bottom: 40px;
+  margin-bottom: 28px;
 }
 
 footer .footer .section.footer-main .header-brand {
@@ -66,37 +67,39 @@ footer .footer .section.footer-main .header-brand picture,
 footer .footer .section.footer-main .header-brand img {
   display: block;
   width: auto;
-  max-width: 200px;
+  max-width: 190px;
   height: auto;
 }
 
-/* ============================================================
-   Section 2+: meta area (language + legal)
-   ============================================================ */
-footer .footer .section.footer-meta {
-  margin-top: 40px;
+/* Footer links block within single section */
+footer .footer .section.footer-main .footer-links-wrapper {
+  margin-bottom: 28px;
 }
 
-/* Mobile: divider between nav-language and footer-legal */
-footer .footer .section.footer-meta .footer-legal-wrapper {
-  margin-top: 32px;
-  padding-top: 32px;
+/* Language selector wrapper */
+footer .footer .section.footer-main .nav-language-selector-wrapper {
+  margin-bottom: 20px;
+}
+
+/* Legal links wrapper - add top divider */
+footer .footer .section.footer-main .footer-legal-wrapper {
+  padding-top: 20px;
   border-top: 1px solid #dedede;
 }
 
 /* Keep nav-language dropdown opening upward in footer */
-footer .footer .section.footer-meta .nav-language {
+footer .footer .section.footer-main .nav-language {
   align-self: flex-start;
 }
 
-footer .footer .section.footer-meta .nav-language .nav-language-menu {
+footer .footer .section.footer-main .nav-language .nav-language-menu {
   top: auto;
   right: 0;
   bottom: calc(100% + 8px);
 }
 
 /* Hide currency selector for Inspiration Guide footer */
-footer .footer .section.footer-meta .footer-currency {
+footer .footer .section.footer-main .footer-currency {
   display: none;
 }
 
@@ -105,11 +108,11 @@ footer .footer .section.footer-meta .footer-currency {
    ============================================================ */
 @media (width >= 600px) {
   footer .footer {
-    padding: 48px 24px;
+    padding: 44px 24px 36px;
   }
 
   footer .footer .section.footer-main .header-brand-wrapper {
-    margin-bottom: 32px;
+    margin-bottom: 24px;
   }
 }
 
@@ -118,51 +121,56 @@ footer .footer .section.footer-meta .footer-currency {
    ============================================================ */
 @media (width >= 900px) {
   footer .footer {
-    padding: 56px 24px;
+    padding: 44px 24px 24px;
   }
 
   footer .footer .section.footer-main {
-    flex-direction: row;
-    align-items: flex-start;
-    gap: 56px;
+    display: grid;
+    grid-template-columns: 190px 1fr;
+    gap: 68px 0;
+    align-items: start;
   }
 
+  /* Header brand in top-left */
   footer .footer .section.footer-main .header-brand-wrapper {
-    flex: 0 0 200px;
+    grid-column: 1;
+    grid-row: 1;
     margin-bottom: 0;
-    padding-top: 4px;
+    padding-top: 2px;
   }
 
+  /* Footer links in top-right */
   footer .footer .section.footer-main .footer-links-wrapper {
-    flex: 1;
-    min-width: 0;
+    grid-column: 2;
+    grid-row: 1;
+    margin-bottom: 0;
   }
 
-  footer .footer .section.footer-meta {
+  /* Nav language in bottom-left */
+  footer .footer .section.footer-main .nav-language-selector-wrapper {
+    grid-column: 1 / -1;
+    grid-row: 2;
+    margin-bottom: 0;
+    margin-top: 22px;
+    padding-top: 20px;
+    border-top: 1px solid #dedede;
     display: flex;
-    flex-wrap: wrap;
     align-items: center;
     justify-content: space-between;
-    gap: 8px 24px;
-    margin-top: 40px;
-    padding-top: 24px;
+  }
+
+  /* Footer legal in bottom area */
+  footer .footer .section.footer-main .footer-legal-wrapper {
+    grid-column: 1 / -1;
+    grid-row: 2;
+    margin-top: 22px;
+    padding-top: 20px;
     border-top: 1px solid #dedede;
-  }
-
-  footer .footer .section.footer-meta .footer-legal-wrapper {
-    margin-top: 0;
-    padding-top: 0;
-    border-top: none;
-    order: 1;
-  }
-
-  footer .footer .section.footer-meta .nav-language-wrapper {
-    order: 2;
   }
 }
 
 @media (width >= 1200px) {
   footer .footer {
-    padding: 56px 40px;
+    padding: 48px 40px 28px;
   }
 }
