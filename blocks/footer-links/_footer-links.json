@@ -30,6 +30,21 @@
           }
         }
       }
+    },
+    {
+      "title": "Footer Links Item",
+      "id": "footer-links-item",
+      "plugins": {
+        "xwalk": {
+          "page": {
+            "resourceType": "core/franklin/components/block/v1/block/item",
+            "template": {
+              "name": "Link Item",
+              "model": "footer-links-item"
+            }
+          }
+        }
+      }
     }
   ],
   "models": [
@@ -52,34 +67,38 @@
           "name": "links",
           "label": "Links",
           "multi": true,
-          "fields": [
-            {
-              "component": "text",
-              "valueType": "string",
-              "name": "linkLabel",
-              "label": "Label",
-              "value": ""
-            },
-            {
-              "component": "aem-content",
-              "valueType": "string",
-              "name": "linkUrl",
-              "label": "URL",
-              "value": ""
-            },
-            {
-              "component": "checkbox",
-              "valueType": "boolean",
-              "name": "linkNewTab",
-              "label": "Open in new tab"
-            },
-            {
-              "component": "checkbox",
-              "valueType": "boolean",
-              "name": "linkNofollow",
-              "label": "rel=nofollow"
-            }
-          ]
+          "model": "footer-links-item"
+        }
+      ]
+    },
+    {
+      "id": "footer-links-item",
+      "fields": [
+        {
+          "component": "text",
+          "valueType": "string",
+          "name": "linkLabel",
+          "label": "Label",
+          "value": ""
+        },
+        {
+          "component": "aem-content",
+          "valueType": "string",
+          "name": "linkUrl",
+          "label": "URL",
+          "value": ""
+        },
+        {
+          "component": "checkbox",
+          "valueType": "boolean",
+          "name": "linkNewTab",
+          "label": "Open in new tab"
+        },
+        {
+          "component": "checkbox",
+          "valueType": "boolean",
+          "name": "linkNofollow",
+          "label": "rel=nofollow"
         }
       ]
     }

@@ -1589,34 +1589,38 @@
         "name": "links",
         "label": "Links",
         "multi": true,
-        "fields": [
-          {
-            "component": "text",
-            "valueType": "string",
-            "name": "linkLabel",
-            "label": "Label",
-            "value": ""
-          },
-          {
-            "component": "aem-content",
-            "valueType": "string",
-            "name": "linkUrl",
-            "label": "URL",
-            "value": ""
-          },
-          {
-            "component": "checkbox",
-            "valueType": "boolean",
-            "name": "linkNewTab",
-            "label": "Open in new tab"
-          },
-          {
-            "component": "checkbox",
-            "valueType": "boolean",
-            "name": "linkNofollow",
-            "label": "rel=nofollow"
-          }
-        ]
+        "model": "footer-links-item"
+      }
+    ]
+  },
+  {
+    "id": "footer-links-item",
+    "fields": [
+      {
+        "component": "text",
+        "valueType": "string",
+        "name": "linkLabel",
+        "label": "Label",
+        "value": ""
+      },
+      {
+        "component": "aem-content",
+        "valueType": "string",
+        "name": "linkUrl",
+        "label": "URL",
+        "value": ""
+      },
+      {
+        "component": "checkbox",
+        "valueType": "boolean",
+        "name": "linkNewTab",
+        "label": "Open in new tab"
+      },
+      {
+        "component": "checkbox",
+        "valueType": "boolean",
+        "name": "linkNofollow",
+        "label": "rel=nofollow"
       }
     ]
   },
