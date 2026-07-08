@@ -1847,6 +1847,35 @@
     ]
   },
   {
+    "id": "hero-tag-name",
+    "fields": [
+      {
+        "component": "text",
+        "valueType": "string",
+        "name": "title",
+        "label": "Title (optional, overrides current tag)",
+        "value": ""
+      },
+      {
+        "component": "select",
+        "valueType": "string",
+        "name": "titleHeading",
+        "label": "Title Heading Level",
+        "value": "h1",
+        "options": [
+          {
+            "name": "H1",
+            "value": "h1"
+          },
+          {
+            "name": "H2",
+            "value": "h2"
+          }
+        ]
+      }
+    ]
+  },
+  {
     "id": "hero",
     "fields": [
       {
@@ -2529,35 +2558,6 @@
           {
             "name": "New tab",
             "value": "_blank"
-          }
-        ]
-      }
-    ]
-  },
-  {
-    "id": "tag-header",
-    "fields": [
-      {
-        "component": "text",
-        "valueType": "string",
-        "name": "title",
-        "label": "Title (optional, overrides current tag)",
-        "value": ""
-      },
-      {
-        "component": "select",
-        "valueType": "string",
-        "name": "titleHeading",
-        "label": "Title Heading Level",
-        "value": "h1",
-        "options": [
-          {
-            "name": "H1",
-            "value": "h1"
-          },
-          {
-            "name": "H2",
-            "value": "h2"
           }
         ]
       }
