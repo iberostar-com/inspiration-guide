@@ -24,7 +24,14 @@
           "component": "reference",
           "valueType": "string",
           "name": "logo",
-          "label": "Logo",
+          "label": "Logo (móvil)",
+          "multi": false
+        },
+        {
+          "component": "reference",
+          "valueType": "string",
+          "name": "logoDesktop",
+          "label": "Logo (desktop)",
           "multi": false
         },
         {

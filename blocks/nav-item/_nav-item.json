@@ -48,6 +48,43 @@
           "valueType": "string",
           "name": "link",
           "label": "Link"
+        },
+        {
+          "component": "select",
+          "valueType": "string",
+          "name": "target",
+          "label": "Abrir enlace en",
+          "value": "_self",
+          "options": [
+            { "name": "Misma pestaña", "value": "_self" },
+            { "name": "Nueva pestaña", "value": "_blank" }
+          ]
+        },
+        {
+          "component": "text",
+          "valueType": "string",
+          "name": "viewAllText",
+          "label": "View all - text",
+          "description": "Text for the 'view all' link shown at the end of the submenu when this item has Nav Item Child entries (e.g. 'Ver todos los destinos').",
+          "value": ""
+        },
+        {
+          "component": "aem-content",
+          "valueType": "string",
+          "name": "viewAllLink",
+          "label": "View all - link",
+          "description": "Link for the 'view all' link shown when this item has Nav Item Child entries."
+        },
+        {
+          "component": "select",
+          "valueType": "string",
+          "name": "viewAllTarget",
+          "label": "View all - abrir enlace en",
+          "value": "_self",
+          "options": [
+            { "name": "Misma pestaña", "value": "_self" },
+            { "name": "Nueva pestaña", "value": "_blank" }
+          ]
         }
       ]
     },
@@ -66,6 +103,17 @@
           "valueType": "string",
           "name": "link",
           "label": "Link"
+        },
+        {
+          "component": "select",
+          "valueType": "string",
+          "name": "target",
+          "label": "Abrir enlace en",
+          "value": "_self",
+          "options": [
+            { "name": "Misma pestaña", "value": "_self" },
+            { "name": "Nueva pestaña", "value": "_blank" }
+          ]
         }
       ]
     }

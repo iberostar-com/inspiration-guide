@@ -55,10 +55,15 @@
           "value": ""
         },
         {
-          "component": "checkbox",
-          "valueType": "boolean",
-          "name": "linkNewTab",
-          "label": "Open in new tab"
+          "component": "select",
+          "valueType": "string",
+          "name": "linkTarget",
+          "label": "Abrir enlace en",
+          "value": "_blank",
+          "options": [
+            { "name": "Misma pestaña", "value": "_self" },
+            { "name": "Nueva pestaña", "value": "_blank" }
+          ]
         },
         {
           "component": "checkbox",

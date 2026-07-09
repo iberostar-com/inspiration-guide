@@ -69,6 +69,17 @@
           "label": "Link URL",
           "description": "Enter just the locale code (es-es, en-us, fr-fr…) to auto-link to that language's Inspiration Guide home, or provide a full path/URL.",
           "value": ""
+        },
+        {
+          "component": "select",
+          "valueType": "string",
+          "name": "target",
+          "label": "Abrir enlace en",
+          "value": "_self",
+          "options": [
+            { "name": "Misma pestaña", "value": "_self" },
+            { "name": "Nueva pestaña", "value": "_blank" }
+          ]
         }
       ]
     }

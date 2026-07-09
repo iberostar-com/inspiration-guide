@@ -1806,10 +1806,21 @@
         "value": ""
       },
       {
-        "component": "checkbox",
-        "valueType": "boolean",
-        "name": "linkNewTab",
-        "label": "Open in new tab"
+        "component": "select",
+        "valueType": "string",
+        "name": "linkTarget",
+        "label": "Abrir enlace en",
+        "value": "_blank",
+        "options": [
+          {
+            "name": "Misma pestaña",
+            "value": "_self"
+          },
+          {
+            "name": "Nueva pestaña",
+            "value": "_blank"
+          }
+        ]
       },
       {
         "component": "checkbox",
@@ -1854,10 +1865,21 @@
             "value": ""
           },
           {
-            "component": "checkbox",
-            "valueType": "boolean",
-            "name": "linkNewTab",
-            "label": "Open in new tab"
+            "component": "select",
+            "valueType": "string",
+            "name": "linkTarget",
+            "label": "Abrir enlace en",
+            "value": "_blank",
+            "options": [
+              {
+                "name": "Misma pestaña",
+                "value": "_self"
+              },
+              {
+                "name": "Nueva pestaña",
+                "value": "_blank"
+              }
+            ]
           },
           {
             "component": "checkbox",
@@ -1985,7 +2007,14 @@
         "component": "reference",
         "valueType": "string",
         "name": "logo",
-        "label": "Logo",
+        "label": "Logo (móvil)",
+        "multi": false
+      },
+      {
+        "component": "reference",
+        "valueType": "string",
+        "name": "logoDesktop",
+        "label": "Logo (desktop)",
         "multi": false
       },
       {
@@ -2468,6 +2497,23 @@
         "name": "link",
         "label": "Link URL",
         "value": ""
+      },
+      {
+        "component": "select",
+        "valueType": "string",
+        "name": "target",
+        "label": "Abrir enlace en",
+        "value": "_self",
+        "options": [
+          {
+            "name": "Misma pestaña",
+            "value": "_self"
+          },
+          {
+            "name": "Nueva pestaña",
+            "value": "_blank"
+          }
+        ]
       }
     ]
   },
@@ -2486,6 +2532,55 @@
         "valueType": "string",
         "name": "link",
         "label": "Link"
+      },
+      {
+        "component": "select",
+        "valueType": "string",
+        "name": "target",
+        "label": "Abrir enlace en",
+        "value": "_self",
+        "options": [
+          {
+            "name": "Misma pestaña",
+            "value": "_self"
+          },
+          {
+            "name": "Nueva pestaña",
+            "value": "_blank"
+          }
+        ]
+      },
+      {
+        "component": "text",
+        "valueType": "string",
+        "name": "viewAllText",
+        "label": "View all - text",
+        "description": "Text for the 'view all' link shown at the end of the submenu when this item has Nav Item Child entries (e.g. 'Ver todos los destinos').",
+        "value": ""
+      },
+      {
+        "component": "aem-content",
+        "valueType": "string",
+        "name": "viewAllLink",
+        "label": "View all - link",
+        "description": "Link for the 'view all' link shown when this item has Nav Item Child entries."
+      },
+      {
+        "component": "select",
+        "valueType": "string",
+        "name": "viewAllTarget",
+        "label": "View all - abrir enlace en",
+        "value": "_self",
+        "options": [
+          {
+            "name": "Misma pestaña",
+            "value": "_self"
+          },
+          {
+            "name": "Nueva pestaña",
+            "value": "_blank"
+          }
+        ]
       }
     ]
   },
@@ -2504,6 +2599,23 @@
         "valueType": "string",
         "name": "link",
         "label": "Link"
+      },
+      {
+        "component": "select",
+        "valueType": "string",
+        "name": "target",
+        "label": "Abrir enlace en",
+        "value": "_self",
+        "options": [
+          {
+            "name": "Misma pestaña",
+            "value": "_self"
+          },
+          {
+            "name": "Nueva pestaña",
+            "value": "_blank"
+          }
+        ]
       }
     ]
   },
@@ -2543,6 +2655,23 @@
         "label": "Link URL",
         "description": "Enter just the locale code (es-es, en-us, fr-fr…) to auto-link to that language's Inspiration Guide home, or provide a full path/URL.",
         "value": ""
+      },
+      {
+        "component": "select",
+        "valueType": "string",
+        "name": "target",
+        "label": "Abrir enlace en",
+        "value": "_self",
+        "options": [
+          {
+            "name": "Misma pestaña",
+            "value": "_self"
+          },
+          {
+            "name": "Nueva pestaña",
+            "value": "_blank"
+          }
+        ]
       }
     ]
   },

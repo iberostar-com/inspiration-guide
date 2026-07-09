@@ -34,23 +34,51 @@ function createChevron(cls) {
   return icon;
 }
 
-function readSections(sectionsRoot) {
-  const list = sectionsRoot?.querySelector('ul');
-  if (!list) return [];
+function applyTarget(anchor, target) {
+  if (target === '_blank') {
+    anchor.target = '_blank';
+    anchor.rel = 'noopener';
+  }
+}
 
-  return [...list.children].map((li) => {
-    const link = li.querySelector(':scope > a');
-    const childList = li.querySelector(':scope > ul');
-    const children = childList
-      ? [...childList.children].map((child) => {
-        const anchor = child.querySelector('a');
-        return { label: cellText(anchor), href: anchor?.getAttribute('href') || '#' };
-      })
-      : [];
+function linkTarget(anchor) {
+  return anchor?.getAttribute('target') || '';
+}
+
+// Reads the menu from the authored nav-item blocks (each is its own block, not a
+// shared <ul>). A child flagged nav-item-view-all becomes the "Ver todos" target.
+// The target attribute (self/blank) set by nav-item is carried over to each link.
+function readSections(fragment) {
+  return [...fragment.querySelectorAll('.nav-item')].map((item) => {
+    const link = item.querySelector('.nav-item-link') || item.querySelector('.nav-item-content a');
+    const children = [];
+    let viewAllText = '';
+    let viewAllHref = '#';
+    let viewAllTarget = '';
+
+    item.querySelectorAll('.nav-item-panel .nav-item-dropdown-item').forEach((li) => {
+      const anchor = li.querySelector('a');
+      if (!anchor) return;
+      if (li.classList.contains('nav-item-view-all')) {
+        viewAllText = cellText(anchor);
+        viewAllHref = anchor.getAttribute('href') || '#';
+        viewAllTarget = linkTarget(anchor);
+      } else {
+        children.push({
+          label: cellText(anchor),
+          href: anchor.getAttribute('href') || '#',
+          target: linkTarget(anchor),
+        });
+      }
+    });
 
     return {
       label: cellText(link),
       href: link?.getAttribute('href') || '#',
+      target: linkTarget(link),
+      viewAllText,
+      viewAllHref,
+      viewAllTarget,
       children,
     };
   });
@@ -99,16 +127,21 @@ function buildItem(section, showRoot) {
     span.textContent = child.label;
     a.append(span);
     a.href = child.href;
+    applyTarget(a, child.target);
     accordion.append(a);
   });
 
-  const viewAll = document.createElement('a');
-  viewAll.className = 'nav-viewall';
-  viewAll.href = section.href;
-  const viewAllLabel = document.createElement('span');
-  viewAllLabel.textContent = `Ver todos los ${section.label.toLowerCase()}`;
-  viewAll.append(viewAllLabel, createIcon('arrow-forward'));
-  accordion.append(viewAll);
+  // "Ver todos" comes from the authored nav-item fields, not auto-generated.
+  if (section.viewAllText) {
+    const viewAll = document.createElement('a');
+    viewAll.className = 'nav-viewall';
+    viewAll.href = section.viewAllHref || '#';
+    applyTarget(viewAll, section.viewAllTarget);
+    const viewAllLabel = document.createElement('span');
+    viewAllLabel.textContent = section.viewAllText;
+    viewAll.append(viewAllLabel, createIcon('arrow-forward'));
+    accordion.append(viewAll);
+  }
 
   panel.append(accordion);
   item.append(panel);
@@ -116,31 +149,12 @@ function buildItem(section, showRoot) {
   return { item, trigger, panel };
 }
 
-function buildLanguage(languageRoot) {
-  const current = languageRoot?.getAttribute('data-label')
-    || cellText(languageRoot?.querySelector(':scope > div > div'))
-    || 'ESP';
-  const el = document.createElement('button');
-  el.type = 'button';
-  el.className = 'nav-lang';
-  const label = document.createElement('span');
-  label.textContent = current;
-  el.append(label, createChevron('nav-chevron'));
-  return el;
-}
-
 export default async function decorate(block) {
   const primaryPath = resolveFragmentPath('nav', DEFAULT_NAV_PATH);
   const fragment = await loadFragment(primaryPath) || await loadFragment(DEFAULT_NAV_PATH);
   if (!fragment) return;
 
-  const children = [...fragment.children];
-  const brandRoot = children[0];
-  const sectionsRoot = children.find((el) => el.querySelector('ul'));
-  const hotelsRoot = fragment.querySelector('.nav-hotels');
-  const languageRoot = fragment.querySelector('.nav-language');
-
-  const sections = readSections(sectionsRoot);
+  const sections = readSections(fragment);
 
   const nav = document.createElement('nav');
   nav.id = 'nav';
@@ -151,24 +165,25 @@ export default async function decorate(block) {
   const bar = document.createElement('div');
   bar.className = 'nav-bar';
 
-  const brandLink = brandRoot?.querySelector('a');
+  // Brand/logos come from the authored header-brand block (Logo móvil / Logo desktop).
+  const brandBlock = fragment.querySelector('.header-brand');
+  const brandLink = brandBlock?.querySelector('.header-brand-link');
   const brand = document.createElement('a');
   brand.className = 'nav-brand';
   brand.href = brandLink?.getAttribute('href') || '/';
-  brand.setAttribute('aria-label', cellText(brandRoot) || 'Inspiration Guide');
+  brand.setAttribute('aria-label', brandLink?.getAttribute('aria-label') || 'Inspiration Guide');
 
-  // Authored logos: first image = mobile, second = desktop (falls back to the
-  // built-in mark/wordmark when the nav has no logo image).
-  const pictures = [...(brandRoot?.querySelectorAll('picture') || [])];
-  const logos = pictures.length ? pictures : [...(brandRoot?.querySelectorAll('img') || [])];
-  if (logos.length) {
-    const mobileLogo = document.createElement('span');
-    mobileLogo.className = 'nav-logo nav-logo--mobile';
-    mobileLogo.append(logos[0]);
-    const desktopLogo = document.createElement('span');
-    desktopLogo.className = 'nav-logo nav-logo--desktop';
-    desktopLogo.append(logos[1] || logos[0].cloneNode(true));
-    brand.append(mobileLogo, desktopLogo);
+  const mobileLogoEl = brandBlock?.querySelector('.header-brand-logo--mobile');
+  const desktopLogoEl = brandBlock?.querySelector('.header-brand-logo--desktop');
+  if (mobileLogoEl || desktopLogoEl) {
+    if (mobileLogoEl) {
+      mobileLogoEl.classList.add('nav-logo', 'nav-logo--mobile');
+      brand.append(mobileLogoEl);
+    }
+    if (desktopLogoEl) {
+      desktopLogoEl.classList.add('nav-logo', 'nav-logo--desktop');
+      brand.append(desktopLogoEl);
+    }
   } else {
     brand.innerHTML = `<span class="nav-logo nav-logo--mobile">${LOGO_MARK}</span>`
       + `<span class="nav-logo nav-logo--desktop">${LOGO_MARK}`
@@ -234,6 +249,7 @@ export default async function decorate(block) {
       span.textContent = section.label;
       a.append(span);
       a.href = section.href;
+      applyTarget(a, section.target);
       listEl.append(a);
     }
   });
@@ -246,23 +262,26 @@ export default async function decorate(block) {
   const divider = () => Object.assign(document.createElement('span'), { className: 'nav-divider' });
 
   // DOM order = mobile order (Reservar / ESP); desktop reorders via flex.
-  if (hotelsRoot) {
-    const lines = cellText(hotelsRoot).split('\n').map((l) => l.trim()).filter(Boolean);
+  const hotelsLink = fragment.querySelector('.nav-hotels a, .nav-hotels-link a');
+  if (hotelsLink) {
     const a = document.createElement('a');
     a.className = 'nav-stripe nav-stripe--direct nav-util nav-util--hotels';
     const span = document.createElement('span');
     span.className = 'nav-stripe-label';
-    span.textContent = lines.find((l) => !/^https?:\/\//i.test(l)) || 'Reservar Hoteles';
+    span.textContent = cellText(hotelsLink) || 'Reservar Hoteles';
     a.append(span);
-    a.href = hotelsRoot.querySelector('a[href]')?.getAttribute('href')
-      || lines.find((l) => /^https?:\/\//i.test(l)) || '#';
+    a.href = hotelsLink.getAttribute('href') || '#';
+    applyTarget(a, linkTarget(hotelsLink));
     utilities.append(a, divider());
   }
 
-  if (languageRoot) {
-    const lang = buildLanguage(languageRoot);
-    lang.classList.add('nav-util', 'nav-util--lang');
-    utilities.append(lang);
+  // Reuse the decorated nav-language trigger (Nando's block) as-is — keeps its
+  // click handler and the modal it mounts on document.body.
+  const languageEl = fragment.querySelector('.nav-language-rendered')
+    || fragment.querySelector('.nav-language');
+  if (languageEl) {
+    languageEl.classList.add('nav-util', 'nav-util--lang');
+    utilities.append(languageEl);
   }
 
   panel.append(primary, utilities);
