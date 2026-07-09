@@ -11,8 +11,10 @@ import {
 const RESERVED_PROPS = new Set([
   'ctaLabel',
   'featuredArticlePath',
+  'featuredArticleTitleHeading',
   'featuredBadge',
   'featuredLabel',
+  'featuredLabelHeading',
   'filterCategory',
   'filter_tag1',
   'filter_tag2',
@@ -20,12 +22,15 @@ const RESERVED_PROPS = new Set([
   'filter_tag4',
   'filter_tag5',
   'filterTags',
+  'latestArticleTitleHeading',
   'latestLabel',
+  'latestLabelHeading',
   'maxItems',
   'mode',
 ]);
 
 const DATA_MODES = new Set(['manual', 'auto-category', 'auto-filter', 'auto-tag']);
+const RENDER_TAGS = new Set(['p', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6']);
 
 const FIELD_SELECTORS = {
   authorImage: 'article_authorImage',
@@ -125,6 +130,11 @@ function getTextValue(block, propName, fallback = '') {
   }
 
   return fallback;
+}
+
+function getRenderTag(block, propName, fallback) {
+  const configured = getTextValue(block, propName, fallback).toLowerCase();
+  return RENDER_TAGS.has(configured) ? configured : fallback;
 }
 
 function getHrefFromElement(el) {
@@ -415,8 +425,8 @@ function hideSource(block) {
   });
 }
 
-function createEyebrow(text) {
-  const eyebrow = document.createElement('p');
+function createEyebrow(text, tagName = 'p') {
+  const eyebrow = document.createElement(tagName);
   eyebrow.className = 'blog-split-list-eyebrow';
   eyebrow.textContent = text;
   return eyebrow;
@@ -509,7 +519,7 @@ function appendAuthor(parent, item) {
   parent.append(author);
 }
 
-function createFeatured(item, ctaLabel, badgeLabel) {
+function createFeatured(item, ctaLabel, badgeLabel, titleTagName = 'h2') {
   const article = document.createElement('article');
   article.className = 'blog-split-featured';
 
@@ -536,7 +546,7 @@ function createFeatured(item, ctaLabel, badgeLabel) {
 
   appendMeta(body, item, true);
 
-  const title = document.createElement('h2');
+  const title = document.createElement(titleTagName);
   const link = document.createElement('a');
   link.href = toPageHref(item.href);
   link.textContent = item.title;
@@ -557,7 +567,7 @@ function createFeatured(item, ctaLabel, badgeLabel) {
   return article;
 }
 
-function createListItem(item, ctaLabel) {
+function createListItem(item, ctaLabel, titleTagName = 'h3') {
   const li = document.createElement('li');
   li.className = 'blog-split-item';
 
@@ -576,7 +586,7 @@ function createListItem(item, ctaLabel) {
   body.className = 'blog-split-item-body';
   appendMeta(body, item);
 
-  const heading = document.createElement('h3');
+  const heading = document.createElement(titleTagName);
   const link = document.createElement('a');
   link.href = toPageHref(item.href);
   link.textContent = item.title;
@@ -595,6 +605,15 @@ function splitManualItems(items, maxItems) {
 
   const latest = items
     .filter((item) => item !== featured)
+    .sort((left, right) => {
+      const leftDate = Date.parse(left.publicationDate || '');
+      const rightDate = Date.parse(right.publicationDate || '');
+
+      if (Number.isNaN(leftDate) && Number.isNaN(rightDate)) return 0;
+      if (Number.isNaN(leftDate)) return 1;
+      if (Number.isNaN(rightDate)) return -1;
+      return rightDate - leftDate;
+    })
     .slice(0, Math.max(maxItems - 1, 0));
 
   return [featured, ...latest];
@@ -608,12 +627,16 @@ export default async function decorate(block) {
   const featuredTitle = getTextValue(block, 'featuredLabel', '')
     || await getTranslation('featuredColumnTitle', 'En portada')
     || await getPlaceholder('featuredColumnTitle', 'En portada');
+  const featuredTitleTag = getRenderTag(block, 'featuredLabelHeading', 'p');
   const latestTitle = getTextValue(block, 'latestLabel', '')
     || await getTranslation('latestColumnTitle', 'Últimas publicaciones')
     || await getPlaceholder('latestColumnTitle', 'Últimas publicaciones');
+  const latestTitleTag = getRenderTag(block, 'latestLabelHeading', 'p');
   const featuredBadge = getTextValue(block, 'featuredBadge', '')
     || await getTranslation('featuredArticle', 'Artículo destacado')
     || await getPlaceholder('featuredArticle', 'Artículo destacado');
+  const featuredArticleTitleTag = getRenderTag(block, 'featuredArticleTitleHeading', 'h2');
+  const latestArticleTitleTag = getRenderTag(block, 'latestArticleTitleHeading', 'h3');
   const ctaLabel = getTextValue(block, 'ctaLabel', '')
     || await getTranslation('readArticle', 'Leer artículo')
     || await getPlaceholder('readArticle', 'Leer artículo');
@@ -634,19 +657,21 @@ export default async function decorate(block) {
   const featuredColumn = document.createElement('section');
   featuredColumn.className = 'blog-split-list-featured-column';
   featuredColumn.append(
-    createEyebrow(featuredTitle),
-    createFeatured(items[0], ctaLabel, featuredBadge),
+    createEyebrow(featuredTitle, featuredTitleTag),
+    createFeatured(items[0], ctaLabel, featuredBadge, featuredArticleTitleTag),
   );
   wrapper.append(featuredColumn);
 
   if (items.length > 1) {
     const latestColumn = document.createElement('section');
     latestColumn.className = 'blog-split-list-latest-column';
-    latestColumn.append(createEyebrow(latestTitle));
+    latestColumn.append(createEyebrow(latestTitle, latestTitleTag));
 
     const list = document.createElement('ul');
     list.className = 'blog-split-side-list';
-    items.slice(1).forEach((item) => list.append(createListItem(item, ctaLabel)));
+    items.slice(1).forEach((item) => {
+      list.append(createListItem(item, ctaLabel, latestArticleTitleTag));
+    });
 
     latestColumn.append(list);
     wrapper.append(latestColumn);

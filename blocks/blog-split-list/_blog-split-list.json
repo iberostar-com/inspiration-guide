@@ -43,16 +43,86 @@
           "value": "En portada"
         },
         {
+          "component": "select",
+          "valueType": "string",
+          "name": "featuredLabelHeading",
+          "label": "Featured Column Title Element",
+          "value": "p",
+          "options": [
+            { "name": "Paragraph", "value": "p" },
+            { "name": "H1", "value": "h1" },
+            { "name": "H2", "value": "h2" },
+            { "name": "H3", "value": "h3" },
+            { "name": "H4", "value": "h4" },
+            { "name": "H5", "value": "h5" },
+            { "name": "H6", "value": "h6" }
+          ]
+        },
+        {
           "component": "text",
           "name": "latestLabel",
           "label": "Latest Column Title",
           "value": "Últimas publicaciones"
         },
         {
+          "component": "select",
+          "valueType": "string",
+          "name": "latestLabelHeading",
+          "label": "Latest Column Title Element",
+          "value": "p",
+          "options": [
+            { "name": "Paragraph", "value": "p" },
+            { "name": "H1", "value": "h1" },
+            { "name": "H2", "value": "h2" },
+            { "name": "H3", "value": "h3" },
+            { "name": "H4", "value": "h4" },
+            { "name": "H5", "value": "h5" },
+            { "name": "H6", "value": "h6" }
+          ]
+        },
+        {
+          "component": "text",
+          "name": "featuredBadge",
+          "label": "Featured Badge Text",
+          "value": "Artículo destacado"
+        },
+        {
           "component": "aem-content",
           "valueType": "string",
           "name": "featuredArticlePath",
           "label": "Featured Article Page"
+        },
+        {
+          "component": "select",
+          "valueType": "string",
+          "name": "featuredArticleTitleHeading",
+          "label": "Featured Article Title Element",
+          "value": "h2",
+          "options": [
+            { "name": "Paragraph", "value": "p" },
+            { "name": "H1", "value": "h1" },
+            { "name": "H2", "value": "h2" },
+            { "name": "H3", "value": "h3" },
+            { "name": "H4", "value": "h4" },
+            { "name": "H5", "value": "h5" },
+            { "name": "H6", "value": "h6" }
+          ]
+        },
+        {
+          "component": "select",
+          "valueType": "string",
+          "name": "latestArticleTitleHeading",
+          "label": "Latest Article Title Element",
+          "value": "h3",
+          "options": [
+            { "name": "Paragraph", "value": "p" },
+            { "name": "H1", "value": "h1" },
+            { "name": "H2", "value": "h2" },
+            { "name": "H3", "value": "h3" },
+            { "name": "H4", "value": "h4" },
+            { "name": "H5", "value": "h5" },
+            { "name": "H6", "value": "h6" }
+          ]
         },
         {
           "component": "aem-tag",

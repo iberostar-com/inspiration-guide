@@ -6,8 +6,8 @@
    ============================================================ */
 
 footer {
-  background: #f3f3f3;
-  color: #1b2828;
+  background: var(--color-neutral-100, #f3f3f3);
+  color: var(--color-neutral-1000, #1b2828);
   font-size: var(--body-font-size-xs);
   line-height: 1.4;
 }
@@ -56,7 +56,7 @@ footer .footer .section.footer-main {
 /* Header-brand logo spacing before footer-links */
 footer .footer .section.footer-main .header-brand-wrapper {
   width: min(100%, 220px);
-  margin-bottom: 56px;
+  margin-bottom: 48px;
 }
 
 footer .footer .section.footer-main .header-brand {
@@ -74,20 +74,20 @@ footer .footer .section.footer-main .header-brand img {
 
 /* Footer links block within single section */
 footer .footer .section.footer-main .footer-links-wrapper {
-  margin-bottom: 34px;
+  margin-bottom: 32px;
 }
 
 /* Meta row: language + legal */
 footer .footer .section .footer-meta-row {
   margin-top: 0;
-  padding-top: 24px;
-  border-top: 1px solid #dedede;
+  padding-top: 20px;
+  border-top: 1px solid var(--color-neutral-300, #dedede);
   display: flex;
   flex-direction: column;
 }
 
 footer .footer .section .footer-meta-row .nav-language-wrapper {
-  margin-bottom: 20px;
+  margin-bottom: 16px;
 }
 
 footer .footer .section .footer-meta-row .footer-legal-wrapper {
@@ -114,22 +114,59 @@ footer .footer .section.footer-main .footer-currency {
 /* ============================================================
    Tablet
    ============================================================ */
-@media (width >= 600px) {
+@media (width >= 576px) {
   footer .footer {
     padding: 44px 24px 36px;
   }
 
   footer .footer .section.footer-main .header-brand-wrapper {
-    margin-bottom: 48px;
+    margin-bottom: 44px;
+  }
+
+  footer .footer .section.footer-main .footer-links-wrapper {
+    margin-bottom: 28px;
+  }
+
+  footer .footer .section .footer-meta-row {
+    padding-top: 24px;
   }
 }
 
 /* ============================================================
-   Desktop
+   M
    ============================================================ */
-@media (width >= 900px) {
+@media (width >= 820px) {
   footer .footer {
-    padding: 44px 24px 24px;
+    padding: 48px 32px 32px;
+  }
+
+  footer .footer .section .footer-meta-row {
+    margin-top: 32px;
+    padding-top: 24px;
+    border-top: 1px solid var(--color-neutral-300, #dedede);
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    align-items: center;
+    gap: 24px;
+  }
+
+  footer .footer .section .footer-meta-row .nav-language-wrapper {
+    margin-bottom: 0;
+    grid-column: 2;
+    justify-self: end;
+  }
+
+  footer .footer .section .footer-meta-row .footer-legal-wrapper {
+    grid-column: 1;
+  }
+}
+
+/* ============================================================
+   L
+   ============================================================ */
+@media (width >= 1440px) {
+  footer .footer {
+    padding: 48px 40px 28px;
   }
 
   footer .footer .section.footer-main {
@@ -157,9 +194,9 @@ footer .footer .section.footer-main .footer-currency {
 
   /* Meta section below links: language + legal */
   footer .footer .section .footer-meta-row {
-    margin-top: 34px;
-    padding-top: 22px;
-    border-top: 1px solid #dedede;
+    margin-top: 40px;
+    padding-top: 24px;
+    border-top: 1px solid var(--color-neutral-300, #dedede);
     display: grid;
     grid-template-columns: minmax(0, 1fr) auto;
     align-items: center;
@@ -169,6 +206,7 @@ footer .footer .section.footer-main .footer-currency {
   footer .footer .section .footer-meta-row .nav-language-wrapper {
     margin-bottom: 0;
     grid-column: 2;
+    grid-row: 1;
     justify-self: end;
   }
 
@@ -185,8 +223,8 @@ footer .footer .section.footer-main .footer-currency {
   }
 }
 
-@media (width >= 1200px) {
+@media (width >= 1920px) {
   footer .footer {
-    padding: 48px 40px 28px;
+    padding: 48px 40px 32px;
   }
 }

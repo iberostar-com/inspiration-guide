@@ -23,6 +23,8 @@
     { "Key": "hotelPriceFromPrefix", "Text": "Desde" },
     { "Key": "hotelPricePerNight", "Text": "/ noche" },
     { "Key": "hotelPricePersonSingular", "Text": "persona" },
-    { "Key": "hotelPricePersonPlural", "Text": "personas" }
+    { "Key": "hotelPricePersonPlural", "Text": "personas" },
+    { "Key": "chooseLanguage", "Text": "Selecciona un idioma" },
+    { "Key": "close", "Text": "Cerrar" }
   ]
 }
