@@ -114,11 +114,7 @@ function isValidPositionalValue(propName, value, legacyMode) {
     return lowered.startsWith('/') || lowered.startsWith('http') || lowered.startsWith('urn:');
   }
 
-  if (propName === 'filterTags') {
-    return !RENDER_TAGS.has(lowered) && !DATA_MODES.has(lowered);
-  }
-
-  if (propName === 'featuredLabel' || propName === 'latestLabel' || propName === 'featuredBadge') {
+  if (propName === 'filterTags' || propName === 'featuredLabel' || propName === 'latestLabel' || propName === 'featuredBadge') {
     return !RENDER_TAGS.has(lowered) && !DATA_MODES.has(lowered);
   }
 
@@ -654,6 +650,14 @@ function createListItem(item, ctaLabel, titleTagName = 'h3') {
   link.textContent = item.title;
   heading.append(link);
   body.append(heading);
+
+  if (item.description) {
+    const description = document.createElement('p');
+    description.className = 'blog-split-description';
+    description.textContent = item.description;
+    body.append(description);
+  }
+
   body.append(createCta(item.href, ctaLabel, 'blog-split-item-cta'));
 
   article.append(body);
