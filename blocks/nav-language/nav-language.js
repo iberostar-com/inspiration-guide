@@ -19,6 +19,13 @@ function getHrefFromField(field) {
   return getTextFromField(field) || '';
 }
 
+function normalizeTarget(value = '') {
+  const text = `${value}`.trim().toLowerCase();
+  if (!text) return '_self';
+  if (text === '_blank' || text.includes('nueva')) return '_blank';
+  return '_self';
+}
+
 function looksLikeUrl(value) {
   return /^(https?:)?\/\//i.test(value) || value.startsWith('/');
 }
@@ -69,16 +76,18 @@ function resolveOptionUrl(value) {
 function createOptionData(row) {
   const labelField = getPropElement(row, 'label');
   const linkField = getPropElement(row, 'link') || getPropElement(row, 'linkUrl');
+  const targetField = getPropElement(row, 'target');
   const cells = [...row.children];
 
   let label = getTextFromField(labelField) || getTextFromField(cells[0]);
   let url = getHrefFromField(linkField) || getHrefFromField(cells[1]);
+  const target = normalizeTarget(getTextFromField(targetField) || getTextFromField(cells[2]) || '_self');
 
   label = label?.trim() || '';
   url = resolveOptionUrl(url?.trim());
 
   if (!label) return null;
-  return { label, url };
+  return { label, url, target };
 }
 
 function hideSourceRows(rows) {
@@ -177,6 +186,10 @@ export default async function decorate(block) {
     const triggerLink = document.createElement('a');
     triggerLink.className = 'nav-language-trigger nav-language-trigger-link';
     triggerLink.href = onlyOption?.url || '#';
+    if (onlyOption?.target === '_blank') {
+      triggerLink.target = '_blank';
+      triggerLink.rel = 'noopener';
+    }
     triggerLink.textContent = currentLabel;
     rendered.append(triggerLink);
     return;
@@ -217,6 +230,10 @@ export default async function decorate(block) {
   options.forEach((option) => {
     const optionLink = document.createElement('a');
     optionLink.href = option.url;
+    if (option.target === '_blank') {
+      optionLink.target = '_blank';
+      optionLink.rel = 'noopener';
+    }
     optionLink.className = 'nav-language-option-button';
     optionLink.textContent = option.label;
 
