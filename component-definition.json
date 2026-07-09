@@ -815,6 +815,9 @@
         {
           "title": "Nav Language",
           "id": "nav-language",
+          "allowedComponents": [
+            "nav-language-option"
+          ],
           "plugins": {
             "xwalk": {
               "page": {
