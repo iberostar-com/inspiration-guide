@@ -726,6 +726,12 @@
     ]
   },
   {
+    "id": "footer-links-group",
+    "components": [
+      "footer-links-item"
+    ]
+  },
+  {
     "id": "grid-category-gallery",
     "components": [
       "grid-category-gallery-card"

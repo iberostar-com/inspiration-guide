@@ -15,10 +15,6 @@ function getModelElement(container, model) {
   return container?.querySelector?.(`[data-aue-model="${model}"]`) || null;
 }
 
-function getLinksContainer(group) {
-  return getPropElement(group, 'links') || group.querySelector?.('[data-aue-prop="links"]') || null;
-}
-
 function getBoolFromRow(row, prop, fallbackIndex) {
   const propEl = getPropElement(row, prop);
   const text = (propEl?.textContent?.trim() || getCellText(row, fallbackIndex)).toLowerCase();
@@ -30,66 +26,10 @@ function isTrueValue(value = '') {
   return text === 'true' || text === 'on' || text === 'yes';
 }
 
-function getPropValues(container, propName, getter = (el) => el.textContent?.trim() || '') {
-  if (!container) return [];
-
-  const fields = [...container.querySelectorAll('[data-aue-prop]')]
-    .filter((el) => {
-      const prop = el.getAttribute('data-aue-prop') || '';
-      return prop === propName || prop.endsWith(`_${propName}`);
-    });
-
-  return fields.map(getter).filter((value) => value !== '');
-}
-
 function getHrefFromField(field) {
   const anchor = field?.querySelector?.('a[href]');
   if (anchor) return anchor.getAttribute('href')?.trim() || '';
   return field?.textContent?.trim() || '';
-}
-
-function getItemsFromLinksContainer(linksContainer) {
-  if (!linksContainer) return [];
-
-  // Strategy 1: Look for direct children with linkLabel props (UE items)
-  const directItems = [...linksContainer.children]
-    .filter((child) => child.querySelector('[data-aue-prop="linkLabel"]'));
-
-  if (directItems.length > 0) {
-    return directItems
-      .map((itemContainer) => {
-        const labelEl = itemContainer.querySelector('[data-aue-prop="linkLabel"]');
-        const urlEl = itemContainer.querySelector('[data-aue-prop="linkUrl"]');
-        const newTabEl = itemContainer.querySelector('[data-aue-prop="linkNewTab"]');
-        const nofollowEl = itemContainer.querySelector('[data-aue-prop="linkNofollow"]');
-
-        const label = labelEl?.textContent?.trim() || '';
-        const url = getHrefFromField(urlEl) || '#';
-        const newTab = isTrueValue(newTabEl?.textContent || '');
-        const nofollow = isTrueValue(nofollowEl?.textContent || '');
-
-        return {
-          label, url, newTab, nofollow,
-        };
-      })
-      .filter((item) => item.label);
-  }
-
-  // Strategy 2: Legacy prop method
-  const labels = getPropValues(linksContainer, 'linkLabel');
-  const urls = getPropValues(linksContainer, 'linkUrl', getHrefFromField);
-  const newTabs = getPropValues(linksContainer, 'linkNewTab').map((v) => isTrueValue(v));
-  const nofollows = getPropValues(linksContainer, 'linkNofollow').map((v) => isTrueValue(v));
-
-  const size = Math.max(labels.length, urls.length);
-  if (!size) return [];
-
-  return Array.from({ length: size }, (_, i) => ({
-    label: labels[i] || '',
-    url: urls[i] || '#',
-    newTab: newTabs[i] || false,
-    nofollow: nofollows[i] || false,
-  })).filter((item) => item.label);
 }
 
 function getHrefFromRow(row, prop, fallbackIndex) {
@@ -143,31 +83,6 @@ function buildLinkItem(row) {
   return li;
 }
 
-function buildLinkItemFromData(item) {
-  const label = item?.label?.trim() || '';
-  if (!label) return null;
-
-  const li = document.createElement('li');
-  li.className = 'footer-links-item';
-
-  const a = document.createElement('a');
-  a.href = item.url?.trim() || '#';
-  a.textContent = label;
-
-  if (item.newTab && item.nofollow) {
-    a.target = '_blank';
-    a.rel = 'noopener nofollow';
-  } else if (item.newTab) {
-    a.target = '_blank';
-    a.rel = 'noopener';
-  } else if (item.nofollow) {
-    a.rel = 'nofollow';
-  }
-
-  li.append(a);
-  return li;
-}
-
 function collectGroups(block) {
   // Priority 1: Look for Universal Editor data-aue-model structure
   const groups = [...block.querySelectorAll('[data-aue-model="footer-links-group"]')]
@@ -177,7 +92,9 @@ function collectGroups(block) {
     return groups.map((group) => {
       // Extract ONLY the title element (with data-aue-prop="title")
       const titleEl = getPropElement(group, 'title');
-      const linksContainer = getLinksContainer(group);
+
+      // Link items are child blocks (data-aue-model="footer-links-item")
+      const linkRows = [...group.querySelectorAll('[data-aue-model="footer-links-item"]')];
 
       // Get title text from the title element only
       const titleText = titleEl?.textContent?.trim() || '';
@@ -186,8 +103,8 @@ function collectGroups(block) {
         titleElement: titleEl,
         titleText,
         sourceNodes: [group],
-        linkRows: [],
-        linksContainer,
+        linkRows,
+        linksContainer: null,
       };
     });
   }

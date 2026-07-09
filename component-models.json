@@ -1569,13 +1569,6 @@
         "name": "title",
         "label": "List Title",
         "value": ""
-      },
-      {
-        "component": "container",
-        "name": "links",
-        "label": "Links",
-        "multi": true,
-        "model": "footer-links-item"
       }
     ]
   },
