@@ -1017,11 +1017,10 @@
         "value": ""
       },
       {
-        "component": "text",
+        "component": "aem-content",
         "valueType": "string",
         "name": "link",
-        "label": "Link URL",
-        "value": ""
+        "label": "Link URL"
       }
     ]
   },
@@ -1935,10 +1934,9 @@
         "value": ""
       },
       {
-        "component": "text",
+        "component": "aem-content",
         "name": "cta",
-        "label": "\"View All\" Link URL",
-        "value": ""
+        "label": "\"View All\" Link URL"
       }
     ]
   },

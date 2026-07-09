@@ -217,17 +217,32 @@ function getImageFromElement(el) {
 
 function normalizeList(value) {
   return `${value || ''}`
-    .split(/[|,;]/)
+    .split(/[|,;\n]/)
     .map((item) => item.trim().toLowerCase())
     .filter(Boolean);
 }
 
 function getListValues(el) {
   const items = [...(el?.querySelectorAll?.('li') || [])]
-    .map((item) => item.textContent?.trim())
+    .flatMap((item) => {
+      const text = item.textContent?.trim();
+      const href = item.querySelector('a[href]')?.getAttribute('href')?.trim();
+      return [text, href];
+    })
     .filter(Boolean);
 
-  return items.length ? items : normalizeList(el?.textContent || '');
+  if (items.length) return items;
+
+  const links = [...(el?.querySelectorAll?.('a[href]') || [])]
+    .flatMap((link) => [
+      link.textContent?.trim(),
+      link.getAttribute('href')?.trim(),
+    ])
+    .filter(Boolean);
+
+  if (links.length) return links;
+
+  return normalizeList(el?.textContent || '');
 }
 
 function getConfiguredTags(block) {
@@ -251,6 +266,29 @@ function normalizeSlug(value) {
     .replace(/[\u0300-\u036f]/g, '')
     .replace(/[^a-z0-9]+/g, '-')
     .replace(/^-|-$/g, '');
+}
+
+function getTagMatchKeys(value) {
+  const raw = `${value || ''}`.trim().toLowerCase();
+  if (!raw) return [];
+
+  const withoutQuery = raw.split(/[?#]/, 1)[0];
+  const withoutNamespace = withoutQuery.includes(':')
+    ? withoutQuery.split(':').slice(1).join(':')
+    : withoutQuery;
+  const pathSegments = withoutNamespace.split('/').filter(Boolean);
+  const leaf = pathSegments[pathSegments.length - 1] || '';
+
+  return [
+    normalizeSlug(raw),
+    normalizeSlug(withoutQuery),
+    normalizeSlug(withoutNamespace),
+    normalizeSlug(leaf),
+  ].filter(Boolean);
+}
+
+function buildTagKeySet(values = []) {
+  return new Set(values.flatMap((value) => getTagMatchKeys(value)));
 }
 
 function normalizeUrl(value) {
@@ -342,6 +380,7 @@ function normalizeArticle(article = {}, index = 0) {
     authorImage: normalizeValue(article.authorImage),
     authorName: normalizeValue(article.authorName || article.author),
     category,
+    categoryPath: normalizeValue(article.categoryPath),
     categorySlug,
     categoryUrl: normalizeValue(article.categoryUrl) || (categorySlug ? `/inspiration-guide/category/${categorySlug}` : ''),
     description,
@@ -403,16 +442,23 @@ function fromManualRows(block) {
 function filterArticles(articles, block, mode) {
   const configuredCategory = normalizeSlug(getTextValue(block, 'filterCategory', ''));
   const configuredTags = getConfiguredTags(block);
+  const configuredTagKeys = buildTagKeySet(configuredTags);
   const contextCategory = normalizeSlug(getCurrentPathSegment('category'));
   const contextTag = normalizeSlug(getCurrentPathSegment('tag'));
 
   return articles.filter((article) => {
     const item = normalizeArticle(article);
-    const articleTags = item.tags.map(normalizeSlug);
+    const articleTagKeys = buildTagKeySet([
+      ...(item.tags || []),
+      item.category,
+      item.categorySlug,
+      item.categoryPath,
+      item.categoryUrl,
+    ]);
     const category = normalizeSlug(item.categorySlug || item.category);
     const categoryMatches = !configuredCategory || category === configuredCategory;
-    const tagMatches = !configuredTags.length
-      || configuredTags.some((tag) => articleTags.includes(normalizeSlug(tag)));
+    const tagMatches = !configuredTagKeys.size
+      || [...configuredTagKeys].some((tag) => articleTagKeys.has(tag));
 
     if (mode === 'auto-category') {
       const target = configuredCategory || contextCategory;
@@ -421,8 +467,9 @@ function filterArticles(articles, block, mode) {
 
     if (mode === 'auto-tag') {
       const targetTags = configuredTags.length ? configuredTags : [contextTag].filter(Boolean);
+      const targetTagKeys = buildTagKeySet(targetTags);
       return !targetTags.length
-        || targetTags.some((tag) => articleTags.includes(normalizeSlug(tag)));
+        || [...targetTagKeys].some((tag) => articleTagKeys.has(tag));
     }
 
     return categoryMatches && tagMatches;
