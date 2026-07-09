@@ -63,12 +63,7 @@ function resolveOptionUrl(value) {
   if (!LOCALE_CODE.test(raw)) return raw;
 
   const locale = raw.toLowerCase();
-  // Derive any path prefix that precedes the "<locale>/inspiration-guide" segment
-  // from the current URL, so the link works whatever the environment root is.
-  const currentPath = normalizePathname(window.location.pathname);
-  const match = currentPath.match(/^(.*?)\/[a-z]{2}-[a-z]{2}\/inspiration-guide(?:\/|$)/i);
-  const prefix = match ? match[1] : '';
-  return `${prefix}/${locale}/${GUIDE_SEGMENT}/`;
+  return `/${GUIDE_SEGMENT}/${locale}/`;
 }
 
 function createOptionData(row) {

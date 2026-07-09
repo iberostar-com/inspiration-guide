@@ -169,6 +169,7 @@ footer .footer .section.footer-main .footer-currency {
   footer .footer .section .footer-meta-row .nav-language-wrapper {
     margin-bottom: 0;
     grid-column: 2;
+    grid-row: 1;
     justify-self: end;
   }
 
