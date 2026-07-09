@@ -32,7 +32,7 @@ function getOptionsRows(block) {
 
 function createOptionData(row) {
   const labelField = getPropElement(row, 'label');
-  const linkField = getPropElement(row, 'link');
+  const linkField = getPropElement(row, 'link') || getPropElement(row, 'linkUrl');
 
   const cells = [...row.children];
 
