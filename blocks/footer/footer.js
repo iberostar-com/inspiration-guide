@@ -42,7 +42,47 @@ function decorateFooterSections(footer) {
   const sections = [...footer.children];
 
   sections.forEach((section) => {
-    section.classList.add('footer-section', 'footer-main', 'footer-brand');
+    section.classList.add('footer-section');
+
+    const hasBrand = section.querySelector('.header-brand-wrapper, .header-brand');
+    const hasLinks = section.querySelector('.footer-links-wrapper, .footer-links');
+    const navLanguageWrapper = section.querySelector(':scope > .nav-language-wrapper');
+    const footerLegalWrapper = section.querySelector(':scope > .footer-legal-wrapper');
+    const hasMeta = navLanguageWrapper || footerLegalWrapper || section.querySelector('.nav-language, .footer-legal');
+
+    if (navLanguageWrapper || footerLegalWrapper) {
+      let metaRow = section.querySelector(':scope > .footer-meta-row');
+
+      if (!metaRow) {
+        metaRow = document.createElement('div');
+        metaRow.className = 'footer-meta-row';
+        section.append(metaRow);
+      }
+
+      if (navLanguageWrapper) {
+        metaRow.append(navLanguageWrapper);
+      }
+
+      if (footerLegalWrapper) {
+        metaRow.append(footerLegalWrapper);
+      }
+    }
+
+    if (hasBrand) {
+      section.classList.add('footer-brand');
+    }
+
+    if (hasLinks) {
+      section.classList.add('footer-main');
+    }
+
+    if (hasMeta) {
+      section.classList.add('footer-meta');
+    }
+
+    if (hasLinks && hasMeta) {
+      section.classList.add('footer-main-combined');
+    }
   });
 }
 
