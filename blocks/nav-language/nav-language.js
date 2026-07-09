@@ -14,9 +14,20 @@ function getHrefFromField(field) {
 }
 
 function getOptionsRows(block) {
+  // Priority 1: Universal Editor multifield items
   const modelRows = [...block.querySelectorAll('[data-aue-model="nav-language-option"]')];
   if (modelRows.length) return modelRows;
-  return [...block.children];
+
+  // Priority 2: All direct children (fallback for previewed/plain HTML content)
+  return [...block.children].filter((child) => {
+    // Skip rows that only contain a title/label field
+    const hasLabel = getPropElement(child, 'label');
+    const hasLink = getPropElement(child, 'link');
+    // If it has both AUE props, it's a complete option row
+    if (hasLabel && hasLink) return true;
+    // If it has 2+ cells, treat as option row
+    return child.children.length >= 2;
+  });
 }
 
 function createOptionData(row) {
@@ -24,8 +35,22 @@ function createOptionData(row) {
   const linkField = getPropElement(row, 'link');
 
   const cells = [...row.children];
-  const label = getTextFromField(labelField) || cells[0]?.textContent?.trim() || '';
-  const url = getHrefFromField(linkField) || cells[1]?.textContent?.trim() || '#';
+  
+  // Try AUE fields first, then fall back to cells
+  let label = getTextFromField(labelField);
+  let url = getHrefFromField(linkField);
+  
+  // Fallback to cell positions if no AUE fields
+  if (!label && cells[0]) {
+    label = getTextFromField(cells[0]);
+  }
+  if (!url && cells[1]) {
+    url = getHrefFromField(cells[1]);
+  }
+
+  // Trim and validate
+  label = label?.trim() || '';
+  url = url?.trim() || '#';
 
   if (!label) return null;
   return { label, url };
@@ -36,14 +61,19 @@ function createOptionData(row) {
  * @param {Element} block The nav-language block element
  */
 export default function decorate(block) {
+  // Get current language label
   const currentLabel = getTextFromField(getPropElement(block, 'label'))
     || block.getAttribute('data-label')
     || 'ESP';
+  
+  // Extract all option rows
   const rows = getOptionsRows(block);
   const options = rows.map(createOptionData).filter(Boolean);
 
+  // Hide source rows but preserve content
   rows.forEach((row) => row.setAttribute('aria-hidden', 'true'));
 
+  // If only 0 or 1 options, render as link instead of modal
   if (options.length <= 1) {
     const onlyOption = options[0];
     const triggerLink = document.createElement('a');
@@ -106,7 +136,7 @@ export default function decorate(block) {
   modal.append(header, optionsContainer);
   backdrop.append(modal);
 
-  // Event listeners
+  // Event: Open/close modal via button
   trigger.addEventListener('click', () => {
     const expanded = trigger.getAttribute('aria-expanded') === 'true';
     if (!expanded) {
@@ -121,6 +151,7 @@ export default function decorate(block) {
     }
   });
 
+  // Event: Close via close button
   closeBtn.addEventListener('click', () => {
     backdrop.hidden = true;
     backdrop.setAttribute('aria-hidden', 'true');
@@ -128,6 +159,7 @@ export default function decorate(block) {
     trigger.focus();
   });
 
+  // Event: Close via backdrop click
   backdrop.addEventListener('click', (e) => {
     if (e.target === backdrop) {
       backdrop.hidden = true;
@@ -137,7 +169,7 @@ export default function decorate(block) {
     }
   });
 
-  // Close on Escape key
+  // Event: Close via Escape key
   document.addEventListener('keydown', (e) => {
     if (e.key === 'Escape' && !backdrop.hidden) {
       backdrop.hidden = true;
