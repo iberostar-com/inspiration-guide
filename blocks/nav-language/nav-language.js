@@ -9,8 +9,8 @@ function getTextFromField(field) {
 
 function getHrefFromField(field) {
   const anchor = field?.querySelector?.('a[href]');
-  if (anchor) return anchor.getAttribute('href')?.trim() || '#';
-  return getTextFromField(field) || '#';
+  if (anchor) return anchor.getAttribute('href')?.trim() || '';
+  return getTextFromField(field) || '';
 }
 
 function getOptionsRows(block) {
@@ -35,11 +35,11 @@ function createOptionData(row) {
   const linkField = getPropElement(row, 'link');
 
   const cells = [...row.children];
-  
+
   // Try AUE fields first, then fall back to cells
   let label = getTextFromField(labelField);
   let url = getHrefFromField(linkField);
-  
+
   // Fallback to cell positions if no AUE fields
   if (!label && cells[0]) {
     label = getTextFromField(cells[0]);
@@ -56,6 +56,24 @@ function createOptionData(row) {
   return { label, url };
 }
 
+function hideSourceRows(rows) {
+  rows.forEach((row) => {
+    row.classList.add('nav-language-source-row');
+    row.setAttribute('aria-hidden', 'true');
+  });
+}
+
+function createRenderedContainer(block) {
+  const existing = block.querySelector(':scope > .nav-language-rendered');
+  if (existing) existing.remove();
+
+  const rendered = document.createElement('div');
+  rendered.className = 'nav-language-rendered';
+  block.classList.add('nav-language-enhanced');
+  block.append(rendered);
+  return rendered;
+}
+
 /**
  * Nav Language Selector block: modal trigger + language options modal.
  * @param {Element} block The nav-language block element
@@ -65,13 +83,14 @@ export default function decorate(block) {
   const currentLabel = getTextFromField(getPropElement(block, 'label'))
     || block.getAttribute('data-label')
     || 'ESP';
-  
+
   // Extract all option rows
   const rows = getOptionsRows(block);
   const options = rows.map(createOptionData).filter(Boolean);
 
-  // Hide source rows but preserve content
-  rows.forEach((row) => row.setAttribute('aria-hidden', 'true'));
+  // Keep authored rows for UE instrumentation, but hide them visually.
+  hideSourceRows(rows);
+  const rendered = createRenderedContainer(block);
 
   // If only 0 or 1 options, render as link instead of modal
   if (options.length <= 1) {
@@ -80,7 +99,7 @@ export default function decorate(block) {
     triggerLink.className = 'nav-language-trigger nav-language-trigger-link';
     triggerLink.href = onlyOption?.url || '#';
     triggerLink.textContent = currentLabel;
-    block.replaceChildren(triggerLink);
+    rendered.append(triggerLink);
     return;
   }
 
@@ -104,6 +123,7 @@ export default function decorate(block) {
   modal.setAttribute('role', 'dialog');
   modal.setAttribute('aria-modal', 'true');
   modal.setAttribute('aria-label', 'Seleccionar idioma');
+  modal.setAttribute('tabindex', '-1');
 
   // Modal header
   const header = document.createElement('div');
@@ -136,48 +156,51 @@ export default function decorate(block) {
   modal.append(header, optionsContainer);
   backdrop.append(modal);
 
-  // Event: Open/close modal via button
-  trigger.addEventListener('click', () => {
-    const expanded = trigger.getAttribute('aria-expanded') === 'true';
-    if (!expanded) {
-      backdrop.hidden = false;
-      backdrop.setAttribute('aria-hidden', 'false');
-      trigger.setAttribute('aria-expanded', 'true');
-      modal.focus();
-    } else {
-      backdrop.hidden = true;
-      backdrop.setAttribute('aria-hidden', 'true');
-      trigger.setAttribute('aria-expanded', 'false');
-    }
-  });
+  let keydownHandler;
 
-  // Event: Close via close button
-  closeBtn.addEventListener('click', () => {
+  const closeModal = () => {
     backdrop.hidden = true;
     backdrop.setAttribute('aria-hidden', 'true');
     trigger.setAttribute('aria-expanded', 'false');
     trigger.focus();
+    if (keydownHandler) {
+      document.removeEventListener('keydown', keydownHandler);
+      keydownHandler = null;
+    }
+  };
+
+  const openModal = () => {
+    backdrop.hidden = false;
+    backdrop.setAttribute('aria-hidden', 'false');
+    trigger.setAttribute('aria-expanded', 'true');
+    modal.focus();
+    keydownHandler = (e) => {
+      if (e.key === 'Escape' && !backdrop.hidden) {
+        closeModal();
+      }
+    };
+    document.addEventListener('keydown', keydownHandler);
+  };
+
+  // Event: Open/close modal via button
+  trigger.addEventListener('click', () => {
+    const expanded = trigger.getAttribute('aria-expanded') === 'true';
+    if (!expanded) {
+      openModal();
+    } else {
+      closeModal();
+    }
   });
+
+  // Event: Close via close button
+  closeBtn.addEventListener('click', closeModal);
 
   // Event: Close via backdrop click
   backdrop.addEventListener('click', (e) => {
     if (e.target === backdrop) {
-      backdrop.hidden = true;
-      backdrop.setAttribute('aria-hidden', 'true');
-      trigger.setAttribute('aria-expanded', 'false');
-      trigger.focus();
+      closeModal();
     }
   });
 
-  // Event: Close via Escape key
-  document.addEventListener('keydown', (e) => {
-    if (e.key === 'Escape' && !backdrop.hidden) {
-      backdrop.hidden = true;
-      backdrop.setAttribute('aria-hidden', 'true');
-      trigger.setAttribute('aria-expanded', 'false');
-      trigger.focus();
-    }
-  });
-
-  block.replaceChildren(trigger, backdrop);
+  rendered.append(trigger, backdrop);
 }

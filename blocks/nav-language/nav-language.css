@@ -2,6 +2,14 @@
   position: relative;
 }
 
+.nav-language-rendered {
+  display: inline-flex;
+}
+
+.nav-language-enhanced > .nav-language-source-row {
+  display: none;
+}
+
 .nav-language-trigger {
   padding: 0;
   border: 0;
