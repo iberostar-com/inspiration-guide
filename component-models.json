@@ -2601,6 +2601,23 @@
         "valueType": "string",
         "name": "link",
         "label": "Link"
+      },
+      {
+        "component": "select",
+        "valueType": "string",
+        "name": "target",
+        "label": "Abrir enlace en",
+        "value": "_self",
+        "options": [
+          {
+            "name": "Misma pestaña",
+            "value": "_self"
+          },
+          {
+            "name": "Nueva pestaña",
+            "value": "_blank"
+          }
+        ]
       }
     ]
   },

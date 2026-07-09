@@ -5,9 +5,15 @@
  */
 export default function decorate(block) {
   const cells = Array.from(block.querySelectorAll(':scope > div > div'));
-  const linkText = cells[0]?.textContent.trim() || '';
-  const link = cells[1]?.textContent.trim() || '#';
-  const targetCell = block.querySelector('[data-aue-prop="target"]') || cells[2];
+  // In the author, linkText + link render as a single <a href="{link}">{linkText}</a>;
+  // in a local mock they are separate text cells. The target select renders _self/_blank.
+  const anchor = block.querySelector('a[href]');
+  const targetCell = block.querySelector('[data-aue-prop="target"]')
+    || cells.find((cell) => /^_(self|blank)$/i.test(cell.textContent.trim()));
+  const rest = cells.filter((cell) => cell !== targetCell);
+
+  const linkText = (anchor?.textContent || rest[0]?.textContent || '').trim();
+  const link = anchor?.getAttribute('href') || rest[1]?.textContent.trim() || '#';
   const blank = /blank|nueva/i.test(targetCell?.textContent || '');
 
   const a = document.createElement('a');

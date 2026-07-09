@@ -24,9 +24,12 @@ function readChild(row) {
     ? row
     : row.querySelector(`[data-aue-model="${CHILD_MODEL}"]`) || row;
   const cells = [...el.children];
+  const targetCell = (el.querySelector('[data-aue-prop="target"]'))
+    || cells.find((cell) => /^_(self|blank)$/i.test(cell.textContent?.trim() || ''));
   const label = cellText(propElement(el, 'label') || cells[0]);
   const link = cellLink(propElement(el, 'link') || cells[1]);
-  return { label, link };
+  const target = /blank|nueva/i.test(cellText(targetCell)) ? '_blank' : '_self';
+  return { label, link, target };
 }
 
 function applyTarget(anchor, target) {
@@ -62,7 +65,13 @@ export default function decorate(block) {
     ? childRows.map(readChild)
     : positionalChildren.map((row) => {
       const cells = [...row.children];
-      return { label: cellText(cells[0]), link: cellLink(cells[1]) };
+      const targetCell = cells.find((cell) => /^_(self|blank)$/i.test(cell.textContent?.trim() || ''));
+      const rest = cells.filter((cell) => cell !== targetCell);
+      return {
+        label: cellText(rest[0]),
+        link: cellLink(rest[1]),
+        target: /blank/i.test(cellText(targetCell)) ? '_blank' : '_self',
+      };
     });
 
   const hasChildren = children.length > 0;
@@ -110,7 +119,7 @@ export default function decorate(block) {
       const anchor = document.createElement('a');
       anchor.href = child.link || '#';
       anchor.textContent = child.label;
-      applyTarget(anchor, target);
+      applyTarget(anchor, child.target);
       li.append(anchor);
       list.append(li);
     });
