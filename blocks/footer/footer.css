@@ -76,23 +76,30 @@ footer .footer .section.footer-main .footer-links-wrapper {
   margin-bottom: 28px;
 }
 
-/* Language selector wrapper */
-footer .footer .section.footer-main .nav-language-selector-wrapper {
+/* Meta section: language + legal */
+footer .footer .section.footer-meta {
+  margin-top: 20px;
+  padding-top: 20px;
+  border-top: 1px solid #dedede;
+  display: flex;
+  flex-direction: column;
+}
+
+footer .footer .section.footer-meta .nav-language-wrapper {
   margin-bottom: 20px;
 }
 
-/* Legal links wrapper - add top divider */
-footer .footer .section.footer-main .footer-legal-wrapper {
-  padding-top: 20px;
-  border-top: 1px solid #dedede;
+footer .footer .section.footer-meta .footer-legal-wrapper {
+  padding-top: 0;
+  border-top: 0;
 }
 
 /* Keep nav-language dropdown opening upward in footer */
-footer .footer .section.footer-main .nav-language {
+footer .footer .section.footer-meta .nav-language {
   align-self: flex-start;
 }
 
-footer .footer .section.footer-main .nav-language .nav-language-menu {
+footer .footer .section.footer-meta .nav-language .nav-language-menu {
   top: auto;
   right: 0;
   bottom: calc(100% + 8px);
@@ -146,26 +153,26 @@ footer .footer .section.footer-main .footer-currency {
     margin-bottom: 0;
   }
 
-  /* Nav language in bottom-left */
-  footer .footer .section.footer-main .nav-language-selector-wrapper {
-    grid-column: 1 / -1;
-    grid-row: 2;
-    margin-bottom: 0;
+  /* Meta section below links: language + legal */
+  footer .footer .section.footer-meta {
     margin-top: 22px;
     padding-top: 20px;
     border-top: 1px solid #dedede;
     display: flex;
+    flex-direction: row;
     align-items: center;
     justify-content: space-between;
+    gap: 24px;
   }
 
-  /* Footer legal in bottom area */
-  footer .footer .section.footer-main .footer-legal-wrapper {
-    grid-column: 1 / -1;
-    grid-row: 2;
-    margin-top: 22px;
-    padding-top: 20px;
-    border-top: 1px solid #dedede;
+  footer .footer .section.footer-meta .nav-language-wrapper {
+    margin-bottom: 0;
+  }
+
+  footer .footer .section.footer-meta .footer-legal-wrapper {
+    margin-top: 0;
+    padding-top: 0;
+    border-top: 0;
   }
 }
 
