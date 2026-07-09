@@ -167,8 +167,8 @@ export default async function decorate(block) {
     || getTextFromField(fieldRows[0])
     || block.getAttribute('data-label');
 
-  const currentLabel = activeOption?.label
-    || authoredLabel
+  const currentLabel = authoredLabel
+    || activeOption?.label
     || options[0]?.label
     || 'ES';
 

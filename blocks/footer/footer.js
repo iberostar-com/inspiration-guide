@@ -86,6 +86,27 @@ function decorateFooterSections(footer) {
   });
 }
 
+async function hydrateFooterFragments(footer) {
+  const fragmentBlocks = [...footer.querySelectorAll('.fragment')];
+
+  for (let i = 0; i < fragmentBlocks.length; i += 1) {
+    const fragmentBlock = fragmentBlocks[i];
+    if (fragmentBlock.getAttribute('data-block-status') !== 'loaded') {
+      const link = fragmentBlock.querySelector('a[href]');
+      const path = link?.getAttribute('href');
+
+      if (path) {
+        // eslint-disable-next-line no-await-in-loop
+        const fragment = await loadFragment(path);
+
+        if (fragment) {
+          fragmentBlock.replaceChildren(...fragment.childNodes);
+        }
+      }
+    }
+  }
+}
+
 export default async function decorate(block) {
   const fragment = await loadFooterFragment();
 
@@ -100,6 +121,7 @@ export default async function decorate(block) {
     footer.append(fragment.firstElementChild);
   }
 
+  await hydrateFooterFragments(footer);
   decorateFooterSections(footer);
   block.append(footer);
 }
