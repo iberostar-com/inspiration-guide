@@ -202,9 +202,18 @@ async function decorateDefault(block) {
 
 // ---------- home variant (manual list of article references) ----------
 
+// aem.live normalizes the published slug (lowercase, accents stripped, repeated
+// dashes collapsed) while the authored aem-content reference keeps the original
+// node name, so both sides must be canonicalized before comparing.
 function normalizePath(value) {
   const publicPath = toPublicPagePath(`${value || ''}`.trim());
-  return publicPath.replace(/\.html$/, '').replace(/\/+$/, '');
+  return publicPath
+    .replace(/\.html$/, '')
+    .replace(/\/+$/, '')
+    .toLowerCase()
+    .normalize('NFD')
+    .replace(/[̀-ͯ]/g, '')
+    .replace(/-+/g, '-');
 }
 
 function findArticle(articles, refPath) {
