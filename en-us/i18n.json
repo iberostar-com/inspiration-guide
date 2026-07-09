@@ -15,5 +15,7 @@
   "carouselPrevious": "Previous hotels",
   "carouselNext": "Next hotels",
   "carouselGoTo": "Go to hotel group",
-  "carouselOf": "of"
+  "carouselOf": "of",
+  "chooseLanguage": "Choose a language",
+  "close": "Close"
 }

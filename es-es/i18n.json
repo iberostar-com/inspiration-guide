@@ -15,5 +15,7 @@
   "carouselPrevious": "Hoteles anteriores",
   "carouselNext": "Hoteles siguientes",
   "carouselGoTo": "Ir al grupo de hoteles",
-  "carouselOf": "de"
+  "carouselOf": "de",
+  "chooseLanguage": "Selecciona un idioma",
+  "close": "Cerrar"
 }

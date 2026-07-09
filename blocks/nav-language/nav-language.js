@@ -1,3 +1,9 @@
+import { getTranslation } from '../../scripts/iberostar/i18n.js';
+import { getLocaleFromPath } from '../../scripts/iberostar/placeholders.js';
+
+const LOCALE_CODE = /^[a-z]{2}-[a-z]{2}$/i;
+const GUIDE_SEGMENT = 'inspiration-guide';
+
 function getPropElement(container, prop) {
   if (container?.matches?.(`[data-aue-prop="${prop}"]`)) return container;
   return container?.querySelector?.(`[data-aue-prop="${prop}"]`) || null;
@@ -13,47 +19,89 @@ function getHrefFromField(field) {
   return getTextFromField(field) || '';
 }
 
+function looksLikeUrl(value) {
+  return /^(https?:)?\/\//i.test(value) || value.startsWith('/');
+}
+
+function isOptionRow(row) {
+  if (getPropElement(row, 'label') && getPropElement(row, 'link')) return true;
+  const cells = [...row.children];
+  if (cells.length < 2) return false;
+  const value = getTextFromField(cells[1]);
+  return Boolean(row.querySelector('a[href]')) || looksLikeUrl(value) || LOCALE_CODE.test(value);
+}
+
 function getOptionsRows(block) {
   // Priority 1: Universal Editor multifield items
   const modelRows = [...block.querySelectorAll('[data-aue-model="nav-language-option"]')];
   if (modelRows.length) return modelRows;
 
-  // Priority 2: All direct children (fallback for previewed/plain HTML content)
-  return [...block.children].filter((child) => {
-    // Skip rows that only contain a title/label field
-    const hasLabel = getPropElement(child, 'label');
-    const hasLink = getPropElement(child, 'link');
-    // If it has both AUE props, it's a complete option row
-    if (hasLabel && hasLink) return true;
-    // If it has 2+ cells, treat as option row
-    return child.children.length >= 2;
-  });
+  // Priority 2: direct children that look like an option row (label + url).
+  // This deliberately skips block-level field rows (label / modalTitle).
+  return [...block.children].filter(isOptionRow);
+}
+
+function normalizePathname(value) {
+  try {
+    return new URL(value, window.location).pathname.replace(/\/$/, '') || '/';
+  } catch (error) {
+    return '';
+  }
+}
+
+/**
+ * Resolves an authored option value into a navigable URL.
+ * A bare locale code (e.g. "es-es") is expanded to the locale-first
+ * Inspiration Guide home for the current environment (e.g. "/es-es/inspiration-guide/").
+ * Any value that already looks like a path or URL is returned unchanged.
+ * @param {string} value The authored value (locale code or full path/URL)
+ * @returns {string}
+ */
+function resolveOptionUrl(value) {
+  const raw = (value || '').trim();
+  if (!raw) return '#';
+  if (!LOCALE_CODE.test(raw)) return raw;
+
+  const locale = raw.toLowerCase();
+  // Derive any path prefix that precedes the "<locale>/inspiration-guide" segment
+  // from the current URL, so the link works whatever the environment root is.
+  const currentPath = normalizePathname(window.location.pathname);
+  const match = currentPath.match(/^(.*?)\/[a-z]{2}-[a-z]{2}\/inspiration-guide(?:\/|$)/i);
+  const prefix = match ? match[1] : '';
+  return `${prefix}/${locale}/${GUIDE_SEGMENT}/`;
 }
 
 function createOptionData(row) {
   const labelField = getPropElement(row, 'label');
   const linkField = getPropElement(row, 'link') || getPropElement(row, 'linkUrl');
-
   const cells = [...row.children];
 
-  // Try AUE fields first, then fall back to cells
-  let label = getTextFromField(labelField);
-  let url = getHrefFromField(linkField);
+  let label = getTextFromField(labelField) || getTextFromField(cells[0]);
+  let url = getHrefFromField(linkField) || getHrefFromField(cells[1]);
 
-  // Fallback to cell positions if no AUE fields
-  if (!label && cells[0]) {
-    label = getTextFromField(cells[0]);
-  }
-  if (!url && cells[1]) {
-    url = getHrefFromField(cells[1]);
-  }
-
-  // Trim and validate
   label = label?.trim() || '';
-  url = url?.trim() || '#';
+  url = resolveOptionUrl(url?.trim());
 
   if (!label) return null;
   return { label, url };
+}
+
+/**
+ * Returns the option that matches the current page locale/path, if any.
+ * @param {Array<{label:string,url:string}>} options
+ * @returns {{label:string,url:string}|undefined}
+ */
+function findActiveOption(options) {
+  const currentLocale = getLocaleFromPath();
+  const currentPath = normalizePathname(window.location.pathname);
+
+  const byLocale = options.find((option) => {
+    const optionPath = normalizePathname(option.url);
+    return optionPath !== '/' && getLocaleFromPath(optionPath) === currentLocale;
+  });
+  if (byLocale) return byLocale;
+
+  return options.find((option) => normalizePathname(option.url) === currentPath);
 }
 
 function hideSourceRows(rows) {
@@ -74,25 +122,61 @@ function createRenderedContainer(block) {
   return rendered;
 }
 
+function buildTrigger(labelText) {
+  const trigger = document.createElement('button');
+  trigger.type = 'button';
+  trigger.className = 'nav-language-trigger';
+  trigger.setAttribute('aria-expanded', 'false');
+  trigger.setAttribute('aria-haspopup', 'dialog');
+
+  const text = document.createElement('span');
+  text.className = 'nav-language-trigger-text';
+  text.textContent = labelText;
+
+  const chevron = document.createElement('span');
+  chevron.className = 'nav-language-trigger-chevron';
+  chevron.setAttribute('aria-hidden', 'true');
+
+  trigger.append(text, chevron);
+  return trigger;
+}
+
 /**
  * Nav Language Selector block: modal trigger + language options modal.
  * @param {Element} block The nav-language block element
  */
-export default function decorate(block) {
-  // Get current language label
-  const currentLabel = getTextFromField(getPropElement(block, 'label'))
-    || block.getAttribute('data-label')
-    || 'ESP';
+export default async function decorate(block) {
+  const optionRows = getOptionsRows(block);
+  const options = optionRows.map(createOptionData).filter(Boolean);
+  const activeOption = findActiveOption(options);
 
-  // Extract all option rows
-  const rows = getOptionsRows(block);
-  const options = rows.map(createOptionData).filter(Boolean);
+  // Block-level field rows (label / modalTitle) are everything that is not an option.
+  const fieldRows = [...block.children].filter((child) => !optionRows.includes(child));
 
-  // Keep authored rows for UE instrumentation, but hide them visually.
-  hideSourceRows(rows);
+  const [modalTitleText, closeText] = await Promise.all([
+    getTranslation(
+      'chooseLanguage',
+      getTextFromField(getPropElement(block, 'modalHeading'))
+        || getTextFromField(fieldRows[1])
+        || 'Selecciona un idioma',
+    ),
+    getTranslation('close', 'Cerrar'),
+  ]);
+
+  const authoredLabel = getTextFromField(getPropElement(block, 'label'))
+    || getTextFromField(fieldRows[0])
+    || block.getAttribute('data-label');
+
+  const currentLabel = activeOption?.label
+    || authoredLabel
+    || options[0]?.label
+    || 'ES';
+
+  // Keep authored source for UE instrumentation, but hide it visually.
+  hideSourceRows([...block.children]);
   const rendered = createRenderedContainer(block);
 
-  // If only 0 or 1 options, render as link instead of modal
+  // If only 0 or 1 options, render as link instead of modal.
   if (options.length <= 1) {
     const onlyOption = options[0];
     const triggerLink = document.createElement('a');
@@ -103,54 +187,55 @@ export default function decorate(block) {
     return;
   }
 
-  // Create trigger button
-  const trigger = document.createElement('button');
-  trigger.type = 'button';
-  trigger.className = 'nav-language-trigger';
-  trigger.setAttribute('aria-expanded', 'false');
-  trigger.setAttribute('aria-haspopup', 'dialog');
-  trigger.textContent = currentLabel;
+  const trigger = buildTrigger(currentLabel);
 
-  // Create modal backdrop
+  // Modal backdrop (mounted on <body> so fixed positioning is never clipped).
   const backdrop = document.createElement('div');
   backdrop.className = 'nav-language-modal-backdrop';
   backdrop.hidden = true;
   backdrop.setAttribute('aria-hidden', 'true');
 
-  // Create modal
   const modal = document.createElement('div');
   modal.className = 'nav-language-modal';
   modal.setAttribute('role', 'dialog');
   modal.setAttribute('aria-modal', 'true');
-  modal.setAttribute('aria-label', 'Seleccionar idioma');
+  modal.setAttribute('aria-label', modalTitleText);
   modal.setAttribute('tabindex', '-1');
 
-  // Modal header
   const header = document.createElement('div');
   header.className = 'nav-language-modal-header';
 
   const title = document.createElement('h2');
   title.className = 'nav-language-modal-title';
-  title.textContent = 'Selecciona un idioma';
+  title.textContent = modalTitleText;
 
   const closeBtn = document.createElement('button');
   closeBtn.type = 'button';
   closeBtn.className = 'nav-language-modal-close';
-  closeBtn.setAttribute('aria-label', 'Cerrar');
-  closeBtn.textContent = '✕';
+  closeBtn.setAttribute('aria-label', closeText);
 
   header.append(title, closeBtn);
 
-  // Modal options grid
   const optionsContainer = document.createElement('div');
   optionsContainer.className = 'nav-language-modal-options';
 
   options.forEach((option) => {
-    const optionBtn = document.createElement('a');
-    optionBtn.href = option.url;
-    optionBtn.className = 'nav-language-option-button';
-    optionBtn.textContent = option.label;
-    optionsContainer.append(optionBtn);
+    const optionLink = document.createElement('a');
+    optionLink.href = option.url;
+    optionLink.className = 'nav-language-option-button';
+    optionLink.textContent = option.label;
+
+    if (option === activeOption) {
+      optionLink.classList.add('is-active');
+      optionLink.setAttribute('aria-current', 'true');
+    }
+
+    // Reflect the chosen language in the trigger before navigating.
+    optionLink.addEventListener('click', () => {
+      trigger.querySelector('.nav-language-trigger-text').textContent = option.label;
+    });
+
+    optionsContainer.append(optionLink);
   });
 
   modal.append(header, optionsContainer);
@@ -158,10 +243,13 @@ export default function decorate(block) {
 
   let keydownHandler;
 
+  const getFocusable = () => [...modal.querySelectorAll('a[href], button:not([disabled])')];
+
   const closeModal = () => {
     backdrop.hidden = true;
     backdrop.setAttribute('aria-hidden', 'true');
     trigger.setAttribute('aria-expanded', 'false');
+    document.body.classList.remove('nav-language-modal-open');
     trigger.focus();
     if (keydownHandler) {
       document.removeEventListener('keydown', keydownHandler);
@@ -173,34 +261,48 @@ export default function decorate(block) {
     backdrop.hidden = false;
     backdrop.setAttribute('aria-hidden', 'false');
     trigger.setAttribute('aria-expanded', 'true');
-    modal.focus();
-    keydownHandler = (e) => {
-      if (e.key === 'Escape' && !backdrop.hidden) {
+    document.body.classList.add('nav-language-modal-open');
+    (getFocusable()[0] || modal).focus();
+
+    keydownHandler = (event) => {
+      if (event.key === 'Escape') {
         closeModal();
+        return;
+      }
+      if (event.key !== 'Tab') return;
+
+      const focusable = getFocusable();
+      if (!focusable.length) return;
+      const first = focusable[0];
+      const last = focusable[focusable.length - 1];
+
+      if (event.shiftKey && document.activeElement === first) {
+        event.preventDefault();
+        last.focus();
+      } else if (!event.shiftKey && document.activeElement === last) {
+        event.preventDefault();
+        first.focus();
       }
     };
     document.addEventListener('keydown', keydownHandler);
   };
 
-  // Event: Open/close modal via button
   trigger.addEventListener('click', () => {
-    const expanded = trigger.getAttribute('aria-expanded') === 'true';
-    if (!expanded) {
-      openModal();
-    } else {
+    if (trigger.getAttribute('aria-expanded') === 'true') {
       closeModal();
+    } else {
+      openModal();
     }
   });
 
-  // Event: Close via close button
   closeBtn.addEventListener('click', closeModal);
 
-  // Event: Close via backdrop click
-  backdrop.addEventListener('click', (e) => {
-    if (e.target === backdrop) {
+  backdrop.addEventListener('click', (event) => {
+    if (event.target === backdrop) {
       closeModal();
     }
   });
 
-  rendered.append(trigger, backdrop);
+  rendered.append(trigger);
+  document.body.append(backdrop);
 }

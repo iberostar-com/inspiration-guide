@@ -2268,6 +2268,13 @@
         "name": "label",
         "label": "Current Language Label",
         "value": "ESP"
+      },
+      {
+        "component": "text",
+        "valueType": "string",
+        "name": "modalHeading",
+        "label": "Modal Title",
+        "value": "Selecciona un idioma"
       }
     ]
   },
@@ -2286,6 +2293,7 @@
         "valueType": "string",
         "name": "link",
         "label": "Link URL",
+        "description": "Enter just the locale code (es-es, en-us, fr-fr…) to auto-link to that language's Inspiration Guide home, or provide a full path/URL.",
         "value": ""
       }
     ]
