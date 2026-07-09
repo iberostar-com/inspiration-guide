@@ -32,6 +32,20 @@ const RESERVED_PROPS = new Set([
 const DATA_MODES = new Set(['manual', 'auto-category', 'auto-filter', 'auto-tag']);
 const RENDER_TAGS = new Set(['p', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6']);
 
+const POSITIONAL_PROP_CANDIDATES = {
+  featuredLabel: [0],
+  latestLabel: [1, 2],
+  mode: [2],
+  maxItems: [3],
+  featuredArticlePath: [2, 5],
+  filterTags: [3, 8],
+  featuredLabelHeading: [4, 1],
+  latestLabelHeading: [5, 3],
+  featuredBadge: [6, 4],
+  featuredArticleTitleHeading: [7, 6],
+  latestArticleTitleHeading: [8, 7],
+};
+
 const FIELD_SELECTORS = {
   authorImage: 'article_authorImage',
   authorName: 'article_authorName',
@@ -72,6 +86,45 @@ function getLegacyMode(block) {
   return DATA_MODES.has(value) ? value : '';
 }
 
+function getPositionalRowValue(row, propName) {
+  if (propName === 'featuredArticlePath') {
+    return row?.querySelector('a[href]')?.getAttribute('href')?.trim() || getRowText(row);
+  }
+
+  return getRowText(row);
+}
+
+function isValidPositionalValue(propName, value, legacyMode) {
+  const normalized = `${value || ''}`.trim();
+  const lowered = normalized.toLowerCase();
+
+  if (!normalized) return false;
+
+  if (propName === 'mode') return DATA_MODES.has(lowered);
+  if (propName === 'maxItems') return !!legacyMode && /^\d+$/.test(normalized);
+
+  if (propName === 'featuredLabelHeading'
+    || propName === 'latestLabelHeading'
+    || propName === 'featuredArticleTitleHeading'
+    || propName === 'latestArticleTitleHeading') {
+    return RENDER_TAGS.has(lowered);
+  }
+
+  if (propName === 'featuredArticlePath') {
+    return lowered.startsWith('/') || lowered.startsWith('http') || lowered.startsWith('urn:');
+  }
+
+  if (propName === 'filterTags') {
+    return !RENDER_TAGS.has(lowered) && !DATA_MODES.has(lowered);
+  }
+
+  if (propName === 'featuredLabel' || propName === 'latestLabel' || propName === 'featuredBadge') {
+    return !RENDER_TAGS.has(lowered) && !DATA_MODES.has(lowered);
+  }
+
+  return true;
+}
+
 function hasPositionalConfig(block) {
   const rows = getSourceRows(block);
   return rows.length >= 4 && rows.slice(0, 4).every((row) => getCells(row).length === 1);
@@ -80,19 +133,30 @@ function hasPositionalConfig(block) {
 function getPositionalTextValue(block, propName) {
   const rows = getSourceRows(block);
   const legacyMode = getLegacyMode(block);
+  const candidates = POSITIONAL_PROP_CANDIDATES[propName] || [];
 
   if (!hasPositionalConfig(block)) return '';
 
-  if (propName === 'featuredLabel') return getRowText(rows[0]);
-  if (propName === 'latestLabel') return getRowText(rows[1]);
   if (propName === 'mode') return legacyMode;
-  if (propName === 'maxItems' && legacyMode) return getRowText(rows[3]);
-  if (propName === 'featuredArticlePath' && !legacyMode) {
-    return rows[2]?.querySelector('a[href]')?.getAttribute('href')?.trim() || getRowText(rows[2]);
-  }
-  if (propName === 'filterTags' && !legacyMode) return getRowText(rows[3]);
 
-  return '';
+  return candidates
+    .map((index) => getPositionalRowValue(rows[index], propName))
+    .find((value) => isValidPositionalValue(propName, value, legacyMode)) || '';
+}
+
+function isAuthoredArticleRow(row) {
+  const cells = getCells(row);
+
+  if (row.children.length > 1) return true;
+
+  if (row.getAttribute('data-aue-model') === 'blog-split-list-article') return true;
+
+  if (row.querySelector('[data-aue-model="blog-split-list-article"]')) return true;
+
+  if (cells.length > 3 && row.querySelector('a[href], img, picture')) return true;
+
+  return [...row.querySelectorAll('[data-aue-prop]')]
+    .some((el) => el.getAttribute('data-aue-prop')?.startsWith('article_'));
 }
 
 function getPropElement(root, propName) {
@@ -175,16 +239,11 @@ function getConfiguredTags(block) {
     .map((propName) => getTextValue(block, propName, ''))
     .filter(Boolean);
   const filterTagsField = getFieldByProp(block, 'filterTags');
-  const positionalTagsField = !filterTagsField
-    && hasPositionalConfig(block)
-    ? getSourceRows(block)[3]
-    : null;
 
   return [
     ...explicitTags,
     ...getListValues(filterTagsField),
-    ...getListValues(positionalTagsField),
-    ...(!filterTagsField && !positionalTagsField ? normalizeList(getTextValue(block, 'filterTags', '')) : []),
+    ...(!filterTagsField ? normalizeList(getTextValue(block, 'filterTags', '')) : []),
   ];
 }
 
@@ -237,13 +296,16 @@ function getCurrentPathSegment(kind) {
 
 function getManualRows(block) {
   const rows = getSourceRows(block);
+  const manualRows = rows.filter(isAuthoredArticleRow);
+
+  if (manualRows.length) return manualRows;
+
+  if (hasAuthoredProps(block)) return [];
+
   const contentRows = rows.slice(hasPositionalConfig(block) ? 4 : 0);
-
-  if (!hasAuthoredProps(block)) {
-    return contentRows;
-  }
-
-  return contentRows.filter((row) => !rowContainsReservedProp(row));
+  return contentRows.some((row) => getCells(row).length > 3)
+    ? contentRows.filter((row) => !rowContainsReservedProp(row))
+    : [];
 }
 
 function getConfiguredMode(block) {
