@@ -1,5 +1,7 @@
 import { moveInstrumentation } from '../../scripts/scripts.js';
 
+const LINK_FIELDS = ['linkLabel', 'linkUrl', 'linkNewTab', 'linkNofollow'];
+
 function getCellText(container, index) {
   const cells = [...container.children];
   return cells[index]?.textContent?.trim() || '';
@@ -10,139 +12,201 @@ function getPropElement(container, prop) {
   return container?.querySelector?.(`[data-aue-prop="${prop}"]`) || null;
 }
 
-function getModelElement(container, model) {
-  if (container?.matches?.(`[data-aue-model="${model}"]`)) return container;
-  return container?.querySelector?.(`[data-aue-model="${model}"]`) || null;
-}
-
-function getBoolFromRow(row, prop, fallbackIndex) {
-  const propEl = getPropElement(row, prop);
-  const text = (propEl?.textContent?.trim() || getCellText(row, fallbackIndex)).toLowerCase();
-  return text === 'true' || text === 'on' || text === 'yes';
-}
-
 function isTrueValue(value = '') {
   const text = value.toLowerCase();
   return text === 'true' || text === 'on' || text === 'yes';
 }
 
 function getHrefFromField(field) {
-  const anchor = field?.querySelector?.('a[href]');
+  if (!field) return '';
+  const anchor = field.querySelector?.('a[href]');
   if (anchor) return anchor.getAttribute('href')?.trim() || '';
-  return field?.textContent?.trim() || '';
+  return field.textContent?.trim() || '';
 }
 
-function getHrefFromRow(row, prop, fallbackIndex) {
-  const propEl = getPropElement(row, prop);
-  const anchor = propEl?.querySelector?.('a[href]') || row.querySelector?.('a[href]');
-  if (anchor) return anchor.getAttribute('href')?.trim() || '#';
-  return getCellText(row, fallbackIndex) || '#';
+/**
+ * Extract links from a Universal Editor container multifield.
+ * Fields are delivered in document order; each linkLabel starts a new item.
+ */
+function extractLinksFromAue(group) {
+  const fieldEls = [...group.querySelectorAll('[data-aue-prop]')]
+    .filter((el) => LINK_FIELDS.includes(el.getAttribute('data-aue-prop')));
+  if (!fieldEls.length) return [];
+
+  const items = [];
+  let current = null;
+  fieldEls.forEach((el) => {
+    const name = el.getAttribute('data-aue-prop');
+    if (name === 'linkLabel') {
+      current = {
+        labelEl: el, urlEl: null, newTabEl: null, nofollowEl: null,
+      };
+      items.push(current);
+    }
+    if (!current) return;
+    if (name === 'linkUrl') current.urlEl = el;
+    else if (name === 'linkNewTab') current.newTabEl = el;
+    else if (name === 'linkNofollow') current.nofollowEl = el;
+  });
+
+  return items
+    .map((it) => ({
+      label: it.labelEl?.textContent?.trim() || '',
+      url: getHrefFromField(it.urlEl) || '#',
+      newTab: isTrueValue(it.newTabEl?.textContent || ''),
+      nofollow: isTrueValue(it.nofollowEl?.textContent || ''),
+      sourceNode: it.labelEl?.closest('[data-aue-resource]') || null,
+    }))
+    .filter((it) => it.label);
 }
 
-function buildLinkItem(row) {
-  if (!row) return null;
-
-  // Try to find label via data-aue-prop first (Universal Editor)
-  const labelProp = getPropElement(row, 'linkLabel') || row.querySelector('[data-aue-prop="linkLabel"]');
-  const label = labelProp?.textContent?.trim() || getCellText(row, 0);
+/**
+ * Convert a row of value cells (label | url | newTab | nofollow) to a link.
+ */
+function rowToLink(row) {
+  const label = getCellText(row, 0);
   if (!label) return null;
+  return {
+    label,
+    url: getHrefFromField(row.children[1]) || '#',
+    newTab: isTrueValue(getCellText(row, 2)),
+    nofollow: isTrueValue(getCellText(row, 3)),
+    sourceNode: row,
+  };
+}
 
-  // Find URL via data-aue-prop or fallback
-  const urlProp = getPropElement(row, 'linkUrl') || row.querySelector('[data-aue-prop="linkUrl"]');
-  const url = (urlProp && getHrefFromField(urlProp)) || getHrefFromRow(row, 'linkUrl', 1);
+/**
+ * Build a link from four consecutive leaf cells (label, url, newTab, nofollow).
+ */
+function cellsToLink(cells) {
+  const label = cells[0]?.textContent?.trim() || '';
+  if (!label) return null;
+  return {
+    label,
+    url: getHrefFromField(cells[1]) || '#',
+    newTab: isTrueValue(cells[2]?.textContent || ''),
+    nofollow: isTrueValue(cells[3]?.textContent || ''),
+    sourceNode: cells[0] || null,
+  };
+}
 
-  // Find boolean flags
-  const newTabProp = getPropElement(row, 'linkNewTab') || row.querySelector('[data-aue-prop="linkNewTab"]');
-  const nofollowProp = getPropElement(row, 'linkNofollow') || row.querySelector('[data-aue-prop="linkNofollow"]');
+/**
+ * Normalize a group's links to a common shape regardless of authoring source.
+ */
+function extractLinks(group) {
+  // 1) Universal Editor container multifield (data-aue-prop fields).
+  const aueLinks = extractLinksFromAue(group);
+  if (aueLinks.length) return aueLinks;
 
-  const newTab = newTabProp
-    ? isTrueValue(newTabProp.textContent)
-    : getBoolFromRow(row, 'linkNewTab', 2);
-  const nofollow = nofollowProp
-    ? isTrueValue(nofollowProp.textContent)
-    : getBoolFromRow(row, 'linkNofollow', 3);
+  // 2) Class-based item rows (previewed/legacy content).
+  const classRows = [...group.querySelectorAll('.footer-link-item')];
+  if (classRows.length) return classRows.map(rowToLink).filter(Boolean);
+
+  // 3) Positional item rows: direct children (after the title) with several cells.
+  const titleEl = getPropElement(group, 'title')
+    || group.querySelector?.('.footer-links-group-title')
+    || group.firstElementChild;
+  const rowChildren = [...group.children].filter((child) => {
+    if (child === titleEl) return false;
+    if (getPropElement(child, 'title')) return false;
+    if (child.matches?.('.footer-links-group-title')) return false;
+    return true;
+  });
+
+  // Each item row carries up to four cells; treat those as discrete links.
+  const itemRows = rowChildren.filter(
+    (row) => row.children.length >= 2 && row.children.length <= LINK_FIELDS.length,
+  );
+  if (itemRows.length && itemRows.length === rowChildren.length) {
+    return itemRows.map(rowToLink).filter(Boolean);
+  }
+
+  // 4) Flat fallback: a run of leaf cells chunked into groups of four.
+  const leafCells = rowChildren
+    .flatMap((child) => (child.querySelector(':scope > div') ? [...child.children] : [child]))
+    .filter((cell) => !cell.querySelector(':scope > div'));
+  const links = [];
+  for (let i = 0; i < leafCells.length; i += LINK_FIELDS.length) {
+    const link = cellsToLink(leafCells.slice(i, i + LINK_FIELDS.length));
+    if (link) links.push(link);
+  }
+  return links;
+}
+
+function getGroupTitle(group) {
+  const titleEl = getPropElement(group, 'title')
+    || group.querySelector?.('.footer-links-group-title')
+    || group.firstElementChild;
+  return {
+    titleElement: titleEl,
+    titleText: titleEl?.textContent?.trim() || '',
+  };
+}
+
+function buildLinkItem(link) {
+  const label = link?.label?.trim();
+  if (!label) return null;
 
   const li = document.createElement('li');
   li.className = 'footer-links-item';
+
   const a = document.createElement('a');
-  a.href = url || '#';
+  a.href = link.url?.trim() || '#';
   a.textContent = label;
 
-  if (newTab && nofollow) {
+  if (link.newTab && link.nofollow) {
     a.target = '_blank';
     a.rel = 'noopener nofollow';
-  } else if (newTab) {
+  } else if (link.newTab) {
     a.target = '_blank';
     a.rel = 'noopener';
-  } else if (nofollow) {
+  } else if (link.nofollow) {
     a.rel = 'nofollow';
   }
 
-  moveInstrumentation(row, li);
+  if (link.sourceNode) {
+    moveInstrumentation(link.sourceNode, li);
+  }
+
   li.append(a);
   return li;
 }
 
 function collectGroups(block) {
-  // Priority 1: Look for Universal Editor data-aue-model structure
-  const groups = [...block.querySelectorAll('[data-aue-model="footer-links-group"]')]
+  // Priority 1: Universal Editor group blocks.
+  const aueGroups = [...block.querySelectorAll('[data-aue-model="footer-links-group"]')]
     .filter((group) => !group.closest('.footer-links-rendered'));
-
-  if (groups.length) {
-    return groups.map((group) => {
-      // Extract ONLY the title element (with data-aue-prop="title")
-      const titleEl = getPropElement(group, 'title');
-
-      // Link items are child blocks (data-aue-model="footer-links-item")
-      const linkRows = [...group.querySelectorAll('[data-aue-model="footer-links-item"]')];
-
-      // Get title text from the title element only
-      const titleText = titleEl?.textContent?.trim() || '';
-
-      return {
-        titleElement: titleEl,
-        titleText,
-        sourceNodes: [group],
-        linkRows,
-        linksContainer: null,
-      };
-    });
+  if (aueGroups.length) {
+    return aueGroups.map((group) => ({
+      ...getGroupTitle(group),
+      sourceNodes: [group],
+      links: extractLinks(group),
+    }));
   }
 
-  // Priority 2: Look for class-based structure (local test files)
+  // Priority 2: Class-based group structure.
   const classGroups = [...block.querySelectorAll('.footer-links-group')]
     .filter((group) => !group.closest('.footer-links-rendered'));
-
   if (classGroups.length) {
-    return classGroups.map((group) => {
-      const titleEl = group.querySelector('.footer-links-group-title') || group.firstElementChild;
-      const titleText = titleEl?.textContent?.trim() || '';
-
-      return {
-        titleElement: titleEl,
-        titleText,
-        sourceNodes: [group],
-        linkRows: [...group.querySelectorAll('.footer-link-item')],
-        linksContainer: group.querySelector('.footer-links-links') || null,
-      };
-    });
+    return classGroups.map((group) => ({
+      ...getGroupTitle(group),
+      sourceNodes: [group],
+      links: extractLinks(group),
+    }));
   }
 
-  // Priority 3: Legacy fallback - direct children as groups
+  // Priority 3: each direct child is a group (unclassed delivered markup).
   const rows = [...block.children].filter((row) => !row.classList.contains('footer-links-rendered'));
   if (!rows.length) return [];
-
-  const titleRow = rows[0];
-  const titleEl = getPropElement(titleRow, 'title') || titleRow;
-  const titleText = titleEl?.textContent?.trim() || '';
-
-  return [{
-    titleElement: titleEl,
-    titleText,
-    sourceNodes: rows,
-    linkRows: rows.slice(1),
-    linksContainer: null,
-  }];
+  return rows.map((group) => {
+    const { titleElement, titleText } = getGroupTitle(group);
+    return {
+      titleElement,
+      titleText,
+      sourceNodes: [group],
+      links: extractLinks(group),
+    };
+  }).filter((group) => group.titleText);
 }
 
 function setupAccordionBehavior(rendered) {
@@ -208,9 +272,7 @@ export default function decorate(block) {
   rendered.className = 'footer-links-rendered';
 
   groups.forEach((group) => {
-    // Use pre-computed titleText to avoid getting whole group content
-    const titleText = group.titleText || group.titleElement?.textContent?.trim() || '';
-    if (!titleText) return; // Skip groups without title
+    if (!group.titleText) return; // Skip groups without title
 
     const details = document.createElement('details');
     details.className = 'footer-links-group';
@@ -221,30 +283,21 @@ export default function decorate(block) {
 
     const titleSpan = document.createElement('span');
     titleSpan.className = 'footer-column-title';
-    titleSpan.textContent = titleText; // Only the title text
+    titleSpan.textContent = group.titleText;
 
     const chevron = document.createElement('span');
     chevron.className = 'footer-accordion-chevron';
     chevron.setAttribute('aria-hidden', 'true');
 
     summary.append(titleSpan, chevron);
-    // Move instrumentation ONLY from the title element
     if (group.titleElement) {
       moveInstrumentation(group.titleElement, titleSpan);
     }
 
     const ul = document.createElement('ul');
     ul.className = 'footer-links-list';
-
-    // Build links — use buildLinkItem so UE instrumentation (data-aue-*) is preserved
-    const linkRows = group.linksContainer
-      ? [...group.linksContainer.children]
-      : group.linkRows;
-
-    linkRows.forEach((row) => {
-      const li = buildLinkItem(
-        getModelElement(row, 'footer-links-item') || row,
-      );
+    group.links.forEach((link) => {
+      const li = buildLinkItem(link);
       if (li) ul.append(li);
     });
 
