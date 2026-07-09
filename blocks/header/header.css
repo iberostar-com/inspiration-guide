@@ -286,7 +286,7 @@ header nav .nav-utilities {
 }
 
 header nav .nav-utilities .nav-stripe,
-header nav .nav-lang {
+header nav .nav-util--lang {
   min-height: 0;
   padding: 24px 16px;
 }
@@ -297,7 +297,7 @@ header nav .nav-divider {
   background: #dedede;
 }
 
-header nav .nav-lang {
+header nav .nav-util--lang {
   display: inline-flex;
   align-items: center;
   gap: 8px;
@@ -312,7 +312,7 @@ header nav .nav-lang {
   cursor: pointer;
 }
 
-header nav .nav-lang .nav-chevron {
+header nav .nav-util--lang .nav-chevron {
   font-size: 16px;
   line-height: 1;
 }
@@ -333,7 +333,7 @@ header nav .nav-lang .nav-chevron {
   }
 
   header nav .nav-utilities .nav-stripe,
-  header nav .nav-lang {
+  header nav .nav-util--lang {
     padding: 24px;
   }
 
@@ -457,7 +457,7 @@ header nav .nav-lang .nav-chevron {
     transition: transform 0.2s ease;
   }
 
-  header nav .nav-lang .nav-chevron {
+  header nav .nav-util--lang .nav-chevron {
     font-size: 24px;
   }
 
@@ -523,7 +523,7 @@ header nav .nav-lang .nav-chevron {
   }
 
   header nav .nav-utilities .nav-stripe,
-  header nav .nav-lang {
+  header nav .nav-util--lang {
     width: auto;
     min-height: 0;
     padding: 8px 12px;

@@ -1,8 +1,9 @@
 const FIELD_INDEX = {
   logo: 0,
-  logoAlt: 1,
-  link: 2,
-  label: 3,
+  logoDesktop: 1,
+  logoAlt: 2,
+  link: 3,
+  label: 4,
 };
 
 function getSourceRows(block) {
@@ -59,8 +60,8 @@ function getText(block, propName, fallback = '') {
   return getFieldElement(block, propName)?.textContent?.trim() || fallback;
 }
 
-function getLogo(block) {
-  const element = getFieldElement(block, 'logo');
+function getLogo(block, propName) {
+  const element = getFieldElement(block, propName);
   if (!element) return null;
 
   if (element.matches?.('picture')) {
@@ -108,7 +109,10 @@ export default function decorate(block) {
   const linkUrl = getText(block, 'link', '/');
   const label = getText(block, 'label', 'Inspiration Guide');
   const logoAlt = getText(block, 'logoAlt', label);
-  const logo = getLogo(block);
+  const authoredMobile = getLogo(block, 'logo');
+  const authoredDesktop = getLogo(block, 'logoDesktop');
+  const mobileLogo = authoredMobile || authoredDesktop?.cloneNode(true);
+  const desktopLogo = authoredDesktop || authoredMobile?.cloneNode(true);
 
   hideSource(block);
 
@@ -120,13 +124,22 @@ export default function decorate(block) {
   link.className = 'header-brand-link';
   link.setAttribute('aria-label', label);
 
-  if (logo) {
+  const appendLogo = (logo, modifier) => {
+    if (!logo) return;
     const image = logo.matches('img') ? logo : logo.querySelector('img');
     if (image) {
       image.alt = logoAlt;
       image.loading = 'eager';
     }
-    link.append(logo);
+    const wrapper = document.createElement('span');
+    wrapper.className = `header-brand-logo header-brand-logo--${modifier}`;
+    wrapper.append(logo);
+    link.append(wrapper);
+  };
+
+  if (mobileLogo || desktopLogo) {
+    appendLogo(mobileLogo, 'mobile');
+    appendLogo(desktopLogo, 'desktop');
   } else {
     const text = document.createElement('span');
     text.className = 'header-brand-label';

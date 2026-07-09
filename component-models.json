@@ -1987,7 +1987,14 @@
         "component": "reference",
         "valueType": "string",
         "name": "logo",
-        "label": "Logo",
+        "label": "Logo (móvil)",
+        "multi": false
+      },
+      {
+        "component": "reference",
+        "valueType": "string",
+        "name": "logoDesktop",
+        "label": "Logo (desktop)",
         "multi": false
       },
       {
@@ -2470,6 +2477,23 @@
         "name": "link",
         "label": "Link URL",
         "value": ""
+      },
+      {
+        "component": "select",
+        "valueType": "string",
+        "name": "target",
+        "label": "Abrir enlace en",
+        "value": "_self",
+        "options": [
+          {
+            "name": "Misma pestaña",
+            "value": "_self"
+          },
+          {
+            "name": "Nueva pestaña",
+            "value": "_blank"
+          }
+        ]
       }
     ]
   },
@@ -2488,6 +2512,23 @@
         "valueType": "string",
         "name": "link",
         "label": "Link"
+      },
+      {
+        "component": "select",
+        "valueType": "string",
+        "name": "target",
+        "label": "Abrir enlace en",
+        "value": "_self",
+        "options": [
+          {
+            "name": "Misma pestaña",
+            "value": "_self"
+          },
+          {
+            "name": "Nueva pestaña",
+            "value": "_blank"
+          }
+        ]
       }
     ]
   },
