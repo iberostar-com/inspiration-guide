@@ -61,6 +61,43 @@ function extractLinksFromAue(group) {
 }
 
 /**
+ * Build a link from four consecutive value elements (label, url, newTab, nofollow).
+ */
+function valuesToLink(elems) {
+  const label = elems[0]?.textContent?.trim() || '';
+  if (!label) return null;
+  return {
+    label,
+    url: getHrefFromField(elems[1]) || '#',
+    newTab: isTrueValue(elems[2]?.textContent || ''),
+    nofollow: isTrueValue(elems[3]?.textContent || ''),
+    sourceNode: null,
+  };
+}
+
+/**
+ * Parse a Universal Editor container multifield cell where each item is
+ * separated by an <hr> and its values are consecutive <p> elements.
+ */
+function parseHrDelimitedLinks(cell) {
+  const links = [];
+  let current = [];
+  const flush = () => {
+    if (current.length) {
+      const link = valuesToLink(current);
+      if (link) links.push(link);
+      current = [];
+    }
+  };
+  [...cell.children].forEach((el) => {
+    if (el.tagName === 'HR') flush();
+    else current.push(el);
+  });
+  flush();
+  return links;
+}
+
+/**
  * Convert a row of value cells (label | url | newTab | nofollow) to a link.
  */
 function rowToLink(row) {
@@ -94,7 +131,7 @@ function cellsToLink(cells) {
  * Normalize a group's links to a common shape regardless of authoring source.
  */
 function extractLinks(group) {
-  // 1) Universal Editor container multifield (data-aue-prop fields).
+  // 1) Universal Editor container multifield exposing data-aue-prop fields.
   const aueLinks = extractLinksFromAue(group);
   if (aueLinks.length) return aueLinks;
 
@@ -102,7 +139,7 @@ function extractLinks(group) {
   const classRows = [...group.querySelectorAll('.footer-link-item')];
   if (classRows.length) return classRows.map(rowToLink).filter(Boolean);
 
-  // 3) Positional item rows: direct children (after the title) with several cells.
+  // Identify (and exclude) the title cell from the link candidates.
   const titleEl = getPropElement(group, 'title')
     || group.querySelector?.('.footer-links-group-title')
     || group.firstElementChild;
@@ -113,7 +150,11 @@ function extractLinks(group) {
     return true;
   });
 
-  // Each item row carries up to four cells; treat those as discrete links.
+  // 3) Container multifield cell: items separated by <hr>, values in <p>.
+  const hrCell = rowChildren.find((child) => child.querySelector?.(':scope > hr'));
+  if (hrCell) return parseHrDelimitedLinks(hrCell);
+
+  // 4) Item rows: each row carries up to four cells as one link.
   const itemRows = rowChildren.filter(
     (row) => row.children.length >= 2 && row.children.length <= LINK_FIELDS.length,
   );
@@ -121,7 +162,7 @@ function extractLinks(group) {
     return itemRows.map(rowToLink).filter(Boolean);
   }
 
-  // 4) Flat fallback: a run of leaf cells chunked into groups of four.
+  // 5) Flat fallback: a run of leaf cells chunked into groups of four.
   const leafCells = rowChildren
     .flatMap((child) => (child.querySelector(':scope > div') ? [...child.children] : [child]))
     .filter((cell) => !cell.querySelector(':scope > div'));
@@ -173,8 +214,8 @@ function buildLinkItem(link) {
 }
 
 function collectGroups(block) {
-  // Priority 1: Universal Editor group blocks.
-  const aueGroups = [...block.querySelectorAll('[data-aue-model="footer-links-group"]')]
+  // Priority 1: Universal Editor group blocks (model or component attribute).
+  const aueGroups = [...block.querySelectorAll('[data-aue-model="footer-links-group"], [data-aue-component="footer-links-group"]')]
     .filter((group) => !group.closest('.footer-links-rendered'));
   if (aueGroups.length) {
     return aueGroups.map((group) => ({
