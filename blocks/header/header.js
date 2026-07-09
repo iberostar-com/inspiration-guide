@@ -52,15 +52,17 @@ function readSections(fragment) {
   return [...fragment.querySelectorAll('.nav-item')].map((item) => {
     const link = item.querySelector('.nav-item-link') || item.querySelector('.nav-item-content a');
     const children = [];
-    let viewAllHref = link?.getAttribute('href') || '#';
-    let viewAllTarget = linkTarget(link);
+    let viewAllText = '';
+    let viewAllHref = '#';
+    let viewAllTarget = '';
 
     item.querySelectorAll('.nav-item-panel .nav-item-dropdown-item').forEach((li) => {
       const anchor = li.querySelector('a');
       if (!anchor) return;
       if (li.classList.contains('nav-item-view-all')) {
-        viewAllHref = anchor.getAttribute('href') || viewAllHref;
-        viewAllTarget = linkTarget(anchor) || viewAllTarget;
+        viewAllText = cellText(anchor);
+        viewAllHref = anchor.getAttribute('href') || '#';
+        viewAllTarget = linkTarget(anchor);
       } else {
         children.push({
           label: cellText(anchor),
@@ -72,8 +74,10 @@ function readSections(fragment) {
 
     return {
       label: cellText(link),
-      href: viewAllHref,
+      href: link?.getAttribute('href') || '#',
       target: linkTarget(link),
+      viewAllText,
+      viewAllHref,
       viewAllTarget,
       children,
     };
@@ -127,14 +131,17 @@ function buildItem(section, showRoot) {
     accordion.append(a);
   });
 
-  const viewAll = document.createElement('a');
-  viewAll.className = 'nav-viewall';
-  viewAll.href = section.href;
-  applyTarget(viewAll, section.viewAllTarget);
-  const viewAllLabel = document.createElement('span');
-  viewAllLabel.textContent = `Ver todos los ${section.label.toLowerCase()}`;
-  viewAll.append(viewAllLabel, createIcon('arrow-forward'));
-  accordion.append(viewAll);
+  // "Ver todos" comes from the authored nav-item fields, not auto-generated.
+  if (section.viewAllText) {
+    const viewAll = document.createElement('a');
+    viewAll.className = 'nav-viewall';
+    viewAll.href = section.viewAllHref || '#';
+    applyTarget(viewAll, section.viewAllTarget);
+    const viewAllLabel = document.createElement('span');
+    viewAllLabel.textContent = section.viewAllText;
+    viewAll.append(viewAllLabel, createIcon('arrow-forward'));
+    accordion.append(viewAll);
+  }
 
   panel.append(accordion);
   item.append(panel);
@@ -255,7 +262,7 @@ export default async function decorate(block) {
   const divider = () => Object.assign(document.createElement('span'), { className: 'nav-divider' });
 
   // DOM order = mobile order (Reservar / ESP); desktop reorders via flex.
-  const hotelsLink = fragment.querySelector('.nav-hotels a');
+  const hotelsLink = fragment.querySelector('.nav-hotels a, .nav-hotels-link a');
   if (hotelsLink) {
     const a = document.createElement('a');
     a.className = 'nav-stripe nav-stripe--direct nav-util nav-util--hotels';
