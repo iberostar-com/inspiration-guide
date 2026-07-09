@@ -79,77 +79,173 @@
         "component": "text",
         "valueType": "string",
         "name": "article-internal-name",
-        "label": "Article Internal Name"
+        "label": "Article Internal Name",
+        "condition": {
+          "==": [
+            {
+              "var": "page-type"
+            },
+            "article"
+          ]
+        }
       },
       {
         "component": "reference",
         "valueType": "string",
         "name": "article-image",
         "label": "Article Image",
-        "multi": false
+        "multi": false,
+        "condition": {
+          "==": [
+            {
+              "var": "page-type"
+            },
+            "article"
+          ]
+        }
       },
       {
         "component": "text",
         "valueType": "string",
         "name": "article-image-alt",
-        "label": "Article Image Alt"
+        "label": "Article Image Alt",
+        "condition": {
+          "==": [
+            {
+              "var": "page-type"
+            },
+            "article"
+          ]
+        }
       },
       {
         "component": "text",
         "valueType": "string",
         "name": "article-author-name",
-        "label": "Article Author Name"
+        "label": "Article Author Name",
+        "condition": {
+          "==": [
+            {
+              "var": "page-type"
+            },
+            "article"
+          ]
+        }
       },
       {
         "component": "text",
         "valueType": "string",
         "name": "article-author-description",
-        "label": "Article Author Description"
+        "label": "Article Author Description",
+        "condition": {
+          "==": [
+            {
+              "var": "page-type"
+            },
+            "article"
+          ]
+        }
       },
       {
         "component": "reference",
         "valueType": "string",
         "name": "article-author-image",
         "label": "Article Author Image",
-        "multi": false
+        "multi": false,
+        "condition": {
+          "==": [
+            {
+              "var": "page-type"
+            },
+            "article"
+          ]
+        }
       },
       {
         "component": "aem-tag",
         "valueType": "string",
         "name": "article-category",
         "label": "Article Primary Category",
-        "multi": false
+        "multi": false,
+        "condition": {
+          "==": [
+            {
+              "var": "page-type"
+            },
+            "article"
+          ]
+        }
       },
       {
         "component": "aem-tag",
         "valueType": "string",
         "name": "article-tags",
-        "label": "Article Tags"
+        "label": "Article Tags",
+        "condition": {
+          "==": [
+            {
+              "var": "page-type"
+            },
+            "article"
+          ]
+        }
       },
       {
         "component": "date-time",
         "valueType": "date",
         "name": "article-publication-date",
-        "label": "Article Publication Date"
+        "label": "Article Publication Date",
+        "condition": {
+          "==": [
+            {
+              "var": "page-type"
+            },
+            "article"
+          ]
+        }
       },
       {
         "component": "date-time",
         "valueType": "date",
         "name": "article-update-date",
-        "label": "Article Update Date"
+        "label": "Article Update Date",
+        "condition": {
+          "==": [
+            {
+              "var": "page-type"
+            },
+            "article"
+          ]
+        }
       },
       {
         "component": "text",
         "valueType": "string",
         "name": "article-read-time",
-        "label": "Article Read Time"
+        "label": "Article Read Time",
+        "condition": {
+          "==": [
+            {
+              "var": "page-type"
+            },
+            "article"
+          ]
+        }
       },
       {
         "component": "boolean",
         "valueType": "boolean",
         "name": "article-visible",
         "label": "Article Visible",
-        "value": true
+        "value": true,
+        "condition": {
+          "==": [
+            {
+              "var": "page-type"
+            },
+            "article"
+          ]
+        }
       }
     ]
   },
