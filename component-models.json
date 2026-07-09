@@ -79,77 +79,173 @@
         "component": "text",
         "valueType": "string",
         "name": "article-internal-name",
-        "label": "Article Internal Name"
+        "label": "Article Internal Name",
+        "condition": {
+          "==": [
+            {
+              "var": "page-type"
+            },
+            "article"
+          ]
+        }
       },
       {
         "component": "reference",
         "valueType": "string",
         "name": "article-image",
         "label": "Article Image",
-        "multi": false
+        "multi": false,
+        "condition": {
+          "==": [
+            {
+              "var": "page-type"
+            },
+            "article"
+          ]
+        }
       },
       {
         "component": "text",
         "valueType": "string",
         "name": "article-image-alt",
-        "label": "Article Image Alt"
+        "label": "Article Image Alt",
+        "condition": {
+          "==": [
+            {
+              "var": "page-type"
+            },
+            "article"
+          ]
+        }
       },
       {
         "component": "text",
         "valueType": "string",
         "name": "article-author-name",
-        "label": "Article Author Name"
+        "label": "Article Author Name",
+        "condition": {
+          "==": [
+            {
+              "var": "page-type"
+            },
+            "article"
+          ]
+        }
       },
       {
         "component": "text",
         "valueType": "string",
         "name": "article-author-description",
-        "label": "Article Author Description"
+        "label": "Article Author Description",
+        "condition": {
+          "==": [
+            {
+              "var": "page-type"
+            },
+            "article"
+          ]
+        }
       },
       {
         "component": "reference",
         "valueType": "string",
         "name": "article-author-image",
         "label": "Article Author Image",
-        "multi": false
+        "multi": false,
+        "condition": {
+          "==": [
+            {
+              "var": "page-type"
+            },
+            "article"
+          ]
+        }
       },
       {
         "component": "aem-tag",
         "valueType": "string",
         "name": "article-category",
         "label": "Article Primary Category",
-        "multi": false
+        "multi": false,
+        "condition": {
+          "==": [
+            {
+              "var": "page-type"
+            },
+            "article"
+          ]
+        }
       },
       {
         "component": "aem-tag",
         "valueType": "string",
         "name": "article-tags",
-        "label": "Article Tags"
+        "label": "Article Tags",
+        "condition": {
+          "==": [
+            {
+              "var": "page-type"
+            },
+            "article"
+          ]
+        }
       },
       {
         "component": "date-time",
         "valueType": "date",
         "name": "article-publication-date",
-        "label": "Article Publication Date"
+        "label": "Article Publication Date",
+        "condition": {
+          "==": [
+            {
+              "var": "page-type"
+            },
+            "article"
+          ]
+        }
       },
       {
         "component": "date-time",
         "valueType": "date",
         "name": "article-update-date",
-        "label": "Article Update Date"
+        "label": "Article Update Date",
+        "condition": {
+          "==": [
+            {
+              "var": "page-type"
+            },
+            "article"
+          ]
+        }
       },
       {
         "component": "text",
         "valueType": "string",
         "name": "article-read-time",
-        "label": "Article Read Time"
+        "label": "Article Read Time",
+        "condition": {
+          "==": [
+            {
+              "var": "page-type"
+            },
+            "article"
+          ]
+        }
       },
       {
         "component": "boolean",
         "valueType": "boolean",
         "name": "article-visible",
         "label": "Article Visible",
-        "value": true
+        "value": true,
+        "condition": {
+          "==": [
+            {
+              "var": "page-type"
+            },
+            "article"
+          ]
+        }
       }
     ]
   },
@@ -549,6 +645,24 @@
         "value": "En portada"
       },
       {
+        "component": "text",
+        "name": "latestLabel",
+        "label": "Latest Column Title",
+        "value": "Últimas publicaciones"
+      },
+      {
+        "component": "aem-content",
+        "valueType": "string",
+        "name": "featuredArticlePath",
+        "label": "Featured Article Page"
+      },
+      {
+        "component": "aem-tag",
+        "valueType": "string",
+        "name": "filterTags",
+        "label": "Filter Tags"
+      },
+      {
         "component": "select",
         "valueType": "string",
         "name": "featuredLabelHeading",
@@ -584,12 +698,6 @@
             "value": "h6"
           }
         ]
-      },
-      {
-        "component": "text",
-        "name": "latestLabel",
-        "label": "Latest Column Title",
-        "value": "Últimas publicaciones"
       },
       {
         "component": "select",
@@ -633,12 +741,6 @@
         "name": "featuredBadge",
         "label": "Featured Badge Text",
         "value": "Artículo destacado"
-      },
-      {
-        "component": "aem-content",
-        "valueType": "string",
-        "name": "featuredArticlePath",
-        "label": "Featured Article Page"
       },
       {
         "component": "select",
@@ -713,12 +815,6 @@
             "value": "h6"
           }
         ]
-      },
-      {
-        "component": "aem-tag",
-        "valueType": "string",
-        "name": "filterTags",
-        "label": "Filter Tags"
       }
     ]
   },
@@ -1891,7 +1987,14 @@
         "component": "reference",
         "valueType": "string",
         "name": "logo",
-        "label": "Logo",
+        "label": "Logo (móvil)",
+        "multi": false
+      },
+      {
+        "component": "reference",
+        "valueType": "string",
+        "name": "logoDesktop",
+        "label": "Logo (desktop)",
         "multi": false
       },
       {
@@ -2374,6 +2477,23 @@
         "name": "link",
         "label": "Link URL",
         "value": ""
+      },
+      {
+        "component": "select",
+        "valueType": "string",
+        "name": "target",
+        "label": "Abrir enlace en",
+        "value": "_self",
+        "options": [
+          {
+            "name": "Misma pestaña",
+            "value": "_self"
+          },
+          {
+            "name": "Nueva pestaña",
+            "value": "_blank"
+          }
+        ]
       }
     ]
   },
@@ -2392,6 +2512,23 @@
         "valueType": "string",
         "name": "link",
         "label": "Link"
+      },
+      {
+        "component": "select",
+        "valueType": "string",
+        "name": "target",
+        "label": "Abrir enlace en",
+        "value": "_self",
+        "options": [
+          {
+            "name": "Misma pestaña",
+            "value": "_self"
+          },
+          {
+            "name": "Nueva pestaña",
+            "value": "_blank"
+          }
+        ]
       }
     ]
   },

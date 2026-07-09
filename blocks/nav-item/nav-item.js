@@ -29,10 +29,25 @@ function readChild(row) {
   return { label, link };
 }
 
+function applyTarget(anchor, target) {
+  if (target === '_blank') {
+    anchor.target = '_blank';
+    anchor.rel = 'noopener';
+  }
+}
+
 export default function decorate(block) {
   const rows = [...block.children];
   const childRows = rows.filter(isChildRow);
-  const configRows = rows.filter((row) => !isChildRow(row));
+  let configRows = rows.filter((row) => !isChildRow(row));
+
+  // target select: its value renders as plain text (_self/_blank), no data-aue-prop.
+  const targetEl = propElement(block, 'target')
+    || configRows.find((row) => /^(_self|_blank|misma pesta|nueva pesta)/i.test(cellText(row)));
+  const target = /blank|nueva/i.test(cellText(targetEl)) ? '_blank' : '_self';
+  if (targetEl) {
+    configRows = configRows.filter((row) => row !== targetEl && !row.contains?.(targetEl));
+  }
 
   const label = cellText(propElement(block, 'label') || configRows[0]);
   const link = cellLink(propElement(block, 'link') || configRows[1]);
@@ -59,6 +74,7 @@ export default function decorate(block) {
   linkEl.className = 'nav-item-link';
   linkEl.href = link || children[0]?.link || '#';
   linkEl.textContent = label;
+  applyTarget(linkEl, target);
   content.append(linkEl);
 
   if (hasChildren) {
@@ -93,6 +109,7 @@ export default function decorate(block) {
       const anchor = document.createElement('a');
       anchor.href = child.link || '#';
       anchor.textContent = child.label;
+      applyTarget(anchor, target);
       li.append(anchor);
       list.append(li);
     });

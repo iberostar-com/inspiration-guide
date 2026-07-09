@@ -43,6 +43,24 @@
           "value": "En portada"
         },
         {
+          "component": "text",
+          "name": "latestLabel",
+          "label": "Latest Column Title",
+          "value": "Últimas publicaciones"
+        },
+        {
+          "component": "aem-content",
+          "valueType": "string",
+          "name": "featuredArticlePath",
+          "label": "Featured Article Page"
+        },
+        {
+          "component": "aem-tag",
+          "valueType": "string",
+          "name": "filterTags",
+          "label": "Filter Tags"
+        },
+        {
           "component": "select",
           "valueType": "string",
           "name": "featuredLabelHeading",
@@ -57,12 +75,6 @@
             { "name": "H5", "value": "h5" },
             { "name": "H6", "value": "h6" }
           ]
-        },
-        {
-          "component": "text",
-          "name": "latestLabel",
-          "label": "Latest Column Title",
-          "value": "Últimas publicaciones"
         },
         {
           "component": "select",
@@ -85,12 +97,6 @@
           "name": "featuredBadge",
           "label": "Featured Badge Text",
           "value": "Artículo destacado"
-        },
-        {
-          "component": "aem-content",
-          "valueType": "string",
-          "name": "featuredArticlePath",
-          "label": "Featured Article Page"
         },
         {
           "component": "select",
@@ -123,12 +129,6 @@
             { "name": "H5", "value": "h5" },
             { "name": "H6", "value": "h6" }
           ]
-        },
-        {
-          "component": "aem-tag",
-          "valueType": "string",
-          "name": "filterTags",
-          "label": "Filter Tags"
         }
       ]
     },
