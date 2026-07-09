@@ -99,6 +99,21 @@ function getLogo(block, propName) {
   return null;
 }
 
+// The link field has no data-aue-prop, so positional indexing is fragile when
+// optional fields (logoAlt) have no source row. Find the real link: the source
+// anchor that is not wrapping a logo image.
+function getLinkUrl(block, fallback) {
+  const byProp = getFieldElement(block, 'link');
+  const propHref = byProp?.querySelector?.('a[href]')?.getAttribute('href')
+    || byProp?.textContent?.trim();
+  if (propHref && /^(\/|https?:|#)/.test(propHref)) return propHref;
+
+  const anchor = getSourceRows(block)
+    .flatMap((row) => [...(row.querySelectorAll?.('a[href]') || [])])
+    .find((a) => !a.querySelector('img, picture'));
+  return anchor?.getAttribute('href') || fallback;
+}
+
 function hideSource(block) {
   getSourceRows(block).forEach((row) => row.classList.add('header-brand-source'));
 }
@@ -106,9 +121,9 @@ function hideSource(block) {
 export default function decorate(block) {
   block.querySelector(':scope > .header-brand-content')?.remove();
 
-  const linkUrl = getText(block, 'link', '/');
+  const linkUrl = getLinkUrl(block, '/');
   const label = getText(block, 'label', 'Inspiration Guide');
-  const logoAlt = getText(block, 'logoAlt', label);
+  const logoAlt = block.querySelector('[data-aue-prop="logoAlt"]')?.textContent?.trim() || label;
   const authoredMobile = getLogo(block, 'logo');
   const authoredDesktop = getLogo(block, 'logoDesktop');
   const mobileLogo = authoredMobile || authoredDesktop?.cloneNode(true);
