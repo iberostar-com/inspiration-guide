@@ -46,8 +46,11 @@ function decorateFooterSections(footer) {
 
     const hasBrand = section.querySelector('.header-brand-wrapper, .header-brand');
     const hasLinks = section.querySelector('.footer-links-wrapper, .footer-links');
-    const navLanguageWrapper = section.querySelector(':scope > .nav-language-wrapper');
-    const footerLegalWrapper = section.querySelector(':scope > .footer-legal-wrapper');
+    // The language selector arrives as a fragment, so its wrapper is nested a few
+    // levels deep (default-content-wrapper > fragment > nav-language-container).
+    // Match it (and legal) anywhere in the section, not just as a direct child.
+    const navLanguageWrapper = section.querySelector('.nav-language-wrapper');
+    const footerLegalWrapper = section.querySelector('.footer-legal-wrapper');
     const hasMeta = navLanguageWrapper || footerLegalWrapper || section.querySelector('.nav-language, .footer-legal');
 
     if (navLanguageWrapper || footerLegalWrapper) {
@@ -59,6 +62,8 @@ function decorateFooterSections(footer) {
         section.append(metaRow);
       }
 
+      // Language first keeps the mobile column stack (language above legal);
+      // on desktop CSS grid places legal left and language right regardless of order.
       if (navLanguageWrapper) {
         metaRow.append(navLanguageWrapper);
       }
@@ -66,6 +71,14 @@ function decorateFooterSections(footer) {
       if (footerLegalWrapper) {
         metaRow.append(footerLegalWrapper);
       }
+
+      // Remove the now-empty fragment/default-content wrappers left behind after
+      // pulling the language selector out, so they don't add stray vertical space.
+      section.querySelectorAll(':scope > .default-content-wrapper').forEach((wrapper) => {
+        if (!wrapper.textContent.trim() && !wrapper.querySelector('img, picture, a, button, .block')) {
+          wrapper.remove();
+        }
+      });
     }
 
     if (hasBrand) {
