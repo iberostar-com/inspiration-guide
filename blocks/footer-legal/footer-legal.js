@@ -35,6 +35,15 @@ function isChecked(row, prop, fallbackIndex) {
   return text === 'true' || text === 'on' || text === 'yes';
 }
 
+function normalizeTarget(value = '') {
+  const text = `${value}`.trim().toLowerCase();
+  if (!text) return '_blank';
+  if (text === '_blank' || text.includes('nueva') || text === 'true' || text === 'on' || text === 'yes') {
+    return '_blank';
+  }
+  return '_self';
+}
+
 function getHref(row) {
   const propEl = getPropElement(row, 'linkUrl');
   const anchor = propEl?.querySelector?.('a[href]') || row.querySelector?.('a[href]');
@@ -47,7 +56,11 @@ function buildLinkItem(row) {
   if (!label) return null;
 
   const url = getHref(row);
-  const newTab = isChecked(row, 'linkNewTab', 2);
+  const target = normalizeTarget(
+    getPropElement(row, 'linkTarget')?.textContent
+    || getPropElement(row, 'linkNewTab')?.textContent
+    || getCellText(row, 2),
+  );
   const nofollow = isChecked(row, 'linkNofollow', 3);
 
   const li = document.createElement('li');
@@ -57,10 +70,10 @@ function buildLinkItem(row) {
   a.href = url;
   a.textContent = label;
 
-  if (newTab && nofollow) {
+  if (target === '_blank' && nofollow) {
     a.target = '_blank';
     a.rel = 'noopener nofollow';
-  } else if (newTab) {
+  } else if (target === '_blank') {
     a.target = '_blank';
     a.rel = 'noopener';
   } else if (nofollow) {

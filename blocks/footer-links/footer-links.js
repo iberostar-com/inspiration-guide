@@ -1,6 +1,6 @@
 import { moveInstrumentation } from '../../scripts/scripts.js';
 
-const LINK_FIELDS = ['linkLabel', 'linkUrl', 'linkNewTab', 'linkNofollow'];
+const LINK_FIELDS = ['linkLabel', 'linkUrl', 'linkTarget', 'linkNofollow'];
 
 function getCellText(container, index) {
   const cells = [...container.children];
@@ -17,6 +17,13 @@ function isTrueValue(value = '') {
   return text === 'true' || text === 'on' || text === 'yes';
 }
 
+function normalizeTarget(value = '') {
+  const text = `${value}`.trim().toLowerCase();
+  if (!text) return '_blank';
+  if (text === '_blank' || text.includes('nueva') || isTrueValue(text)) return '_blank';
+  return '_self';
+}
+
 function getHrefFromField(field) {
   if (!field) return '';
   const anchor = field.querySelector?.('a[href]');
@@ -30,7 +37,7 @@ function getHrefFromField(field) {
  */
 function extractLinksFromAue(group) {
   const fieldEls = [...group.querySelectorAll('[data-aue-prop]')]
-    .filter((el) => LINK_FIELDS.includes(el.getAttribute('data-aue-prop')));
+    .filter((el) => [...LINK_FIELDS, 'linkNewTab'].includes(el.getAttribute('data-aue-prop')));
   if (!fieldEls.length) return [];
 
   const items = [];
@@ -39,12 +46,13 @@ function extractLinksFromAue(group) {
     const name = el.getAttribute('data-aue-prop');
     if (name === 'linkLabel') {
       current = {
-        labelEl: el, urlEl: null, newTabEl: null, nofollowEl: null,
+        labelEl: el, urlEl: null, targetEl: null, newTabEl: null, nofollowEl: null,
       };
       items.push(current);
     }
     if (!current) return;
     if (name === 'linkUrl') current.urlEl = el;
+    else if (name === 'linkTarget') current.targetEl = el;
     else if (name === 'linkNewTab') current.newTabEl = el;
     else if (name === 'linkNofollow') current.nofollowEl = el;
   });
@@ -53,7 +61,7 @@ function extractLinksFromAue(group) {
     .map((it) => ({
       label: it.labelEl?.textContent?.trim() || '',
       url: getHrefFromField(it.urlEl) || '#',
-      newTab: isTrueValue(it.newTabEl?.textContent || ''),
+      target: normalizeTarget(it.targetEl?.textContent || it.newTabEl?.textContent || '_blank'),
       nofollow: isTrueValue(it.nofollowEl?.textContent || ''),
       sourceNode: it.labelEl?.closest('[data-aue-resource]') || null,
     }))
@@ -69,7 +77,7 @@ function valuesToLink(elems) {
   return {
     label,
     url: getHrefFromField(elems[1]) || '#',
-    newTab: isTrueValue(elems[2]?.textContent || ''),
+    target: normalizeTarget(elems[2]?.textContent || '_blank'),
     nofollow: isTrueValue(elems[3]?.textContent || ''),
     sourceNode: null,
   };
@@ -106,7 +114,11 @@ function rowToLink(row) {
   return {
     label,
     url: getHrefFromField(row.children[1]) || '#',
-    newTab: isTrueValue(getCellText(row, 2)),
+    target: normalizeTarget(
+      getPropElement(row, 'linkTarget')?.textContent
+      || getPropElement(row, 'linkNewTab')?.textContent
+      || getCellText(row, 2),
+    ),
     nofollow: isTrueValue(getCellText(row, 3)),
     sourceNode: row,
   };
@@ -121,7 +133,7 @@ function cellsToLink(cells) {
   return {
     label,
     url: getHrefFromField(cells[1]) || '#',
-    newTab: isTrueValue(cells[2]?.textContent || ''),
+    target: normalizeTarget(cells[2]?.textContent || '_blank'),
     nofollow: isTrueValue(cells[3]?.textContent || ''),
     sourceNode: cells[0] || null,
   };
@@ -195,10 +207,10 @@ function buildLinkItem(link) {
   a.href = link.url?.trim() || '#';
   a.textContent = label;
 
-  if (link.newTab && link.nofollow) {
+  if (link.target === '_blank' && link.nofollow) {
     a.target = '_blank';
     a.rel = 'noopener nofollow';
-  } else if (link.newTab) {
+  } else if (link.target === '_blank') {
     a.target = '_blank';
     a.rel = 'noopener';
   } else if (link.nofollow) {
