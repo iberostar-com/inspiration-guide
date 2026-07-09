@@ -19,9 +19,9 @@ main .blog-split-list .blog-split-list-rendered {
 
 main .blog-split-list .blog-split-list-featured-column,
 main .blog-split-list .blog-split-list-latest-column {
-  display: grid;
+  display: flex;
+  flex-direction: column;
   gap: 24px;
-  align-content: start;
 }
 
 main .blog-split-list .blog-split-list-eyebrow,
@@ -38,6 +38,10 @@ main .blog-split-list .blog-split-read-time {
 }
 
 main .blog-split-list .blog-split-list-eyebrow {
+  flex: none;
+  order: 0;
+  align-self: stretch;
+  flex-grow: 0;
   color: var(--blog-split-text);
 }
 
@@ -102,9 +106,6 @@ main .blog-split-list .blog-split-meta {
   flex-wrap: wrap;
   gap: 10px 24px;
   align-items: center;
-}
-
-main .blog-split-list .blog-split-meta {
   margin-bottom: -8px;
 }
 
@@ -223,9 +224,20 @@ main .blog-split-list .blog-split-item h3 {
 
 @media (width >= 900px) {
   main .blog-split-list .blog-split-list-rendered {
-    grid-template-columns: minmax(0, 1fr) 336px;
+    display: flex;
+    flex-direction: row;
     gap: 74px;
-    align-items: start;
+    align-items: flex-start;
+  }
+
+  main .blog-split-list .blog-split-list-featured-column {
+    width: 864px;
+    flex-shrink: 0;
+  }
+
+  main .blog-split-list .blog-split-list-latest-column {
+    width: 336px;
+    flex-shrink: 0;
   }
 
   main .blog-split-list .blog-split-media {
