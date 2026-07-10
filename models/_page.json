@@ -166,16 +166,8 @@
           "component": "aem-tag",
           "valueType": "string",
           "name": "article-category",
-          "label": "Article Primary Category",
-          "multi": false,
-          "condition": {
-            "==": [
-              {
-                "var": "page-type"
-              },
-              "article"
-            ]
-          }
+          "label": "Primary Category",
+          "multi": false
         },
         {
           "component": "aem-tag",
