@@ -69,28 +69,8 @@ header nav .nav-logo--mobile img {
 }
 
 header nav .nav-logo-mark {
-  width: 24px;
-  height: auto;
-}
-
-header nav .nav-logo-word {
-  display: inline-flex;
-  flex-direction: column;
-  line-height: 1;
-  color: #1d2d4f;
-}
-
-header nav .nav-logo-word-a {
-  font-family: noe-display, serif;
-  font-style: italic;
-  font-size: 21px;
-}
-
-header nav .nav-logo-word-b {
-  font-family: inter, sans-serif;
-  font-weight: 600;
-  font-size: 12px;
-  letter-spacing: 0.18em;
+  height: 24px;
+  width: auto;
 }
 
 header nav .nav-toggle {
@@ -392,7 +372,8 @@ header nav .nav-util--lang .nav-chevron {
   }
 
   header nav .nav-logo-mark {
-    width: 34px;
+    height: 32px;
+    width: auto;
   }
 
   header nav .nav-panel,
