@@ -141,6 +141,13 @@ export default function decorate(block) {
 
   const appendLogo = (logo, modifier) => {
     if (!logo) return;
+    // Strip authoring instrumentation from the rendered copy so Universal Editor
+    // doesn't list it as a second logo (the hidden source rows keep theirs).
+    [logo, ...logo.querySelectorAll('*')].forEach((el) => {
+      [...el.attributes].forEach((attr) => {
+        if (attr.name.startsWith('data-aue-')) el.removeAttribute(attr.name);
+      });
+    });
     const image = logo.matches('img') ? logo : logo.querySelector('img');
     if (image) {
       image.alt = logoAlt;
