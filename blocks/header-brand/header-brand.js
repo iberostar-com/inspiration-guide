@@ -147,7 +147,7 @@ export default function decorate(block) {
       image.loading = 'eager';
     }
     const wrapper = document.createElement('span');
-    wrapper.className = `header-brand-logo header-brand-logo--${modifier}`;
+    wrapper.className = `header-brand-logo header-brand-logo-${modifier}`;
     wrapper.append(logo);
     link.append(wrapper);
   };
