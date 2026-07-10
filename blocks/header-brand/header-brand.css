@@ -16,6 +16,24 @@
   height: auto;
 }
 
+.header-brand .header-brand-logo-desktop {
+  display: none;
+}
+
+.header-brand .header-brand-logo-mobile {
+  display: inline-flex;
+}
+
+@media (width >= 820px) {
+  .header-brand .header-brand-logo-desktop {
+    display: inline-flex;
+  }
+
+  .header-brand:has(.header-brand-logo-desktop) .header-brand-logo-mobile {
+    display: none;
+  }
+}
+
 .header-brand .header-brand-label {
   font-size: 1rem;
   font-weight: 700;
