@@ -479,10 +479,13 @@ function createList(entries, labels) {
   list.setAttribute('aria-label', labels.carousel);
   list.tabIndex = 0;
 
-  entries.forEach(({ hotelData, source }) => {
+  entries.forEach(({ hotelData, source, analytics }) => {
     const card = createHotelMiniCard(hotelData, 'vertical');
     const item = document.createElement('li');
     item.className = 'recommended-dynamic-hotels-item';
+
+    if (analytics?.hotelCode) item.dataset.analyticsHotelCode = analytics.hotelCode;
+    if (analytics?.stars) item.dataset.analyticsStars = `${analytics.stars}`;
 
     if (source) {
       moveInstrumentation(source, item);
@@ -592,6 +595,10 @@ export default async function decorate(block) {
             stars: hotel.stars || 0,
             tagLabel: tagLabel || '',
             target,
+          },
+          analytics: {
+            hotelCode,
+            stars: hotel.stars || '',
           },
           source,
         };

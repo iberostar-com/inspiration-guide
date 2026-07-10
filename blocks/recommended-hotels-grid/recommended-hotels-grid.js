@@ -438,6 +438,7 @@ export default async function decorate(block) {
   hotels.forEach(({ hotel, source }) => {
     const li = document.createElement('li');
     li.className = 'recommended-hotels-item';
+    if (hotel.stars) li.dataset.analyticsStars = `${hotel.stars}`;
     // Move UE instrumentation from source row to li so only one tree entry exists.
     // Then nest the hidden source row inside li so UE can still resolve its prop fields.
     moveInstrumentation(source, li);
