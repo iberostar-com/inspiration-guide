@@ -90,24 +90,6 @@ function createOptionData(row) {
   return { label, url, target };
 }
 
-function hideSourceRows(rows) {
-  rows.forEach((row) => {
-    row.classList.add('nav-language-source-row');
-    row.setAttribute('aria-hidden', 'true');
-  });
-}
-
-function createRenderedContainer(block) {
-  const existing = block.querySelector(':scope > .nav-language-rendered');
-  if (existing) existing.remove();
-
-  const rendered = document.createElement('div');
-  rendered.className = 'nav-language-rendered';
-  block.classList.add('nav-language-enhanced');
-  block.append(rendered);
-  return rendered;
-}
-
 /**
  * Returns the option that matches the current page locale/path, if any.
  * @param {Array<{label:string,url:string}>} options
@@ -124,6 +106,24 @@ function findActiveOption(options) {
   if (byLocale) return byLocale;
 
   return options.find((option) => normalizePathname(option.url) === currentPath);
+}
+
+function hideSourceRows(rows) {
+  rows.forEach((row) => {
+    row.classList.add('nav-language-source-row');
+    row.setAttribute('aria-hidden', 'true');
+  });
+}
+
+function createRenderedContainer(block) {
+  const existing = block.querySelector(':scope > .nav-language-rendered');
+  if (existing) existing.remove();
+
+  const rendered = document.createElement('div');
+  rendered.className = 'nav-language-rendered';
+  block.classList.add('nav-language-enhanced');
+  block.append(rendered);
+  return rendered;
 }
 
 function buildTrigger(labelText) {
@@ -254,7 +254,9 @@ export default async function decorate(block) {
   backdrop.append(modal);
 
   let keydownHandler;
+
   const getFocusable = () => [...modal.querySelectorAll('a[href], button:not([disabled])')];
+
   const closeModal = () => {
     backdrop.hidden = true;
     backdrop.setAttribute('aria-hidden', 'true');

@@ -55,10 +55,9 @@
           "value": ""
         },
         {
-          "component": "text",
+          "component": "aem-content",
           "name": "cta",
-          "label": "\"View All\" Link URL",
-          "value": ""
+          "label": "\"View All\" Link URL"
         }
       ]
     },
