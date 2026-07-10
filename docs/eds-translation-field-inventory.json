@@ -1,0 +1,3289 @@
+{
+  "contentRootPattern": "/content/inspiration-guide/{lang}-{country}/inspiration-guide",
+  "sourceRoot": "/content/inspiration-guide/es-es/inspiration-guide",
+  "targetRoots": [
+    "/content/inspiration-guide/en-us/inspiration-guide",
+    "/content/inspiration-guide/en-gb/inspiration-guide",
+    "/content/inspiration-guide/fr-fr/inspiration-guide",
+    "/content/inspiration-guide/de-de/inspiration-guide",
+    "/content/inspiration-guide/pt-br/inspiration-guide"
+  ],
+  "blocks": [
+    {
+      "block": "article-content-image",
+      "files": [
+        "blocks/article-content-image/_article-content-image.json"
+      ],
+      "properties": [
+        {
+          "name": "image",
+          "classification": "do_not_translate",
+          "reason": "Technical/structural field, identifier, boolean/date/number, or asset reference.",
+          "source": "blocks/article-content-image/_article-content-image.json",
+          "type": "reference"
+        },
+        {
+          "name": "imageAlt",
+          "classification": "translate",
+          "reason": "Editorial text shown to end users (including rich text, labels, and visible copy).",
+          "source": "blocks/article-content-image/_article-content-image.json",
+          "type": "text"
+        },
+        {
+          "name": "caption",
+          "classification": "translate",
+          "reason": "Editorial text shown to end users (including rich text, labels, and visible copy).",
+          "source": "blocks/article-content-image/_article-content-image.json",
+          "type": "text"
+        },
+        {
+          "name": "alignment",
+          "classification": "review",
+          "reason": "Ambiguous field usage; validate if value is visible text or technical metadata.",
+          "source": "blocks/article-content-image/_article-content-image.json",
+          "type": "select"
+        }
+      ]
+    },
+    {
+      "block": "article-content-quote",
+      "files": [
+        "blocks/article-content-quote/_article-content-quote.json"
+      ],
+      "properties": [
+        {
+          "name": "text",
+          "classification": "translate",
+          "reason": "Editorial text shown to end users (including rich text, labels, and visible copy).",
+          "source": "blocks/article-content-quote/_article-content-quote.json",
+          "type": "richtext"
+        },
+        {
+          "name": "attribution",
+          "classification": "translate",
+          "reason": "Editorial text shown to end users (including rich text, labels, and visible copy).",
+          "source": "blocks/article-content-quote/_article-content-quote.json",
+          "type": "text"
+        }
+      ]
+    },
+    {
+      "block": "article-content-table",
+      "files": [
+        "blocks/article-content-table/_article-content-table.json"
+      ],
+      "properties": [
+        {
+          "name": "title",
+          "classification": "translate",
+          "reason": "Editorial text shown to end users (including rich text, labels, and visible copy).",
+          "source": "blocks/article-content-table/_article-content-table.json",
+          "type": "text"
+        },
+        {
+          "name": "titleHeading",
+          "classification": "review",
+          "reason": "Ambiguous field usage; validate if value is visible text or technical metadata.",
+          "source": "blocks/article-content-table/_article-content-table.json",
+          "type": "select"
+        },
+        {
+          "name": "classes",
+          "classification": "review",
+          "reason": "Ambiguous field usage; validate if value is visible text or technical metadata.",
+          "source": "blocks/article-content-table/_article-content-table.json",
+          "type": "multiselect"
+        },
+        {
+          "name": "text",
+          "classification": "translate",
+          "reason": "Editorial text shown to end users (including rich text, labels, and visible copy).",
+          "source": "blocks/article-content-table/_article-content-table.json",
+          "type": "richtext"
+        }
+      ]
+    },
+    {
+      "block": "article-content-video",
+      "files": [
+        "blocks/article-content-video/_article-content-video.json"
+      ],
+      "properties": [
+        {
+          "name": "videoType",
+          "classification": "do_not_translate",
+          "reason": "Technical/structural field, identifier, boolean/date/number, or asset reference.",
+          "source": "blocks/article-content-video/_article-content-video.json",
+          "type": "select"
+        },
+        {
+          "name": "videoDam",
+          "classification": "do_not_translate",
+          "reason": "Technical/structural field, identifier, boolean/date/number, or asset reference.",
+          "source": "blocks/article-content-video/_article-content-video.json",
+          "type": "aem-content"
+        },
+        {
+          "name": "youtubeVideoId",
+          "classification": "do_not_translate",
+          "reason": "Technical/structural field, identifier, boolean/date/number, or asset reference.",
+          "source": "blocks/article-content-video/_article-content-video.json",
+          "type": "text"
+        },
+        {
+          "name": "poster",
+          "classification": "do_not_translate",
+          "reason": "Technical/structural field, identifier, boolean/date/number, or asset reference.",
+          "source": "blocks/article-content-video/_article-content-video.json",
+          "type": "reference"
+        },
+        {
+          "name": "posterAlt",
+          "classification": "translate",
+          "reason": "Editorial text shown to end users (including rich text, labels, and visible copy).",
+          "source": "blocks/article-content-video/_article-content-video.json",
+          "type": "text"
+        },
+        {
+          "name": "caption",
+          "classification": "translate",
+          "reason": "Editorial text shown to end users (including rich text, labels, and visible copy).",
+          "source": "blocks/article-content-video/_article-content-video.json",
+          "type": "text"
+        },
+        {
+          "name": "alignment",
+          "classification": "review",
+          "reason": "Ambiguous field usage; validate if value is visible text or technical metadata.",
+          "source": "blocks/article-content-video/_article-content-video.json",
+          "type": "select"
+        }
+      ]
+    },
+    {
+      "block": "article-main-image",
+      "files": [
+        "blocks/article-main-image/_article-main-image.json"
+      ],
+      "properties": [
+        {
+          "name": "image",
+          "classification": "do_not_translate",
+          "reason": "Technical/structural field, identifier, boolean/date/number, or asset reference.",
+          "source": "blocks/article-main-image/_article-main-image.json",
+          "type": "reference"
+        },
+        {
+          "name": "imageAlt",
+          "classification": "translate",
+          "reason": "Editorial text shown to end users (including rich text, labels, and visible copy).",
+          "source": "blocks/article-main-image/_article-main-image.json",
+          "type": "text"
+        },
+        {
+          "name": "caption",
+          "classification": "translate",
+          "reason": "Editorial text shown to end users (including rich text, labels, and visible copy).",
+          "source": "blocks/article-main-image/_article-main-image.json",
+          "type": "text"
+        }
+      ]
+    },
+    {
+      "block": "blog-split-list",
+      "files": [
+        "blocks/blog-split-list/_blog-split-list.json"
+      ],
+      "properties": [
+        {
+          "name": "featuredLabel",
+          "classification": "translate",
+          "reason": "Editorial text shown to end users (including rich text, labels, and visible copy).",
+          "source": "blocks/blog-split-list/_blog-split-list.json",
+          "type": "text"
+        },
+        {
+          "name": "latestLabel",
+          "classification": "translate",
+          "reason": "Editorial text shown to end users (including rich text, labels, and visible copy).",
+          "source": "blocks/blog-split-list/_blog-split-list.json",
+          "type": "text"
+        },
+        {
+          "name": "featuredArticlePath",
+          "classification": "review",
+          "reason": "Authorable URL/path or content reference can require locale-aware decision.",
+          "source": "blocks/blog-split-list/_blog-split-list.json",
+          "type": "aem-content"
+        },
+        {
+          "name": "filterTags",
+          "classification": "review",
+          "reason": "Could be rendered label or technical taxonomy ID depending on implementation.",
+          "source": "blocks/blog-split-list/_blog-split-list.json",
+          "type": "aem-tag"
+        },
+        {
+          "name": "featuredLabelHeading",
+          "classification": "review",
+          "reason": "Ambiguous field usage; validate if value is visible text or technical metadata.",
+          "source": "blocks/blog-split-list/_blog-split-list.json",
+          "type": "select"
+        },
+        {
+          "name": "latestLabelHeading",
+          "classification": "review",
+          "reason": "Ambiguous field usage; validate if value is visible text or technical metadata.",
+          "source": "blocks/blog-split-list/_blog-split-list.json",
+          "type": "select"
+        },
+        {
+          "name": "featuredBadge",
+          "classification": "translate",
+          "reason": "Editorial text shown to end users (including rich text, labels, and visible copy).",
+          "source": "blocks/blog-split-list/_blog-split-list.json",
+          "type": "text"
+        },
+        {
+          "name": "featuredArticleTitleHeading",
+          "classification": "review",
+          "reason": "Ambiguous field usage; validate if value is visible text or technical metadata.",
+          "source": "blocks/blog-split-list/_blog-split-list.json",
+          "type": "select"
+        },
+        {
+          "name": "latestArticleTitleHeading",
+          "classification": "review",
+          "reason": "Ambiguous field usage; validate if value is visible text or technical metadata.",
+          "source": "blocks/blog-split-list/_blog-split-list.json",
+          "type": "select"
+        },
+        {
+          "name": "article_placement",
+          "classification": "review",
+          "reason": "Ambiguous field usage; validate if value is visible text or technical metadata.",
+          "source": "blocks/blog-split-list/_blog-split-list.json",
+          "type": "select"
+        },
+        {
+          "name": "article_title",
+          "classification": "translate",
+          "reason": "Editorial text shown to end users (including rich text, labels, and visible copy).",
+          "source": "blocks/blog-split-list/_blog-split-list.json",
+          "type": "text"
+        },
+        {
+          "name": "article_description",
+          "classification": "translate",
+          "reason": "Editorial text shown to end users (including rich text, labels, and visible copy).",
+          "source": "blocks/blog-split-list/_blog-split-list.json",
+          "type": "text"
+        },
+        {
+          "name": "article_image",
+          "classification": "do_not_translate",
+          "reason": "Technical/structural field, identifier, boolean/date/number, or asset reference.",
+          "source": "blocks/blog-split-list/_blog-split-list.json",
+          "type": "reference"
+        },
+        {
+          "name": "article_imageAlt",
+          "classification": "translate",
+          "reason": "Editorial text shown to end users (including rich text, labels, and visible copy).",
+          "source": "blocks/blog-split-list/_blog-split-list.json",
+          "type": "text"
+        },
+        {
+          "name": "article_category",
+          "classification": "review",
+          "reason": "Authorable URL/path or content reference can require locale-aware decision.",
+          "source": "blocks/blog-split-list/_blog-split-list.json",
+          "type": "text"
+        },
+        {
+          "name": "article_categoryUrl",
+          "classification": "review",
+          "reason": "Authorable URL/path or content reference can require locale-aware decision.",
+          "source": "blocks/blog-split-list/_blog-split-list.json",
+          "type": "aem-content"
+        },
+        {
+          "name": "article_publicationDate",
+          "classification": "translate",
+          "reason": "Editorial text shown to end users (including rich text, labels, and visible copy).",
+          "source": "blocks/blog-split-list/_blog-split-list.json",
+          "type": "text"
+        },
+        {
+          "name": "article_readTime",
+          "classification": "translate",
+          "reason": "Editorial text shown to end users (including rich text, labels, and visible copy).",
+          "source": "blocks/blog-split-list/_blog-split-list.json",
+          "type": "text"
+        },
+        {
+          "name": "article_authorName",
+          "classification": "translate",
+          "reason": "Editorial text shown to end users (including rich text, labels, and visible copy).",
+          "source": "blocks/blog-split-list/_blog-split-list.json",
+          "type": "text"
+        },
+        {
+          "name": "article_authorImage",
+          "classification": "review",
+          "reason": "Ambiguous field usage; validate if value is visible text or technical metadata.",
+          "source": "blocks/blog-split-list/_blog-split-list.json",
+          "type": "reference"
+        },
+        {
+          "name": "article_url",
+          "classification": "review",
+          "reason": "Authorable URL/path or content reference can require locale-aware decision.",
+          "source": "blocks/blog-split-list/_blog-split-list.json",
+          "type": "aem-content"
+        }
+      ]
+    },
+    {
+      "block": "breadcrumbs",
+      "files": [
+        "blocks/breadcrumbs/_breadcrumbs.json"
+      ],
+      "properties": [
+        {
+          "name": "homeLabel",
+          "classification": "translate",
+          "reason": "Editorial text shown to end users (including rich text, labels, and visible copy).",
+          "source": "blocks/breadcrumbs/_breadcrumbs.json",
+          "type": "text"
+        },
+        {
+          "name": "homeUrl",
+          "classification": "review",
+          "reason": "Authorable URL/path or content reference can require locale-aware decision.",
+          "source": "blocks/breadcrumbs/_breadcrumbs.json",
+          "type": "aem-content"
+        },
+        {
+          "name": "currentLabel",
+          "classification": "translate",
+          "reason": "Editorial text shown to end users (including rich text, labels, and visible copy).",
+          "source": "blocks/breadcrumbs/_breadcrumbs.json",
+          "type": "text"
+        }
+      ]
+    },
+    {
+      "block": "cards",
+      "files": [
+        "blocks/cards/_cards.json"
+      ],
+      "properties": [
+        {
+          "name": "image",
+          "classification": "do_not_translate",
+          "reason": "Technical/structural field, identifier, boolean/date/number, or asset reference.",
+          "source": "blocks/cards/_cards.json",
+          "type": "reference"
+        },
+        {
+          "name": "text",
+          "classification": "translate",
+          "reason": "Editorial text shown to end users (including rich text, labels, and visible copy).",
+          "source": "blocks/cards/_cards.json",
+          "type": "richtext"
+        },
+        {
+          "name": "link",
+          "classification": "review",
+          "reason": "Authorable URL/path or content reference can require locale-aware decision.",
+          "source": "blocks/cards/_cards.json",
+          "type": "text"
+        }
+      ]
+    },
+    {
+      "block": "carousel-category-gallery",
+      "files": [
+        "blocks/carousel-category-gallery/_carousel-category-gallery.json"
+      ],
+      "properties": [
+        {
+          "name": "eyebrow",
+          "classification": "translate",
+          "reason": "Editorial text shown to end users (including rich text, labels, and visible copy).",
+          "source": "blocks/carousel-category-gallery/_carousel-category-gallery.json",
+          "type": "text"
+        },
+        {
+          "name": "title",
+          "classification": "translate",
+          "reason": "Editorial text shown to end users (including rich text, labels, and visible copy).",
+          "source": "blocks/carousel-category-gallery/_carousel-category-gallery.json",
+          "type": "text"
+        },
+        {
+          "name": "maxItems",
+          "classification": "do_not_translate",
+          "reason": "Technical/structural field, identifier, boolean/date/number, or asset reference.",
+          "source": "blocks/carousel-category-gallery/_carousel-category-gallery.json",
+          "type": "number"
+        },
+        {
+          "name": "icon",
+          "classification": "do_not_translate",
+          "reason": "Technical/structural field, identifier, boolean/date/number, or asset reference.",
+          "source": "blocks/carousel-category-gallery/_carousel-category-gallery.json",
+          "type": "text"
+        },
+        {
+          "name": "image",
+          "classification": "do_not_translate",
+          "reason": "Technical/structural field, identifier, boolean/date/number, or asset reference.",
+          "source": "blocks/carousel-category-gallery/_carousel-category-gallery.json",
+          "type": "reference"
+        },
+        {
+          "name": "link",
+          "classification": "review",
+          "reason": "Authorable URL/path or content reference can require locale-aware decision.",
+          "source": "blocks/carousel-category-gallery/_carousel-category-gallery.json",
+          "type": "aem-content"
+        }
+      ]
+    },
+    {
+      "block": "category-hero",
+      "files": [
+        "blocks/category-hero/_category-hero.json"
+      ],
+      "properties": [
+        {
+          "name": "pretitle",
+          "classification": "translate",
+          "reason": "Editorial text shown to end users (including rich text, labels, and visible copy).",
+          "source": "blocks/category-hero/_category-hero.json",
+          "type": "text"
+        },
+        {
+          "name": "title",
+          "classification": "translate",
+          "reason": "Editorial text shown to end users (including rich text, labels, and visible copy).",
+          "source": "blocks/category-hero/_category-hero.json",
+          "type": "text"
+        },
+        {
+          "name": "description",
+          "classification": "translate",
+          "reason": "Editorial text shown to end users (including rich text, labels, and visible copy).",
+          "source": "blocks/category-hero/_category-hero.json",
+          "type": "richtext"
+        },
+        {
+          "name": "subcategoriesHeadingTag",
+          "classification": "review",
+          "reason": "Could be rendered label or technical taxonomy ID depending on implementation.",
+          "source": "blocks/category-hero/_category-hero.json",
+          "type": "select"
+        },
+        {
+          "name": "subcategory1Url",
+          "classification": "review",
+          "reason": "Authorable URL/path or content reference can require locale-aware decision.",
+          "source": "blocks/category-hero/_category-hero.json",
+          "type": "aem-content"
+        },
+        {
+          "name": "subcategory2Url",
+          "classification": "review",
+          "reason": "Authorable URL/path or content reference can require locale-aware decision.",
+          "source": "blocks/category-hero/_category-hero.json",
+          "type": "aem-content"
+        },
+        {
+          "name": "subcategory3Url",
+          "classification": "review",
+          "reason": "Authorable URL/path or content reference can require locale-aware decision.",
+          "source": "blocks/category-hero/_category-hero.json",
+          "type": "aem-content"
+        },
+        {
+          "name": "subcategory4Url",
+          "classification": "review",
+          "reason": "Authorable URL/path or content reference can require locale-aware decision.",
+          "source": "blocks/category-hero/_category-hero.json",
+          "type": "aem-content"
+        },
+        {
+          "name": "subcategory5Url",
+          "classification": "review",
+          "reason": "Authorable URL/path or content reference can require locale-aware decision.",
+          "source": "blocks/category-hero/_category-hero.json",
+          "type": "aem-content"
+        },
+        {
+          "name": "subcategory6Url",
+          "classification": "review",
+          "reason": "Authorable URL/path or content reference can require locale-aware decision.",
+          "source": "blocks/category-hero/_category-hero.json",
+          "type": "aem-content"
+        },
+        {
+          "name": "subcategory7Url",
+          "classification": "review",
+          "reason": "Authorable URL/path or content reference can require locale-aware decision.",
+          "source": "blocks/category-hero/_category-hero.json",
+          "type": "aem-content"
+        },
+        {
+          "name": "subcategory8Url",
+          "classification": "review",
+          "reason": "Authorable URL/path or content reference can require locale-aware decision.",
+          "source": "blocks/category-hero/_category-hero.json",
+          "type": "aem-content"
+        },
+        {
+          "name": "subcategory9Url",
+          "classification": "review",
+          "reason": "Authorable URL/path or content reference can require locale-aware decision.",
+          "source": "blocks/category-hero/_category-hero.json",
+          "type": "aem-content"
+        },
+        {
+          "name": "url",
+          "classification": "review",
+          "reason": "Authorable URL/path or content reference can require locale-aware decision.",
+          "source": "blocks/category-hero/_category-hero.json",
+          "type": "aem-content"
+        }
+      ]
+    },
+    {
+      "block": "columns",
+      "files": [
+        "blocks/columns/_columns.json"
+      ],
+      "properties": [
+        {
+          "name": "columns",
+          "classification": "do_not_translate",
+          "reason": "Technical/structural field, identifier, boolean/date/number, or asset reference.",
+          "source": "blocks/columns/_columns.json",
+          "type": "text"
+        },
+        {
+          "name": "rows",
+          "classification": "do_not_translate",
+          "reason": "Technical/structural field, identifier, boolean/date/number, or asset reference.",
+          "source": "blocks/columns/_columns.json",
+          "type": "text"
+        }
+      ]
+    },
+    {
+      "block": "editorial-article-banner",
+      "files": [
+        "blocks/editorial-article-banner/_editorial-article-banner.json"
+      ],
+      "properties": [
+        {
+          "name": "title",
+          "classification": "translate",
+          "reason": "Editorial text shown to end users (including rich text, labels, and visible copy).",
+          "source": "blocks/editorial-article-banner/_editorial-article-banner.json",
+          "type": "text"
+        },
+        {
+          "name": "description",
+          "classification": "translate",
+          "reason": "Editorial text shown to end users (including rich text, labels, and visible copy).",
+          "source": "blocks/editorial-article-banner/_editorial-article-banner.json",
+          "type": "textarea"
+        },
+        {
+          "name": "linkText",
+          "classification": "translate",
+          "reason": "Editorial text shown to end users (including rich text, labels, and visible copy).",
+          "source": "blocks/editorial-article-banner/_editorial-article-banner.json",
+          "type": "text"
+        },
+        {
+          "name": "link",
+          "classification": "review",
+          "reason": "Authorable URL/path or content reference can require locale-aware decision.",
+          "source": "blocks/editorial-article-banner/_editorial-article-banner.json",
+          "type": "aem-content"
+        },
+        {
+          "name": "linkTarget",
+          "classification": "do_not_translate",
+          "reason": "Technical/structural field, identifier, boolean/date/number, or asset reference.",
+          "source": "blocks/editorial-article-banner/_editorial-article-banner.json",
+          "type": "select"
+        }
+      ]
+    },
+    {
+      "block": "editorial-article-content",
+      "files": [
+        "blocks/editorial-article-content/_editorial-article-content.json"
+      ],
+      "properties": [
+        {
+          "name": "text",
+          "classification": "translate",
+          "reason": "Editorial text shown to end users (including rich text, labels, and visible copy).",
+          "source": "blocks/editorial-article-content/_editorial-article-content.json",
+          "type": "richtext"
+        }
+      ]
+    },
+    {
+      "block": "editorial-article-grid",
+      "files": [
+        "blocks/editorial-article-grid/_editorial-article-grid.json"
+      ],
+      "properties": [
+        {
+          "name": "eyebrow",
+          "classification": "translate",
+          "reason": "Editorial text shown to end users (including rich text, labels, and visible copy).",
+          "source": "blocks/editorial-article-grid/_editorial-article-grid.json",
+          "type": "text"
+        },
+        {
+          "name": "eyebrowHeading",
+          "classification": "review",
+          "reason": "Ambiguous field usage; validate if value is visible text or technical metadata.",
+          "source": "blocks/editorial-article-grid/_editorial-article-grid.json",
+          "type": "select"
+        },
+        {
+          "name": "title",
+          "classification": "translate",
+          "reason": "Editorial text shown to end users (including rich text, labels, and visible copy).",
+          "source": "blocks/editorial-article-grid/_editorial-article-grid.json",
+          "type": "text"
+        },
+        {
+          "name": "titleHeading",
+          "classification": "review",
+          "reason": "Ambiguous field usage; validate if value is visible text or technical metadata.",
+          "source": "blocks/editorial-article-grid/_editorial-article-grid.json",
+          "type": "select"
+        },
+        {
+          "name": "mode",
+          "classification": "do_not_translate",
+          "reason": "Technical/structural field, identifier, boolean/date/number, or asset reference.",
+          "source": "blocks/editorial-article-grid/_editorial-article-grid.json",
+          "type": "select"
+        },
+        {
+          "name": "cardCtaLabel",
+          "classification": "translate",
+          "reason": "Editorial text shown to end users (including rich text, labels, and visible copy).",
+          "source": "blocks/editorial-article-grid/_editorial-article-grid.json",
+          "type": "text"
+        },
+        {
+          "name": "ctaTarget",
+          "classification": "do_not_translate",
+          "reason": "Technical/structural field, identifier, boolean/date/number, or asset reference.",
+          "source": "blocks/editorial-article-grid/_editorial-article-grid.json",
+          "type": "select"
+        },
+        {
+          "name": "manualArticle1",
+          "classification": "review",
+          "reason": "Authorable URL/path or content reference can require locale-aware decision.",
+          "source": "blocks/editorial-article-grid/_editorial-article-grid.json",
+          "type": "aem-content"
+        },
+        {
+          "name": "manualArticle2",
+          "classification": "review",
+          "reason": "Authorable URL/path or content reference can require locale-aware decision.",
+          "source": "blocks/editorial-article-grid/_editorial-article-grid.json",
+          "type": "aem-content"
+        },
+        {
+          "name": "manualArticle3",
+          "classification": "review",
+          "reason": "Authorable URL/path or content reference can require locale-aware decision.",
+          "source": "blocks/editorial-article-grid/_editorial-article-grid.json",
+          "type": "aem-content"
+        },
+        {
+          "name": "image",
+          "classification": "do_not_translate",
+          "reason": "Technical/structural field, identifier, boolean/date/number, or asset reference.",
+          "source": "blocks/editorial-article-grid/_editorial-article-grid.json",
+          "type": "reference"
+        },
+        {
+          "name": "category",
+          "classification": "review",
+          "reason": "Authorable URL/path or content reference can require locale-aware decision.",
+          "source": "blocks/editorial-article-grid/_editorial-article-grid.json",
+          "type": "text"
+        },
+        {
+          "name": "link",
+          "classification": "review",
+          "reason": "Authorable URL/path or content reference can require locale-aware decision.",
+          "source": "blocks/editorial-article-grid/_editorial-article-grid.json",
+          "type": "text"
+        }
+      ]
+    },
+    {
+      "block": "editorial-highlight-grid",
+      "files": [
+        "blocks/editorial-highlight-grid/_editorial-highlight-grid.json"
+      ],
+      "properties": [
+        {
+          "name": "variant",
+          "classification": "do_not_translate",
+          "reason": "Technical/structural field, identifier, boolean/date/number, or asset reference.",
+          "source": "blocks/editorial-highlight-grid/_editorial-highlight-grid.json",
+          "type": "select"
+        },
+        {
+          "name": "title",
+          "classification": "translate",
+          "reason": "Editorial text shown to end users (including rich text, labels, and visible copy).",
+          "source": "blocks/editorial-highlight-grid/_editorial-highlight-grid.json",
+          "type": "text"
+        },
+        {
+          "name": "titleHeading",
+          "classification": "review",
+          "reason": "Ambiguous field usage; validate if value is visible text or technical metadata.",
+          "source": "blocks/editorial-highlight-grid/_editorial-highlight-grid.json",
+          "type": "select"
+        },
+        {
+          "name": "cardHeading",
+          "classification": "review",
+          "reason": "Ambiguous field usage; validate if value is visible text or technical metadata.",
+          "source": "blocks/editorial-highlight-grid/_editorial-highlight-grid.json",
+          "type": "select"
+        },
+        {
+          "name": "source",
+          "classification": "review",
+          "reason": "Ambiguous field usage; validate if value is visible text or technical metadata.",
+          "source": "blocks/editorial-highlight-grid/_editorial-highlight-grid.json",
+          "type": "select"
+        },
+        {
+          "name": "pageSize",
+          "classification": "do_not_translate",
+          "reason": "Technical/structural field, identifier, boolean/date/number, or asset reference.",
+          "source": "blocks/editorial-highlight-grid/_editorial-highlight-grid.json",
+          "type": "number"
+        },
+        {
+          "name": "ctaLabel",
+          "classification": "translate",
+          "reason": "Editorial text shown to end users (including rich text, labels, and visible copy).",
+          "source": "blocks/editorial-highlight-grid/_editorial-highlight-grid.json",
+          "type": "text"
+        },
+        {
+          "name": "article",
+          "classification": "review",
+          "reason": "Ambiguous field usage; validate if value is visible text or technical metadata.",
+          "source": "blocks/editorial-highlight-grid/_editorial-highlight-grid.json",
+          "type": "aem-content"
+        }
+      ]
+    },
+    {
+      "block": "editorial-split-article",
+      "files": [
+        "blocks/editorial-split-article/_editorial-split-article.json"
+      ],
+      "properties": [
+        {
+          "name": "eyebrow",
+          "classification": "translate",
+          "reason": "Editorial text shown to end users (including rich text, labels, and visible copy).",
+          "source": "blocks/editorial-split-article/_editorial-split-article.json",
+          "type": "text"
+        },
+        {
+          "name": "title",
+          "classification": "translate",
+          "reason": "Editorial text shown to end users (including rich text, labels, and visible copy).",
+          "source": "blocks/editorial-split-article/_editorial-split-article.json",
+          "type": "text"
+        },
+        {
+          "name": "titleHeading",
+          "classification": "review",
+          "reason": "Ambiguous field usage; validate if value is visible text or technical metadata.",
+          "source": "blocks/editorial-split-article/_editorial-split-article.json",
+          "type": "select"
+        },
+        {
+          "name": "text",
+          "classification": "translate",
+          "reason": "Editorial text shown to end users (including rich text, labels, and visible copy).",
+          "source": "blocks/editorial-split-article/_editorial-split-article.json",
+          "type": "richtext"
+        }
+      ]
+    },
+    {
+      "block": "featured-articles",
+      "files": [
+        "blocks/featured-articles/_featured-articles.json"
+      ],
+      "properties": [
+        {
+          "name": "featured_heading",
+          "classification": "translate",
+          "reason": "Visible section heading copy.",
+          "source": "blocks/featured-articles/_featured-articles.json",
+          "type": "text"
+        },
+        {
+          "name": "featured_headingLevel",
+          "classification": "review",
+          "reason": "Heading tag/level selector; content-neutral but UX-related.",
+          "source": "blocks/featured-articles/_featured-articles.json",
+          "type": "select"
+        },
+        {
+          "name": "latest_heading",
+          "classification": "translate",
+          "reason": "Visible section heading copy.",
+          "source": "blocks/featured-articles/_featured-articles.json",
+          "type": "text"
+        },
+        {
+          "name": "latest_headingLevel",
+          "classification": "review",
+          "reason": "Heading tag/level selector; content-neutral but UX-related.",
+          "source": "blocks/featured-articles/_featured-articles.json",
+          "type": "select"
+        },
+        {
+          "name": "display_badge",
+          "classification": "translate",
+          "reason": "Editorial text shown to end users (including rich text, labels, and visible copy).",
+          "source": "blocks/featured-articles/_featured-articles.json",
+          "type": "text"
+        },
+        {
+          "name": "display_articleHeading",
+          "classification": "review",
+          "reason": "Ambiguous field usage; validate if value is visible text or technical metadata.",
+          "source": "blocks/featured-articles/_featured-articles.json",
+          "type": "select"
+        },
+        {
+          "name": "article_placement",
+          "classification": "review",
+          "reason": "Ambiguous field usage; validate if value is visible text or technical metadata.",
+          "source": "blocks/featured-articles/_featured-articles.json",
+          "type": "select"
+        },
+        {
+          "name": "article_title",
+          "classification": "translate",
+          "reason": "Editorial text shown to end users (including rich text, labels, and visible copy).",
+          "source": "blocks/featured-articles/_featured-articles.json",
+          "type": "text"
+        },
+        {
+          "name": "article_description",
+          "classification": "translate",
+          "reason": "Editorial text shown to end users (including rich text, labels, and visible copy).",
+          "source": "blocks/featured-articles/_featured-articles.json",
+          "type": "text"
+        },
+        {
+          "name": "article_image",
+          "classification": "do_not_translate",
+          "reason": "Technical/structural field, identifier, boolean/date/number, or asset reference.",
+          "source": "blocks/featured-articles/_featured-articles.json",
+          "type": "reference"
+        },
+        {
+          "name": "article_imageAlt",
+          "classification": "translate",
+          "reason": "Editorial text shown to end users (including rich text, labels, and visible copy).",
+          "source": "blocks/featured-articles/_featured-articles.json",
+          "type": "text"
+        },
+        {
+          "name": "article_category",
+          "classification": "review",
+          "reason": "Authorable URL/path or content reference can require locale-aware decision.",
+          "source": "blocks/featured-articles/_featured-articles.json",
+          "type": "text"
+        },
+        {
+          "name": "article_categoryUrl",
+          "classification": "review",
+          "reason": "Authorable URL/path or content reference can require locale-aware decision.",
+          "source": "blocks/featured-articles/_featured-articles.json",
+          "type": "aem-content"
+        },
+        {
+          "name": "article_publicationDate",
+          "classification": "translate",
+          "reason": "Editorial text shown to end users (including rich text, labels, and visible copy).",
+          "source": "blocks/featured-articles/_featured-articles.json",
+          "type": "text"
+        },
+        {
+          "name": "article_readTime",
+          "classification": "translate",
+          "reason": "Editorial text shown to end users (including rich text, labels, and visible copy).",
+          "source": "blocks/featured-articles/_featured-articles.json",
+          "type": "text"
+        },
+        {
+          "name": "article_authorName",
+          "classification": "translate",
+          "reason": "Editorial text shown to end users (including rich text, labels, and visible copy).",
+          "source": "blocks/featured-articles/_featured-articles.json",
+          "type": "text"
+        },
+        {
+          "name": "article_url",
+          "classification": "review",
+          "reason": "Authorable URL/path or content reference can require locale-aware decision.",
+          "source": "blocks/featured-articles/_featured-articles.json",
+          "type": "aem-content"
+        },
+        {
+          "name": "article_cta",
+          "classification": "translate",
+          "reason": "Editorial text shown to end users (including rich text, labels, and visible copy).",
+          "source": "blocks/featured-articles/_featured-articles.json",
+          "type": "text"
+        }
+      ]
+    },
+    {
+      "block": "footer-legal",
+      "files": [
+        "blocks/footer-legal/_footer-legal.json"
+      ],
+      "properties": [
+        {
+          "name": "linkLabel",
+          "classification": "translate",
+          "reason": "Editorial text shown to end users (including rich text, labels, and visible copy).",
+          "source": "blocks/footer-legal/_footer-legal.json",
+          "type": "text"
+        },
+        {
+          "name": "linkUrl",
+          "classification": "review",
+          "reason": "Ambiguous field usage; validate if value is visible text or technical metadata.",
+          "source": "blocks/footer-legal/_footer-legal.json",
+          "type": "aem-content"
+        },
+        {
+          "name": "linkTarget",
+          "classification": "do_not_translate",
+          "reason": "Technical/structural field, identifier, boolean/date/number, or asset reference.",
+          "source": "blocks/footer-legal/_footer-legal.json",
+          "type": "select"
+        },
+        {
+          "name": "linkNofollow",
+          "classification": "do_not_translate",
+          "reason": "Technical/structural field, identifier, boolean/date/number, or asset reference.",
+          "source": "blocks/footer-legal/_footer-legal.json",
+          "type": "checkbox"
+        }
+      ]
+    },
+    {
+      "block": "footer-links",
+      "files": [
+        "blocks/footer-links/_footer-links.json"
+      ],
+      "properties": [
+        {
+          "name": "title",
+          "classification": "translate",
+          "reason": "Editorial text shown to end users (including rich text, labels, and visible copy).",
+          "source": "blocks/footer-links/_footer-links.json",
+          "type": "text"
+        },
+        {
+          "name": "links",
+          "classification": "review",
+          "reason": "Ambiguous field usage; validate if value is visible text or technical metadata.",
+          "source": "blocks/footer-links/_footer-links.json",
+          "type": "container"
+        },
+        {
+          "name": "linkLabel",
+          "classification": "translate",
+          "reason": "Editorial text shown to end users (including rich text, labels, and visible copy).",
+          "source": "blocks/footer-links/_footer-links.json",
+          "type": "text"
+        },
+        {
+          "name": "linkUrl",
+          "classification": "review",
+          "reason": "Ambiguous field usage; validate if value is visible text or technical metadata.",
+          "source": "blocks/footer-links/_footer-links.json",
+          "type": "aem-content"
+        },
+        {
+          "name": "linkTarget",
+          "classification": "do_not_translate",
+          "reason": "Technical/structural field, identifier, boolean/date/number, or asset reference.",
+          "source": "blocks/footer-links/_footer-links.json",
+          "type": "select"
+        },
+        {
+          "name": "linkNofollow",
+          "classification": "do_not_translate",
+          "reason": "Technical/structural field, identifier, boolean/date/number, or asset reference.",
+          "source": "blocks/footer-links/_footer-links.json",
+          "type": "checkbox"
+        }
+      ]
+    },
+    {
+      "block": "form",
+      "files": [
+        "blocks/form/_form.json"
+      ],
+      "properties": [
+        {
+          "name": "variant",
+          "classification": "do_not_translate",
+          "reason": "Technical/structural field, identifier, boolean/date/number, or asset reference.",
+          "source": "blocks/form/_form.json",
+          "type": "select"
+        },
+        {
+          "name": "method",
+          "classification": "do_not_translate",
+          "reason": "Technical/structural field, identifier, boolean/date/number, or asset reference.",
+          "source": "blocks/form/_form.json",
+          "type": "text"
+        },
+        {
+          "name": "action",
+          "classification": "do_not_translate",
+          "reason": "Technical/structural field, identifier, boolean/date/number, or asset reference.",
+          "source": "blocks/form/_form.json",
+          "type": "text"
+        }
+      ]
+    },
+    {
+      "block": "fragment",
+      "files": [
+        "blocks/fragment/_fragment.json"
+      ],
+      "properties": [
+        {
+          "name": "reference",
+          "classification": "do_not_translate",
+          "reason": "Technical/structural field, identifier, boolean/date/number, or asset reference.",
+          "source": "blocks/fragment/_fragment.json",
+          "type": "aem-content"
+        }
+      ]
+    },
+    {
+      "block": "global-models",
+      "files": [
+        "models/_button.json",
+        "models/_image.json",
+        "models/_page.json",
+        "models/_section.json",
+        "models/_title.json"
+      ],
+      "properties": [
+        {
+          "name": "link",
+          "classification": "review",
+          "reason": "Authorable URL/path or content reference can require locale-aware decision.",
+          "source": "models/_button.json",
+          "type": "aem-content"
+        },
+        {
+          "name": "linkText",
+          "classification": "translate",
+          "reason": "Editorial text shown to end users (including rich text, labels, and visible copy).",
+          "source": "models/_button.json",
+          "type": "text"
+        },
+        {
+          "name": "linkTitle",
+          "classification": "translate",
+          "reason": "Accessible/tooltip label text potentially visible to users.",
+          "source": "models/_button.json",
+          "type": "text"
+        },
+        {
+          "name": "linkType",
+          "classification": "do_not_translate",
+          "reason": "Technical/structural field, identifier, boolean/date/number, or asset reference.",
+          "source": "models/_button.json",
+          "type": "select"
+        },
+        {
+          "name": "image",
+          "classification": "do_not_translate",
+          "reason": "Technical/structural field, identifier, boolean/date/number, or asset reference.",
+          "source": "models/_image.json",
+          "type": "reference"
+        },
+        {
+          "name": "imageAlt",
+          "classification": "translate",
+          "reason": "Editorial text shown to end users (including rich text, labels, and visible copy).",
+          "source": "models/_image.json",
+          "type": "text"
+        },
+        {
+          "name": "jcr:title",
+          "classification": "translate",
+          "reason": "Editorial text shown to end users (including rich text, labels, and visible copy).",
+          "source": "models/_page.json",
+          "type": "text"
+        },
+        {
+          "name": "jcr:description",
+          "classification": "translate",
+          "reason": "Editorial text shown to end users (including rich text, labels, and visible copy).",
+          "source": "models/_page.json",
+          "type": "text"
+        },
+        {
+          "name": "keywords",
+          "classification": "review",
+          "reason": "SEO keywords are metadata; usually localized but governance-dependent.",
+          "source": "models/_page.json",
+          "type": "text"
+        },
+        {
+          "name": "nav",
+          "classification": "do_not_translate",
+          "reason": "Technical/structural field, identifier, boolean/date/number, or asset reference.",
+          "source": "models/_page.json",
+          "type": "aem-content"
+        },
+        {
+          "name": "footer",
+          "classification": "do_not_translate",
+          "reason": "Technical/structural field, identifier, boolean/date/number, or asset reference.",
+          "source": "models/_page.json",
+          "type": "aem-content"
+        },
+        {
+          "name": "page-type",
+          "classification": "do_not_translate",
+          "reason": "Technical/structural field, identifier, boolean/date/number, or asset reference.",
+          "source": "models/_page.json",
+          "type": "select"
+        },
+        {
+          "name": "inspiration-data-mode",
+          "classification": "do_not_translate",
+          "reason": "Technical/structural field, identifier, boolean/date/number, or asset reference.",
+          "source": "models/_page.json",
+          "type": "select"
+        },
+        {
+          "name": "article-internal-name",
+          "classification": "do_not_translate",
+          "reason": "Internal editorial identifier, not user-facing copy.",
+          "source": "models/_page.json",
+          "type": "text"
+        },
+        {
+          "name": "article-image",
+          "classification": "do_not_translate",
+          "reason": "Technical/structural field, identifier, boolean/date/number, or asset reference.",
+          "source": "models/_page.json",
+          "type": "reference"
+        },
+        {
+          "name": "article-image-alt",
+          "classification": "translate",
+          "reason": "Editorial text shown to end users (including rich text, labels, and visible copy).",
+          "source": "models/_page.json",
+          "type": "text"
+        },
+        {
+          "name": "article-author-name",
+          "classification": "translate",
+          "reason": "Editorial text shown to end users (including rich text, labels, and visible copy).",
+          "source": "models/_page.json",
+          "type": "text"
+        },
+        {
+          "name": "article-author-description",
+          "classification": "translate",
+          "reason": "Editorial text shown to end users (including rich text, labels, and visible copy).",
+          "source": "models/_page.json",
+          "type": "text"
+        },
+        {
+          "name": "article-author-image",
+          "classification": "do_not_translate",
+          "reason": "Technical/structural field, identifier, boolean/date/number, or asset reference.",
+          "source": "models/_page.json",
+          "type": "reference"
+        },
+        {
+          "name": "article-category",
+          "classification": "review",
+          "reason": "Authorable URL/path or content reference can require locale-aware decision.",
+          "source": "models/_page.json",
+          "type": "aem-tag"
+        },
+        {
+          "name": "article-tags",
+          "classification": "review",
+          "reason": "Authorable URL/path or content reference can require locale-aware decision.",
+          "source": "models/_page.json",
+          "type": "aem-tag"
+        },
+        {
+          "name": "article-publication-date",
+          "classification": "do_not_translate",
+          "reason": "Technical/structural field, identifier, boolean/date/number, or asset reference.",
+          "source": "models/_page.json",
+          "type": "date-time"
+        },
+        {
+          "name": "article-update-date",
+          "classification": "do_not_translate",
+          "reason": "Technical/structural field, identifier, boolean/date/number, or asset reference.",
+          "source": "models/_page.json",
+          "type": "date-time"
+        },
+        {
+          "name": "article-read-time",
+          "classification": "translate",
+          "reason": "Editorial text shown to end users (including rich text, labels, and visible copy).",
+          "source": "models/_page.json",
+          "type": "text"
+        },
+        {
+          "name": "article-visible",
+          "classification": "do_not_translate",
+          "reason": "Technical/structural field, identifier, boolean/date/number, or asset reference.",
+          "source": "models/_page.json",
+          "type": "boolean"
+        },
+        {
+          "name": "name",
+          "classification": "do_not_translate",
+          "reason": "Technical/structural field, identifier, boolean/date/number, or asset reference.",
+          "source": "models/_section.json",
+          "type": "text"
+        },
+        {
+          "name": "style",
+          "classification": "do_not_translate",
+          "reason": "Technical/structural field, identifier, boolean/date/number, or asset reference.",
+          "source": "models/_section.json",
+          "type": "multiselect"
+        },
+        {
+          "name": "title",
+          "classification": "translate",
+          "reason": "Editorial text shown to end users (including rich text, labels, and visible copy).",
+          "source": "models/_title.json",
+          "type": "text"
+        },
+        {
+          "name": "titleType",
+          "classification": "review",
+          "reason": "Ambiguous field usage; validate if value is visible text or technical metadata.",
+          "source": "models/_title.json",
+          "type": "select"
+        }
+      ]
+    },
+    {
+      "block": "grid-category-gallery",
+      "files": [
+        "blocks/grid-category-gallery/_grid-category-gallery.json"
+      ],
+      "properties": [
+        {
+          "name": "title",
+          "classification": "translate",
+          "reason": "Editorial text shown to end users (including rich text, labels, and visible copy).",
+          "source": "blocks/grid-category-gallery/_grid-category-gallery.json",
+          "type": "text"
+        },
+        {
+          "name": "subtitle",
+          "classification": "translate",
+          "reason": "Editorial text shown to end users (including rich text, labels, and visible copy).",
+          "source": "blocks/grid-category-gallery/_grid-category-gallery.json",
+          "type": "text"
+        },
+        {
+          "name": "ctaText",
+          "classification": "translate",
+          "reason": "Editorial text shown to end users (including rich text, labels, and visible copy).",
+          "source": "blocks/grid-category-gallery/_grid-category-gallery.json",
+          "type": "text"
+        },
+        {
+          "name": "cta",
+          "classification": "review",
+          "reason": "Ambiguous field usage; validate if value is visible text or technical metadata.",
+          "source": "blocks/grid-category-gallery/_grid-category-gallery.json",
+          "type": "aem-content"
+        },
+        {
+          "name": "image",
+          "classification": "do_not_translate",
+          "reason": "Technical/structural field, identifier, boolean/date/number, or asset reference.",
+          "source": "blocks/grid-category-gallery/_grid-category-gallery.json",
+          "type": "reference"
+        },
+        {
+          "name": "imageAlt",
+          "classification": "translate",
+          "reason": "Editorial text shown to end users (including rich text, labels, and visible copy).",
+          "source": "blocks/grid-category-gallery/_grid-category-gallery.json",
+          "type": "text"
+        },
+        {
+          "name": "link",
+          "classification": "review",
+          "reason": "Authorable URL/path or content reference can require locale-aware decision.",
+          "source": "blocks/grid-category-gallery/_grid-category-gallery.json",
+          "type": "aem-content"
+        }
+      ]
+    },
+    {
+      "block": "header-brand",
+      "files": [
+        "blocks/header-brand/_header-brand.json"
+      ],
+      "properties": [
+        {
+          "name": "logo",
+          "classification": "do_not_translate",
+          "reason": "Technical/structural field, identifier, boolean/date/number, or asset reference.",
+          "source": "blocks/header-brand/_header-brand.json",
+          "type": "reference"
+        },
+        {
+          "name": "logoDesktop",
+          "classification": "review",
+          "reason": "Ambiguous field usage; validate if value is visible text or technical metadata.",
+          "source": "blocks/header-brand/_header-brand.json",
+          "type": "reference"
+        },
+        {
+          "name": "logoAlt",
+          "classification": "translate",
+          "reason": "Editorial text shown to end users (including rich text, labels, and visible copy).",
+          "source": "blocks/header-brand/_header-brand.json",
+          "type": "text"
+        },
+        {
+          "name": "link",
+          "classification": "review",
+          "reason": "Authorable URL/path or content reference can require locale-aware decision.",
+          "source": "blocks/header-brand/_header-brand.json",
+          "type": "text"
+        },
+        {
+          "name": "label",
+          "classification": "translate",
+          "reason": "Editorial text shown to end users (including rich text, labels, and visible copy).",
+          "source": "blocks/header-brand/_header-brand.json",
+          "type": "text"
+        }
+      ]
+    },
+    {
+      "block": "hero",
+      "files": [
+        "blocks/hero/_hero.json"
+      ],
+      "properties": [
+        {
+          "name": "variant",
+          "classification": "do_not_translate",
+          "reason": "Technical/structural field, identifier, boolean/date/number, or asset reference.",
+          "source": "blocks/hero/_hero.json",
+          "type": "select"
+        },
+        {
+          "name": "image",
+          "classification": "do_not_translate",
+          "reason": "Technical/structural field, identifier, boolean/date/number, or asset reference.",
+          "source": "blocks/hero/_hero.json",
+          "type": "reference"
+        },
+        {
+          "name": "imageAlt",
+          "classification": "translate",
+          "reason": "Editorial text shown to end users (including rich text, labels, and visible copy).",
+          "source": "blocks/hero/_hero.json",
+          "type": "text"
+        },
+        {
+          "name": "text",
+          "classification": "translate",
+          "reason": "Editorial text shown to end users (including rich text, labels, and visible copy).",
+          "source": "blocks/hero/_hero.json",
+          "type": "richtext"
+        },
+        {
+          "name": "subtitle",
+          "classification": "translate",
+          "reason": "Editorial text shown to end users (including rich text, labels, and visible copy).",
+          "source": "blocks/hero/_hero.json",
+          "type": "textarea"
+        }
+      ]
+    },
+    {
+      "block": "hero-blog",
+      "files": [
+        "blocks/hero-blog/_hero-blog.json"
+      ],
+      "properties": [
+        {
+          "name": "hero_icon",
+          "classification": "review",
+          "reason": "Ambiguous field usage; validate if value is visible text or technical metadata.",
+          "source": "blocks/hero-blog/_hero-blog.json",
+          "type": "reference"
+        },
+        {
+          "name": "hero_title",
+          "classification": "translate",
+          "reason": "Editorial text shown to end users (including rich text, labels, and visible copy).",
+          "source": "blocks/hero-blog/_hero-blog.json",
+          "type": "text"
+        },
+        {
+          "name": "hero_titleHeading",
+          "classification": "review",
+          "reason": "Ambiguous field usage; validate if value is visible text or technical metadata.",
+          "source": "blocks/hero-blog/_hero-blog.json",
+          "type": "select"
+        },
+        {
+          "name": "hero_subtitle",
+          "classification": "translate",
+          "reason": "Editorial text shown to end users (including rich text, labels, and visible copy).",
+          "source": "blocks/hero-blog/_hero-blog.json",
+          "type": "textarea"
+        },
+        {
+          "name": "hero_subtitleHeading",
+          "classification": "review",
+          "reason": "Ambiguous field usage; validate if value is visible text or technical metadata.",
+          "source": "blocks/hero-blog/_hero-blog.json",
+          "type": "select"
+        }
+      ]
+    },
+    {
+      "block": "hero-tag-name",
+      "files": [
+        "blocks/hero-tag-name/_hero-tag-name.json"
+      ],
+      "properties": [
+        {
+          "name": "title",
+          "classification": "translate",
+          "reason": "Editorial text shown to end users (including rich text, labels, and visible copy).",
+          "source": "blocks/hero-tag-name/_hero-tag-name.json",
+          "type": "text"
+        },
+        {
+          "name": "titleHeading",
+          "classification": "review",
+          "reason": "Ambiguous field usage; validate if value is visible text or technical metadata.",
+          "source": "blocks/hero-tag-name/_hero-tag-name.json",
+          "type": "select"
+        }
+      ]
+    },
+    {
+      "block": "hotel-graphql-mini-card",
+      "files": [
+        "blocks/hotel-graphql-mini-card/_hotel-graphql-mini-card.json"
+      ],
+      "properties": [
+        {
+          "name": "hotelCode",
+          "classification": "do_not_translate",
+          "reason": "Technical/structural field, identifier, boolean/date/number, or asset reference.",
+          "source": "blocks/hotel-graphql-mini-card/_hotel-graphql-mini-card.json",
+          "type": "text"
+        },
+        {
+          "name": "destination",
+          "classification": "review",
+          "reason": "Authorable URL/path or content reference can require locale-aware decision.",
+          "source": "blocks/hotel-graphql-mini-card/_hotel-graphql-mini-card.json",
+          "type": "text"
+        },
+        {
+          "name": "cta_linkText",
+          "classification": "translate",
+          "reason": "Editorial text shown to end users (including rich text, labels, and visible copy).",
+          "source": "blocks/hotel-graphql-mini-card/_hotel-graphql-mini-card.json",
+          "type": "text"
+        },
+        {
+          "name": "cta_link",
+          "classification": "review",
+          "reason": "Authorable URL/path or content reference can require locale-aware decision.",
+          "source": "blocks/hotel-graphql-mini-card/_hotel-graphql-mini-card.json",
+          "type": "aem-content"
+        },
+        {
+          "name": "cta_linkTarget",
+          "classification": "do_not_translate",
+          "reason": "Technical/structural field, identifier, boolean/date/number, or asset reference.",
+          "source": "blocks/hotel-graphql-mini-card/_hotel-graphql-mini-card.json",
+          "type": "select"
+        }
+      ]
+    },
+    {
+      "block": "hotel-mini-card",
+      "files": [
+        "blocks/hotel-mini-card/_hotel-mini-card.json"
+      ],
+      "properties": [
+        {
+          "name": "tag_layout",
+          "classification": "do_not_translate",
+          "reason": "Technical/structural field, identifier, boolean/date/number, or asset reference.",
+          "source": "blocks/hotel-mini-card/_hotel-mini-card.json",
+          "type": "select"
+        },
+        {
+          "name": "media_image",
+          "classification": "do_not_translate",
+          "reason": "Technical/structural field, identifier, boolean/date/number, or asset reference.",
+          "source": "blocks/hotel-mini-card/_hotel-mini-card.json",
+          "type": "reference"
+        },
+        {
+          "name": "media_imageAlt",
+          "classification": "translate",
+          "reason": "Editorial text shown to end users (including rich text, labels, and visible copy).",
+          "source": "blocks/hotel-mini-card/_hotel-mini-card.json",
+          "type": "text"
+        },
+        {
+          "name": "hotel_hotelName",
+          "classification": "translate",
+          "reason": "Editorial text shown to end users (including rich text, labels, and visible copy).",
+          "source": "blocks/hotel-mini-card/_hotel-mini-card.json",
+          "type": "text"
+        },
+        {
+          "name": "hotel_location",
+          "classification": "translate",
+          "reason": "Editorial text shown to end users (including rich text, labels, and visible copy).",
+          "source": "blocks/hotel-mini-card/_hotel-mini-card.json",
+          "type": "text"
+        },
+        {
+          "name": "hotel_stars",
+          "classification": "do_not_translate",
+          "reason": "Technical/structural field, identifier, boolean/date/number, or asset reference.",
+          "source": "blocks/hotel-mini-card/_hotel-mini-card.json",
+          "type": "select"
+        },
+        {
+          "name": "hotel_priceFrom",
+          "classification": "translate",
+          "reason": "Editorial text shown to end users (including rich text, labels, and visible copy).",
+          "source": "blocks/hotel-mini-card/_hotel-mini-card.json",
+          "type": "text"
+        },
+        {
+          "name": "cta_linkText",
+          "classification": "translate",
+          "reason": "Editorial text shown to end users (including rich text, labels, and visible copy).",
+          "source": "blocks/hotel-mini-card/_hotel-mini-card.json",
+          "type": "text"
+        },
+        {
+          "name": "cta_link",
+          "classification": "review",
+          "reason": "Authorable URL/path or content reference can require locale-aware decision.",
+          "source": "blocks/hotel-mini-card/_hotel-mini-card.json",
+          "type": "aem-content"
+        },
+        {
+          "name": "cta_linkTarget",
+          "classification": "do_not_translate",
+          "reason": "Technical/structural field, identifier, boolean/date/number, or asset reference.",
+          "source": "blocks/hotel-mini-card/_hotel-mini-card.json",
+          "type": "select"
+        },
+        {
+          "name": "tag_tagLabel",
+          "classification": "translate",
+          "reason": "Editorial text shown to end users (including rich text, labels, and visible copy).",
+          "source": "blocks/hotel-mini-card/_hotel-mini-card.json",
+          "type": "text"
+        }
+      ]
+    },
+    {
+      "block": "lead-subscription-form",
+      "files": [
+        "blocks/lead-subscription-form/_lead-subscription-form.json"
+      ],
+      "properties": [
+        {
+          "name": "title",
+          "classification": "translate",
+          "reason": "Editorial text shown to end users (including rich text, labels, and visible copy).",
+          "source": "blocks/lead-subscription-form/_lead-subscription-form.json",
+          "type": "text"
+        },
+        {
+          "name": "description",
+          "classification": "translate",
+          "reason": "Editorial text shown to end users (including rich text, labels, and visible copy).",
+          "source": "blocks/lead-subscription-form/_lead-subscription-form.json",
+          "type": "text"
+        },
+        {
+          "name": "legal",
+          "classification": "translate",
+          "reason": "Editorial text shown to end users (including rich text, labels, and visible copy).",
+          "source": "blocks/lead-subscription-form/_lead-subscription-form.json",
+          "type": "richtext"
+        },
+        {
+          "name": "background",
+          "classification": "do_not_translate",
+          "reason": "Technical/structural field, identifier, boolean/date/number, or asset reference.",
+          "source": "blocks/lead-subscription-form/_lead-subscription-form.json",
+          "type": "select"
+        },
+        {
+          "name": "background_placeholder",
+          "classification": "translate",
+          "reason": "Editorial text shown to end users (including rich text, labels, and visible copy).",
+          "source": "blocks/lead-subscription-form/_lead-subscription-form.json",
+          "type": "text"
+        },
+        {
+          "name": "background_buttonLabel",
+          "classification": "translate",
+          "reason": "Editorial text shown to end users (including rich text, labels, and visible copy).",
+          "source": "blocks/lead-subscription-form/_lead-subscription-form.json",
+          "type": "text"
+        },
+        {
+          "name": "background_errorGenericMessage",
+          "classification": "translate",
+          "reason": "Editorial text shown to end users (including rich text, labels, and visible copy).",
+          "source": "blocks/lead-subscription-form/_lead-subscription-form.json",
+          "type": "text"
+        },
+        {
+          "name": "background_errorEmailMessage",
+          "classification": "translate",
+          "reason": "Editorial text shown to end users (including rich text, labels, and visible copy).",
+          "source": "blocks/lead-subscription-form/_lead-subscription-form.json",
+          "type": "text"
+        },
+        {
+          "name": "background_errorCheckMessage",
+          "classification": "translate",
+          "reason": "Editorial text shown to end users (including rich text, labels, and visible copy).",
+          "source": "blocks/lead-subscription-form/_lead-subscription-form.json",
+          "type": "text"
+        },
+        {
+          "name": "background_successHeading",
+          "classification": "translate",
+          "reason": "Editorial text shown to end users (including rich text, labels, and visible copy).",
+          "source": "blocks/lead-subscription-form/_lead-subscription-form.json",
+          "type": "text"
+        },
+        {
+          "name": "background_successMessage",
+          "classification": "translate",
+          "reason": "Editorial text shown to end users (including rich text, labels, and visible copy).",
+          "source": "blocks/lead-subscription-form/_lead-subscription-form.json",
+          "type": "text"
+        }
+      ]
+    },
+    {
+      "block": "nav-hotels",
+      "files": [
+        "blocks/nav-hotels/_nav-hotels.json"
+      ],
+      "properties": [
+        {
+          "name": "linkText",
+          "classification": "translate",
+          "reason": "Editorial text shown to end users (including rich text, labels, and visible copy).",
+          "source": "blocks/nav-hotels/_nav-hotels.json",
+          "type": "text"
+        },
+        {
+          "name": "link",
+          "classification": "review",
+          "reason": "Authorable URL/path or content reference can require locale-aware decision.",
+          "source": "blocks/nav-hotels/_nav-hotels.json",
+          "type": "text"
+        },
+        {
+          "name": "target",
+          "classification": "do_not_translate",
+          "reason": "Technical/structural field, identifier, boolean/date/number, or asset reference.",
+          "source": "blocks/nav-hotels/_nav-hotels.json",
+          "type": "select"
+        }
+      ]
+    },
+    {
+      "block": "nav-item",
+      "files": [
+        "blocks/nav-item/_nav-item.json"
+      ],
+      "properties": [
+        {
+          "name": "label",
+          "classification": "translate",
+          "reason": "Editorial text shown to end users (including rich text, labels, and visible copy).",
+          "source": "blocks/nav-item/_nav-item.json",
+          "type": "text"
+        },
+        {
+          "name": "link",
+          "classification": "review",
+          "reason": "Authorable URL/path or content reference can require locale-aware decision.",
+          "source": "blocks/nav-item/_nav-item.json",
+          "type": "aem-content"
+        },
+        {
+          "name": "target",
+          "classification": "do_not_translate",
+          "reason": "Technical/structural field, identifier, boolean/date/number, or asset reference.",
+          "source": "blocks/nav-item/_nav-item.json",
+          "type": "select"
+        },
+        {
+          "name": "viewAllText",
+          "classification": "translate",
+          "reason": "Editorial text shown to end users (including rich text, labels, and visible copy).",
+          "source": "blocks/nav-item/_nav-item.json",
+          "type": "text"
+        },
+        {
+          "name": "viewAllLink",
+          "classification": "review",
+          "reason": "Authorable URL/path or content reference can require locale-aware decision.",
+          "source": "blocks/nav-item/_nav-item.json",
+          "type": "aem-content"
+        },
+        {
+          "name": "viewAllTarget",
+          "classification": "review",
+          "reason": "Ambiguous field usage; validate if value is visible text or technical metadata.",
+          "source": "blocks/nav-item/_nav-item.json",
+          "type": "select"
+        }
+      ]
+    },
+    {
+      "block": "nav-language",
+      "files": [
+        "blocks/nav-language/_nav-language.json"
+      ],
+      "properties": [
+        {
+          "name": "label",
+          "classification": "translate",
+          "reason": "Editorial text shown to end users (including rich text, labels, and visible copy).",
+          "source": "blocks/nav-language/_nav-language.json",
+          "type": "text"
+        },
+        {
+          "name": "modalHeading",
+          "classification": "translate",
+          "reason": "Editorial text shown to end users (including rich text, labels, and visible copy).",
+          "source": "blocks/nav-language/_nav-language.json",
+          "type": "text"
+        },
+        {
+          "name": "link",
+          "classification": "review",
+          "reason": "Authorable URL/path or content reference can require locale-aware decision.",
+          "source": "blocks/nav-language/_nav-language.json",
+          "type": "aem-content"
+        },
+        {
+          "name": "target",
+          "classification": "do_not_translate",
+          "reason": "Technical/structural field, identifier, boolean/date/number, or asset reference.",
+          "source": "blocks/nav-language/_nav-language.json",
+          "type": "select"
+        }
+      ]
+    },
+    {
+      "block": "nav-search",
+      "files": [
+        "blocks/nav-search/_nav-search.json"
+      ],
+      "properties": [
+        {
+          "name": "linkText",
+          "classification": "translate",
+          "reason": "Editorial text shown to end users (including rich text, labels, and visible copy).",
+          "source": "blocks/nav-search/_nav-search.json",
+          "type": "text"
+        },
+        {
+          "name": "link",
+          "classification": "review",
+          "reason": "Authorable URL/path or content reference can require locale-aware decision.",
+          "source": "blocks/nav-search/_nav-search.json",
+          "type": "text"
+        }
+      ]
+    },
+    {
+      "block": "recommended-dynamic-hotels-grid",
+      "files": [
+        "blocks/recommended-dynamic-hotels-grid/_recommended-dynamic-hotels-grid.json"
+      ],
+      "properties": [
+        {
+          "name": "eyebrow",
+          "classification": "translate",
+          "reason": "Editorial text shown to end users (including rich text, labels, and visible copy).",
+          "source": "blocks/recommended-dynamic-hotels-grid/_recommended-dynamic-hotels-grid.json",
+          "type": "text"
+        },
+        {
+          "name": "title",
+          "classification": "translate",
+          "reason": "Editorial text shown to end users (including rich text, labels, and visible copy).",
+          "source": "blocks/recommended-dynamic-hotels-grid/_recommended-dynamic-hotels-grid.json",
+          "type": "text"
+        },
+        {
+          "name": "gridCta_linkText",
+          "classification": "translate",
+          "reason": "Editorial text shown to end users (including rich text, labels, and visible copy).",
+          "source": "blocks/recommended-dynamic-hotels-grid/_recommended-dynamic-hotels-grid.json",
+          "type": "text"
+        },
+        {
+          "name": "gridCta_link",
+          "classification": "review",
+          "reason": "Authorable URL/path or content reference can require locale-aware decision.",
+          "source": "blocks/recommended-dynamic-hotels-grid/_recommended-dynamic-hotels-grid.json",
+          "type": "aem-content"
+        },
+        {
+          "name": "gridCta_linkTarget",
+          "classification": "do_not_translate",
+          "reason": "Technical/structural field, identifier, boolean/date/number, or asset reference.",
+          "source": "blocks/recommended-dynamic-hotels-grid/_recommended-dynamic-hotels-grid.json",
+          "type": "select"
+        },
+        {
+          "name": "hotelCode",
+          "classification": "do_not_translate",
+          "reason": "Technical/structural field, identifier, boolean/date/number, or asset reference.",
+          "source": "blocks/recommended-dynamic-hotels-grid/_recommended-dynamic-hotels-grid.json",
+          "type": "text"
+        },
+        {
+          "name": "destination",
+          "classification": "review",
+          "reason": "Authorable URL/path or content reference can require locale-aware decision.",
+          "source": "blocks/recommended-dynamic-hotels-grid/_recommended-dynamic-hotels-grid.json",
+          "type": "text"
+        },
+        {
+          "name": "cta_link",
+          "classification": "review",
+          "reason": "Authorable URL/path or content reference can require locale-aware decision.",
+          "source": "blocks/recommended-dynamic-hotels-grid/_recommended-dynamic-hotels-grid.json",
+          "type": "aem-content"
+        },
+        {
+          "name": "cta_linkTarget",
+          "classification": "do_not_translate",
+          "reason": "Technical/structural field, identifier, boolean/date/number, or asset reference.",
+          "source": "blocks/recommended-dynamic-hotels-grid/_recommended-dynamic-hotels-grid.json",
+          "type": "select"
+        },
+        {
+          "name": "tag_tagLabel",
+          "classification": "translate",
+          "reason": "Editorial text shown to end users (including rich text, labels, and visible copy).",
+          "source": "blocks/recommended-dynamic-hotels-grid/_recommended-dynamic-hotels-grid.json",
+          "type": "text"
+        }
+      ]
+    },
+    {
+      "block": "recommended-hotels-grid",
+      "files": [
+        "blocks/recommended-hotels-grid/_recommended-hotels-grid.json"
+      ],
+      "properties": [
+        {
+          "name": "eyebrow",
+          "classification": "translate",
+          "reason": "Editorial text shown to end users (including rich text, labels, and visible copy).",
+          "source": "blocks/recommended-hotels-grid/_recommended-hotels-grid.json",
+          "type": "text"
+        },
+        {
+          "name": "title",
+          "classification": "translate",
+          "reason": "Editorial text shown to end users (including rich text, labels, and visible copy).",
+          "source": "blocks/recommended-hotels-grid/_recommended-hotels-grid.json",
+          "type": "text"
+        },
+        {
+          "name": "gridCta_linkText",
+          "classification": "translate",
+          "reason": "Editorial text shown to end users (including rich text, labels, and visible copy).",
+          "source": "blocks/recommended-hotels-grid/_recommended-hotels-grid.json",
+          "type": "text"
+        },
+        {
+          "name": "gridCta_link",
+          "classification": "review",
+          "reason": "Authorable URL/path or content reference can require locale-aware decision.",
+          "source": "blocks/recommended-hotels-grid/_recommended-hotels-grid.json",
+          "type": "aem-content"
+        },
+        {
+          "name": "gridCta_linkTarget",
+          "classification": "do_not_translate",
+          "reason": "Technical/structural field, identifier, boolean/date/number, or asset reference.",
+          "source": "blocks/recommended-hotels-grid/_recommended-hotels-grid.json",
+          "type": "select"
+        },
+        {
+          "name": "tag_layout",
+          "classification": "do_not_translate",
+          "reason": "Technical/structural field, identifier, boolean/date/number, or asset reference.",
+          "source": "blocks/recommended-hotels-grid/_recommended-hotels-grid.json",
+          "type": "select"
+        },
+        {
+          "name": "tag_tagLabel",
+          "classification": "translate",
+          "reason": "Editorial text shown to end users (including rich text, labels, and visible copy).",
+          "source": "blocks/recommended-hotels-grid/_recommended-hotels-grid.json",
+          "type": "text"
+        },
+        {
+          "name": "media_image",
+          "classification": "do_not_translate",
+          "reason": "Technical/structural field, identifier, boolean/date/number, or asset reference.",
+          "source": "blocks/recommended-hotels-grid/_recommended-hotels-grid.json",
+          "type": "reference"
+        },
+        {
+          "name": "media_imageAlt",
+          "classification": "translate",
+          "reason": "Editorial text shown to end users (including rich text, labels, and visible copy).",
+          "source": "blocks/recommended-hotels-grid/_recommended-hotels-grid.json",
+          "type": "text"
+        },
+        {
+          "name": "hotel_hotelName",
+          "classification": "translate",
+          "reason": "Editorial text shown to end users (including rich text, labels, and visible copy).",
+          "source": "blocks/recommended-hotels-grid/_recommended-hotels-grid.json",
+          "type": "text"
+        },
+        {
+          "name": "hotel_location",
+          "classification": "translate",
+          "reason": "Editorial text shown to end users (including rich text, labels, and visible copy).",
+          "source": "blocks/recommended-hotels-grid/_recommended-hotels-grid.json",
+          "type": "text"
+        },
+        {
+          "name": "hotel_stars",
+          "classification": "do_not_translate",
+          "reason": "Technical/structural field, identifier, boolean/date/number, or asset reference.",
+          "source": "blocks/recommended-hotels-grid/_recommended-hotels-grid.json",
+          "type": "select"
+        },
+        {
+          "name": "hotel_priceFrom",
+          "classification": "translate",
+          "reason": "Editorial text shown to end users (including rich text, labels, and visible copy).",
+          "source": "blocks/recommended-hotels-grid/_recommended-hotels-grid.json",
+          "type": "text"
+        },
+        {
+          "name": "cta_link",
+          "classification": "review",
+          "reason": "Authorable URL/path or content reference can require locale-aware decision.",
+          "source": "blocks/recommended-hotels-grid/_recommended-hotels-grid.json",
+          "type": "aem-content"
+        },
+        {
+          "name": "cta_linkTarget",
+          "classification": "do_not_translate",
+          "reason": "Technical/structural field, identifier, boolean/date/number, or asset reference.",
+          "source": "blocks/recommended-hotels-grid/_recommended-hotels-grid.json",
+          "type": "select"
+        }
+      ]
+    },
+    {
+      "block": "topic-tag-cloud",
+      "files": [
+        "blocks/topic-tag-cloud/_topic-tag-cloud.json"
+      ],
+      "properties": [
+        {
+          "name": "title",
+          "classification": "translate",
+          "reason": "Editorial text shown to end users (including rich text, labels, and visible copy).",
+          "source": "blocks/topic-tag-cloud/_topic-tag-cloud.json",
+          "type": "text"
+        },
+        {
+          "name": "useArticleTags",
+          "classification": "do_not_translate",
+          "reason": "Technical/structural field, identifier, boolean/date/number, or asset reference.",
+          "source": "blocks/topic-tag-cloud/_topic-tag-cloud.json",
+          "type": "boolean"
+        },
+        {
+          "name": "tagParentPage",
+          "classification": "review",
+          "reason": "Authorable URL/path or content reference can require locale-aware decision.",
+          "source": "blocks/topic-tag-cloud/_topic-tag-cloud.json",
+          "type": "aem-content"
+        },
+        {
+          "name": "tags",
+          "classification": "review",
+          "reason": "Authorable URL/path or content reference can require locale-aware decision.",
+          "source": "blocks/topic-tag-cloud/_topic-tag-cloud.json",
+          "type": "aem-tag"
+        }
+      ]
+    }
+  ],
+  "pageProperties": [
+    {
+      "name": "jcr:title",
+      "classification": "translate",
+      "reason": "Primary page title / SEO title.",
+      "source": "models/_page.json",
+      "type": "text"
+    },
+    {
+      "name": "jcr:description",
+      "classification": "translate",
+      "reason": "Primary page description / SEO description.",
+      "source": "models/_page.json",
+      "type": "text"
+    },
+    {
+      "name": "keywords",
+      "classification": "review",
+      "reason": "SEO keywords are metadata; usually localized but governance-dependent.",
+      "source": "models/_page.json",
+      "type": "text[]"
+    },
+    {
+      "name": "navTitle",
+      "classification": "review",
+      "reason": "Not explicitly modeled here; include if present in AEM page metadata.",
+      "source": "not-modeled",
+      "type": "text"
+    },
+    {
+      "name": "pageTitle",
+      "classification": "review",
+      "reason": "Not explicitly modeled here; include if present in AEM page metadata.",
+      "source": "not-modeled",
+      "type": "text"
+    },
+    {
+      "name": "metaTitle",
+      "classification": "review",
+      "reason": "Not explicitly modeled here; include if present in SEO metadata.",
+      "source": "not-modeled",
+      "type": "text"
+    },
+    {
+      "name": "metaDescription",
+      "classification": "review",
+      "reason": "Not explicitly modeled here; include if present in SEO metadata.",
+      "source": "not-modeled",
+      "type": "text"
+    },
+    {
+      "name": "og:title",
+      "classification": "translate",
+      "reason": "OpenGraph visible preview title.",
+      "source": "helix-query.yaml",
+      "type": "meta"
+    },
+    {
+      "name": "og:description",
+      "classification": "translate",
+      "reason": "OpenGraph visible preview description.",
+      "source": "scripts/inspiration-data.js",
+      "type": "meta"
+    },
+    {
+      "name": "twitter:title",
+      "classification": "review",
+      "reason": "Not explicitly queried in repo but should follow SEO translation policy.",
+      "source": "not-modeled",
+      "type": "meta"
+    },
+    {
+      "name": "twitter:description",
+      "classification": "review",
+      "reason": "Not explicitly queried in repo but should follow SEO translation policy.",
+      "source": "not-modeled",
+      "type": "meta"
+    },
+    {
+      "name": "article-image-alt",
+      "classification": "translate",
+      "reason": "Image accessibility text shown to users/AT.",
+      "source": "models/_page.json",
+      "type": "text"
+    },
+    {
+      "name": "article-category",
+      "classification": "review",
+      "reason": "Tag/category IDs or names are technical; translate only their visible title/label when rendered.",
+      "source": "models/_page.json",
+      "type": "aem-tag"
+    },
+    {
+      "name": "article-tags",
+      "classification": "review",
+      "reason": "Tag/category IDs or names are technical; translate only their visible title/label when rendered.",
+      "source": "models/_page.json",
+      "type": "aem-tag"
+    },
+    {
+      "name": "article-publication-date",
+      "classification": "do_not_translate",
+      "reason": "Date field; format handled by locale/UI.",
+      "source": "models/_page.json",
+      "type": "date-time"
+    },
+    {
+      "name": "article-update-date",
+      "classification": "do_not_translate",
+      "reason": "Date field; not translated directly.",
+      "source": "models/_page.json",
+      "type": "date-time"
+    },
+    {
+      "name": "article-visible",
+      "classification": "do_not_translate",
+      "reason": "Boolean visibility flag.",
+      "source": "models/_page.json",
+      "type": "boolean"
+    },
+    {
+      "name": "jcr:name",
+      "classification": "do_not_translate",
+      "reason": "Node name (JCR) is technical and must remain stable.",
+      "source": "content node",
+      "type": "node-name"
+    },
+    {
+      "name": "page node name",
+      "classification": "do_not_translate",
+      "reason": "Real page node name/slug in repository should not be translated.",
+      "source": "content node",
+      "type": "node-name"
+    },
+    {
+      "name": "sling:alias",
+      "classification": "review",
+      "reason": "Approved strategy uses page alias for localized public URL. Confirm Trados governance for controlled slug translation.",
+      "source": "AEM page property (not found in current XWalk models)",
+      "type": "page-alias"
+    },
+    {
+      "name": "page alias",
+      "classification": "review",
+      "reason": "Project-approved localized URL layer; treat as controlled slug workflow.",
+      "source": "AEM page property",
+      "type": "page-alias"
+    }
+  ],
+  "placeholders": [
+    {
+      "key": "readArticle",
+      "value": "Read Article",
+      "classification": "translate",
+      "reason": "Placeholder value is UI copy displayed to end users.",
+      "source": "placeholders.json",
+      "type": "placeholder-value"
+    },
+    {
+      "key": "featuredArticle",
+      "value": "Featured Article",
+      "classification": "translate",
+      "reason": "Placeholder value is UI copy displayed to end users.",
+      "source": "placeholders.json",
+      "type": "placeholder-value"
+    },
+    {
+      "key": "featuredColumnTitle",
+      "value": "Featured",
+      "classification": "translate",
+      "reason": "Placeholder value is UI copy displayed to end users.",
+      "source": "placeholders.json",
+      "type": "placeholder-value"
+    },
+    {
+      "key": "latestColumnTitle",
+      "value": "Latest Publications",
+      "classification": "translate",
+      "reason": "Placeholder value is UI copy displayed to end users.",
+      "source": "placeholders.json",
+      "type": "placeholder-value"
+    },
+    {
+      "key": "hotelsCarousel",
+      "value": "Recommended hotels",
+      "classification": "translate",
+      "reason": "Placeholder value is UI copy displayed to end users.",
+      "source": "placeholders.json",
+      "type": "placeholder-value"
+    },
+    {
+      "key": "carouselPrevious",
+      "value": "Previous hotels",
+      "classification": "translate",
+      "reason": "Placeholder value is UI copy displayed to end users.",
+      "source": "placeholders.json",
+      "type": "placeholder-value"
+    },
+    {
+      "key": "carouselNext",
+      "value": "Next hotels",
+      "classification": "translate",
+      "reason": "Placeholder value is UI copy displayed to end users.",
+      "source": "placeholders.json",
+      "type": "placeholder-value"
+    },
+    {
+      "key": "carouselGoTo",
+      "value": "Go to hotel group",
+      "classification": "translate",
+      "reason": "Placeholder value is UI copy displayed to end users.",
+      "source": "placeholders.json",
+      "type": "placeholder-value"
+    },
+    {
+      "key": "carouselOf",
+      "value": "of",
+      "classification": "translate",
+      "reason": "Placeholder value is UI copy displayed to end users.",
+      "source": "placeholders.json",
+      "type": "placeholder-value"
+    },
+    {
+      "key": "from",
+      "value": "From",
+      "classification": "translate",
+      "reason": "Placeholder value is UI copy displayed to end users.",
+      "source": "placeholders.json",
+      "type": "placeholder-value"
+    },
+    {
+      "key": "night",
+      "value": "night",
+      "classification": "translate",
+      "reason": "Placeholder value is UI copy displayed to end users.",
+      "source": "placeholders.json",
+      "type": "placeholder-value"
+    },
+    {
+      "key": "viewAllHotels",
+      "value": "View all hotels",
+      "classification": "translate",
+      "reason": "Placeholder value is UI copy displayed to end users.",
+      "source": "placeholders.json",
+      "type": "placeholder-value"
+    },
+    {
+      "key": "hotelPriceFromPrefix",
+      "value": "From",
+      "classification": "translate",
+      "reason": "Placeholder value is UI copy displayed to end users.",
+      "source": "placeholders.json",
+      "type": "placeholder-value"
+    },
+    {
+      "key": "hotelPricePerNight",
+      "value": "/ night",
+      "classification": "translate",
+      "reason": "Placeholder value is UI copy displayed to end users.",
+      "source": "placeholders.json",
+      "type": "placeholder-value"
+    },
+    {
+      "key": "hotelPricePersonSingular",
+      "value": "person",
+      "classification": "translate",
+      "reason": "Placeholder value is UI copy displayed to end users.",
+      "source": "placeholders.json",
+      "type": "placeholder-value"
+    },
+    {
+      "key": "hotelPricePersonPlural",
+      "value": "people",
+      "classification": "translate",
+      "reason": "Placeholder value is UI copy displayed to end users.",
+      "source": "placeholders.json",
+      "type": "placeholder-value"
+    },
+    {
+      "key": "chooseLanguage",
+      "value": "Choose a language",
+      "classification": "translate",
+      "reason": "Placeholder value is UI copy displayed to end users.",
+      "source": "placeholders.json",
+      "type": "placeholder-value"
+    },
+    {
+      "key": "close",
+      "value": "Close",
+      "classification": "translate",
+      "reason": "Placeholder value is UI copy displayed to end users.",
+      "source": "placeholders.json",
+      "type": "placeholder-value"
+    },
+    {
+      "key": "readArticle (key)",
+      "value": "readArticle",
+      "classification": "do_not_translate",
+      "reason": "Placeholder key is a technical lookup identifier.",
+      "source": "placeholders.json",
+      "type": "placeholder-key"
+    },
+    {
+      "key": "featuredArticle (key)",
+      "value": "featuredArticle",
+      "classification": "do_not_translate",
+      "reason": "Placeholder key is a technical lookup identifier.",
+      "source": "placeholders.json",
+      "type": "placeholder-key"
+    },
+    {
+      "key": "featuredColumnTitle (key)",
+      "value": "featuredColumnTitle",
+      "classification": "do_not_translate",
+      "reason": "Placeholder key is a technical lookup identifier.",
+      "source": "placeholders.json",
+      "type": "placeholder-key"
+    },
+    {
+      "key": "latestColumnTitle (key)",
+      "value": "latestColumnTitle",
+      "classification": "do_not_translate",
+      "reason": "Placeholder key is a technical lookup identifier.",
+      "source": "placeholders.json",
+      "type": "placeholder-key"
+    },
+    {
+      "key": "hotelsCarousel (key)",
+      "value": "hotelsCarousel",
+      "classification": "do_not_translate",
+      "reason": "Placeholder key is a technical lookup identifier.",
+      "source": "placeholders.json",
+      "type": "placeholder-key"
+    },
+    {
+      "key": "carouselPrevious (key)",
+      "value": "carouselPrevious",
+      "classification": "do_not_translate",
+      "reason": "Placeholder key is a technical lookup identifier.",
+      "source": "placeholders.json",
+      "type": "placeholder-key"
+    },
+    {
+      "key": "carouselNext (key)",
+      "value": "carouselNext",
+      "classification": "do_not_translate",
+      "reason": "Placeholder key is a technical lookup identifier.",
+      "source": "placeholders.json",
+      "type": "placeholder-key"
+    },
+    {
+      "key": "carouselGoTo (key)",
+      "value": "carouselGoTo",
+      "classification": "do_not_translate",
+      "reason": "Placeholder key is a technical lookup identifier.",
+      "source": "placeholders.json",
+      "type": "placeholder-key"
+    },
+    {
+      "key": "carouselOf (key)",
+      "value": "carouselOf",
+      "classification": "do_not_translate",
+      "reason": "Placeholder key is a technical lookup identifier.",
+      "source": "placeholders.json",
+      "type": "placeholder-key"
+    },
+    {
+      "key": "from (key)",
+      "value": "from",
+      "classification": "do_not_translate",
+      "reason": "Placeholder key is a technical lookup identifier.",
+      "source": "placeholders.json",
+      "type": "placeholder-key"
+    },
+    {
+      "key": "night (key)",
+      "value": "night",
+      "classification": "do_not_translate",
+      "reason": "Placeholder key is a technical lookup identifier.",
+      "source": "placeholders.json",
+      "type": "placeholder-key"
+    },
+    {
+      "key": "viewAllHotels (key)",
+      "value": "viewAllHotels",
+      "classification": "do_not_translate",
+      "reason": "Placeholder key is a technical lookup identifier.",
+      "source": "placeholders.json",
+      "type": "placeholder-key"
+    },
+    {
+      "key": "hotelPriceFromPrefix (key)",
+      "value": "hotelPriceFromPrefix",
+      "classification": "do_not_translate",
+      "reason": "Placeholder key is a technical lookup identifier.",
+      "source": "placeholders.json",
+      "type": "placeholder-key"
+    },
+    {
+      "key": "hotelPricePerNight (key)",
+      "value": "hotelPricePerNight",
+      "classification": "do_not_translate",
+      "reason": "Placeholder key is a technical lookup identifier.",
+      "source": "placeholders.json",
+      "type": "placeholder-key"
+    },
+    {
+      "key": "hotelPricePersonSingular (key)",
+      "value": "hotelPricePersonSingular",
+      "classification": "do_not_translate",
+      "reason": "Placeholder key is a technical lookup identifier.",
+      "source": "placeholders.json",
+      "type": "placeholder-key"
+    },
+    {
+      "key": "hotelPricePersonPlural (key)",
+      "value": "hotelPricePersonPlural",
+      "classification": "do_not_translate",
+      "reason": "Placeholder key is a technical lookup identifier.",
+      "source": "placeholders.json",
+      "type": "placeholder-key"
+    },
+    {
+      "key": "chooseLanguage (key)",
+      "value": "chooseLanguage",
+      "classification": "do_not_translate",
+      "reason": "Placeholder key is a technical lookup identifier.",
+      "source": "placeholders.json",
+      "type": "placeholder-key"
+    },
+    {
+      "key": "close (key)",
+      "value": "close",
+      "classification": "do_not_translate",
+      "reason": "Placeholder key is a technical lookup identifier.",
+      "source": "placeholders.json",
+      "type": "placeholder-key"
+    }
+  ],
+  "helixQueryFields": [
+    {
+      "name": "title",
+      "metaSource": "meta[property=\"og:title\"]",
+      "classification": "translate",
+      "reason": "User-facing title used in article/page listings.",
+      "source": "helix-query.yaml"
+    },
+    {
+      "name": "description",
+      "metaSource": "meta[name=\"description\"]",
+      "classification": "translate",
+      "reason": "User-facing summary text used in listings.",
+      "source": "helix-query.yaml"
+    },
+    {
+      "name": "image",
+      "metaSource": "meta[name=\"article-image\"]",
+      "classification": "do_not_translate",
+      "reason": "Asset URL/path reference.",
+      "source": "helix-query.yaml"
+    },
+    {
+      "name": "ogImage",
+      "metaSource": "meta[property=\"og:image\"]",
+      "classification": "do_not_translate",
+      "reason": "Asset URL/path reference.",
+      "source": "helix-query.yaml"
+    },
+    {
+      "name": "imageAlt",
+      "metaSource": "meta[name=\"article-image-alt\"]",
+      "classification": "translate",
+      "reason": "Image alt text.",
+      "source": "helix-query.yaml"
+    },
+    {
+      "name": "imageAltLocalized",
+      "metaSource": "meta[name=\"alt_es\"]",
+      "classification": "translate",
+      "reason": "Localized image alt text.",
+      "source": "helix-query.yaml"
+    },
+    {
+      "name": "imageDcDescription",
+      "metaSource": "meta[name=\"dc:description\"]",
+      "classification": "review",
+      "reason": "Could be metadata or display copy depending on usage.",
+      "source": "helix-query.yaml"
+    },
+    {
+      "name": "imageAutogenDescription",
+      "metaSource": "meta[name=\"autogen:description\"]",
+      "classification": "do_not_translate",
+      "reason": "Auto-generated technical metadata.",
+      "source": "helix-query.yaml"
+    },
+    {
+      "name": "authorName",
+      "metaSource": "meta[name=\"article-author-name\"]",
+      "classification": "translate",
+      "reason": "Visible editorial author name.",
+      "source": "helix-query.yaml"
+    },
+    {
+      "name": "author",
+      "metaSource": "meta[name=\"article-author\"]",
+      "classification": "review",
+      "reason": "May be ID/slug or author display name depending on authoring.",
+      "source": "helix-query.yaml"
+    },
+    {
+      "name": "authorImage",
+      "metaSource": "meta[name=\"article-author-image\"]",
+      "classification": "do_not_translate",
+      "reason": "Asset URL/path reference.",
+      "source": "helix-query.yaml"
+    },
+    {
+      "name": "category",
+      "metaSource": "meta[name=\"article-category\"]",
+      "classification": "review",
+      "reason": "Could be taxonomy ID or rendered label.",
+      "source": "helix-query.yaml"
+    },
+    {
+      "name": "categoryPath",
+      "metaSource": "meta[name=\"article-category-path\"]",
+      "classification": "do_not_translate",
+      "reason": "Taxonomy path / technical locator.",
+      "source": "helix-query.yaml"
+    },
+    {
+      "name": "tags",
+      "metaSource": "meta[name=\"article-tags\"]",
+      "classification": "review",
+      "reason": "Could be tag IDs or localized labels.",
+      "source": "helix-query.yaml"
+    },
+    {
+      "name": "publicationDate",
+      "metaSource": "meta[name=\"article-publication-date\"]",
+      "classification": "do_not_translate",
+      "reason": "Date value.",
+      "source": "helix-query.yaml"
+    },
+    {
+      "name": "publicationTimestamp",
+      "metaSource": "parseTimestamp(article-publication-date)",
+      "classification": "do_not_translate",
+      "reason": "Computed numeric timestamp.",
+      "source": "helix-query.yaml"
+    },
+    {
+      "name": "updateDate",
+      "metaSource": "meta[name=\"article-update-date\"]",
+      "classification": "do_not_translate",
+      "reason": "Date value.",
+      "source": "helix-query.yaml"
+    },
+    {
+      "name": "readTime",
+      "metaSource": "meta[name=\"article-read-time\"]",
+      "classification": "translate",
+      "reason": "Visible reading-time copy.",
+      "source": "helix-query.yaml"
+    },
+    {
+      "name": "featured",
+      "metaSource": "meta[name=\"article-featured\"]",
+      "classification": "do_not_translate",
+      "reason": "Boolean/flag.",
+      "source": "helix-query.yaml"
+    },
+    {
+      "name": "visible",
+      "metaSource": "meta[name=\"article-visible\"]",
+      "classification": "do_not_translate",
+      "reason": "Boolean/flag.",
+      "source": "helix-query.yaml"
+    },
+    {
+      "name": "robots",
+      "metaSource": "meta[name=\"robots\"]",
+      "classification": "do_not_translate",
+      "reason": "SEO crawler directive.",
+      "source": "helix-query.yaml"
+    },
+    {
+      "name": "lastModified",
+      "metaSource": "headers[\"last-modified\"]",
+      "classification": "do_not_translate",
+      "reason": "HTTP technical timestamp.",
+      "source": "helix-query.yaml"
+    },
+    {
+      "name": "path",
+      "metaSource": "path",
+      "classification": "do_not_translate",
+      "reason": "Technical content path.",
+      "source": "helix-query.yaml"
+    }
+  ],
+  "jsOnlyFields": [
+    {
+      "block": "hero",
+      "file": "blocks/hero/hero.js",
+      "property": "alt (cells[1])",
+      "source": "fallback-index",
+      "type": "text",
+      "classification": "translate",
+      "reason": "Visible image alt text from positional legacy rows.",
+      "example": "cells[1]"
+    },
+    {
+      "block": "hero",
+      "file": "blocks/hero/hero.js",
+      "property": "metadata (cells[1])",
+      "source": "fallback-index",
+      "type": "richtext",
+      "classification": "translate",
+      "reason": "Visible metadata text in article hero variant.",
+      "example": "cells[1].innerHTML"
+    },
+    {
+      "block": "hero",
+      "file": "blocks/hero/hero.js",
+      "property": "title (cells[2])",
+      "source": "fallback-index",
+      "type": "text",
+      "classification": "translate",
+      "reason": "Visible hero title fallback.",
+      "example": "cells[2]"
+    },
+    {
+      "block": "hero",
+      "file": "blocks/hero/hero.js",
+      "property": "subtitle (cells[3])",
+      "source": "fallback-index",
+      "type": "text/richtext",
+      "classification": "translate",
+      "reason": "Visible hero subtitle fallback.",
+      "example": "cells[3]"
+    },
+    {
+      "block": "lead-subscription-form",
+      "file": "blocks/lead-subscription-form/lead-subscription-form.js",
+      "property": "placeholder / submitLabel / errors / success* (cells[4..10])",
+      "source": "fallback-index",
+      "type": "text",
+      "classification": "translate",
+      "reason": "Newsletter UX copy rendered directly in form.",
+      "example": "cells[4..10]"
+    },
+    {
+      "block": "editorial-highlight-grid",
+      "file": "blocks/editorial-highlight-grid/editorial-highlight-grid.js",
+      "property": "manual summary (cells[2])",
+      "source": "fallback-index",
+      "type": "text",
+      "classification": "translate",
+      "reason": "Manual article summary text shown in card.",
+      "example": "cells[2]"
+    },
+    {
+      "block": "editorial-highlight-grid",
+      "file": "blocks/editorial-highlight-grid/editorial-highlight-grid.js",
+      "property": "manual href (cells[3])",
+      "source": "fallback-index",
+      "type": "url",
+      "classification": "review",
+      "reason": "Authorable internal/external article link.",
+      "example": "cells[3]"
+    },
+    {
+      "block": "carousel-category-gallery",
+      "file": "blocks/carousel-category-gallery/carousel-category-gallery.js",
+      "property": "icon (cells[0])",
+      "source": "fallback-index",
+      "type": "text",
+      "classification": "do_not_translate",
+      "reason": "Icon name/token, not editorial copy.",
+      "example": "cells[0]"
+    },
+    {
+      "block": "carousel-category-gallery",
+      "file": "blocks/carousel-category-gallery/carousel-category-gallery.js",
+      "property": "title (cells[2])",
+      "source": "fallback-index",
+      "type": "text",
+      "classification": "translate",
+      "reason": "Visible card title.",
+      "example": "cells[2]"
+    },
+    {
+      "block": "carousel-category-gallery",
+      "file": "blocks/carousel-category-gallery/carousel-category-gallery.js",
+      "property": "link (cells[3])",
+      "source": "fallback-index",
+      "type": "url",
+      "classification": "review",
+      "reason": "Authorable internal/external link.",
+      "example": "cells[3]"
+    },
+    {
+      "block": "editorial-article-grid",
+      "file": "blocks/editorial-article-grid/editorial-article-grid.js",
+      "property": "legacy title/category/link by cells[1..3]",
+      "source": "fallback-index",
+      "type": "mixed",
+      "classification": "review",
+      "reason": "Combines visible text with URL/category that may be IDs.",
+      "example": "cells[1], cells[2], cells[3]"
+    },
+    {
+      "block": "footer-links",
+      "file": "blocks/footer-links/footer-links.js",
+      "property": "flat fallback chunk [label,url,target,nofollow]",
+      "source": "fallback-index",
+      "type": "mixed",
+      "classification": "review",
+      "reason": "Contains both translatable labels and technical link options.",
+      "example": "groups of four cells"
+    },
+    {
+      "block": "nav-language",
+      "file": "blocks/nav-language/nav-language.js",
+      "property": "label/url/target by cells[0..2]",
+      "source": "fallback-index",
+      "type": "mixed",
+      "classification": "review",
+      "reason": "Label is translatable while URL/target are technical.",
+      "example": "cells[0], cells[1], cells[2]"
+    },
+    {
+      "block": "recommended-dynamic-hotels-grid",
+      "file": "blocks/recommended-dynamic-hotels-grid/recommended-dynamic-hotels-grid.js",
+      "property": "hotelCode/destination/tagLabel positional fallback",
+      "source": "fallback-index",
+      "type": "mixed",
+      "classification": "review",
+      "reason": "hotelCode is technical; destination/tag label may be visible text.",
+      "example": "cells[0], cells[1], cells[4]"
+    },
+    {
+      "block": "hotel-mini-card",
+      "file": "blocks/hotel-mini-card/hotel-mini-card.js",
+      "property": "positional field matrix by row/cell",
+      "source": "fallback-index",
+      "type": "mixed",
+      "classification": "review",
+      "reason": "Includes mixed technical and visible values in positional mode.",
+      "example": "FIELD_POSITIONS"
+    },
+    {
+      "block": "article-content-video",
+      "file": "blocks/article-content-video/article-content-video.js",
+      "property": "videoType fallback from first row",
+      "source": "fallback-index",
+      "type": "select",
+      "classification": "do_not_translate",
+      "reason": "Technical mode selector (dam/youtube).",
+      "example": "sourceRows[0]"
+    }
+  ],
+  "ambiguousFields": [
+    {
+      "name": "link",
+      "source": "models/blocks/js",
+      "reason": "Could represent visible localized navigation labels or technical IDs/paths.",
+      "classification": "review"
+    },
+    {
+      "name": "url",
+      "source": "models/blocks/js",
+      "reason": "Could represent visible localized navigation labels or technical IDs/paths.",
+      "classification": "review"
+    },
+    {
+      "name": "homeUrl",
+      "source": "models/blocks/js",
+      "reason": "Could represent visible localized navigation labels or technical IDs/paths.",
+      "classification": "review"
+    },
+    {
+      "name": "article_url",
+      "source": "models/blocks/js",
+      "reason": "Could represent visible localized navigation labels or technical IDs/paths.",
+      "classification": "review"
+    },
+    {
+      "name": "article_categoryUrl",
+      "source": "models/blocks/js",
+      "reason": "Could represent visible localized navigation labels or technical IDs/paths.",
+      "classification": "review"
+    },
+    {
+      "name": "gridCta_link",
+      "source": "models/blocks/js",
+      "reason": "Could represent visible localized navigation labels or technical IDs/paths.",
+      "classification": "review"
+    },
+    {
+      "name": "cta_link",
+      "source": "models/blocks/js",
+      "reason": "Could represent visible localized navigation labels or technical IDs/paths.",
+      "classification": "review"
+    },
+    {
+      "name": "tagParentPage",
+      "source": "models/blocks/js",
+      "reason": "Could represent visible localized navigation labels or technical IDs/paths.",
+      "classification": "review"
+    },
+    {
+      "name": "manualArticle1",
+      "source": "models/blocks/js",
+      "reason": "Could represent visible localized navigation labels or technical IDs/paths.",
+      "classification": "review"
+    },
+    {
+      "name": "manualArticle2",
+      "source": "models/blocks/js",
+      "reason": "Could represent visible localized navigation labels or technical IDs/paths.",
+      "classification": "review"
+    },
+    {
+      "name": "manualArticle3",
+      "source": "models/blocks/js",
+      "reason": "Could represent visible localized navigation labels or technical IDs/paths.",
+      "classification": "review"
+    },
+    {
+      "name": "featuredArticlePath",
+      "source": "models/blocks/js",
+      "reason": "Could represent visible localized navigation labels or technical IDs/paths.",
+      "classification": "review"
+    },
+    {
+      "name": "destination",
+      "source": "models/blocks/js",
+      "reason": "Could represent visible localized navigation labels or technical IDs/paths.",
+      "classification": "review"
+    },
+    {
+      "name": "category",
+      "source": "models/blocks/js",
+      "reason": "Could represent visible localized navigation labels or technical IDs/paths.",
+      "classification": "review"
+    },
+    {
+      "name": "tags",
+      "source": "models/blocks/js",
+      "reason": "Could represent visible localized navigation labels or technical IDs/paths.",
+      "classification": "review"
+    },
+    {
+      "name": "article-category",
+      "source": "models/blocks/js",
+      "reason": "Could represent visible localized navigation labels or technical IDs/paths.",
+      "classification": "review"
+    },
+    {
+      "name": "article-tags",
+      "source": "models/blocks/js",
+      "reason": "Could represent visible localized navigation labels or technical IDs/paths.",
+      "classification": "review"
+    },
+    {
+      "name": "placeholders key format",
+      "source": "scripts/iberostar/placeholders.js",
+      "reason": "Parser supports multiple key/value aliases; ensure translation rules target value columns, not keys.",
+      "classification": "review"
+    },
+    {
+      "name": "destinationText alias",
+      "source": "blocks/hotel-graphql-mini-card/hotel-graphql-mini-card.js",
+      "reason": "Alias exists in JS but not consistently modeled; verify authoring contract.",
+      "classification": "review"
+    }
+  ],
+  "propertiesToTranslate": [
+    "alt (cells[1])",
+    "article-author-description",
+    "article-author-name",
+    "article-image-alt",
+    "article-read-time",
+    "article_authorName",
+    "article_cta",
+    "article_description",
+    "article_imageAlt",
+    "article_publicationDate",
+    "article_readTime",
+    "article_title",
+    "attribution",
+    "authorName",
+    "background_buttonLabel",
+    "background_errorCheckMessage",
+    "background_errorEmailMessage",
+    "background_errorGenericMessage",
+    "background_placeholder",
+    "background_successHeading",
+    "background_successMessage",
+    "caption",
+    "cardCtaLabel",
+    "carouselGoTo.Text",
+    "carouselNext.Text",
+    "carouselOf.Text",
+    "carouselPrevious.Text",
+    "chooseLanguage.Text",
+    "close.Text",
+    "ctaLabel",
+    "ctaText",
+    "cta_linkText",
+    "currentLabel",
+    "description",
+    "display_badge",
+    "eyebrow",
+    "featuredArticle.Text",
+    "featuredBadge",
+    "featuredColumnTitle.Text",
+    "featuredLabel",
+    "featured_heading",
+    "from.Text",
+    "gridCta_linkText",
+    "hero_subtitle",
+    "hero_title",
+    "homeLabel",
+    "hotelPriceFromPrefix.Text",
+    "hotelPricePerNight.Text",
+    "hotelPricePersonPlural.Text",
+    "hotelPricePersonSingular.Text",
+    "hotel_hotelName",
+    "hotel_location",
+    "hotel_priceFrom",
+    "hotelsCarousel.Text",
+    "imageAlt",
+    "imageAltLocalized",
+    "jcr:description",
+    "jcr:title",
+    "label",
+    "latestColumnTitle.Text",
+    "latestLabel",
+    "latest_heading",
+    "legal",
+    "linkLabel",
+    "linkText",
+    "linkTitle",
+    "logoAlt",
+    "manual summary (cells[2])",
+    "media_imageAlt",
+    "metadata (cells[1])",
+    "modalHeading",
+    "night.Text",
+    "og:description",
+    "og:title",
+    "placeholder / submitLabel / errors / success* (cells[4..10])",
+    "posterAlt",
+    "pretitle",
+    "readArticle.Text",
+    "readTime",
+    "subtitle",
+    "subtitle (cells[3])",
+    "tag label",
+    "tag title",
+    "tag_tagLabel",
+    "text",
+    "title",
+    "title (cells[2])",
+    "viewAllHotels.Text",
+    "viewAllText"
+  ],
+  "propertiesToNotTranslate": [
+    "action",
+    "article-author-image",
+    "article-image",
+    "article-internal-name",
+    "article-publication-date",
+    "article-update-date",
+    "article-visible",
+    "article_image",
+    "authorImage",
+    "background",
+    "carouselGoTo (key)",
+    "carouselNext (key)",
+    "carouselOf (key)",
+    "carouselPrevious (key)",
+    "categoryPath",
+    "chooseLanguage (key)",
+    "close (key)",
+    "columns",
+    "ctaTarget",
+    "cta_linkTarget",
+    "featured",
+    "featuredArticle (key)",
+    "featuredColumnTitle (key)",
+    "footer",
+    "from (key)",
+    "gridCta_linkTarget",
+    "hotelCode",
+    "hotelPriceFromPrefix (key)",
+    "hotelPricePerNight (key)",
+    "hotelPricePersonPlural (key)",
+    "hotelPricePersonSingular (key)",
+    "hotel_stars",
+    "hotelsCarousel (key)",
+    "icon",
+    "icon (cells[0])",
+    "image",
+    "imageAutogenDescription",
+    "inspiration-data-mode",
+    "jcr:name",
+    "lastModified",
+    "latestColumnTitle (key)",
+    "linkNofollow",
+    "linkTarget",
+    "linkType",
+    "logo",
+    "maxItems",
+    "media_image",
+    "method",
+    "mode",
+    "name",
+    "nav",
+    "night (key)",
+    "ogImage",
+    "page node name",
+    "page-type",
+    "pageSize",
+    "path",
+    "poster",
+    "publicationDate",
+    "publicationTimestamp",
+    "readArticle (key)",
+    "reference",
+    "robots",
+    "rows",
+    "style",
+    "tag id",
+    "tag name",
+    "tag_layout",
+    "target",
+    "updateDate",
+    "useArticleTags",
+    "variant",
+    "videoDam",
+    "videoType",
+    "videoType fallback from first row",
+    "viewAllHotels (key)",
+    "visible",
+    "youtubeVideoId"
+  ],
+  "propertiesToReview": [
+    "alignment",
+    "article",
+    "article-category",
+    "article-tags",
+    "article_authorImage",
+    "article_category",
+    "article_categoryUrl",
+    "article_placement",
+    "article_url",
+    "author",
+    "cardHeading",
+    "category",
+    "classes",
+    "cta",
+    "cta_link",
+    "destination",
+    "destinationText alias",
+    "display_articleHeading",
+    "eyebrowHeading",
+    "featuredArticlePath",
+    "featuredArticleTitleHeading",
+    "featuredLabelHeading",
+    "featured_headingLevel",
+    "filterTags",
+    "flat fallback chunk [label,url,target,nofollow]",
+    "gridCta_link",
+    "hero_icon",
+    "hero_subtitleHeading",
+    "hero_titleHeading",
+    "homeUrl",
+    "hotelCode/destination/tagLabel positional fallback",
+    "imageDcDescription",
+    "keywords",
+    "label/url/target by cells[0..2]",
+    "latestArticleTitleHeading",
+    "latestLabelHeading",
+    "latest_headingLevel",
+    "legacy title/category/link by cells[1..3]",
+    "link",
+    "link (cells[3])",
+    "linkUrl",
+    "links",
+    "logoDesktop",
+    "manual href (cells[3])",
+    "manualArticle1",
+    "manualArticle2",
+    "manualArticle3",
+    "metaDescription",
+    "metaTitle",
+    "navTitle",
+    "page alias",
+    "pageTitle",
+    "placeholders key format",
+    "positional field matrix by row/cell",
+    "sling:alias",
+    "source",
+    "subcategoriesHeadingTag",
+    "subcategory1Url",
+    "subcategory2Url",
+    "subcategory3Url",
+    "subcategory4Url",
+    "subcategory5Url",
+    "subcategory6Url",
+    "subcategory7Url",
+    "subcategory8Url",
+    "subcategory9Url",
+    "tagParentPage",
+    "tags",
+    "titleHeading",
+    "titleType",
+    "twitter:description",
+    "twitter:title",
+    "url",
+    "viewAllLink",
+    "viewAllTarget"
+  ],
+  "pageAliasUrlStrategy": {
+    "section": "Page alias / URL strategy",
+    "findings": {
+      "aliasPropertyInModelsOrContent": {
+        "confirmedProperty": null,
+        "searchedPatterns": [
+          "sling:alias",
+          "alias",
+          "slug"
+        ],
+        "result": "No explicit sling:alias (or equivalent page alias property) found in models/*.json, blocks/*/_*.json, or JS sources.",
+        "classification": "review",
+        "note": "Keep sling:alias as expected AEM property pending content-level confirmation in author repository."
+      },
+      "componentUrlBehavior": {
+        "result": "EDS components mostly consume/emit path values. Conversion helper normalizes between /content/... and public /{locale}/... paths without explicit alias resolution.",
+        "evidence": [
+          "scripts/iberostar/page-links.js#toPublicPagePath",
+          "scripts/iberostar/page-links.js#toPageHref",
+          "blocks/blog-split-list/blog-split-list.js uses toPageHref()",
+          "blocks/recommended-hotels-grid/recommended-hotels-grid.js uses toPageHref()"
+        ]
+      },
+      "helixQueryAliasSupport": {
+        "result": "helix-query.yaml indexes path, title, description, etc., but does not index sling:alias or alias field explicitly.",
+        "indexedPathField": "path"
+      },
+      "queryIndexPathSemantics": {
+        "result": "Runtime query-index.json and articles-index.json return only path; no separate alias field observed.",
+        "samples": [
+          "/es-es/inspiration-guide/articles/12-razones-para-visitar-la-catedral-de-palma-de-mallorca",
+          "/es-es/inspiration-guide/category/destinos/mallorca"
+        ],
+        "interpretation": "Index currently exposes public URL path segment, but cannot prove from index alone whether segment came from node name or sling:alias."
+      },
+      "slugBuildersInHelpers": {
+        "result": "There are helpers that build links from slug-like values manually when full path is unavailable.",
+        "evidence": [
+          "scripts/inspiration-data.js#normalizeArticlePath uses article.slug/article.id fallback",
+          "blocks/recommended-dynamic-hotels-grid/recommended-dynamic-hotels-grid.js#createHotelHref uses hotel.slug",
+          "blocks/hotel-graphql-mini-card/hotel-graphql-mini-card.js#createHotelHref uses hotel.slug",
+          "scripts/iberostar/page-links.js#appendPageSegment builds child path with encoded segment"
+        ]
+      },
+      "recommendation": {
+        "result": "Keep node names stable (do_not_translate). Use page alias for localized public URLs when available. Govern alias as controlled review field. For tags, keep technical name/ID untranslated and translate only visible title/label.",
+        "translationRuleHints": [
+          "page node name / jcr:name -> do_not_translate",
+          "sling:alias / page alias -> review",
+          "public slug property (if project-specific) -> review",
+          "tag name/id -> do_not_translate",
+          "tag title/label -> translate"
+        ]
+      }
+    }
+  }
+}
