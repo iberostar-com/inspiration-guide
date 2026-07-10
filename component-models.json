@@ -172,13 +172,25 @@
         "component": "aem-tag",
         "valueType": "string",
         "name": "article-tags",
-        "label": "Article Tags",
+        "label": "Tags",
         "condition": {
-          "==": [
+          "or": [
             {
-              "var": "page-type"
+              "==": [
+                {
+                  "var": "page-type"
+                },
+                "article"
+              ]
             },
-            "article"
+            {
+              "==": [
+                {
+                  "var": "page-type"
+                },
+                "tag"
+              ]
+            }
           ]
         }
       },
