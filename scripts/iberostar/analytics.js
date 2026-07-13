@@ -10,8 +10,20 @@
  */
 
 const ONETRUST_SRC = 'https://cdn.cookielaw.org/scripttemplates/otSDKStub.js';
-const ONETRUST_DOMAIN_SCRIPT = '0198196f-018a-77f9-919f-10391def3fda-test';
-const UTAG_SRC = 'https://tags.iberostar.com/core/prod/utag.js';
+
+// TODO(Merkle): confirmar el domain-script de produccion de OneTrust y las
+// huellas por entorno de Tealium (dev/qa). Hoy solo se dispone del ID de test
+// y de la huella prod, por lo que todos los entornos comparten valores.
+const ONETRUST_DOMAIN_SCRIPT_BY_ENV = {
+  dev: '0198196f-018a-77f9-919f-10391def3fda-test',
+  stage: '0198196f-018a-77f9-919f-10391def3fda-test',
+  prod: '0198196f-018a-77f9-919f-10391def3fda-test',
+};
+const UTAG_SRC_BY_ENV = {
+  dev: 'https://tags.iberostar.com/core/prod/utag.js',
+  stage: 'https://tags.iberostar.com/core/prod/utag.js',
+  prod: 'https://tags.iberostar.com/core/prod/utag.js',
+};
 
 const HOTEL_LIST_RENDERED = '.recommended-hotels-grid-rendered, .recommended-dynamic-hotels-grid-rendered';
 const HOTEL_LIST_ITEM = '.recommended-hotels-item, .recommended-dynamic-hotels-item';
@@ -53,6 +65,19 @@ function getEnvironment() {
   if (hostname === 'localhost' || hostname === '127.0.0.1') return 'dev';
   if (hostname.endsWith('.aem.page') || /^author-p\d+/.test(hostname)) return 'stage';
   return 'prod';
+}
+
+/**
+ * Analytics must not run while authoring (Universal Editor / author host)
+ * nor on fragment pages, to avoid fake traffic in GA4.
+ * @returns {boolean}
+ */
+function isTrackingDisabled() {
+  return Boolean(
+    document.querySelector('[data-aue-resource]')
+    || /^author-p\d+/i.test(window.location.hostname)
+    || getMeta('page-type').toLowerCase() === 'fragment',
+  );
 }
 
 function getDeviceType() {
@@ -126,6 +151,9 @@ function isUtagReady() {
 export function updateDataLayer(data = {}) {
   window.utag_data = window.utag_data || {};
   Object.entries(data).forEach(([key, value]) => {
+    // Event identity keys describe a single hit and must not persist as
+    // global context, or later events would inherit a stale event name.
+    if (key === 'tealium_event' || key.startsWith('event_')) return;
     if (value !== undefined && value !== null && value !== '') {
       window.utag_data[key] = value;
     }
@@ -177,6 +205,7 @@ export function trackView(data = {}) {
  * Tealium so consent rules are in place when tags execute. Idempotent.
  */
 export function initConsent() {
+  if (isTrackingDisabled()) return;
   if (document.querySelector(`script[src="${ONETRUST_SRC}"]`)) return;
 
   if (typeof window.OptanonWrapper !== 'function') {
@@ -188,15 +217,16 @@ export function initConsent() {
   script.type = 'text/javascript';
   script.charset = 'UTF-8';
   script.setAttribute('data-document-language', 'true');
-  script.setAttribute('data-domain-script', ONETRUST_DOMAIN_SCRIPT);
+  script.setAttribute('data-domain-script', ONETRUST_DOMAIN_SCRIPT_BY_ENV[getEnvironment()]);
   document.head.prepend(script);
 }
 
 function loadTealium() {
-  if (document.querySelector(`script[src="${UTAG_SRC}"]`)) return;
+  const src = UTAG_SRC_BY_ENV[getEnvironment()];
+  if (document.querySelector(`script[src="${src}"]`)) return;
 
   const script = document.createElement('script');
-  script.src = UTAG_SRC;
+  script.src = src;
   script.type = 'text/javascript';
   script.async = true;
   script.addEventListener('load', flushPendingEvents);
@@ -314,6 +344,8 @@ function handleFooterClick(actionable) {
 function handleBlogSplitList(actionable) {
   const card = actionable.closest('.blog-split-list .blog-split-featured, .blog-split-list .blog-split-item');
   if (!card || !actionable.matches('a')) return false;
+  // Category chips navigate to the category page, not the article.
+  if (actionable.matches('.blog-split-category')) return false;
 
   trackLink({
     tealium_event: 'inspiration_guide_module',
@@ -403,6 +435,8 @@ function handleHighlightGrid(actionable) {
 
   const card = actionable.closest('.article-card, .editorial-highlight-card');
   if (!card || !actionable.matches('a')) return false;
+  // Category chips navigate to the category page, not the article.
+  if (actionable.matches('.article-card-category')) return false;
 
   trackLink({
     tealium_event: 'inspiration_guide_module',
@@ -417,9 +451,16 @@ function handleHighlightGrid(actionable) {
   return true;
 }
 
+// One hotel_multimedia event per media container: repeated play/pause clicks
+// on the same video must not inflate the metric.
+const trackedMedia = new WeakSet();
+
 function handleHeroMultimedia(target) {
-  if (!target.closest('.article-content-video, .article-main-image')) return false;
-  if (!target.closest('video, picture, img, iframe, button, a')) return false;
+  const container = target.closest('.article-content-video, .article-main-image');
+  if (!container) return false;
+  if (!target.closest('video, iframe, [class*="play"]')) return false;
+  if (trackedMedia.has(container)) return true;
+  trackedMedia.add(container);
 
   trackLink({
     tealium_event: 'hotel_multimedia',
@@ -498,11 +539,26 @@ function parsePrice(text) {
   return match ? match[0].replace(',', '.') : '';
 }
 
+// Stable product id: hotel code when available, otherwise the URL slug
+// (identical across locales), and only as a last resort the localized name.
+function getProductId(item, name) {
+  if (item.dataset.analyticsHotelCode) return item.dataset.analyticsHotelCode;
+
+  const href = item.querySelector('.hotel-mini-card-title a[href], a[href]')?.getAttribute('href') || '';
+  const slug = href.split(/[?#]/)[0]
+    .replace(/\/+$/, '')
+    .split('/')
+    .pop()
+    ?.replace(/\.html?$/i, '') || '';
+
+  return sanitizeValue(slug).replace(/\s+/g, '-') || name.replace(/\s+/g, '-');
+}
+
 function readProduct(item, index) {
   const title = item.querySelector('.hotel-mini-card-title');
   const name = textOf(title);
   return {
-    id: item.dataset.analyticsHotelCode || name.replace(/\s+/g, '-'),
+    id: getProductId(item, name),
     name,
     price: parsePrice(item.querySelector('.hotel-mini-card-price')?.textContent),
     position: `${index + 1}`,
@@ -580,7 +636,9 @@ function observeHotelLists() {
       observer.unobserve(entry.target);
       fireViewItemList(entry.target);
     });
-  }, { threshold: 0.25 });
+    // 0.1 instead of a higher ratio so grids taller than the viewport still
+    // report their impression.
+  }, { threshold: 0.1 });
 
   const attach = () => {
     document.querySelectorAll(HOTEL_LIST_RENDERED).forEach((el) => {
@@ -589,8 +647,20 @@ function observeHotelLists() {
   };
 
   attach();
+
   // Hotel grids can finish rendering after the delayed phase (GraphQL fetches).
-  new MutationObserver(attach).observe(document.body, { childList: true, subtree: true });
+  // Debounced re-scan, disconnected after a grace period to avoid observing
+  // the whole DOM forever.
+  let scanTimer = 0;
+  const mutations = new MutationObserver(() => {
+    window.clearTimeout(scanTimer);
+    scanTimer = window.setTimeout(attach, 500);
+  });
+  mutations.observe(document.body, { childList: true, subtree: true });
+  window.setTimeout(() => {
+    mutations.disconnect();
+    attach();
+  }, 60000);
 }
 
 // ---------- newsletter ----------
@@ -672,7 +742,7 @@ let initialized = false;
  * module/event listeners. Called from delayed.js (post-LCP phase).
  */
 export default function initAnalytics() {
-  if (initialized) return;
+  if (initialized || isTrackingDisabled()) return;
   initialized = true;
 
   initConsent();
