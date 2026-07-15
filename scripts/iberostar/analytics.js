@@ -14,11 +14,14 @@ const ONETRUST_SRC = 'https://cdn.cookielaw.org/scripttemplates/otSDKStub.js';
 // TODO(Merkle): confirmar el domain-script de produccion de OneTrust y las
 // huellas por entorno de Tealium (dev/qa). Hoy solo se dispone del ID de test
 // y de la huella prod, por lo que todos los entornos comparten valores.
+
+// TODO - TRASNFORMAR A VARIABLES DE ENTORNO PARA EDS Y EN AEM
 const ONETRUST_DOMAIN_SCRIPT_BY_ENV = {
   dev: '0198196f-018a-77f9-919f-10391def3fda-test',
   stage: '0198196f-018a-77f9-919f-10391def3fda-test',
   prod: '0198196f-018a-77f9-919f-10391def3fda-test',
 };
+// TODO - TRASNFORMAR A VARIABLES DE ENTORNO PARA EN EDS Y EN AEM
 const UTAG_SRC_BY_ENV = {
   dev: 'https://tags.iberostar.com/core/prod/utag.js',
   stage: 'https://tags.iberostar.com/core/prod/utag.js',
@@ -44,14 +47,92 @@ export function sanitizeValue(value) {
     .trim();
 }
 
+/**
+ * Lowercase + strip diacritics + collapse non-alphanumerics to single spaces.
+ * Stricter than sanitizeValue: used for event_lbl, which the spec requires
+ * fully normalized (e.g. "España" -> "espana", "Iberostar-Selection 5*" ->
+ * "iberostar selection 5").
+ * @param {string} value raw text
+ * @returns {string}
+ */
+export function normalize(value) {
+  return `${value || ''}`
+    .normalize('NFD')
+    .replace(/\p{Diacritic}/gu, '')
+    .toLowerCase()
+    .replace(/[^a-z0-9 ]+/g, ' ')
+    .replace(/\s+/g, ' ')
+    .trim();
+}
+
+/**
+ * AEM Core Components Link Accessibility injects a hidden span (e.g. class
+ * `cmp-link__screen-reader-only`, "se abre en una pestaña nueva") inside
+ * every <a target="_blank"> coming from shared header/footer/nav includes.
+ * Plain textContent picks it up and pollutes event labels. Prefer the
+ * explicit text span when present; otherwise strip known screen-reader-only
+ * nodes from a clone before reading textContent.
+ * @param {Element} element link/button element
+ * @returns {string}
+ */
+export function getCleanText(element) {
+  if (!element) return '';
+  const textSpan = element.querySelector('.ibh-button__text, .cmp-link__text');
+  if (textSpan) return (textSpan.textContent || '').trim();
+
+  const clone = element.cloneNode(true);
+  clone.querySelectorAll('.cmp-link__screen-reader-only, .screen-reader-only').forEach((node) => node.remove());
+  return (clone.textContent || '').replace(/\s+/g, ' ').trim();
+}
+
 function textOf(element) {
   return sanitizeValue(element?.textContent || '');
+}
+
+// event_lbl per spec must be fully normalized (see `normalize`), built from
+// text cleaned of accessibility noise (see `getCleanText`).
+function labelOf(element) {
+  return normalize(getCleanText(element));
 }
 
 function getMeta(name) {
   return document.querySelector(`meta[name="${name}"]`)?.content?.trim()
     || document.querySelector(`meta[property="${name}"]`)?.content?.trim()
     || '';
+}
+
+/**
+ * Finds the nearest ancestor carrying `data-module-content`, a DOM-driven
+ * alternative to hardcoding `module_content` per handler. No block sets this
+ * attribute yet, so it currently resolves to null everywhere it's used.
+ * @param {Element} element
+ * @returns {Element|null}
+ */
+export function getModuleScope(element) {
+  return element && element.closest ? element.closest('[data-module-content]') : null;
+}
+
+/**
+ * Reads `module_content` from the nearest scope set via `data-module-content`.
+ * @param {Element} element
+ * @returns {string}
+ */
+export function getModuleContent(element) {
+  const scope = getModuleScope(element);
+  return scope ? scope.getAttribute('data-module-content') || '' : '';
+}
+
+/**
+ * Reads an arbitrary data-* attribute from the nearest ancestor that has it.
+ * @param {Element} element
+ * @param {string} attr full attribute name, e.g. 'data-analytics-hotel-code'
+ * @param {string} [fallback]
+ * @returns {string}
+ */
+export function readDataAttr(element, attr, fallback = '') {
+  if (!element) return fallback;
+  const node = element.closest(`[${attr}]`);
+  return node ? node.getAttribute(attr) || fallback : fallback;
 }
 
 function getLocaleFromPath() {
@@ -139,6 +220,27 @@ export function buildPageData() {
 
 const pendingEvents = [];
 
+/**
+ * Opt-in only: off unless `?analyticsDebug=true` (or `=1`) is present in the
+ * URL. Never enabled by default, so production/local consoles stay clean.
+ * @returns {boolean}
+ */
+function isAnalyticsDebugEnabled() {
+  const value = new URLSearchParams(window.location.search).get('analyticsDebug') || '';
+  return value === '1' || value.toLowerCase() === 'true';
+}
+
+/**
+ * Logs a fired event when `analyticsDebug` is enabled. No-op otherwise.
+ * @param {'link'|'view'} method utag method used
+ * @param {Object} data event payload
+ */
+function debugLog(method, data) {
+  if (!isAnalyticsDebugEnabled()) return;
+  // eslint-disable-next-line no-console
+  console.log(`[analytics] utag.${method}`, data.tealium_event || '(no tealium_event)', data);
+}
+
 function isUtagReady() {
   return typeof window.utag !== 'undefined' && typeof window.utag.link === 'function';
 }
@@ -178,6 +280,7 @@ function flushPendingEvents() {
  */
 export function trackLink(data = {}) {
   updateDataLayer(data);
+  debugLog('link', data);
   if (isUtagReady()) {
     window.utag.link(data);
   } else {
@@ -191,6 +294,7 @@ export function trackLink(data = {}) {
  */
 export function trackView(data = {}) {
   updateDataLayer(data);
+  debugLog('view', data);
   if (isUtagReady()) {
     window.utag.view(data);
   } else {
@@ -255,7 +359,7 @@ function handleLanguageOption(actionable) {
     tealium_event: 'change_language',
     event_cat: 'page info',
     event_act: 'change language',
-    event_lbl: textOf(option),
+    event_lbl: labelOf(option),
     event_purpose: 'information',
     event_structure: languageContext,
     module_name: 'intra module',
@@ -303,13 +407,14 @@ function handleHeaderClick(actionable) {
   }
 
   if (actionable.matches('a') && actionable.closest('#nav')) {
-    const label = textOf(actionable);
+    const cleanLabel = getCleanText(actionable);
+    const label = sanitizeValue(cleanLabel);
     if (!label) return false;
     trackLink({
       tealium_event: 'main_menu',
       event_cat: 'menu',
       event_act: sectionLabel || label,
-      event_lbl: label,
+      event_lbl: normalize(cleanLabel),
       event_purpose: 'information',
       event_structure: 'header',
       module_name: 'menu',
@@ -330,7 +435,7 @@ function handleFooterClick(actionable) {
     tealium_event: 'footer_module',
     event_cat: 'information',
     event_act: 'click',
-    event_lbl: textOf(actionable),
+    event_lbl: labelOf(actionable),
     event_purpose: 'information',
     event_structure: 'footer',
     module_name: 'footer',
@@ -351,7 +456,7 @@ function handleBlogSplitList(actionable) {
     tealium_event: 'inspiration_guide_module',
     event_cat: 'inspiration guide module',
     event_act: 'see article',
-    event_lbl: textOf(card.querySelector('h1, h2, h3, h4')) || textOf(actionable),
+    event_lbl: labelOf(card.querySelector('h1, h2, h3, h4')) || labelOf(actionable),
     event_purpose: 'inspiration',
     event_structure: 'body',
     module_name: 'hero blog split list',
@@ -367,7 +472,7 @@ function handleTopicTagCloud(actionable) {
     tealium_event: 'inspiration_guide_module',
     event_cat: 'information',
     event_act: 'click',
-    event_lbl: textOf(actionable),
+    event_lbl: labelOf(actionable),
     event_purpose: 'information',
     event_structure: 'body',
     module_name: 'topic tag cloud',
@@ -389,8 +494,8 @@ function handleCategoryGallery(actionable) {
     event_cat: 'experiences',
     event_act: 'click',
     event_lbl: card
-      ? textOf(card.querySelector('h2, h3, h4, .grid-category-gallery-title')) || textOf(card)
-      : 'view all',
+      ? labelOf(card.querySelector('h2, h3, h4, .grid-category-gallery-title')) || labelOf(card)
+      : normalize('view all'),
     event_purpose: 'inspiration',
     event_structure: 'body',
     module_name: 'tabbed category gallery',
@@ -406,7 +511,7 @@ function handleHeroEditorialNav(actionable) {
     tealium_event: 'inspiration_guide_module',
     event_cat: 'information',
     event_act: 'click',
-    event_lbl: textOf(actionable),
+    event_lbl: labelOf(actionable),
     event_purpose: 'information',
     event_structure: 'body',
     module_name: 'hero editorial navigation',
@@ -424,7 +529,7 @@ function handleHighlightGrid(actionable) {
       tealium_event: 'inspiration_guide_module',
       event_cat: 'inspiration guide module',
       event_act: 'click',
-      event_lbl: 'see more articles',
+      event_lbl: normalize('see more articles'),
       event_purpose: 'inspiration',
       event_structure: 'body',
       module_name: 'editorial highlight grid',
@@ -442,7 +547,7 @@ function handleHighlightGrid(actionable) {
     tealium_event: 'inspiration_guide_module',
     event_cat: 'inspiration guide module',
     event_act: 'see article',
-    event_lbl: textOf(card.querySelector('.article-card-title, h2, h3, h4')),
+    event_lbl: labelOf(card.querySelector('.article-card-title, h2, h3, h4')),
     event_purpose: 'inspiration',
     event_structure: 'body',
     module_name: 'editorial highlight grid',
@@ -484,7 +589,7 @@ function handleHeroViewHotels(actionable) {
     tealium_event: 'inspiration_guide_module',
     event_cat: 'inspiration guide module',
     event_act: '',
-    event_lbl: 'view hotels',
+    event_lbl: normalize('view hotels'),
     event_purpose: 'inspiration',
     event_structure: 'body',
     module_name: 'hero article detail',
@@ -501,7 +606,7 @@ function handleArticleContentCta(actionable) {
     tealium_event: 'inspiration_guide_module',
     event_cat: 'inspiration guide module',
     event_act: 'click',
-    event_lbl: 'check availability',
+    event_lbl: normalize('check availability'),
     event_purpose: 'inspiration',
     event_structure: 'body',
     module_name: 'editorial article content',
@@ -520,8 +625,8 @@ function handleArticleGrid(actionable) {
     event_cat: 'product',
     event_act: 'click',
     event_lbl: card
-      ? textOf(card.querySelector('h2, h3, h4, [class$="-title"]')) || textOf(actionable)
-      : 'view_all',
+      ? labelOf(card.querySelector('h2, h3, h4, [class$="-title"]')) || labelOf(actionable)
+      : normalize('view_all'),
     event_purpose: 'inspiration',
     event_structure: 'body',
     module_name: 'editorial article grid',
@@ -556,7 +661,7 @@ function getProductId(item, name) {
 
 function readProduct(item, index) {
   const title = item.querySelector('.hotel-mini-card-title');
-  const name = textOf(title);
+  const name = sanitizeValue(getCleanText(title));
   return {
     id: getProductId(item, name),
     name,
@@ -608,7 +713,7 @@ function handleHotelSelect(actionable) {
     tealium_event: 'select_item',
     event_cat: 'ecommerce',
     event_act: 'click product',
-    event_lbl: product.name,
+    event_lbl: normalize(product.name),
     event_purpose: 'inspiration',
     event_structure: 'body',
     module_name: 'recommended hotels grid',
@@ -680,7 +785,7 @@ async function trackNewsletter(action, label, email) {
     tealium_event: 'newsletter_module',
     event_cat: 'newsletter',
     event_act: action,
-    event_lbl: label,
+    event_lbl: normalize(label),
     event_purpose: 'inspiration',
     event_structure: 'body',
     module_name: 'lead subscription form',
@@ -748,6 +853,11 @@ let initialized = false;
 export default function initAnalytics() {
   if (initialized || isTrackingDisabled()) return;
   initialized = true;
+
+  if (isAnalyticsDebugEnabled()) {
+    // eslint-disable-next-line no-console
+    console.log('[analytics] debug mode enabled (?analyticsDebug=true)');
+  }
 
   initConsent();
   window.utag_data = { ...buildPageData(), ...(window.utag_data || {}) };
