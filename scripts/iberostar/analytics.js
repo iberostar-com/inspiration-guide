@@ -476,7 +476,7 @@ function handleHeroMultimedia(target) {
 }
 
 function handleHeroViewHotels(actionable) {
-  if (!actionable.closest('.hotel-graphql-mini-card, .hotel-mini-card-wrapper')) return false;
+  if (!actionable.closest('.hotel-graphql-mini-card, .hotel-mini-card')) return false;
   if (actionable.closest(HOTEL_LIST_ITEM)) return false;
   if (!actionable.matches('a')) return false;
 
@@ -564,6 +564,8 @@ function readProduct(item, index) {
     position: `${index + 1}`,
     stars: item.dataset.analyticsStars || '',
     location: textOf(item.querySelector('.hotel-mini-card-location')),
+    continent: item.dataset.analyticsContinent || '',
+    country: item.dataset.analyticsCountry || '',
   };
 }
 
@@ -621,6 +623,8 @@ function handleHotelSelect(actionable) {
     ...(item.dataset.analyticsHotelCode ? { hotel_sku: item.dataset.analyticsHotelCode } : {}),
     ...(product.stars ? { hotel_stars: product.stars } : {}),
     ...(product.location ? { destination_hotel: product.location } : {}),
+    ...(product.continent ? { destination_continent: product.continent } : {}),
+    ...(product.country ? { destination_country: product.country } : {}),
   });
   return true;
 }

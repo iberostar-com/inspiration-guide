@@ -486,6 +486,8 @@ function createList(entries, labels) {
 
     if (analytics?.hotelCode) item.dataset.analyticsHotelCode = analytics.hotelCode;
     if (analytics?.stars) item.dataset.analyticsStars = `${analytics.stars}`;
+    if (analytics?.continent) item.dataset.analyticsContinent = analytics.continent;
+    if (analytics?.country) item.dataset.analyticsCountry = analytics.country;
 
     if (source) {
       moveInstrumentation(source, item);
@@ -599,6 +601,8 @@ export default async function decorate(block) {
           analytics: {
             hotelCode,
             stars: hotel.stars || '',
+            continent: hotel.continent || '',
+            country: hotel.country || '',
           },
           source,
         };
