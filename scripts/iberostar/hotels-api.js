@@ -177,6 +177,21 @@ function normalizeHotel(rawHotel) {
     destination: rawHotel?.destination || null,
     estimatedMinPrice: rawHotel?.estimatedMinPrice ?? rawHotel?.minPrice ?? null,
     estimatedMinCurrency: rawHotel?.estimatedMinCurrency ?? rawHotel?.currency ?? null,
+    // Taxonomia ecommerce pendiente de backend (plan fase 2.1): HotelByCode
+    // aun no expone estos campos, asi que hoy llegan null. En cuanto la query
+    // se amplie con estos nombres, fluyen a los eventos view_item_list y
+    // select_item sin mas cambios.
+    brand: rawHotel?.brand || null,
+    category: rawHotel?.category || null,
+    subcategory: rawHotel?.subcategory || null,
+    segment: rawHotel?.segment || null,
+    subsegment: rawHotel?.subsegment || null,
+    isOnlyAdults: rawHotel?.isOnlyAdults ?? null,
+    headquarter: rawHotel?.headquarter || null,
+    countryCode: rawHotel?.countryCode || null,
+    area: rawHotel?.area || null,
+    zone: rawHotel?.zone || null,
+    city: rawHotel?.city || null,
   };
 }
 

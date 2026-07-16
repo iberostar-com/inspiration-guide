@@ -9,24 +9,9 @@
  * ready are queued and flushed once it loads.
  */
 
+import getEnvironmentConfig from './environment-config.js';
+
 const ONETRUST_SRC = 'https://cdn.cookielaw.org/scripttemplates/otSDKStub.js';
-
-// TODO(Merkle): confirmar el domain-script de produccion de OneTrust y las
-// huellas por entorno de Tealium (dev/qa). Hoy solo se dispone del ID de test
-// y de la huella prod, por lo que todos los entornos comparten valores.
-
-// TODO - TRASNFORMAR A VARIABLES DE ENTORNO PARA EDS Y EN AEM
-const ONETRUST_DOMAIN_SCRIPT_BY_ENV = {
-  dev: '0198196f-018a-77f9-919f-10391def3fda-test',
-  stage: '0198196f-018a-77f9-919f-10391def3fda-test',
-  prod: '0198196f-018a-77f9-919f-10391def3fda-test',
-};
-// TODO - TRASNFORMAR A VARIABLES DE ENTORNO PARA EN EDS Y EN AEM
-const UTAG_SRC_BY_ENV = {
-  dev: 'https://tags.iberostar.com/core/prod/utag.js',
-  stage: 'https://tags.iberostar.com/core/prod/utag.js',
-  prod: 'https://tags.iberostar.com/core/prod/utag.js',
-};
 
 const HOTEL_LIST_RENDERED = '.recommended-hotels-grid-rendered, .recommended-dynamic-hotels-grid-rendered';
 const HOTEL_LIST_ITEM = '.recommended-hotels-item, .recommended-dynamic-hotels-item';
@@ -305,12 +290,33 @@ export function trackView(data = {}) {
 // ---------- consent (OneTrust) + tag manager (Tealium) ----------
 
 /**
+ * OneTrust domain-script and Tealium utag.js source, resolved per environment.
+ * EDS has no build-time environment variables, so the equivalent is:
+ *   1. page metadata override ("onetrust-domain-script" / "tealium-utag-src",
+ *      settable per site via the bulk metadata sheet, no deploy needed), then
+ *   2. the analytics section of environment-config.js (per cloud environment).
+ * AEM mirrors this with the ONETRUST_DOMAIN_SCRIPT / TEALIUM_UTAG_SRC
+ * Cloud Manager environment variables (see .tmp/GUIA-AEM-ONETRUST-ENV.md).
+ * @returns {{oneTrustDomainScript: string, utagSrc: string}}
+ */
+function getAnalyticsConfig() {
+  const config = getEnvironmentConfig().analytics || {};
+  return {
+    oneTrustDomainScript: getMeta('onetrust-domain-script') || config.oneTrustDomainScript || '',
+    utagSrc: getMeta('tealium-utag-src') || config.utagSrc || '',
+  };
+}
+
+/**
  * Injects the OneTrust CMP stub at the top of <head>. Must run before
  * Tealium so consent rules are in place when tags execute. Idempotent.
  */
 export function initConsent() {
   if (isTrackingDisabled()) return;
   if (document.querySelector(`script[src="${ONETRUST_SRC}"]`)) return;
+
+  const { oneTrustDomainScript } = getAnalyticsConfig();
+  if (!oneTrustDomainScript) return;
 
   if (typeof window.OptanonWrapper !== 'function') {
     window.OptanonWrapper = function OptanonWrapper() {};
@@ -321,12 +327,13 @@ export function initConsent() {
   script.type = 'text/javascript';
   script.charset = 'UTF-8';
   script.setAttribute('data-document-language', 'true');
-  script.setAttribute('data-domain-script', ONETRUST_DOMAIN_SCRIPT_BY_ENV[getEnvironment()]);
+  script.setAttribute('data-domain-script', oneTrustDomainScript);
   document.head.prepend(script);
 }
 
 function loadTealium() {
-  const src = UTAG_SRC_BY_ENV[getEnvironment()];
+  const { utagSrc: src } = getAnalyticsConfig();
+  if (!src) return;
   if (document.querySelector(`script[src="${src}"]`)) return;
 
   const script = document.createElement('script');
@@ -373,21 +380,12 @@ function handleHeaderClick(actionable) {
   if (!actionable.closest('header')) return false;
   if (actionable.closest('.nav-language-trigger')) return true;
 
+  // IHG Rewards queda excluido del microsite EDS por decision de cliente
+  // (PLAN-CIERRE-METRICAS-EDS): se absorbe el click para no disparar ni
+  // ihg_one_rewards ni un main_menu espureo.
   const href = (actionable.getAttribute('href') || '').toLowerCase();
   const classes = `${actionable.className || ''}`.toLowerCase();
-  if (href.includes('ihg') || classes.includes('ihg')) {
-    trackLink({
-      tealium_event: 'ihg_one_rewards',
-      event_cat: 'ihg one rewards',
-      event_act: 'click sign up',
-      event_lbl: '',
-      event_purpose: 'loyalty',
-      event_structure: 'header',
-      module_name: 'menu',
-      module_content: 'main menu',
-    });
-    return true;
-  }
+  if (href.includes('ihg') || classes.includes('ihg')) return true;
 
   const navItem = actionable.closest('.nav-item');
   const sectionLabel = textOf(navItem?.querySelector('.nav-stripe--parent .nav-stripe-label'));
@@ -671,6 +669,20 @@ function readProduct(item, index) {
     location: textOf(item.querySelector('.hotel-mini-card-location')),
     continent: item.dataset.analyticsContinent || '',
     country: item.dataset.analyticsCountry || '',
+    // Taxonomia ecommerce (plan fase 2): hoy HotelByCode aun no devuelve estos
+    // campos, asi que llegan vacios; cuando backend amplie la query, el grid
+    // los estampa como data-analytics-* y los eventos se completan solos.
+    brand: item.dataset.analyticsBrand || '',
+    category: item.dataset.analyticsCategory || '',
+    subcategory: item.dataset.analyticsSubcategory || '',
+    segment: item.dataset.analyticsSegment || '',
+    subsegment: item.dataset.analyticsSubsegment || '',
+    onlyAdults: item.dataset.analyticsOnlyAdults || '',
+    headquarter: item.dataset.analyticsHeadquarter || '',
+    countryCode: item.dataset.analyticsCountryCode || '',
+    area: item.dataset.analyticsArea || '',
+    zone: item.dataset.analyticsZone || '',
+    city: item.dataset.analyticsCity || '',
   };
 }
 
@@ -698,6 +710,12 @@ function fireViewItemList(rendered) {
     product_unit_price: products.map((product) => product.price),
     product_quantity: products.map(() => '1'),
     product_position: products.map((product) => product.position),
+    ...(products.some((product) => product.brand)
+      ? { product_brand: products.map((product) => product.brand) } : {}),
+    ...(products.some((product) => product.category)
+      ? { product_category: products.map((product) => product.category) } : {}),
+    ...(products.some((product) => product.subcategory)
+      ? { product_subcategory: products.map((product) => product.subcategory) } : {}),
   });
 }
 
@@ -724,12 +742,24 @@ function handleHotelSelect(actionable) {
     product_unit_price: [product.price],
     product_quantity: ['1'],
     product_position: [product.position],
+    ...(product.brand ? { product_brand: [product.brand] } : {}),
+    ...(product.category ? { product_category: [product.category] } : {}),
+    ...(product.subcategory ? { product_subcategory: [product.subcategory] } : {}),
     hotel_name: product.name,
     ...(item.dataset.analyticsHotelCode ? { hotel_sku: item.dataset.analyticsHotelCode } : {}),
     ...(product.stars ? { hotel_stars: product.stars } : {}),
+    ...(product.brand ? { hotel_brand: product.brand } : {}),
+    ...(product.segment ? { hotel_segment: product.segment } : {}),
+    ...(product.subsegment ? { hotel_subsegment: product.subsegment } : {}),
+    ...(product.onlyAdults ? { hotel_is_only_adults: product.onlyAdults } : {}),
+    ...(product.headquarter ? { hotel_headquarter_final: product.headquarter } : {}),
     ...(product.location ? { destination_hotel: product.location } : {}),
     ...(product.continent ? { destination_continent: product.continent } : {}),
     ...(product.country ? { destination_country: product.country } : {}),
+    ...(product.countryCode ? { destination_country_code: product.countryCode } : {}),
+    ...(product.city ? { destination_city: product.city } : {}),
+    ...(product.area ? { destination_area: product.area } : {}),
+    ...(product.zone ? { destination_zone: product.zone } : {}),
   });
   return true;
 }
