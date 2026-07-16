@@ -2,7 +2,11 @@ import { createResponsiveImage } from '../../scripts/iberostar/media.js';
 import formatLocalizedDate, { hasValidDate } from '../../scripts/iberostar/date-format.js';
 import { getPlaceholder } from '../../scripts/iberostar/placeholders.js';
 import { getTranslation } from '../../scripts/iberostar/i18n.js';
-import { getArticles } from '../../scripts/inspiration-data.js';
+import {
+  articleMatchesCategory,
+  getArticles,
+  getPageCategoryPath,
+} from '../../scripts/inspiration-data.js';
 import {
   toPageHref,
   toPublicPagePath as toPublicContentPath,
@@ -44,6 +48,7 @@ const POSITIONAL_PROP_CANDIDATES = {
   featuredBadge: [6, 4],
   featuredArticleTitleHeading: [7, 6],
   latestArticleTitleHeading: [8, 7],
+  filterCategory: [10],
 };
 
 const FIELD_SELECTORS = {
@@ -114,6 +119,10 @@ function isValidPositionalValue(propName, value, legacyMode) {
     return lowered.startsWith('/') || lowered.startsWith('http') || lowered.startsWith('urn:');
   }
 
+  if (propName === 'filterCategory') {
+    return lowered.includes(':');
+  }
+
   if (propName === 'filterTags' || propName === 'featuredLabel' || propName === 'latestLabel' || propName === 'featuredBadge') {
     return !RENDER_TAGS.has(lowered) && !DATA_MODES.has(lowered);
   }
@@ -153,6 +162,15 @@ function isAuthoredArticleRow(row) {
 
   return [...row.querySelectorAll('[data-aue-prop]')]
     .some((el) => el.getAttribute('data-aue-prop')?.startsWith('article_'));
+}
+
+// The mode select renders as a plain config row whose position depends on the
+// model revision the page was published with, so it is detected by value.
+function getModeRowValue(block) {
+  return getSourceRows(block)
+    .filter((row) => !isAuthoredArticleRow(row))
+    .map((row) => getRowText(row).toLowerCase())
+    .find((text) => DATA_MODES.has(text)) || '';
 }
 
 function getPropElement(root, propName) {
@@ -342,13 +360,18 @@ function getManualRows(block) {
     : [];
 }
 
+// Manually added article rows always win, regardless of the Source selector: an
+// author who drops articles into the block should not also have to remember to
+// switch Source to "Manual" for them to show up.
 function getConfiguredMode(block) {
-  const configured = getTextValue(block, 'mode', block.getAttribute('data-mode') || '').toLowerCase();
-  const hasManualItems = getManualRows(block).length > 0;
+  if (getManualRows(block).length > 0) return 'manual';
 
-  if (configured === 'manual' && !hasManualItems) return 'auto-filter';
-  if (configured) return configured;
-  return hasManualItems ? 'manual' : 'auto-filter';
+  const configured = (getTextValue(block, 'mode', '')
+    || getModeRowValue(block)
+    || block.getAttribute('data-mode')
+    || '').toLowerCase();
+
+  return configured || 'auto-filter';
 }
 
 function getConfiguredMaxItems(block) {
@@ -439,12 +462,26 @@ function fromManualRows(block) {
     .filter(Boolean);
 }
 
+// Category pages emit `page-type=category` metadata; nested subcategory pages
+// may miss the category metadata, so the `/category/` URL segment is the fallback.
+function isCategoryPageContext() {
+  const pageType = document.querySelector('meta[name="page-type"]')?.content?.trim().toLowerCase() || '';
+  return pageType === 'category' || !!getCurrentPathSegment('category');
+}
+
 function filterArticles(articles, block, mode) {
-  const configuredCategory = normalizeSlug(getTextValue(block, 'filterCategory', ''));
+  const configuredCategory = getTextValue(block, 'filterCategory', '');
   const configuredTags = getConfiguredTags(block);
   const configuredTagKeys = buildTagKeySet(configuredTags);
-  const contextCategory = normalizeSlug(getCurrentPathSegment('category'));
   const contextTag = normalizeSlug(getCurrentPathSegment('tag'));
+
+  // Hierarchical target: on parent category pages the page context resolves to the
+  // full category path, so articles of any child subcategory also match. Auto-filter
+  // only inherits the page context on category pages to keep other pages unscoped.
+  const contextCategory = (mode === 'auto-category' || isCategoryPageContext())
+    ? getPageCategoryPath()
+    : '';
+  const categoryTarget = configuredCategory || contextCategory;
 
   return articles.filter((article) => {
     const item = normalizeArticle(article);
@@ -455,14 +492,12 @@ function filterArticles(articles, block, mode) {
       item.categoryPath,
       item.categoryUrl,
     ]);
-    const category = normalizeSlug(item.categorySlug || item.category);
-    const categoryMatches = !configuredCategory || category === configuredCategory;
+    const categoryMatches = !categoryTarget || articleMatchesCategory(item, categoryTarget);
     const tagMatches = !configuredTagKeys.size
       || [...configuredTagKeys].some((tag) => articleTagKeys.has(tag));
 
     if (mode === 'auto-category') {
-      const target = configuredCategory || contextCategory;
-      return !target || category === target;
+      return categoryMatches;
     }
 
     if (mode === 'auto-tag') {

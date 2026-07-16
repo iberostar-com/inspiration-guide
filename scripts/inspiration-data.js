@@ -289,6 +289,44 @@ function normalizeTagPath(value) {
     .join('/');
 }
 
+// Root folders of the category tag tree (e.g. `inspiration-guide:categorías/destinos`).
+// They are structural, not real categories, so they are excluded from route paths
+// and from hierarchy matching.
+const CATEGORY_ROOT_SEGMENTS = new Set(['categorias', 'categories', 'category']);
+
+function stripCategoryRoot(path) {
+  const segments = `${path || ''}`.split('/').filter(Boolean);
+  while (segments.length > 1 && CATEGORY_ROOT_SEGMENTS.has(segments[0])) {
+    segments.shift();
+  }
+  return segments.join('/');
+}
+
+/**
+ * Normalizes any category value (tag id, tag path or slug) to its hierarchy path,
+ * e.g. `inspiration-guide:categorías/destinos/islas-baleares` -> `destinos/islas-baleares`.
+ */
+export function normalizeCategoryPath(value) {
+  const first = `${value || ''}`.split(/[|,;]/)[0];
+  return stripCategoryRoot(normalizeTagPath(first));
+}
+
+/**
+ * Hierarchical category match: an article belongs to a category when its own
+ * category path equals the target path or is a descendant of it. A parent
+ * category page therefore also collects the articles of all its subcategories,
+ * while categories without children only match their direct articles.
+ */
+export function articleMatchesCategory(article, category) {
+  const target = normalizeCategoryPath(category);
+  if (!target) return true;
+
+  return [article?.categorySlug, article?.categoryPath, article?.category]
+    .map((value) => normalizeCategoryPath(value))
+    .filter(Boolean)
+    .some((path) => path === target || path.startsWith(`${target}/`));
+}
+
 function tagLabel(value) {
   const path = normalizeTagPath(value);
   const parts = path.split('/').filter(Boolean);
@@ -297,6 +335,28 @@ function tagLabel(value) {
 
 function getMetaContent(name) {
   return document.querySelector(`meta[name="${name}"]`)?.content?.trim() || '';
+}
+
+/**
+ * Resolves the category context of the current page: the `article-category`
+ * page metadata first, then the URL segments after `/category/` (all of them,
+ * so nested subcategory pages like `/category/destinos/mallorca` are supported).
+ */
+export function getPageCategoryPath() {
+  const fromMeta = normalizeCategoryPath(
+    getMetaContent('article-category') || getMetaContent('article-category-path'),
+  );
+  if (fromMeta) return fromMeta;
+
+  const segments = window.location.pathname.split('/').filter(Boolean);
+  const idx = segments.indexOf('category');
+  if (idx < 0) return '';
+
+  const rest = segments
+    .slice(idx + 1)
+    .map((segment) => decodeURIComponent(segment).replace(/\.html?$/i, ''))
+    .join('/');
+  return normalizeCategoryPath(rest);
 }
 
 function toArray(value) {
@@ -369,7 +429,7 @@ function normalizeArticle(raw, index) {
     '',
   );
   const categoryTag = firstDefined(raw.category, raw.categoryTag, raw.mainCategory, '');
-  const categorySlug = normalizeTagPath(
+  const categorySlug = normalizeCategoryPath(
     firstDefined(raw.categorySlug, raw.categoryId, categoryTag),
   );
   const category = firstDefined(raw.categoryTitle, raw.categoryName, tagLabel(categoryTag));
