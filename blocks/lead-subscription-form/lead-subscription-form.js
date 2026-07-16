@@ -166,7 +166,7 @@ function handleSuccess(state) {
   state.form.hidden = true;
   state.success.hidden = false;
   state.block.dispatchEvent(new CustomEvent('ibs:newsletter:success', {
-    bubbles: false,
+    bubbles: true,
     detail: { email },
   }));
   startResetTimer(state);
@@ -177,7 +177,7 @@ function handleFailure(state, type = 'generic') {
 
   showError(state, type);
   state.block.dispatchEvent(new CustomEvent('ibs:newsletter:error', {
-    bubbles: false,
+    bubbles: true,
     detail: {
       errorType: type,
       email,

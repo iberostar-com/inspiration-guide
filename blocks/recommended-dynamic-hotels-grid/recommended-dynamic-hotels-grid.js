@@ -479,10 +479,26 @@ function createList(entries, labels) {
   list.setAttribute('aria-label', labels.carousel);
   list.tabIndex = 0;
 
-  entries.forEach(({ hotelData, source }) => {
+  entries.forEach(({ hotelData, source, analytics }) => {
     const card = createHotelMiniCard(hotelData, 'vertical');
     const item = document.createElement('li');
     item.className = 'recommended-dynamic-hotels-item';
+
+    if (analytics?.hotelCode) item.dataset.analyticsHotelCode = analytics.hotelCode;
+    if (analytics?.stars) item.dataset.analyticsStars = `${analytics.stars}`;
+    if (analytics?.continent) item.dataset.analyticsContinent = analytics.continent;
+    if (analytics?.country) item.dataset.analyticsCountry = analytics.country;
+    if (analytics?.brand) item.dataset.analyticsBrand = analytics.brand;
+    if (analytics?.category) item.dataset.analyticsCategory = analytics.category;
+    if (analytics?.subcategory) item.dataset.analyticsSubcategory = analytics.subcategory;
+    if (analytics?.segment) item.dataset.analyticsSegment = analytics.segment;
+    if (analytics?.subsegment) item.dataset.analyticsSubsegment = analytics.subsegment;
+    if (analytics?.onlyAdults) item.dataset.analyticsOnlyAdults = analytics.onlyAdults;
+    if (analytics?.headquarter) item.dataset.analyticsHeadquarter = analytics.headquarter;
+    if (analytics?.countryCode) item.dataset.analyticsCountryCode = analytics.countryCode;
+    if (analytics?.area) item.dataset.analyticsArea = analytics.area;
+    if (analytics?.zone) item.dataset.analyticsZone = analytics.zone;
+    if (analytics?.city) item.dataset.analyticsCity = analytics.city;
 
     if (source) {
       moveInstrumentation(source, item);
@@ -592,6 +608,23 @@ export default async function decorate(block) {
             stars: hotel.stars || 0,
             tagLabel: tagLabel || '',
             target,
+          },
+          analytics: {
+            hotelCode,
+            stars: hotel.stars || '',
+            continent: hotel.continent || '',
+            country: hotel.country || '',
+            brand: hotel.brand || '',
+            category: hotel.category || '',
+            subcategory: hotel.subcategory || '',
+            segment: hotel.segment || '',
+            subsegment: hotel.subsegment || '',
+            onlyAdults: hotel.isOnlyAdults == null ? '' : `${hotel.isOnlyAdults}`,
+            headquarter: hotel.headquarter || '',
+            countryCode: hotel.countryCode || '',
+            area: hotel.area || '',
+            zone: hotel.zone || '',
+            city: hotel.city || '',
           },
           source,
         };

@@ -1,4 +1,17 @@
 const DEFAULT_CONFIG = {
+  analytics: {
+    // PENDIENTE (bloquea salida a produccion): ID de produccion del
+    // domain-script de OneTrust para el dominio del microsite. Pedir al
+    // administrador de la cuenta OneTrust de Iberostar (via Merkle). Hasta
+    // entonces todos los entornos usan el ID de TEST.
+    // Se puede sobreescribir sin deploy con la metadata de pagina
+    // "onetrust-domain-script" (ver getAnalyticsConfig en analytics.js).
+    oneTrustDomainScript: '0198196f-018a-77f9-919f-10391def3fda-test',
+    // Huella Tealium. Merkle debe confirmar si dev/qa usan otra URL o si el
+    // entorno se resuelve por profile dentro de Tealium iQ (plan 3.1).
+    // Override sin deploy via metadata "tealium-utag-src".
+    utagSrc: 'https://tags.iberostar.com/core/prod/utag.js',
+  },
   dynamicMedia: {
     enabled: false,
     imageServer: 'https://delivery-p179213-e1886364.adobeaemcloud.com',
@@ -154,6 +167,11 @@ function getEnvironmentConfig(hostname = window.location.hostname) {
     ...DEFAULT_CONFIG,
     ...overrides,
     ...cloudOverrides,
+    analytics: {
+      ...DEFAULT_CONFIG.analytics,
+      ...(overrides.analytics || {}),
+      ...(cloudOverrides.analytics || {}),
+    },
     dynamicMedia: {
       ...DEFAULT_CONFIG.dynamicMedia,
       ...(overrides.dynamicMedia || {}),

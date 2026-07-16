@@ -263,6 +263,9 @@ async function loadLazy(doc) {
   loadCSS(`${window.hlx.codeBasePath}/styles/ibh-icons.css`);
   loadFonts();
 
+  // Consent (OneTrust) must be in place before Tealium loads in the delayed phase.
+  import('./iberostar/analytics.js').then((analytics) => analytics.initConsent());
+
   // Universal Editor support: only load when the document is instrumented.
   if (document.querySelector('[data-aue-resource]') || window.location.href.includes('.aem.page')) {
     // eslint-disable-next-line import/no-cycle
