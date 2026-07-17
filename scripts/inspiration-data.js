@@ -2,7 +2,8 @@ const MOCK_ARTICLES = [
   {
     id: 'article-001',
     title: 'Guia de playas secretas del Caribe',
-    summary: 'Recorre arenales poco conocidos y rutas para disfrutar del Caribe sin masificaciones.',
+    summary:
+      'Recorre arenales poco conocidos y rutas para disfrutar del Caribe sin masificaciones.',
     image: 'https://picsum.photos/seed/article-001/1200/800',
     author: 'author-001',
     category: 'destinos',
@@ -14,7 +15,8 @@ const MOCK_ARTICLES = [
   {
     id: 'article-002',
     title: 'Gastronomia caribena: sabores autenticos',
-    summary: 'Mercados, platos tradicionales y productos locales de la cocina caribena.',
+    summary:
+      'Mercados, platos tradicionales y productos locales de la cocina caribena.',
     image: 'https://picsum.photos/seed/article-002/1200/800',
     author: 'author-002',
     category: 'destinos',
@@ -26,7 +28,8 @@ const MOCK_ARTICLES = [
   {
     id: 'article-003',
     title: 'Alpinismo en los Pirineos',
-    summary: 'Etapas, equipo basico y recomendaciones de seguridad para una travesia de montana.',
+    summary:
+      'Etapas, equipo basico y recomendaciones de seguridad para una travesia de montana.',
     image: 'https://picsum.photos/seed/article-003/1200/800',
     author: 'author-001',
     category: 'destinos',
@@ -38,7 +41,8 @@ const MOCK_ARTICLES = [
   {
     id: 'article-004',
     title: 'Ciudades europeas para tu proximo viaje',
-    summary: 'Escapadas urbanas con propuestas culturales, gastronomicas y de barrio.',
+    summary:
+      'Escapadas urbanas con propuestas culturales, gastronomicas y de barrio.',
     image: 'https://picsum.photos/seed/article-004/1200/800',
     author: 'author-002',
     category: 'destinos',
@@ -50,7 +54,8 @@ const MOCK_ARTICLES = [
   {
     id: 'article-005',
     title: 'Senderismo en la ruta del Inca',
-    summary: 'Planifica el recorrido con tiempos realistas, aclimatacion y puntos clave.',
+    summary:
+      'Planifica el recorrido con tiempos realistas, aclimatacion y puntos clave.',
     image: 'https://picsum.photos/seed/article-005/1200/800',
     author: 'author-001',
     category: 'destinos',
@@ -62,7 +67,8 @@ const MOCK_ARTICLES = [
   {
     id: 'article-006',
     title: 'Los mejores mercados de abastos del mundo',
-    summary: 'Mercados emblematicos para descubrir cultura local a traves de sus productos.',
+    summary:
+      'Mercados emblematicos para descubrir cultura local a traves de sus productos.',
     image: 'https://picsum.photos/seed/article-006/1200/800',
     author: 'author-002',
     category: 'destinos',
@@ -74,7 +80,8 @@ const MOCK_ARTICLES = [
   {
     id: 'article-007',
     title: 'Yoga frente al mar: encuentra tu equilibrio',
-    summary: 'Hacer yoga en la playa incrementa los beneficios fisicos, emocionales y espirituales de esta filosofia ancestral.',
+    summary:
+      'Hacer yoga en la playa incrementa los beneficios fisicos, emocionales y espirituales de esta filosofia ancestral.',
     image: 'https://picsum.photos/seed/article-007/1200/800',
     author: 'author-001',
     category: 'deportes',
@@ -86,7 +93,8 @@ const MOCK_ARTICLES = [
   {
     id: 'article-008',
     title: 'Los 12 deportes extremos mas practicados del mundo',
-    summary: 'Los deportes extremos mas practicados te llevaran por tierra, agua y aire para descargar adrenalina en tus viajes.',
+    summary:
+      'Los deportes extremos mas practicados te llevaran por tierra, agua y aire para descargar adrenalina en tus viajes.',
     image: 'https://picsum.photos/seed/article-008/1200/800',
     author: 'author-002',
     category: 'deportes',
@@ -98,7 +106,8 @@ const MOCK_ARTICLES = [
   {
     id: 'article-009',
     title: 'Todo lo que debes saber para bucear en Cozumel',
-    summary: 'La practica del buceo en Cozumel es para muchas personas mucho mas que una filosofia de vida.',
+    summary:
+      'La practica del buceo en Cozumel es para muchas personas mucho mas que una filosofia de vida.',
     image: 'https://picsum.photos/seed/article-009/1200/800',
     author: 'author-001',
     category: 'destinos',
@@ -110,7 +119,8 @@ const MOCK_ARTICLES = [
   {
     id: 'article-010',
     title: 'Conoce Portugal en bici: las mejores rutas',
-    summary: 'Descubrir Portugal en bici siempre es buena idea: un pais costero lleno de paisajes increibles que se disfrutan en movimiento.',
+    summary:
+      'Descubrir Portugal en bici siempre es buena idea: un pais costero lleno de paisajes increibles que se disfrutan en movimiento.',
     image: 'https://picsum.photos/seed/article-010/1200/800',
     author: 'author-002',
     category: 'destinos',
@@ -122,7 +132,8 @@ const MOCK_ARTICLES = [
   {
     id: 'article-011',
     title: 'Escapadas romanticas para dos',
-    summary: 'Destinos con encanto para desconectar en pareja y vivir experiencias inolvidables.',
+    summary:
+      'Destinos con encanto para desconectar en pareja y vivir experiencias inolvidables.',
     image: 'https://picsum.photos/seed/article-011/1200/800',
     author: 'author-001',
     category: 'destinos',
@@ -134,7 +145,8 @@ const MOCK_ARTICLES = [
   {
     id: 'article-012',
     title: 'Rutas de senderismo con vistas al oceano',
-    summary: 'Caminos costeros para todos los niveles con paradas para disfrutar del paisaje.',
+    summary:
+      'Caminos costeros para todos los niveles con paradas para disfrutar del paisaje.',
     image: 'https://picsum.photos/seed/article-012/1200/800',
     author: 'author-002',
     category: 'deportes',
@@ -146,7 +158,8 @@ const MOCK_ARTICLES = [
   {
     id: 'article-013',
     title: 'Islas paradisiacas que aun puedes descubrir',
-    summary: 'Rincones poco masificados donde el mar turquesa y la calma son los protagonistas.',
+    summary:
+      'Rincones poco masificados donde el mar turquesa y la calma son los protagonistas.',
     image: 'https://picsum.photos/seed/article-013/1200/800',
     author: 'author-001',
     category: 'destinos',
@@ -158,7 +171,8 @@ const MOCK_ARTICLES = [
   {
     id: 'article-014',
     title: 'Viajar en familia: guia para no morir en el intento',
-    summary: 'Consejos practicos para que las vacaciones con ninos sean un exito de principio a fin.',
+    summary:
+      'Consejos practicos para que las vacaciones con ninos sean un exito de principio a fin.',
     image: 'https://picsum.photos/seed/article-014/1200/800',
     author: 'author-002',
     category: 'destinos',
@@ -170,7 +184,8 @@ const MOCK_ARTICLES = [
   {
     id: 'article-015',
     title: 'Los mejores atardeceres del Mediterraneo',
-    summary: 'Miradores y calas donde el cielo se tine de colores al caer la tarde.',
+    summary:
+      'Miradores y calas donde el cielo se tine de colores al caer la tarde.',
     image: 'https://picsum.photos/seed/article-015/1200/800',
     author: 'author-001',
     category: 'destinos',
@@ -189,7 +204,9 @@ function isLocalhost() {
 }
 
 function normalizeTag(tag) {
-  return String(tag || '').trim().toLowerCase();
+  return String(tag || '')
+    .trim()
+    .toLowerCase();
 }
 
 function normalizeSlug(value) {
@@ -280,7 +297,9 @@ export function normalizeArticlePath(article) {
 
 function normalizeTagPath(value) {
   const tag = `${value || ''}`.trim().toLowerCase();
-  const withoutNamespace = tag.includes(':') ? tag.split(':').slice(1).join(':') : tag;
+  const withoutNamespace = tag.includes(':')
+    ? tag.split(':').slice(1).join(':')
+    : tag;
 
   return withoutNamespace
     .split('/')
@@ -292,7 +311,11 @@ function normalizeTagPath(value) {
 // Root folders of the category tag tree (e.g. `inspiration-guide:categorías/destinos`).
 // They are structural, not real categories, so they are excluded from route paths
 // and from hierarchy matching.
-const CATEGORY_ROOT_SEGMENTS = new Set(['categorias', 'categories', 'category']);
+const CATEGORY_ROOT_SEGMENTS = new Set([
+  'categorias',
+  'categories',
+  'category',
+]);
 
 function stripCategoryRoot(path) {
   const segments = `${path || ''}`.split('/').filter(Boolean);
@@ -344,7 +367,8 @@ function getMetaContent(name) {
  */
 export function getPageCategoryPath() {
   const fromMeta = normalizeCategoryPath(
-    getMetaContent('article-category') || getMetaContent('article-category-path'),
+    getMetaContent('article-category')
+      || getMetaContent('article-category-path'),
   );
   if (fromMeta) return fromMeta;
 
@@ -399,7 +423,9 @@ function isMeaningfulValue(value) {
   if (value === undefined || value === null) return false;
 
   const normalized = `${value}`.trim().toLowerCase();
-  return normalized !== '' && normalized !== 'undefined' && normalized !== 'null';
+  return (
+    normalized !== '' && normalized !== 'undefined' && normalized !== 'null'
+  );
 }
 
 function firstDefined(...values) {
@@ -408,9 +434,27 @@ function firstDefined(...values) {
 }
 
 function normalizeArticle(raw, index) {
-  const id = firstDefined(raw.id, raw.articleId, raw.slug, raw.path, `aem-article-${index + 1}`);
-  const title = firstDefined(raw.title, raw.name, raw.headline, raw.articleTitle, 'Untitled');
-  const summary = firstDefined(raw.summary, raw.description, raw.excerpt, raw.teaser, '');
+  const id = firstDefined(
+    raw.id,
+    raw.articleId,
+    raw.slug,
+    raw.path,
+    `aem-article-${index + 1}`,
+  );
+  const title = firstDefined(
+    raw.title,
+    raw.name,
+    raw.headline,
+    raw.articleTitle,
+    'Untitled',
+  );
+  const summary = firstDefined(
+    raw.summary,
+    raw.description,
+    raw.excerpt,
+    raw.teaser,
+    '',
+  );
   const rawPath = firstDefined(raw.path, raw.articleUrl, raw.url, raw.href, '');
   const image = firstDefined(
     raw.image,
@@ -420,7 +464,12 @@ function normalizeArticle(raw, index) {
     raw.ogImage,
     '',
   );
-  const authorPath = firstDefined(raw.author, raw.authorPath, raw.articleAuthor, '');
+  const authorPath = firstDefined(
+    raw.author,
+    raw.authorPath,
+    raw.articleAuthor,
+    '',
+  );
   const author = firstDefined(
     raw.author?.name,
     raw.authorName,
@@ -428,15 +477,26 @@ function normalizeArticle(raw, index) {
     tagLabel(authorPath),
     '',
   );
-  const categoryTag = firstDefined(raw.category, raw.categoryTag, raw.mainCategory, '');
+  const categoryTag = firstDefined(
+    raw.category,
+    raw.categoryTag,
+    raw.mainCategory,
+    '',
+  );
   const categorySlug = normalizeCategoryPath(
     firstDefined(raw.categorySlug, raw.categoryId, categoryTag),
   );
-  const category = firstDefined(raw.categoryTitle, raw.categoryName, tagLabel(categoryTag));
+  const category = firstDefined(
+    raw.categoryTitle,
+    raw.categoryName,
+    tagLabel(categoryTag),
+  );
   const categoryUrl = firstDefined(
     raw.categoryUrl,
     raw.categoryPath,
-    categorySlug ? `${getCurrentLanguageRoot()}/inspiration-guide/category/${categorySlug}` : '',
+    categorySlug
+      ? `${getCurrentLanguageRoot()}/inspiration-guide/category/${categorySlug}`
+      : '',
   );
   const categoryPath = firstDefined(
     raw.categoryPath,
@@ -445,8 +505,19 @@ function normalizeArticle(raw, index) {
     categorySlug,
     '',
   );
-  const subcategory = firstDefined(raw.subcategory, raw.subCategory, raw.subcategorySlug, '');
-  const publishDate = firstDefined(raw.publishDate, raw.publicationDate, raw.publishedAt, raw.date, '');
+  const subcategory = firstDefined(
+    raw.subcategory,
+    raw.subCategory,
+    raw.subcategorySlug,
+    '',
+  );
+  const publishDate = firstDefined(
+    raw.publishDate,
+    raw.publicationDate,
+    raw.publishedAt,
+    raw.date,
+    '',
+  );
   const publicationTimestampRaw = firstDefined(
     raw.publicationTimestamp,
     Date.parse(publishDate),
@@ -454,10 +525,19 @@ function normalizeArticle(raw, index) {
   );
   const publicationTimestamp = Number.parseInt(publicationTimestampRaw, 10) || 0;
   const updateDate = firstDefined(raw.updateDate, raw.updatedAt, '');
-  const readingTimeRaw = firstDefined(raw.readingTime, raw.readTime, raw.minutesToRead, 0);
+  const readingTimeRaw = firstDefined(
+    raw.readingTime,
+    raw.readTime,
+    raw.minutesToRead,
+    0,
+  );
   const readingTime = Number.parseInt(readingTimeRaw, 10) || 0;
-  const readTime = normalizeReadTime(firstDefined(raw.readTime, raw.readingTime, raw.minutesToRead, ''));
-  const tags = normalizeTags(firstDefined(raw.tags, raw.tagList, raw.keywords, []));
+  const readTime = normalizeReadTime(
+    firstDefined(raw.readTime, raw.readingTime, raw.minutesToRead, ''),
+  );
+  const tags = normalizeTags(
+    firstDefined(raw.tags, raw.tagList, raw.keywords, []),
+  );
   const normalizedPath = normalizeArticlePath({
     href: raw.href,
     id,
@@ -472,18 +552,20 @@ function normalizeArticle(raw, index) {
     summary: String(summary),
     description: String(summary),
     image: String(image),
-    imageAlt: String(firstDefined(
-      raw.imageAlt,
-      raw.altEs,
-      raw.imageAltEs,
-      raw.dcDescription,
-      raw.imageDcDescription,
-      raw.autogenDescription,
-      raw.imageAutogenDescription,
-      raw.alt,
-      title,
-      '',
-    )),
+    imageAlt: String(
+      firstDefined(
+        raw.imageAlt,
+        raw.altEs,
+        raw.imageAltEs,
+        raw.dcDescription,
+        raw.imageDcDescription,
+        raw.autogenDescription,
+        raw.imageAutogenDescription,
+        raw.alt,
+        title,
+        '',
+      ),
+    ),
     author: String(author),
     authorPath: String(authorPath),
     authorName: String(author),
@@ -510,10 +592,12 @@ function normalizeArticle(raw, index) {
 }
 
 function isCompleteArticle(article) {
-  return article.title
+  return (
+    article.title
     && article.title.toLowerCase() !== 'untitled'
     && article.id
-    && article.visible;
+    && article.visible
+  );
 }
 
 function pickArticlesCollection(payload) {
@@ -531,9 +615,11 @@ function getIndexRows(payload) {
 }
 
 function getMetaFromDocument(doc, name) {
-  return doc.querySelector(`meta[name="${name}"]`)?.content?.trim()
+  return (
+    doc.querySelector(`meta[name="${name}"]`)?.content?.trim()
     || doc.querySelector(`meta[property="${name}"]`)?.content?.trim()
-    || '';
+    || ''
+  );
 }
 
 function normalizePagePath(path) {
@@ -545,7 +631,10 @@ function isArticlePath(path) {
 }
 
 function isAuthorContext() {
-  return window.location.hostname?.includes('author-') || window.location.pathname?.includes('/content/');
+  return (
+    window.location.hostname?.includes('author-')
+    || window.location.pathname?.includes('/content/')
+  );
 }
 
 function resolveAemDataUrl() {
@@ -576,7 +665,9 @@ function getDefaultArticleIndexUrls() {
   const locale = segments.find((segment) => /^[a-z]{2}-[a-z]{2}$/i.test(segment));
 
   return [
-    locale ? `/${locale.toLowerCase()}/inspiration-guide/articles-index.json` : '',
+    locale
+      ? `/${locale.toLowerCase()}/inspiration-guide/articles-index.json`
+      : '',
     '/inspiration-guide/articles-index.json',
   ].filter(Boolean);
 }
@@ -614,7 +705,9 @@ async function fetchArticleMetadata(path) {
   });
 
   if (!response.ok) {
-    throw new Error(`Article metadata fetch failed (${response.status}) for ${articlePath}`);
+    throw new Error(
+      `Article metadata fetch failed (${response.status}) for ${articlePath}`,
+    );
   }
 
   const html = await response.text();
@@ -623,13 +716,16 @@ async function fetchArticleMetadata(path) {
   return {
     path: articlePath,
     url: articlePath,
-    title: getMetaFromDocument(doc, 'jcr:title')
+    title:
+      getMetaFromDocument(doc, 'jcr:title')
       || getMetaFromDocument(doc, 'og:title')
       || doc.querySelector('title')?.textContent?.trim(),
-    description: getMetaFromDocument(doc, 'jcr:description')
+    description:
+      getMetaFromDocument(doc, 'jcr:description')
       || getMetaFromDocument(doc, 'description')
       || getMetaFromDocument(doc, 'og:description'),
-    image: getMetaFromDocument(doc, 'article-image')
+    image:
+      getMetaFromDocument(doc, 'article-image')
       || getMetaFromDocument(doc, 'og:image'),
     ogImage: getMetaFromDocument(doc, 'og:image'),
     imageAlt: getMetaFromDocument(doc, 'article-image-alt'),
@@ -650,7 +746,9 @@ async function fetchArticleMetadata(path) {
 async function getArticlesFromPageIndex() {
   const payload = await fetchJson(resolvePageIndexUrl());
   const articleRows = getIndexRows(payload).filter((row) => isArticlePath(row.path));
-  const articles = await Promise.all(articleRows.map((row) => fetchArticleMetadata(row.path)));
+  const articles = await Promise.all(
+    articleRows.map((row) => fetchArticleMetadata(row.path)),
+  );
   return articles;
 }
 
@@ -667,26 +765,31 @@ function buildTagFrequency(articles) {
 }
 
 async function enrichSparseArticles(articles = []) {
-  const enriched = await Promise.all(articles.map(async (article, index) => {
-    const needsEnrichment = !article.title
-      || article.title.toLowerCase() === 'untitled'
-      || !article.image
-      || !article.description;
+  const enriched = await Promise.all(
+    articles.map(async (article, index) => {
+      const needsEnrichment = !article.title
+        || article.title.toLowerCase() === 'untitled'
+        || !article.image
+        || !article.description;
 
-    if (!needsEnrichment || !article.path || article.path === '#') {
-      return article;
-    }
+      if (!needsEnrichment || !article.path || article.path === '#') {
+        return article;
+      }
 
-    try {
-      const metadata = await fetchArticleMetadata(article.path);
-      return normalizeArticle({
-        ...article,
-        ...metadata,
-      }, index);
-    } catch (error) {
-      return article;
-    }
-  }));
+      try {
+        const metadata = await fetchArticleMetadata(article.path);
+        return normalizeArticle(
+          {
+            ...article,
+            ...metadata,
+          },
+          index,
+        );
+      } catch (error) {
+        return article;
+      }
+    }),
+  );
 
   return enriched;
 }
@@ -718,12 +821,17 @@ async function getAemArticles() {
 
       if (results.length > 0) {
         // eslint-disable-next-line no-console
-        console.log(`[inspiration-data] Loaded ${results.length} articles from ${currentUrl}`);
+        console.log(
+          `[inspiration-data] Loaded ${results.length} articles from ${currentUrl}`,
+        );
         return results;
       }
     } catch (error) {
       // eslint-disable-next-line no-console
-      console.debug(`[inspiration-data] Failed to load from ${currentUrl}:`, error);
+      console.debug(
+        `[inspiration-data] Failed to load from ${currentUrl}:`,
+        error,
+      );
     }
 
     return tryLoadArticles(remainingUrls);
@@ -740,7 +848,10 @@ async function getAemArticles() {
       .filter(isCompleteArticle);
   } catch (error) {
     // eslint-disable-next-line no-console
-    console.warn('[inspiration-data] Failed to load fallback article data:', error);
+    console.warn(
+      '[inspiration-data] Failed to load fallback article data:',
+      error,
+    );
     return [];
   }
 }
@@ -752,7 +863,9 @@ export function getDataMode() {
     return modeFromQuery;
   }
 
-  const metaMode = document.querySelector('meta[name="inspiration-data-mode"]')?.content;
+  const metaMode = document.querySelector(
+    'meta[name="inspiration-data-mode"]',
+  )?.content;
   if (metaMode === 'mock' && isLocalhost()) {
     return metaMode;
   }
