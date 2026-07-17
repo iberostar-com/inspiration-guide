@@ -35,17 +35,24 @@ function getMetaValue(name, fallback = '') {
   return value || fallback;
 }
 
+// The category metadata holds a hierarchical tag id such as
+// `inspiration-guide:categorías/destinos/islas-baleares`; the concrete category
+// is the last segment, never the tag tree root.
 function toCategoryLabel(rawValue) {
   const source = `${rawValue || ''}`.trim();
   if (!source) return '';
 
   const first = source.split(',')[0].trim();
-  const withoutNamespace = first.includes(':') ? first.split(':')[1] : first;
-  const segment = withoutNamespace.split('/')[0].trim();
-  const normalized = segment.replace(/[-_]+/g, ' ');
+  const withoutNamespace = first.includes(':') ? first.split(':').slice(1).join(':') : first;
+  const segments = withoutNamespace.split('/').map((segment) => segment.trim()).filter(Boolean);
+  const leaf = segments[segments.length - 1] || '';
+  const normalized = leaf.replace(/[-_]+/g, ' ').trim();
 
   if (!normalized) return '';
-  return normalized.charAt(0).toUpperCase() + normalized.slice(1).toLowerCase();
+  return normalized
+    .split(/\s+/)
+    .map((word) => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
+    .join(' ');
 }
 
 function toDisplayDate(value) {

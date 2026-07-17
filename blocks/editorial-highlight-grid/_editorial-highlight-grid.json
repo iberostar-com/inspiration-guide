@@ -88,7 +88,7 @@
           "options": [
             { "name": "Manual", "value": "manual" },
             { "name": "Auto by Tag", "value": "auto-tag" },
-            { "name": "Auto by Category", "value": "auto-category" }
+            { "name": "Auto by Category (incl. Subcategories)", "value": "auto-category" }
           ]
         },
         {
@@ -104,6 +104,12 @@
           "name": "ctaLabel",
           "label": "Load More Label (Default variant)",
           "value": "Load more"
+        },
+        {
+          "component": "aem-tag",
+          "valueType": "string",
+          "name": "filterCategory",
+          "label": "Filter Category (Auto by Category / Category variant)"
         }
       ]
     },

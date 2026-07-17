@@ -213,13 +213,25 @@ function splitPathSegments(value) {
     .filter(Boolean);
 }
 
+// Tag tree roots (`categorías`, `categories`…) are structural, not real categories;
+// keeping them would make every article match every other one.
+const CATEGORY_ROOT_SEGMENTS = new Set(['categorias', 'categorías', 'categories', 'category']);
+
+function stripCategoryRootSegments(segments) {
+  const result = [...segments];
+  while (result.length > 1 && CATEGORY_ROOT_SEGMENTS.has(normalizeStr(result[0]))) {
+    result.shift();
+  }
+  return result;
+}
+
 function toCategoryTree(value) {
   const directSegments = splitPathSegments(value);
-  if (directSegments.length) return directSegments;
+  if (directSegments.length) return stripCategoryRootSegments(directSegments);
 
-  return splitList(value)
+  return stripCategoryRootSegments(splitList(value)
     .map((item) => item.replace(/^[^:]+:/, '').trim())
-    .filter(Boolean);
+    .filter(Boolean));
 }
 
 function getArticleTags(article) {

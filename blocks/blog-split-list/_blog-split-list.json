@@ -129,6 +129,24 @@
             { "name": "H5", "value": "h5" },
             { "name": "H6", "value": "h6" }
           ]
+        },
+        {
+          "component": "select",
+          "valueType": "string",
+          "name": "mode",
+          "label": "Source",
+          "value": "manual",
+          "options": [
+            { "name": "Manual", "value": "manual" },
+            { "name": "Auto by Tag", "value": "auto-tag" },
+            { "name": "Auto by Category (incl. Subcategories)", "value": "auto-category" }
+          ]
+        },
+        {
+          "component": "aem-tag",
+          "valueType": "string",
+          "name": "filterCategory",
+          "label": "Filter Category (Auto by Category)"
         }
       ]
     },

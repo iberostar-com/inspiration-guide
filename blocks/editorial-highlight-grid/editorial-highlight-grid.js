@@ -1,5 +1,9 @@
 import { createResponsiveImage } from '../../scripts/iberostar/media.js';
-import { getArticles } from '../../scripts/inspiration-data.js';
+import {
+  articleMatchesCategory,
+  getArticles,
+  getPageCategoryPath,
+} from '../../scripts/inspiration-data.js';
 import { createArticleCard } from '../../scripts/iberostar/article-card.js';
 import { toPublicPagePath } from '../../scripts/iberostar/page-links.js';
 import { moveInstrumentation } from '../../scripts/scripts.js';
@@ -50,6 +54,16 @@ function readVariant(block) {
   return found || block.getAttribute('data-variant') || 'default';
 }
 
+function readSource(block) {
+  const byProp = textByProp(block, 'source').toLowerCase();
+  if (byProp) return byProp;
+  const known = new Set(['manual', 'auto-tag', 'auto-category']);
+  const found = getConfigRows(block)
+    .map((row) => row.textContent?.trim().toLowerCase())
+    .find((text) => known.has(text));
+  return found || block.getAttribute('data-source') || 'manual';
+}
+
 // ---------- default variant (auto/manual list with "load more") ----------
 
 function getContextSegment(name) {
@@ -62,10 +76,6 @@ function getContextSegment(name) {
 
 function getContextTag() {
   return getContextSegment('tag');
-}
-
-function getContextCategory() {
-  return getContextSegment('category');
 }
 
 // The current tag/category comes from the page metadata (Article Primary Category /
@@ -81,9 +91,19 @@ function normalizeSlug(value) {
   return afterNamespace.split('/').pop().trim();
 }
 
-function getCurrentCategory() {
-  const fromMeta = normalizeSlug(getPageMeta('article-category') || getPageMeta('article-category-path'));
-  return fromMeta || getContextCategory();
+// An authored category override (aem-tag id such as `inspiration-guide:categorías/destinos`)
+// renders as a config row without instrumentation, so it is detected by its tag-id shape.
+function getConfiguredCategory(block) {
+  const byProp = textByProp(block, 'filterCategory');
+  if (byProp) return byProp;
+  return getConfigRows(block)
+    .map((row) => row.textContent?.trim() || '')
+    .find((text) => /^[a-z0-9_-]+:\S+$/i.test(text)) || '';
+}
+
+// Full hierarchy path so parent categories also match their subcategories.
+function getCurrentCategory(block) {
+  return getConfiguredCategory(block) || getPageCategoryPath();
 }
 
 function getCurrentTags() {
@@ -109,19 +129,19 @@ function manualItems(block) {
   });
 }
 
-async function autoItems(source) {
+async function autoItems(block, source) {
   const all = await getArticles();
   if (source === 'auto-tag') {
     const tag = getContextTag();
     return all
       .filter((article) => !tag || article.tags.includes(tag))
-      .map((article) => ({ ...article, href: `/article/${article.id}` }));
+      .map((article) => ({ ...article, href: article.href || `/article/${article.id}` }));
   }
   if (source === 'auto-category') {
-    const category = getContextCategory();
+    const category = getCurrentCategory(block);
     return all
-      .filter((article) => !category || article.category === category)
-      .map((article) => ({ ...article, href: `/article/${article.id}` }));
+      .filter((article) => articleMatchesCategory(article, category))
+      .map((article) => ({ ...article, href: article.href || `/article/${article.id}` }));
   }
   return [];
 }
@@ -169,11 +189,11 @@ function renderPage(list, items, pageSize, currentPage) {
 }
 
 async function decorateDefault(block) {
-  const source = block.getAttribute('data-source') || 'manual';
+  const source = readSource(block);
   const pageSize = Number.parseInt(block.getAttribute('data-page-size') || '4', 10);
   const ctaLabel = block.getAttribute('data-cta-label') || 'Load more';
 
-  const items = source === 'manual' ? manualItems(block) : await autoItems(source);
+  const items = source === 'manual' ? manualItems(block) : await autoItems(block, source);
 
   const wrapper = document.createElement('div');
   wrapper.className = 'editorial-highlight-grid';
@@ -370,20 +390,6 @@ function readPageSize(block) {
   return Number.isFinite(parsed) && parsed > 0 ? parsed : 4;
 }
 
-function articleHasCategory(article, category) {
-  const target = category.trim().toLowerCase();
-  if (!target) return false;
-
-  return [article.categorySlug, article.category, article.categoryPath]
-    .some((value) => {
-      const normalized = `${value || ''}`.trim().toLowerCase();
-      if (!normalized) return false;
-      if (normalized === target) return true;
-      return normalized.split('/').pop() === target
-        || normalized.split(':').pop().trim() === target;
-    });
-}
-
 function buildFeed(block, matched, pageSize) {
   block.classList.add('editorial-highlight-grid-home', 'editorial-highlight-grid-listing');
 
@@ -523,9 +529,9 @@ async function decorateCategory(block) {
     return;
   }
 
-  const category = getCurrentCategory();
+  const category = getCurrentCategory(block);
   const matched = category
-    ? all.filter((article) => articleHasCategory(article, category))
+    ? all.filter((article) => articleMatchesCategory(article, category))
     : all;
   buildFeed(block, matched, readPageSize(block));
 }
