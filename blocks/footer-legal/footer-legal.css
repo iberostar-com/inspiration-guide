@@ -24,10 +24,10 @@
 .footer-legal-item {
   display: inline-flex;
   align-items: center;
-  font-size: var(--ibh-text-body-s, 0.875rem);   /* 14px */
+  font-size: 0.875rem;   /* 14px */
   font-weight: 400;       /* Regular */
   line-height: 1.4;
-  color: var(--color-neutral-1000, #1b2828);
+  color: #1b2828;
 }
 
 /* Dot separator — 16px each side on mobile to match Figma gap: 16px */
@@ -35,7 +35,7 @@
   content: '·';
   display: inline-block;
   margin: 0 16px;
-  color: var(--color-neutral-1000, #1b2828);
+  color: #1b2828;
 }
 
 .footer-legal-item a:any-link {

@@ -52,7 +52,7 @@ main .breadcrumbs .breadcrumbs-item [aria-current="page"] {
   font-weight: 500;
 }
 
-@media (width >= 900px) {
+@media (width >= 820px) {
   main .breadcrumbs .breadcrumbs-rendered {
     padding: 16px 0;
   }

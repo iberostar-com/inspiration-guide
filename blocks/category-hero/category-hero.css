@@ -1,5 +1,7 @@
 main > .section > .category-hero-wrapper {
+  max-width: none;
   margin-top: 14px;
+  padding: 0;
 }
 
 main .category-hero .category-hero-source {
@@ -11,18 +13,18 @@ main .category-hero .category-hero-rendered {
   flex-direction: column;
   align-items: center;
   gap: 40px;
-  padding: var(--padding-padding-32) var(--padding-padding-16) 0;
+  padding: 32px 16px 0;
   box-sizing: border-box;
   width: 100%;
-  font-family: var(--ibh-font-body, var(--body-font-family));
-  color: var(--color-neutral-900, var(--text-color));
+  font-family: inter, sans-serif;
+  color: #1b2828;
 }
 
 main .category-hero .category-hero-content {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: var(--margin-margin-16);
+  gap: 16px;
   width: 100%;
 }
 
@@ -51,14 +53,14 @@ main .category-hero .category-hero-breadcrumb-list {
 main .category-hero .category-hero-breadcrumb-item {
   display: inline-flex;
   align-items: center;
-  color: var(--color-neutral-600, var(--dark-color));
-  font-size: var(--ibh-text-body-s, var(--body-font-size-xs));
+  color: #757575;
+  font-size: 14px;
   line-height: 1.4;
 }
 
 main .category-hero .category-hero-breadcrumb-item:not(:last-child)::after {
-  margin: 0 var(--margin-margin-8);
-  color: var(--color-neutral-500, var(--dark-color));
+  margin: 0 8px;
+  color: #636363;
   content: '/';
 }
 
@@ -69,21 +71,21 @@ main .category-hero .category-hero-breadcrumb-item a:any-link {
 
 main .category-hero .category-hero-breadcrumb-item a:hover,
 main .category-hero .category-hero-breadcrumb-item a:focus-visible {
-  color: var(--color-neutral-900, var(--text-color));
+  color: #1b2828;
   text-decoration: underline;
   text-underline-offset: 3px;
 }
 
 main .category-hero .category-hero-breadcrumb-item [aria-current='page'] {
-  color: var(--color-neutral-900, var(--text-color));
-  font-weight: var(--ibh-weight-medium, 500);
+  color: #1b2828;
+  font-weight: 500;
 }
 
 main .category-hero .category-hero-pretitle {
   margin: 0;
   color: #3aa496;
   font-size: 12px;
-  font-weight: var(--ibh-weight-medium, 500);
+  font-weight: 500;
   letter-spacing: 0.02em;
   line-height: 1.4;
   text-align: center;
@@ -92,8 +94,8 @@ main .category-hero .category-hero-pretitle {
 
 main .category-hero .category-hero-title {
   margin: 0;
-  color: var(--color-neutral-1000, var(--text-color));
-  font-family: noe-display, var(--heading-font-family);
+  color: #1b2828;
+  font-family: noe-display, serif;
   font-size: 32px;
   font-weight: 400;
   line-height: 42px;
@@ -103,7 +105,7 @@ main .category-hero .category-hero-title {
 
 main .category-hero .category-hero-description {
   margin: 0;
-  color: var(--color-neutral-900, var(--text-color));
+  color: #1b2828;
   font-size: 16px;
   line-height: 1.4;
   text-align: center;
@@ -135,9 +137,9 @@ main .category-hero .category-hero-subcategories-list {
   display: flex;
   flex-wrap: nowrap;
   align-items: stretch;
-  gap: 8px;
+  gap: 12px;
   margin: 0;
-  padding: 0 var(--padding-padding-16);
+  padding: 0;
   list-style: none;
   overflow-x: auto;
   overscroll-behavior-x: contain;
@@ -154,10 +156,10 @@ main .category-hero .category-hero-subcategories-link {
   align-items: center;
   justify-content: center;
   height: 80px;
-  padding: 0 16px;
+  padding: 0 12px;
   background: transparent;
-  color: var(--color-neutral-900, var(--text-color));
-  font-size: var(--ibh-text-body-m, 16px);
+  color: #1b2828;
+  font-size: 16px;
   font-weight: 400;
   line-height: 1.4;
   text-decoration: none;
@@ -170,26 +172,26 @@ main .category-hero .category-hero-subcategories-link:hover {
 }
 
 main .category-hero .category-hero-subcategories-link:focus-visible {
-  outline: 2px solid var(--color-neutral-1000, var(--text-color));
+  outline: 2px solid #1b2828;
   outline-offset: 2px;
 }
 
 main .category-hero.category-hero-subcategory .category-hero-rendered {
-  padding-top: var(--padding-padding-24);
+  padding-top: 24px;
 }
 
 main .category-hero .category-hero-rendered::after {
   width: 100%;
   height: 1px;
   border-radius: 100px;
-  background: var(--color-neutral-300, #dedede);
+  background: #dedede;
   content: '';
 }
 
-@media (width >= 600px) {
+@media (width >= 576px) {
   main .category-hero .category-hero-rendered {
-    padding-right: var(--padding-padding-24);
-    padding-left: var(--padding-padding-24);
+    padding-right: 24px;
+    padding-left: 24px;
   }
 
   main .category-hero .category-hero-description {
@@ -206,11 +208,17 @@ main .category-hero .category-hero-rendered::after {
 
   main .category-hero .category-hero-subcategories-link {
     height: auto;
-    padding: 8px 16px;
+    padding: 8px 12px;
   }
 }
 
-@media (width >= 900px) {
+@media (width >= 820px) {
+  main .category-hero .category-hero-subcategories-list {
+    gap: 8px;
+  }
+}
+
+@media (width >= 1440px) {
   main .category-hero .category-hero-rendered {
     padding-right: 83px;
     padding-left: 83px;
@@ -226,20 +234,15 @@ main .category-hero .category-hero-rendered::after {
     max-width: 768px;
     font-size: 18px;
   }
-}
-
-@media (width >= 1200px) {
-  main .category-hero .category-hero-rendered {
-    padding-right: 235px;
-    padding-left: 235px;
-  }
 
   main .category-hero .category-hero-content {
     max-width: 1010px;
   }
+}
 
-  main .category-hero .category-hero-breadcrumbs,
-  main .category-hero .category-hero-rendered::after {
-    max-width: 1274px;
+@media (width >= 1920px) {
+  main .category-hero .category-hero-rendered {
+    padding-right: 235px;
+    padding-left: 235px;
   }
 }

@@ -83,7 +83,7 @@
   font-weight: 700;
 }
 
-@media (width >= 900px) {
+@media (width >= 820px) {
   .featured-articles .featured-articles-layout {
     grid-template-columns: minmax(0, 1.3fr) minmax(0, 0.9fr);
     align-items: start;

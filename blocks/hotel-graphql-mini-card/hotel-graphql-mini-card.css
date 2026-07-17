@@ -9,6 +9,7 @@ main .hotel-graphql-mini-card .hotel-graphql-mini-card-rendered {
 }
 
 main .hotel-graphql-mini-card .hotel-mini-card-horizontal {
+  gap: 16px;
   padding: 0;
 }
 
@@ -16,18 +17,15 @@ main .hotel-graphql-mini-card .hotel-mini-card-horizontal .hotel-mini-card-body 
   padding-right: 0;
 }
 
-main .hotel-graphql-mini-card .hotel-mini-card-star-icon {
-  width: 11px;
-  height: 11px;
-  min-width: 11px;
-  min-height: 11px;
+main .hotel-graphql-mini-card .hotel-mini-card-stars {
+  display: inline-flex;
+  align-items: center;
+  color: #1b2828;
+  line-height: 1;
 }
 
-main .hotel-graphql-mini-card .hotel-mini-card-stars-small .hotel-mini-card-star-icon {
-  width: 7px;
-  height: 7px;
-  min-width: 7px;
-  min-height: 7px;
+main .hotel-graphql-mini-card .hotel-mini-card-stars .ibh-icon-star {
+  font-size: 12px;
 }
 
 main .hotel-graphql-mini-card .hotel-graphql-mini-card-empty {
@@ -38,9 +36,8 @@ main .hotel-graphql-mini-card .hotel-graphql-mini-card-empty {
   font-style: italic;
 }
 
-@media (width < 600px) {
+@media (width >= 576px) {
   main .hotel-graphql-mini-card .hotel-mini-card-horizontal {
-    gap: 16px;
-    padding: 0;
+    gap: 24px;
   }
 }

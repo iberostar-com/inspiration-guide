@@ -167,8 +167,15 @@ function createStars(count, variant) {
   const stars = document.createElement('span');
   stars.className = 'hotel-mini-card-stars';
   stars.setAttribute('aria-label', `${count} stars`);
-  stars.textContent = '★'.repeat(count);
   if (variant === 'vertical') stars.classList.add('hotel-mini-card-stars-small');
+
+  Array.from({ length: count }).forEach(() => {
+    const star = document.createElement('i');
+    star.className = 'ibh-icon-star';
+    star.setAttribute('aria-hidden', 'true');
+    stars.append(star);
+  });
+
   return stars;
 }
 

@@ -194,33 +194,38 @@ main .recommended-dynamic-hotels-grid .hotel-mini-card-vertical {
   padding: 0;
 }
 
-@media (width >= 600px) {
+@media (width >= 576px) {
+  main .recommended-dynamic-hotels-grid .recommended-dynamic-hotels-grid-header {
+    padding: 0 24px;
+  }
+
+  main .recommended-dynamic-hotels-grid .recommended-dynamic-hotels-list {
+    padding-right: 24px;
+    padding-left: 24px;
+    scroll-padding-inline: 24px;
+  }
+
   main .recommended-dynamic-hotels-grid .recommended-dynamic-hotels-item {
-    width: calc((min(100vw, 1440px) - 64px) / 2);
-    flex-basis: calc((min(100vw, 1440px) - 64px) / 2);
+    width: calc((min(100vw, 1440px) - 80px) / 2);
+    flex-basis: calc((min(100vw, 1440px) - 80px) / 2);
   }
 }
 
-@media (width >= 1200px) {
+@media (width >= 820px) {
   main .recommended-dynamic-hotels-grid .recommended-dynamic-hotels-grid-rendered {
     gap: 40px;
     padding: 64px 0;
-  }
-
-  main .recommended-dynamic-hotels-grid .recommended-dynamic-hotels-grid-header {
-    padding: 0 24px;
   }
 
   main .recommended-dynamic-hotels-grid .recommended-dynamic-hotels-grid-title {
     font-size: 32px;
     line-height: 42px;
   }
+}
 
+@media (width >= 1440px) {
   main .recommended-dynamic-hotels-grid .recommended-dynamic-hotels-list {
-    padding-right: 24px;
-    padding-left: 24px;
     clip-path: inset(0 24px 0 0);
-    scroll-padding-inline: 24px;
   }
 
   main .recommended-dynamic-hotels-grid .recommended-dynamic-hotels-item {

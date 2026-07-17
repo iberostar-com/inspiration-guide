@@ -10,9 +10,6 @@
   display: none;
 }
 
-/* ============================================================
-   Trigger
-   ============================================================ */
 .nav-language-trigger {
   display: inline-flex;
   align-items: center;
@@ -44,9 +41,6 @@
   display: inline;
 }
 
-/* ============================================================
-   Modal Backdrop (mounted on <body>)
-   ============================================================ */
 .nav-language-modal-backdrop {
   position: fixed;
   inset: 0;
@@ -65,9 +59,6 @@ body.nav-language-modal-open {
   overflow: hidden;
 }
 
-/* ============================================================
-   Modal Container — fullscreen on mobile
-   ============================================================ */
 .nav-language-modal {
   position: relative;
   background: #fff;
@@ -91,9 +82,6 @@ body.nav-language-modal-open {
   }
 }
 
-/* ============================================================
-   Modal Header
-   ============================================================ */
 .nav-language-modal-header {
   display: flex;
   align-items: center;
@@ -145,14 +133,11 @@ body.nav-language-modal-open {
 
 .nav-language-modal-close:hover,
 .nav-language-modal-close:focus-visible {
-  color: var(--color-neutral-300);
-  outline: 2px solid var(--color-neutral-300);
+  color: #dedede;
+  outline: 2px solid #dedede;
   outline-offset: 2px;
 }
 
-/* ============================================================
-   Modal Options Grid
-   ============================================================ */
 .nav-language-modal-options {
   display: grid;
   grid-template-columns: repeat(2, 1fr);
@@ -166,13 +151,13 @@ body.nav-language-modal-open {
   padding: 12px 16px;
   border: 1px solid #d9e2de;
   background: transparent;
-  border-radius: var(--border-radius-radius-4);
+  border-radius: 4px;
   box-sizing: border-box;
   font: inherit;
   font-size: var(--body-font-size-xs);
   font-weight: 500;
   line-height: 1.2;
-  color: var(--color-neutral-900);
+  color: #1b2828;
   text-decoration: none;
   text-align: left;
   cursor: pointer;
@@ -183,7 +168,7 @@ body.nav-language-modal-open {
 .nav-language-option-button:focus-visible {
   border-color: #d9e2de;
   background-color: transparent;
-  color: var(--color-neutral-900);
+  color: #1b2828;
   outline: 2px solid #d9e2de;
   outline-offset: -1px;
 }
@@ -191,14 +176,11 @@ body.nav-language-modal-open {
 .nav-language-option-button.is-active {
   border-color: #d9e2de;
   background-color: transparent;
-  color: var(--color-neutral-900);
+  color: #1b2828;
   font-weight: 500;
 }
 
-/* ============================================================
-   Tablet — centered dialog
-   ============================================================ */
-@media (width >= 600px) {
+@media (width >= 576px) {
   .nav-language-modal-backdrop {
     align-items: center;
     justify-content: center;
@@ -250,10 +232,7 @@ body.nav-language-modal-open {
   }
 }
 
-/* ============================================================
-   Desktop
-   ============================================================ */
-@media (width >= 900px) {
+@media (width >= 820px) {
   .nav-language-modal {
     width: 712px;
     min-width: 712px;

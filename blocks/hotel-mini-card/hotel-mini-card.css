@@ -38,21 +38,13 @@ main .hotel-mini-card-info {
 
 main .hotel-mini-card-stars {
   display: inline-flex;
-  gap: 5px;
-  height: 20px;
   align-items: center;
-  overflow: hidden;
   color: #1b2828;
-  font-size: 12px;
-  letter-spacing: 3px;
   line-height: 1;
 }
 
-main .hotel-mini-card-stars-small {
-  gap: 3px;
-  height: 12px;
-  font-size: 7px;
-  letter-spacing: 2px;
+main .hotel-mini-card-stars .ibh-icon-star {
+  font-size: 12px;
 }
 
 main .hotel-mini-card-title {
@@ -93,14 +85,14 @@ main .hotel-mini-card-title-link:focus-visible {
 main .hotel-mini-card-horizontal {
   display: flex;
   gap: 24px;
-  align-items: center;
+  align-items: flex-start;
   padding: 32px 0;
 }
 
 main .hotel-mini-card-horizontal .hotel-mini-card-media {
-  flex: 0 0 216px;
-  width: 216px;
-  height: 153px;
+  flex: 0 0 128px;
+  width: 128px;
+  height: 96px;
 }
 
 main .hotel-mini-card-horizontal .hotel-mini-card-body {
@@ -246,14 +238,14 @@ main .hotel-mini-card-tag-label {
   white-space: nowrap;
 }
 
-@media (width < 600px) {
+@media (width >= 576px) {
   main .hotel-mini-card-horizontal {
-    align-items: flex-start;
+    align-items: center;
   }
 
   main .hotel-mini-card-horizontal .hotel-mini-card-media {
-    flex-basis: 128px;
-    width: 128px;
-    height: 96px;
+    flex: 0 0 216px;
+    width: 216px;
+    height: 153px;
   }
 }
