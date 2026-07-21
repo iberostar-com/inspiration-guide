@@ -1,6 +1,7 @@
 import { getMetadata } from '../../scripts/aem.js';
 import { createResponsiveImage } from '../../scripts/iberostar/media.js';
-import { getContentLocale } from '../../scripts/iberostar/date-format.js';
+import { formatDate, hasValidDate } from '../../scripts/iberostar/date-format.js';
+import { tagTitle } from '../../scripts/iberostar/tag-label.js';
 
 function getSourceRows(block) {
   return Array.from(block.children).filter((child) => !child.classList.contains('hero-article-detail-content'));
@@ -43,33 +44,14 @@ function toCategoryLabel(rawValue) {
   const source = `${rawValue || ''}`.trim();
   if (!source) return '';
 
-  const first = source.split(',')[0].trim();
-  const withoutNamespace = first.includes(':') ? first.split(':').slice(1).join(':') : first;
-  const segments = withoutNamespace.split('/').map((segment) => segment.trim()).filter(Boolean);
-  const leaf = segments[segments.length - 1] || '';
-  const normalized = leaf.replace(/[-_]+/g, ' ').trim();
-
-  if (!normalized) return '';
-  return normalized
-    .split(/\s+/)
-    .map((word) => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
-    .join(' ');
+  return tagTitle(source.split(',')[0]);
 }
 
 function toDisplayDate(value) {
   if (!value) return '';
+  if (!hasValidDate(value)) return `${value}`.toUpperCase();
 
-  const parsed = new Date(value);
-  if (Number.isNaN(parsed.getTime())) {
-    return `${value}`.toUpperCase();
-  }
-
-  const locale = getContentLocale();
-  return new Intl.DateTimeFormat(locale, {
-    day: 'numeric',
-    month: 'long',
-    year: 'numeric',
-  }).format(parsed).toUpperCase();
+  return formatDate(value).toUpperCase();
 }
 
 function createClockIcon() {
