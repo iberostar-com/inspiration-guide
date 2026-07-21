@@ -12,6 +12,7 @@ import {
 } from './aem.js';
 import { decorateRichtext } from './editor-support-rte.js';
 import { decoratePageLinks } from './iberostar/page-links.js';
+import { getContentLocale } from './iberostar/date-format.js';
 
 /**
  * Moves all the attributes from a given elmenet to another given element.
@@ -212,7 +213,7 @@ export function decorateMain(main) {
  * @param {Element} doc The container element
  */
 async function loadEager(doc) {
-  document.documentElement.lang = 'en';
+  document.documentElement.lang = getContentLocale();
   decorateTemplateAndTheme();
   applyPageMetadataState();
   const main = doc.querySelector('main');

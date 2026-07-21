@@ -1,4 +1,5 @@
 import { createResponsiveImage } from '../../scripts/iberostar/media.js';
+import { tagTitle } from '../../scripts/iberostar/tag-label.js';
 import { getArticles, normalizeArticlePath } from '../../scripts/inspiration-data.js';
 import { moveInstrumentation } from '../../scripts/scripts.js';
 
@@ -256,10 +257,8 @@ function getLeafCategoryLabel(raw) {
   const tree = toCategoryTree(raw)
     .flatMap((part) => `${part}`.split('/'))
     .map((part) => part.split(':').pop() || '')
-    .map((part) => part.replace(/-/g, ' ').trim())
     .filter(Boolean);
-  const leaf = tree[tree.length - 1] || '';
-  return leaf.charAt(0).toUpperCase() + leaf.slice(1);
+  return tagTitle(tree[tree.length - 1] || '');
 }
 
 function getComparableTimestamp(article) {
@@ -393,11 +392,7 @@ function toFallbackTitleFromPath(path) {
   const slug = normalizePath(path).split('/').filter(Boolean).pop() || '';
   if (!slug) return '';
 
-  return slug
-    .replace(/[-_]+/g, ' ')
-    .replace(/\s+/g, ' ')
-    .trim()
-    .replace(/\b\w/g, (char) => char.toUpperCase());
+  return tagTitle(slug);
 }
 
 function getFallbackTitle(sourceProp, refPath) {

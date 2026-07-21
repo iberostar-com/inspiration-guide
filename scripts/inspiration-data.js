@@ -1,3 +1,5 @@
+import { tagTitle } from './iberostar/tag-label.js';
+
 const MOCK_ARTICLES = [
   {
     id: 'article-001',
@@ -351,9 +353,8 @@ export function articleMatchesCategory(article, category) {
 }
 
 function tagLabel(value) {
-  const path = normalizeTagPath(value);
-  const parts = path.split('/').filter(Boolean);
-  return parts[parts.length - 1] || `${value || ''}`.trim();
+  const first = `${value || ''}`.split(/[|,;]/)[0];
+  return tagTitle(first) || tagTitle(normalizeTagPath(value));
 }
 
 function getMetaContent(name) {

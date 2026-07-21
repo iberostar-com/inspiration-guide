@@ -318,10 +318,26 @@ function normalizeValue(value) {
   return normalized.toLowerCase() === 'undefined' ? '' : normalized;
 }
 
+function toPathKey(value) {
+  return normalizeUrl(value)
+    .split(/[?#]/, 1)[0]
+    .replace(/^urn:[^:]*:/i, '')
+    .replace(/\.html$/i, '')
+    .split('/')
+    .map(normalizeSlug)
+    .filter(Boolean)
+    .join('/');
+}
+
 function samePath(a, b) {
-  const left = normalizeUrl(a).replace(/\/$/, '');
-  const right = normalizeUrl(b).replace(/\/$/, '');
-  return !!left && !!right && left === right;
+  const left = toPathKey(a);
+  const right = toPathKey(b);
+
+  if (!left || !right) return false;
+  if (left === right) return true;
+
+  return (left.includes('/') && right.endsWith(`/${left}`))
+    || (right.includes('/') && left.endsWith(`/${right}`));
 }
 
 function getCurrentLocale() {
@@ -528,14 +544,16 @@ function isRenderableArticle(article) {
   return Boolean(item.title && item.title.toLowerCase() !== 'untitled' && item.href && item.href !== '#');
 }
 
+function getFeaturedReference(block) {
+  return getHrefFromElement(getFieldByProp(block, 'featuredArticlePath'))
+    || getTextValue(block, 'featuredArticlePath', '');
+}
+
 async function getAutoItems(block, mode, maxItems) {
   const articles = (await getArticles())
     .map(normalizeArticle)
     .filter(isRenderableArticle);
-  const featuredPath = toPublicContentPath(
-    getHrefFromElement(getFieldByProp(block, 'featuredArticlePath'))
-      || getTextValue(block, 'featuredArticlePath', ''),
-  );
+  const featuredPath = toPublicContentPath(getFeaturedReference(block));
   const sortedArticles = sortArticles(articles);
   const filtered = sortArticles(filterArticles(articles, block, mode));
   const featured = sortedArticles.find((article) => (
@@ -563,6 +581,22 @@ function hideSource(block) {
     row.classList.add('blog-split-list-source');
     row.setAttribute('aria-hidden', 'true');
   });
+}
+
+function isAuthoringPage(block) {
+  return Boolean(block.closest('[data-aue-resource]') || document.querySelector('[data-aue-resource]'));
+}
+
+function appendAuthoringPlaceholder(block) {
+  if (!isAuthoringPage(block)) return;
+
+  const placeholder = document.createElement('div');
+  placeholder.className = 'blog-split-list-rendered blog-split-list-empty';
+
+  const message = document.createElement('p');
+  message.textContent = 'Blog Split List: add Article items, or pick a Featured Article Page. Automatic listings are resolved from the published article index, so they only render on preview and publish.';
+  placeholder.append(message);
+  block.append(placeholder);
 }
 
 function createEyebrow(text, tagName = 'p') {
@@ -747,8 +781,12 @@ function createListItem(item, ctaLabel, titleTagName = 'h3') {
   return li;
 }
 
-function splitManualItems(items, maxItems) {
-  const featured = items.find((item) => item.placement === 'featured') || items[0];
+function splitManualItems(items, maxItems, featuredReference = '') {
+  const featuredPath = toPublicContentPath(featuredReference);
+  const referenced = featuredPath
+    ? items.find((item) => samePath(item.href, featuredPath) || samePath(item.path, featuredPath))
+    : null;
+  const featured = items.find((item) => item.placement === 'featured') || referenced || items[0];
   if (!featured) return [];
 
   const latest = items
@@ -768,7 +806,7 @@ function splitManualItems(items, maxItems) {
 }
 
 export default async function decorate(block) {
-  block.querySelector(':scope > .blog-split-list-rendered')?.remove();
+  block.querySelectorAll(':scope > .blog-split-list-rendered').forEach((rendered) => rendered.remove());
 
   const mode = getConfiguredMode(block);
   const maxItems = getConfiguredMaxItems(block);
@@ -788,16 +826,23 @@ export default async function decorate(block) {
   const ctaLabel = getTextValue(block, 'ctaLabel', '')
     || await getTranslation('readArticle', 'Leer artículo')
     || await getPlaceholder('readArticle', 'Leer artículo');
-  const items = mode === 'manual'
-    ? splitManualItems(fromManualRows(block), maxItems)
+  const featuredReference = getFeaturedReference(block);
+  let items = mode === 'manual'
+    ? splitManualItems(fromManualRows(block), maxItems, featuredReference)
     : await getAutoItems(block, mode, maxItems);
 
-  if (!items.length) {
-    // Silently exit if no items; block remains undecorated or shows empty
-    return;
+  // Manual source without authored article rows still honours the featured
+  // article reference, resolving the rest of the list from the article index.
+  if (!items.length && mode === 'manual' && featuredReference) {
+    items = await getAutoItems(block, 'auto-filter', maxItems);
   }
 
   hideSource(block);
+
+  if (!items.length) {
+    appendAuthoringPlaceholder(block);
+    return;
+  }
 
   const wrapper = document.createElement('div');
   wrapper.className = 'blog-split-list-rendered';

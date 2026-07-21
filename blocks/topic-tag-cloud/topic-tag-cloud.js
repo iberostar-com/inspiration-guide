@@ -11,6 +11,7 @@
  */
 
 import { appendPageSegment } from '../../scripts/iberostar/page-links.js';
+import { tagTitle } from '../../scripts/iberostar/tag-label.js';
 
 const MAX_TAGS = 20;
 const FIELD_POSITIONS = {
@@ -21,13 +22,7 @@ const FIELD_POSITIONS = {
 };
 
 function tagLabel(tagPath) {
-  // "inspiration-guide:adventure" → "Adventure"
-  const raw = `${tagPath || ''}`.trim();
-  const name = raw.includes(':') ? raw.split(':').pop() : raw;
-  const slug = name.split('/').pop();
-  return slug
-    .replace(/-/g, ' ')
-    .replace(/\b\w/g, (c) => c.toUpperCase());
+  return tagTitle(tagPath);
 }
 
 function tagSlug(tagPath) {

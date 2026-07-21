@@ -1,5 +1,6 @@
 import { getMetadata } from '../../scripts/aem.js';
 import { createResponsiveImage } from '../../scripts/iberostar/media.js';
+import { getContentLocale } from '../../scripts/iberostar/date-format.js';
 
 function getSourceRows(block) {
   return Array.from(block.children).filter((child) => !child.classList.contains('hero-article-detail-content'));
@@ -63,7 +64,7 @@ function toDisplayDate(value) {
     return `${value}`.toUpperCase();
   }
 
-  const locale = document.documentElement.lang || 'es-ES';
+  const locale = getContentLocale();
   return new Intl.DateTimeFormat(locale, {
     day: 'numeric',
     month: 'long',

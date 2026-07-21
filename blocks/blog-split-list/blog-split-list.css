@@ -322,3 +322,9 @@ main .blog-split-list .blog-split-item h3 {
     aspect-ratio: 496 / 250;
   }
 }
+
+main .blog-split-list .blog-split-list-empty {
+  margin: 0;
+  color: var(--blog-split-muted);
+  font-size: 14px;
+}

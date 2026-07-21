@@ -1,4 +1,5 @@
 import { getMetadata } from '../../scripts/aem.js';
+import { tagTitle } from '../../scripts/iberostar/tag-label.js';
 import { getTranslation } from '../../scripts/iberostar/i18n.js';
 import { getPlaceholder } from '../../scripts/iberostar/placeholders.js';
 
@@ -42,11 +43,7 @@ function getHrefValueFromElement(element) {
 
 function labelFromHref(href) {
   const segment = `${href || ''}`.replace(/(^\/+|\/+$|(\.(html|plain\.html))$)/g, '').split('/').filter(Boolean).pop() || '';
-  return decodeURIComponent(segment)
-    .replace(/[-_]+/g, ' ')
-    .replace(/\s+/g, ' ')
-    .trim()
-    .replace(/\b\w/g, (letter) => letter.toUpperCase());
+  return tagTitle(decodeURIComponent(segment));
 }
 
 function getTitleFallback() {

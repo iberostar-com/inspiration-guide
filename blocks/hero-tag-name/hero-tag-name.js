@@ -1,3 +1,5 @@
+import { tagTitle } from '../../scripts/iberostar/tag-label.js';
+
 const HEADING_TAGS = new Set(['h1', 'h2', 'h3']);
 
 function getSourceRows(block) {
@@ -39,8 +41,7 @@ function getCurrentTag() {
 }
 
 function tagLabel(slug) {
-  const text = `${slug || ''}`.replace(/[-_]+/g, ' ').trim();
-  return text ? text.charAt(0).toUpperCase() + text.slice(1) : '';
+  return tagTitle(slug);
 }
 
 export default function decorate(block) {
