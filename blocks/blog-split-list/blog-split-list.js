@@ -600,6 +600,8 @@ function appendAuthoringPlaceholder(block) {
 }
 
 function createEyebrow(text, tagName = 'p') {
+  if (!text) return null;
+
   const eyebrow = document.createElement(tagName);
   eyebrow.className = 'blog-split-list-eyebrow';
   eyebrow.textContent = text;
@@ -810,17 +812,13 @@ export default async function decorate(block) {
 
   const mode = getConfiguredMode(block);
   const maxItems = getConfiguredMaxItems(block);
-  const featuredTitle = getTextValue(block, 'featuredLabel', '')
-    || await getTranslation('featuredColumnTitle', 'En portada')
-    || await getPlaceholder('featuredColumnTitle', 'En portada');
+  // Authored headings are optional: an empty field renders no heading at all,
+  // so a page can show a single title instead of one per column.
+  const featuredTitle = getTextValue(block, 'featuredLabel', '');
   const featuredTitleTag = getRenderTag(block, 'featuredLabelHeading', 'p');
-  const latestTitle = getTextValue(block, 'latestLabel', '')
-    || await getTranslation('latestColumnTitle', 'Últimas publicaciones')
-    || await getPlaceholder('latestColumnTitle', 'Últimas publicaciones');
+  const latestTitle = getTextValue(block, 'latestLabel', '');
   const latestTitleTag = getRenderTag(block, 'latestLabelHeading', 'p');
-  const featuredBadge = getTextValue(block, 'featuredBadge', '')
-    || await getTranslation('featuredArticle', 'Artículo destacado')
-    || await getPlaceholder('featuredArticle', 'Artículo destacado');
+  const featuredBadge = getTextValue(block, 'featuredBadge', '');
   const featuredArticleTitleTag = getRenderTag(block, 'featuredArticleTitleHeading', 'h2');
   const latestArticleTitleTag = getRenderTag(block, 'latestArticleTitleHeading', 'h3');
   const ctaLabel = getTextValue(block, 'ctaLabel', '')
@@ -850,15 +848,18 @@ export default async function decorate(block) {
   const featuredColumn = document.createElement('section');
   featuredColumn.className = 'blog-split-list-featured-column';
   featuredColumn.append(
-    createEyebrow(featuredTitle, featuredTitleTag),
-    createFeatured(items[0], ctaLabel, featuredBadge, featuredArticleTitleTag),
+    ...[
+      createEyebrow(featuredTitle, featuredTitleTag),
+      createFeatured(items[0], ctaLabel, featuredBadge, featuredArticleTitleTag),
+    ].filter(Boolean),
   );
   wrapper.append(featuredColumn);
 
   if (items.length > 1) {
     const latestColumn = document.createElement('section');
     latestColumn.className = 'blog-split-list-latest-column';
-    latestColumn.append(createEyebrow(latestTitle, latestTitleTag));
+    const latestEyebrow = createEyebrow(latestTitle, latestTitleTag);
+    if (latestEyebrow) latestColumn.append(latestEyebrow);
 
     const list = document.createElement('ul');
     list.className = 'blog-split-side-list';
