@@ -124,7 +124,9 @@ function isValidPositionalValue(propName, value, legacyMode) {
   }
 
   if (propName === 'filterTags' || propName === 'featuredLabel' || propName === 'latestLabel' || propName === 'featuredBadge') {
-    return !RENDER_TAGS.has(lowered) && !DATA_MODES.has(lowered);
+    // A visible label is never a reference, so paths and urls belong to another field.
+    const isReference = lowered.startsWith('/') || lowered.startsWith('http') || lowered.startsWith('urn:');
+    return !isReference && !RENDER_TAGS.has(lowered) && !DATA_MODES.has(lowered);
   }
 
   return true;
@@ -194,18 +196,15 @@ function getFieldByProp(block, propName) {
 }
 
 function getTextValue(block, propName, fallback = '') {
+  // An instrumented field is authoritative: if the author cleared it, it stays
+  // empty instead of leaking a neighbouring row through positional extraction.
   const el = getFieldByProp(block, propName);
-  const text = el?.textContent?.trim();
-  if (text) return text;
+  if (el) return el.textContent?.trim() || fallback;
 
   // Universal Editor can output mixed rows (some fields instrumented, others positional only).
   // Fall back to positional extraction when the specific prop is not instrumented.
   const positional = getPositionalTextValue(block, propName);
   if (positional) return positional;
-
-  if (!hasAuthoredProps(block)) {
-    return fallback;
-  }
 
   return fallback;
 }
