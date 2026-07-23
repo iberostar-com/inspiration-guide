@@ -653,14 +653,12 @@
       {
         "component": "text",
         "name": "featuredLabel",
-        "label": "Featured Column Title",
-        "value": "En portada"
+        "label": "Featured Column Title"
       },
       {
         "component": "text",
         "name": "latestLabel",
-        "label": "Latest Column Title",
-        "value": "Últimas publicaciones"
+        "label": "Latest Column Title"
       },
       {
         "component": "aem-content",
@@ -751,8 +749,7 @@
       {
         "component": "text",
         "name": "featuredBadge",
-        "label": "Featured Badge Text",
-        "value": "Artículo destacado"
+        "label": "Featured Badge Text"
       },
       {
         "component": "select",
@@ -2443,8 +2440,7 @@
         "component": "text",
         "valueType": "string",
         "name": "title",
-        "label": "Title",
-        "value": "Suscríbete a nuestra Newsletter"
+        "label": "Title"
       },
       {
         "component": "text",
