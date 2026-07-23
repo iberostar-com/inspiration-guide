@@ -843,6 +843,9 @@ export default async function decorate(block) {
 
   const wrapper = document.createElement('div');
   wrapper.className = 'blog-split-list-rendered';
+  // With at least one column heading both columns share a heading row, so the
+  // media of each column stays aligned even when only one title is authored.
+  if (featuredTitle || latestTitle) wrapper.classList.add('blog-split-list-has-headings');
 
   const featuredColumn = document.createElement('section');
   featuredColumn.className = 'blog-split-list-featured-column';

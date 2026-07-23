@@ -235,20 +235,31 @@ main .blog-split-list .blog-split-item h3 {
 
 @media (width >= 820px) {
   main .blog-split-list .blog-split-list-rendered {
-    display: flex;
-    flex-direction: row;
-    gap: 40px;
-    align-items: flex-start;
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) 241px;
+    align-items: start;
+    column-gap: 40px;
   }
 
-  main .blog-split-list .blog-split-list-featured-column {
-    flex: 1;
-    min-width: 0;
+  main .blog-split-list .blog-split-list-has-headings {
+    grid-template-rows: auto 1fr;
+    row-gap: 24px;
   }
 
-  main .blog-split-list .blog-split-list-latest-column {
-    width: 241px;
-    flex-shrink: 0;
+  main .blog-split-list .blog-split-list-has-headings .blog-split-list-featured-column,
+  main .blog-split-list .blog-split-list-has-headings .blog-split-list-latest-column {
+    display: grid;
+    grid-row: span 2;
+    grid-template-rows: subgrid;
+  }
+
+  main .blog-split-list .blog-split-list-has-headings .blog-split-list-eyebrow {
+    grid-row: 1;
+  }
+
+  main .blog-split-list .blog-split-list-has-headings .blog-split-featured,
+  main .blog-split-list .blog-split-list-has-headings .blog-split-side-list {
+    grid-row: 2;
   }
 
   main .blog-split-list .blog-split-media {
@@ -278,11 +289,8 @@ main .blog-split-list .blog-split-item h3 {
   main .blog-split-list .blog-split-list-rendered {
     max-width: 1274px;
     margin-inline: auto;
-    gap: 74px;
-  }
-
-  main .blog-split-list .blog-split-list-latest-column {
-    width: 336px;
+    grid-template-columns: minmax(0, 1fr) 336px;
+    column-gap: 74px;
   }
 
   main .blog-split-list .blog-split-media {
@@ -311,11 +319,8 @@ main .blog-split-list .blog-split-item h3 {
 @media (width >= 1920px) {
   main .blog-split-list .blog-split-list-rendered {
     max-width: 1450px;
-    gap: 90px;
-  }
-
-  main .blog-split-list .blog-split-list-latest-column {
-    width: 496px;
+    grid-template-columns: minmax(0, 1fr) 496px;
+    column-gap: 90px;
   }
 
   main .blog-split-list .blog-split-item-media {
