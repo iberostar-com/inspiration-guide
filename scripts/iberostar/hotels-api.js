@@ -1,4 +1,5 @@
 import getEnvironmentConfig from './environment-config.js';
+import { getAnalyticsHotelData } from './hotels-analytics-data.js';
 
 const DEFAULT_LOCALE_HYPHENATED = 'en-us';
 const GRAPHQL_REQUEST_CACHE = new Map();
@@ -177,10 +178,9 @@ function normalizeHotel(rawHotel) {
     destination: rawHotel?.destination || null,
     estimatedMinPrice: rawHotel?.estimatedMinPrice ?? rawHotel?.minPrice ?? null,
     estimatedMinCurrency: rawHotel?.estimatedMinCurrency ?? rawHotel?.currency ?? null,
-    // Taxonomia ecommerce pendiente de backend (plan fase 2.1): HotelByCode
-    // aun no expone estos campos, asi que hoy llegan null. En cuanto la query
-    // se amplie con estos nombres, fluyen a los eventos view_item_list y
-    // select_item sin mas cambios.
+    // Taxonomia ecommerce: HotelByCode no expone estos campos, asi que la
+    // fuente real es hotels_data.json del DAM (ver enrichHotelWithAnalyticsData);
+    // si algun dia la query los devuelve, quedan como fallback.
     brand: rawHotel?.brand || null,
     category: rawHotel?.category || null,
     subcategory: rawHotel?.subcategory || null,
@@ -193,6 +193,65 @@ function normalizeHotel(rawHotel) {
     zone: rawHotel?.zone || null,
     city: rawHotel?.city || null,
   };
+}
+
+function firstFilled(...values) {
+  return values.find((value) => value !== undefined && value !== null && value !== '') ?? null;
+}
+
+// HotelByCode devuelve continent/country como fragment references (objetos);
+// para analytics solo sirven como texto plano.
+function textOrNull(value) {
+  return typeof value === 'string' && value.trim() ? value : null;
+}
+
+// Completa la taxonomia ecommerce del hotel con hotels_data.json del DAM,
+// la misma fuente que usan las metricas de la home clasica de iberostar.com.
+// El mapeo de campos replica el del site clasico (recommended-hotels-grid.js
+// del repo de AEM); en concreto product_market se envia como subcategory.
+async function enrichHotelWithAnalyticsData(hotel) {
+  const analyticsData = await getAnalyticsHotelData(hotel.code, {
+    origin: getGraphqlOrigin(),
+    hotelName: hotel.title,
+  }).catch(() => null);
+
+  if (!analyticsData) {
+    warnOnce(
+      `analytics-data-not-found:${hotel.code}`,
+      '[hotels-api] No analytics taxonomy data for hotel',
+      hotel.code,
+    );
+    return hotel;
+  }
+
+  const enriched = {
+    ...hotel,
+    stars: hotel.stars ?? normalizeHotelStars(analyticsData.hotel_stars),
+    continent: firstFilled(analyticsData.destination_continent, textOrNull(hotel.continent)),
+    country: firstFilled(analyticsData.destination_country, textOrNull(hotel.country)),
+    brand: firstFilled(analyticsData.hotel_brand, hotel.brand),
+    category: firstFilled(analyticsData.product_category, hotel.category),
+    subcategory: firstFilled(analyticsData.product_market, hotel.subcategory),
+    segment: firstFilled(analyticsData.hotel_segment, hotel.segment),
+    subsegment: firstFilled(analyticsData.hotel_subsegment, hotel.subsegment),
+    isOnlyAdults: firstFilled(analyticsData.hotel_is_only_adults, hotel.isOnlyAdults),
+    headquarter: firstFilled(analyticsData.hotel_headquarter_final, hotel.headquarter),
+    countryCode: firstFilled(analyticsData.destination_country_code, hotel.countryCode),
+    area: firstFilled(analyticsData.destination_area, hotel.area),
+    zone: firstFilled(analyticsData.destination_zone, hotel.zone),
+    city: firstFilled(analyticsData.destination_city, hotel.city),
+  };
+
+  if (isHotelApiDebugEnabled()) {
+    // eslint-disable-next-line no-console
+    console.info('[hotels-api] Hotel enriched with analytics data', {
+      analyticsData,
+      enriched,
+      hotelCode: hotel.code,
+    });
+  }
+
+  return enriched;
 }
 
 function getRootPath(options = {}) {
@@ -286,7 +345,7 @@ export async function fetchHotelByCode(hotelCode, options = {}) {
         return null;
       }
 
-      return hotel;
+      return enrichHotelWithAnalyticsData(hotel);
     })
     .catch((error) => {
       warnOnce(
