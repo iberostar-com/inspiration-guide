@@ -669,9 +669,9 @@ function readProduct(item, index) {
     location: textOf(item.querySelector('.hotel-mini-card-location')),
     continent: item.dataset.analyticsContinent || '',
     country: item.dataset.analyticsCountry || '',
-    // Taxonomia ecommerce (plan fase 2): hoy HotelByCode aun no devuelve estos
-    // campos, asi que llegan vacios; cuando backend amplie la query, el grid
-    // los estampa como data-analytics-* y los eventos se completan solos.
+    // Taxonomia ecommerce: el grid la obtiene de hotels_data.json del DAM
+    // (via hotels-api.js) y la estampa como data-analytics-*; misma fuente
+    // que las metricas de la home clasica de iberostar.com.
     brand: item.dataset.analyticsBrand || '',
     category: item.dataset.analyticsCategory || '',
     subcategory: item.dataset.analyticsSubcategory || '',
