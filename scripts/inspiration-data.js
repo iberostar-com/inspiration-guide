@@ -1,4 +1,5 @@
 import { tagTitle } from './iberostar/tag-label.js';
+import { taxonomyTitle } from './iberostar/taxonomy.js';
 
 const MOCK_ARTICLES = [
   {
@@ -878,14 +879,25 @@ export function getDataMode() {
   return 'aem';
 }
 
+// Upgrades each article's category label to the Title of its category landing
+// page when it exists; otherwise the slug-derived label from normalizeArticle stays.
+async function withCategoryTitles(articles) {
+  return Promise.all(articles.map(async (article) => {
+    const reference = article.categoryUrl || article.categoryPath;
+    if (!reference) return article;
+
+    const title = await taxonomyTitle(reference);
+    return title ? { ...article, category: title } : article;
+  }));
+}
+
 export async function getArticles() {
   const mode = getDataMode();
+  const articles = mode === 'aem'
+    ? await getAemArticles()
+    : MOCK_ARTICLES.map((article, index) => normalizeArticle(article, index));
 
-  if (mode === 'aem') {
-    return getAemArticles();
-  }
-
-  return MOCK_ARTICLES.map((article, index) => normalizeArticle(article, index));
+  return withCategoryTitles(articles);
 }
 
 export async function getTagCloud(strategy = 'frequency', limit = 20) {

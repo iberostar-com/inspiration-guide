@@ -1,7 +1,7 @@
 import { getMetadata } from '../../scripts/aem.js';
 import { createResponsiveImage } from '../../scripts/iberostar/media.js';
 import { formatDate, hasValidDate } from '../../scripts/iberostar/date-format.js';
-import { tagTitle } from '../../scripts/iberostar/tag-label.js';
+import { tagDisplayTitle } from '../../scripts/iberostar/taxonomy.js';
 
 function getSourceRows(block) {
   return Array.from(block.children).filter((child) => !child.classList.contains('hero-article-detail-content'));
@@ -44,7 +44,7 @@ function toCategoryLabel(rawValue) {
   const source = `${rawValue || ''}`.trim();
   if (!source) return '';
 
-  return tagTitle(source.split(',')[0]);
+  return tagDisplayTitle(source.split(',')[0]);
 }
 
 function toDisplayDate(value) {
@@ -75,7 +75,7 @@ function createText(tagName, className, text) {
   return element;
 }
 
-export default function decorate(block) {
+export default async function decorate(block) {
   const existing = block.querySelector(':scope > .hero-article-detail-content');
   if (existing) {
     existing.remove();
@@ -96,7 +96,7 @@ export default function decorate(block) {
   const authorName = getMetaValue('article-author-name');
   const authorDescription = getMetaValue('article-author-description');
   const authorImage = getMetaValue('article-author-image');
-  const category = toCategoryLabel(getMetaValue('article-category'));
+  const category = await toCategoryLabel(getMetaValue('article-category'));
   const publicationDate = toDisplayDate(getMetaValue('article-publication-date'));
   const readTime = getMetaValue('article-read-time').toUpperCase();
 

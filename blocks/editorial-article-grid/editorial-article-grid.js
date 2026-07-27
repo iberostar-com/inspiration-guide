@@ -1,5 +1,6 @@
 import { createResponsiveImage } from '../../scripts/iberostar/media.js';
 import { tagTitle } from '../../scripts/iberostar/tag-label.js';
+import { taxonomyTitle } from '../../scripts/iberostar/taxonomy.js';
 import { getArticles, normalizeArticlePath } from '../../scripts/inspiration-data.js';
 import { moveInstrumentation } from '../../scripts/scripts.js';
 
@@ -333,6 +334,7 @@ function toResolvedCardItem(article) {
     imageAlt: article.imageAlt || '',
     title: article.title || '',
     category: getLeafCategoryLabel(article.categoryPath || article.category),
+    categoryRef: article.categoryUrl || article.categoryPath,
   };
 }
 
@@ -367,6 +369,7 @@ async function fetchArticleCardItem(refPath) {
             || doc.querySelector('title')?.textContent?.trim()
             || '',
           category: getLeafCategoryLabel(category),
+          categoryRef: category,
         };
       } catch (e) {
         return null;
@@ -481,6 +484,7 @@ function parseLegacyManualItem(row, index) {
     imageAlt: img?.alt || '',
     title,
     category: getLeafCategoryLabel(rawCategory) || rawCategory,
+    categoryRef: rawCategory,
     picture,
     sourceRow: row,
     sortOrder: index,
@@ -582,8 +586,7 @@ function createCard(item, config) {
   const body = document.createElement('div');
   body.className = 'editorial-article-grid-card-body';
 
-  const rawPretitle = item.pretitle || item.category;
-  const pretitleText = getLeafCategoryLabel(rawPretitle) || rawPretitle;
+  const pretitleText = item.pretitle || item.category;
   if (pretitleText) {
     body.append(createTag('p', 'editorial-article-grid-card-pretitle', pretitleText));
   }
@@ -705,6 +708,13 @@ export default async function decorate(block) {
   const items = config.mode === 'manual'
     ? await getManualItems(block)
     : await getAutoArticles(config.mode);
+
+  // Prefer the Title of each category landing page; keep the slug-derived label
+  // when the landing does not exist.
+  await Promise.all(items.filter(Boolean).map(async (item) => {
+    const title = await taxonomyTitle(item.categoryRef);
+    if (title) item.category = title;
+  }));
 
   if (!hasRenderableCards(items)) {
     block.classList.add('editorial-article-grid-empty');
