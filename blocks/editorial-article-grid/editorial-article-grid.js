@@ -156,6 +156,30 @@ function unique(values) {
   return [...new Set(values.filter(Boolean))];
 }
 
+function normalizeFetchPath(path) {
+  const base = `${path || ''}`
+    .trim()
+    .split(/[?#]/, 1)[0]
+    .replace(/\/+/g, '/')
+    .replace(/\.html$/i, '')
+    .replace(/\.plain\.html$/i, '')
+    .replace(/\/$/, '');
+
+  if (!base) return '';
+  return base.startsWith('/') ? base : `/${base}`;
+}
+
+function withHtmlVariants(path) {
+  const base = normalizeFetchPath(path);
+  if (!base) return [];
+
+  return [
+    base,
+    `${base}.html`,
+    `${base}.plain.html`,
+  ];
+}
+
 function toFetchCandidates(refPath) {
   const rawValue = `${refPath || ''}`.trim();
   if (!rawValue) return [];
@@ -169,12 +193,15 @@ function toFetchCandidates(refPath) {
     }
   }
 
+  const fromContentRoot = rawPath.replace(/^\/content\/inspiration-guide(?:\/|$)/i, '/');
   const normalized = normalizePath(rawPath);
-  const publicFromContent = normalizePath(rawPath.replace(/^\/content\/inspiration-guide(?:\/|$)/i, '/'));
+  const normalizedFromContentRoot = normalizePath(fromContentRoot);
 
   return unique([
-    normalized,
-    publicFromContent,
+    ...withHtmlVariants(rawPath),
+    ...withHtmlVariants(fromContentRoot),
+    ...withHtmlVariants(normalized),
+    ...withHtmlVariants(normalizedFromContentRoot),
   ]);
 }
 
