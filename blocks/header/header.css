@@ -206,10 +206,12 @@ header nav:not([data-view='root']) .nav-item.is-open > .nav-subpanel {
 }
 
 header nav .nav-breadcrumb {
+  box-sizing: border-box;
   display: flex;
   align-items: center;
   height: 40px;
-  padding: 8px 16px;
+  margin: 42px 0;
+  padding: 0 16px;
 }
 
 header nav .nav-breadcrumb-back {
@@ -247,7 +249,9 @@ header nav .nav-viewall {
   display: flex;
   align-items: center;
   gap: 8px;
-  padding: 16px;
+
+  /* el padding lateral lo pone .nav-accordion: asi queda alineado con los destinos */
+  padding: 16px 0;
   color: #1b2828;
   font-family: inter, sans-serif;
   font-size: 16px;
@@ -326,7 +330,7 @@ header nav .nav-util--lang .nav-chevron {
   }
 
   header nav .nav-breadcrumb {
-    padding: 8px 24px;
+    padding: 0 24px;
   }
 
   header nav .nav-accordion {
@@ -335,10 +339,6 @@ header nav .nav-util--lang .nav-chevron {
 
   header nav .nav-accordion .nav-stripe {
     padding: 12px 0 16px;
-  }
-
-  header nav .nav-viewall {
-    padding: 16px 24px;
   }
 }
 
