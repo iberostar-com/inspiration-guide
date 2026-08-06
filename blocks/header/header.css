@@ -52,6 +52,9 @@ header nav .nav-logo {
   display: inline-flex;
   align-items: center;
   gap: 8px;
+  height: 24px;
+  width: 24px;
+  justify-content: center;
 }
 
 header nav .nav-logo--desktop {
@@ -64,8 +67,9 @@ header nav .nav-logo svg {
 }
 
 header nav .nav-logo--mobile img {
-  height: 24px;
-  width: auto;
+  width: 20.571px;
+  height: 16.898px;
+  aspect-ratio: 28/23;
 }
 
 header nav .nav-logo-mark {
