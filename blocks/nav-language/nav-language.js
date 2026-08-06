@@ -70,7 +70,7 @@ function resolveOptionUrl(value) {
   if (!LOCALE_CODE.test(raw)) return raw;
 
   const locale = raw.toLowerCase();
-  return `/${GUIDE_SEGMENT}/${locale}/`;
+  return `/${locale}/${GUIDE_SEGMENT}/`;
 }
 
 function createOptionData(row) {
