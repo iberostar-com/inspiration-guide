@@ -14,21 +14,6 @@ import {
 const LOCALE_CODE = /^[a-z]{2}-[a-z]{2}$/i;
 const GUIDE_SEGMENT = 'inspiration-guide';
 
-// Authored trigger labels are used only when they already look like a short
-// code ("ESP", "ES"); free text like "ES | Español" falls back to the map.
-const SHORT_LANG_LABEL = /^[a-z]{2,3}$/i;
-
-// 3-letter language codes shown in the trigger, like iberostar.com (ESP | EUR).
-const LANG_CODE_3 = {
-  de: 'DEU',
-  en: 'ENG',
-  es: 'ESP',
-  fr: 'FRA',
-  it: 'ITA',
-  pt: 'POR',
-  ru: 'RUS',
-};
-
 let instanceCounter = 0;
 
 function getPropElement(container, prop) {
@@ -133,17 +118,6 @@ function findActiveOption(options) {
   if (byLocale) return byLocale;
 
   return options.find((option) => normalizePathname(option.url) === currentPath);
-}
-
-function getLangCode(locale) {
-  const [lang = ''] = `${locale || ''}`.toLowerCase().split('-');
-  return LANG_CODE_3[lang] || (lang ? lang.toUpperCase() : 'ESP');
-}
-
-function getOptionLangCode(option) {
-  const segments = normalizePathname(option?.url || '').split('/').filter(Boolean);
-  const locale = segments.find((segment) => LOCALE_CODE.test(segment));
-  return locale ? getLangCode(locale) : option?.label || '';
 }
 
 function hideSourceRows(rows) {
@@ -295,9 +269,12 @@ export default async function decorate(block) {
     || getTextFromField(fieldRows[0])
     || block.getAttribute('data-label');
 
-  const currentLabel = (authoredLabel && SHORT_LANG_LABEL.test(authoredLabel))
-    ? authoredLabel.toUpperCase()
-    : getLangCode(getLocaleFromPath());
+  // Like iberostar.com, the trigger shows the full label of the active
+  // language option ("English US | EUR"); authored label is the fallback.
+  const currentLabel = activeOption?.label
+    || authoredLabel
+    || options[0]?.label
+    || 'Español';
 
   const currencyEnabled = isCurrencySelectorEnabled();
   const selectedCurrency = currencyEnabled ? getSelectedCurrency() : '';
@@ -391,7 +368,7 @@ export default async function decorate(block) {
     // Reflect the chosen language in the trigger before navigating.
     optionLink.addEventListener('click', () => {
       const langSpan = trigger.querySelector('.nav-language-trigger-lang');
-      if (langSpan) langSpan.textContent = getOptionLangCode(option) || option.label;
+      if (langSpan) langSpan.textContent = option.label;
     });
 
     optionsContainer.append(optionLink);
