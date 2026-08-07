@@ -25,6 +25,19 @@
     { "Key": "hotelPricePersonSingular", "Text": "persona" },
     { "Key": "hotelPricePersonPlural", "Text": "personas" },
     { "Key": "chooseLanguage", "Text": "Selecciona un idioma" },
+    { "Key": "chooseCurrency", "Text": "Selecciona una moneda" },
+    { "Key": "languageTabLabel", "Text": "Idioma" },
+    { "Key": "currencyTabLabel", "Text": "Moneda" },
+    { "Key": "currencyNameEUR", "Text": "Euro" },
+    { "Key": "currencyNameTND", "Text": "Dinar tunecino" },
+    { "Key": "currencyNameMAD", "Text": "Dírham marroquí" },
+    { "Key": "currencyNameCAD", "Text": "Dólar canadiense" },
+    { "Key": "currencyNameUSD", "Text": "Dólar estadounidense" },
+    { "Key": "currencyNameCHF", "Text": "Franco suizo" },
+    { "Key": "currencyNameGBP", "Text": "Libra esterlina" },
+    { "Key": "currencyNameCLP", "Text": "Peso chileno" },
+    { "Key": "currencyNameMXN", "Text": "Peso mexicano" },
+    { "Key": "currencyNameBRL", "Text": "Real brasileño" },
     { "Key": "close", "Text": "Cerrar" }
   ]
 }

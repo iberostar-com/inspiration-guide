@@ -286,6 +286,15 @@ export function createHotelMiniCard(hotel, variant = 'horizontal') {
     const price = document.createElement('p');
     price.className = 'hotel-mini-card-price';
     price.textContent = hotel.priceFrom;
+
+    // Base (unconverted) price from the API, used to re-render the line when
+    // the visitor changes currency. Manual cards don't provide priceData.
+    if (Number.isFinite(hotel.priceData?.base?.amount) && hotel.priceData?.base?.currency) {
+      price.dataset.priceAmount = `${hotel.priceData.base.amount}`;
+      price.dataset.priceCurrency = hotel.priceData.base.currency;
+      price.dataset.priceAdults = `${hotel.priceData.adults || 2}`;
+    }
+
     action.append(price);
   }
 

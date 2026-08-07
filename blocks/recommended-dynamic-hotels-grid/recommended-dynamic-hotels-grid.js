@@ -6,9 +6,12 @@ import { toPageHref } from '../../scripts/iberostar/page-links.js';
 import {
   fetchHotelByCode,
   fetchHotelPriceByCode,
-  getLocaleTagFromPath,
   isValidHotelCode,
 } from '../../scripts/iberostar/hotels-api.js';
+import {
+  getHotelPriceData,
+  initHotelPriceLiveUpdate,
+} from '../../scripts/iberostar/hotel-price-line.js';
 import { moveInstrumentation } from '../../scripts/scripts.js';
 
 const DEFAULT_VISIBLE_COUNT = 4;
@@ -430,49 +433,6 @@ function createEmptyState(message) {
   return empty;
 }
 
-function formatCurrencyValue(value, currency) {
-  if (!Number.isFinite(value) || !currency) return '';
-
-  const locale = getLocaleTagFromPath();
-  return new Intl.NumberFormat(locale, {
-    currency,
-    maximumFractionDigits: 0,
-    minimumFractionDigits: 0,
-    style: 'currency',
-  }).format(Math.round(value));
-}
-
-async function getPriceText(hotel, hotelCode, endpointPrice = null) {
-  const [prefix, perNightLabel, personSingular, personPlural] = await Promise.all([
-    getPlaceholder('hotelPriceFromPrefix', 'Desde'),
-    getPlaceholder('hotelPricePerNight', '/ noche'),
-    getPlaceholder('hotelPricePersonSingular', 'persona'),
-    getPlaceholder('hotelPricePersonPlural', 'personas'),
-  ]);
-
-  const resolvedEndpointPrice = endpointPrice || await fetchHotelPriceByCode(hotelCode);
-  const fallbackPrice = Number.isFinite(hotel?.estimatedMinPrice)
-    ? {
-      currency: hotel?.estimatedMinCurrency || '',
-      defaultOccupancy: { adults: 2, children: [] },
-      priceFrom: hotel.estimatedMinPrice,
-    }
-    : null;
-  const selectedPrice = resolvedEndpointPrice || fallbackPrice;
-
-  if (!selectedPrice?.currency || !Number.isFinite(selectedPrice?.priceFrom)) return '';
-
-  const adults = selectedPrice?.defaultOccupancy?.adults || 2;
-  const peopleLabel = adults === 1 ? personSingular : personPlural;
-  const formattedPrice = formatCurrencyValue(selectedPrice.priceFrom, selectedPrice.currency);
-
-  return [prefix, formattedPrice, `${adults} ${peopleLabel}`, perNightLabel]
-    .filter(Boolean)
-    .join(' ')
-    .replace(/\s+/g, ' ')
-    .trim();
-}
-
 function createList(entries, labels) {
   const list = document.createElement('ul');
   list.className = 'recommended-dynamic-hotels-list';
@@ -515,6 +475,7 @@ function createList(entries, labels) {
 }
 
 export default async function decorate(block) {
+  initHotelPriceLiveUpdate();
   const existing = block.querySelector(':scope > .recommended-dynamic-hotels-grid-rendered');
   if (existing) {
     existing.sliderCleanup?.();
@@ -594,7 +555,7 @@ export default async function decorate(block) {
         const hotelWithPrice = price
           ? { ...hotel, estimatedMinPrice: price.priceFrom, estimatedMinCurrency: price.currency }
           : hotel;
-        const priceFrom = await getPriceText(hotelWithPrice, hotelCode, price);
+        const priceData = await getHotelPriceData(hotelWithPrice, hotelCode, price);
         const fallbackHref = createHotelHref(hotel);
         return {
           hotelData: {
@@ -604,7 +565,8 @@ export default async function decorate(block) {
             imageAlt: hotel.title || '',
             location: destination || hotel.destination || '',
             name: hotel.title || '',
-            priceFrom,
+            priceFrom: priceData?.text || '',
+            priceData,
             stars: hotel.stars || 0,
             tagLabel: tagLabel || '',
             target,

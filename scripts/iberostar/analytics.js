@@ -376,6 +376,25 @@ function handleLanguageOption(actionable) {
   return true;
 }
 
+function handleCurrencyOption(actionable) {
+  const option = actionable.closest('.nav-language-currency-button');
+  if (!option) return false;
+
+  const code = `${option.dataset.currency || ''}`.trim().toUpperCase();
+  trackLink({
+    tealium_event: 'change_currency',
+    event_cat: 'page info',
+    event_act: 'change currency',
+    event_lbl: normalize(code),
+    event_purpose: 'information',
+    event_structure: languageContext,
+    module_name: 'intra module',
+    module_content: 'information',
+    ...(code ? { page_currency: code } : {}),
+  });
+  return true;
+}
+
 function handleHeaderClick(actionable) {
   if (!actionable.closest('header')) return false;
   if (actionable.closest('.nav-language-trigger')) return true;
@@ -660,10 +679,14 @@ function getProductId(item, name) {
 function readProduct(item, index) {
   const title = item.querySelector('.hotel-mini-card-title');
   const name = sanitizeValue(getCleanText(title));
+  const priceEl = item.querySelector('.hotel-mini-card-price');
   return {
     id: getProductId(item, name),
     name,
-    price: parsePrice(item.querySelector('.hotel-mini-card-price')?.textContent),
+    // product_unit_price must stay in the market base currency: prefer the
+    // base amount stamped by the dynamic blocks over the displayed text,
+    // which may be converted to the visitor-selected currency.
+    price: priceEl?.dataset.priceAmount || parsePrice(priceEl?.textContent),
     position: `${index + 1}`,
     stars: item.dataset.analyticsStars || '',
     location: textOf(item.querySelector('.hotel-mini-card-location')),
@@ -841,6 +864,7 @@ function initNewsletterTracking() {
 
 const CLICK_HANDLERS = [
   handleLanguageOption,
+  handleCurrencyOption,
   handleHeaderClick,
   handleFooterClick,
   handleHotelSelect,
