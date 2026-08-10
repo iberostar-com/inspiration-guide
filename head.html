@@ -4,6 +4,37 @@
   move-to-http-header="true"
 >
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
+<meta name="description" content=""/>
+<meta property="og:title" content=""/>
+<meta property="og:description" content=""/>
+<meta property="og:type" content="website"/>
+<meta property="twitter:card" content="summary_large_image"/>
+<meta property="twitter:title" content=""/>
+<meta property="twitter:description" content=""/>
+<script nonce="aem">
+  // Inject SEO metadata from page properties
+  (function setSeoMetadata() {
+    const metaTitle = document.querySelector('meta[name="meta-title"]')?.content || 
+                      document.querySelector('meta[property="og:title"]')?.content ||
+                      document.querySelector('meta[name="jcr:title"]')?.content || 
+                      '';
+    const metaDesc = document.querySelector('meta[name="meta-description"]')?.content || 
+                     document.querySelector('meta[name="jcr:description"]')?.content || 
+                     '';
+
+    if (metaTitle) {
+      document.title = metaTitle;
+      document.querySelector('meta[property="og:title"]').setAttribute('content', metaTitle);
+      document.querySelector('meta[property="twitter:title"]').setAttribute('content', metaTitle);
+    }
+
+    if (metaDesc) {
+      document.querySelector('meta[name="description"]').setAttribute('content', metaDesc);
+      document.querySelector('meta[property="og:description"]').setAttribute('content', metaDesc);
+      document.querySelector('meta[property="twitter:description"]').setAttribute('content', metaDesc);
+    }
+  })();
+</script>
 <script nonce="aem" src="/scripts/aem.js" type="module"></script>
 <script nonce="aem" src="/scripts/scripts.js" type="module"></script>
 <link rel="stylesheet" href="/styles/styles.css"/>

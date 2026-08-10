@@ -23,6 +23,20 @@
           "label": "Keywords"
         },
         {
+          "component": "text",
+          "valueType": "string",
+          "name": "meta-title",
+          "label": "Meta Title (SEO)",
+          "description": "Title tag for search engines (max 60 chars)"
+        },
+        {
+          "component": "text",
+          "valueType": "string",
+          "name": "meta-description",
+          "label": "Meta Description (SEO)",
+          "description": "Meta description for search engines (max 160 chars)"
+        },
+        {
           "component": "aem-content",
           "name": "nav",
           "label": "Header Fragment Path"
