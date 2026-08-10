@@ -92,6 +92,18 @@ const CLOUD_ENVIRONMENT_OVERRIDES = [
 
 const DEFAULT_CLOUD_ENVIRONMENT = 'stage';
 
+const GRS_HOST_ENVIRONMENT = {
+  'aem-grspre.iberostar.com': 'stage',
+  'aem-grsdev.iberostar.com': 'dev',
+  'aem-grsqa.iberostar.com': 'qa',
+};
+
+const SAME_ORIGIN_CURRENCY_ENDPOINT = '/content/dam/iberostar-com/shared-data/jsons/currency-exchange-rates.json';
+
+function isGrsHost(hostname = window.location.hostname) {
+  return Boolean(GRS_HOST_ENVIRONMENT[`${hostname || ''}`.toLowerCase()]);
+}
+
 const ENVIRONMENT_CONFIG = {
   local: {
     currency: {
@@ -151,6 +163,9 @@ function getConfiguredCloudEnvironment(hostname = window.location.hostname) {
     return fromMeta;
   }
 
+  const grsEnvironment = GRS_HOST_ENVIRONMENT[`${hostname || ''}`.toLowerCase()];
+  if (grsEnvironment) return grsEnvironment;
+
   const fromHostname = CLOUD_ENVIRONMENT_OVERRIDES
     .find(({ pattern }) => pattern.test(hostname))?.key;
   return fromHostname || DEFAULT_CLOUD_ENVIRONMENT;
@@ -187,7 +202,7 @@ function getEnvironmentConfig(hostname = window.location.hostname) {
   const overrides = ENVIRONMENT_CONFIG[key] || {};
   const cloudOverrides = getCloudEnvironmentOverrides(hostname);
 
-  return {
+  const config = {
     ...DEFAULT_CONFIG,
     ...overrides,
     ...cloudOverrides,
@@ -212,6 +227,15 @@ function getEnvironmentConfig(hostname = window.location.hostname) {
       ...(cloudOverrides.currency || {}),
     },
   };
+
+  if (isGrsHost(hostname)) {
+    config.currency = {
+      ...config.currency,
+      exchangeRatesEndpoint: SAME_ORIGIN_CURRENCY_ENDPOINT,
+    };
+  }
+
+  return config;
 }
 
 export default getEnvironmentConfig;
