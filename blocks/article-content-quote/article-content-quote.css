@@ -26,7 +26,7 @@ main .article-content-quote .article-content-quote-rendered > * {
 
 main .article-content-quote .article-content-quote-attribution {
   color: #1b2828;
-  font-family: Inter, sans-serif;
+  font-family: var(--body-font-family);
   font-size: 14px;
   font-style: normal;
   font-weight: 500;

@@ -85,7 +85,7 @@ main .article-content-video .article-content-video-embed {
 main .article-content-video .article-content-video-caption {
   margin-block: 8px 0;
   color: #636363;
-  font-family: Inter, sans-serif;
+  font-family: var(--body-font-family);
   font-size: 12px;
   font-style: italic;
   font-weight: 400;

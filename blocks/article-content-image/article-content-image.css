@@ -27,7 +27,7 @@ main .article-content-image .article-content-image-figure img {
 
 main .article-content-image .article-content-image-caption {
   color: #636363;
-  font-family: Inter, sans-serif;
+  font-family: var(--body-font-family);
   font-size: 12px;
   font-weight: 400;
   line-height: 1.4;

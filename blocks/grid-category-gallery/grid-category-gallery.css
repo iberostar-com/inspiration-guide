@@ -43,7 +43,7 @@ main .grid-category-gallery .grid-category-gallery-header-text {
 main .grid-category-gallery .grid-category-gallery-heading {
   margin: 0;
   color: #1b2828;
-  font-family: noe-display, serif;
+  font-family: var(--heading-font-family);
   font-size: 28px;
   font-weight: 400;
   line-height: 38px;
@@ -53,7 +53,7 @@ main .grid-category-gallery .grid-category-gallery-subheading {
   order: -1;
   margin: 0;
   color: #1b2828;
-  font-family: inter, sans-serif;
+  font-family: var(--body-font-family);
   font-size: 12px;
   font-weight: 500;
   letter-spacing: 0.24px;
@@ -68,7 +68,7 @@ main .grid-category-gallery .grid-category-gallery-cta {
   align-items: center;
   gap: 8px;
   color: #1b2828;
-  font-family: inter, sans-serif;
+  font-family: var(--body-font-family);
   font-size: 16px;
   font-weight: 500;
   line-height: 1.4;
@@ -181,7 +181,7 @@ main .grid-category-gallery .grid-category-gallery-body {
 main .grid-category-gallery .grid-category-gallery-subtitle {
   margin: 0;
   color: #fff;
-  font-family: inter, sans-serif;
+  font-family: var(--body-font-family);
   font-size: 12px;
   font-weight: 500;
   letter-spacing: 0.24px;
@@ -192,7 +192,7 @@ main .grid-category-gallery .grid-category-gallery-subtitle {
 main .grid-category-gallery .grid-category-gallery-title {
   margin: 0;
   color: #fff;
-  font-family: noe-display, serif;
+  font-family: var(--heading-font-family);
   font-size: 24px;
   font-weight: 400;
   line-height: 32px;

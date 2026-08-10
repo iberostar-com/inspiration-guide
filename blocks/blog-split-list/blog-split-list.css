@@ -5,7 +5,7 @@ main .blog-split-list {
   --blog-split-radius: 4px;
 
   color: var(--blog-split-text);
-  font-family: inter, sans-serif;
+  font-family: var(--body-font-family);
 }
 
 main .blog-split-list .blog-split-list-source {
@@ -127,7 +127,7 @@ main .blog-split-list .blog-split-item h3 {
 }
 
 main .blog-split-list .blog-split-featured h2 {
-  font-family: noe-display, serif;
+  font-family: var(--heading-font-family);
   font-size: 32px;
   font-weight: 400;
   line-height: 42px;
@@ -221,7 +221,7 @@ main .blog-split-list .blog-split-item-body {
 }
 
 main .blog-split-list .blog-split-item h3 {
-  font-family: inter, sans-serif;
+  font-family: var(--body-font-family);
   font-size: 18px;
   font-weight: 500;
   line-height: 1.4;

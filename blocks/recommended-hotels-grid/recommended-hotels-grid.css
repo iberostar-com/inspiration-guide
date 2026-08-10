@@ -36,7 +36,7 @@ main .recommended-hotels-grid .recommended-hotels-grid-copy {
 main .recommended-hotels-grid .recommended-hotels-grid-eyebrow {
   margin: 0;
   color: #1b2828;
-  font-family: Inter, sans-serif;
+  font-family: var(--body-font-family);
   font-size: 12px;
   font-weight: 500;
   letter-spacing: 0.24px;
@@ -47,7 +47,7 @@ main .recommended-hotels-grid .recommended-hotels-grid-eyebrow {
 main .recommended-hotels-grid .recommended-hotels-grid-title {
   margin: 0;
   color: #1b2828;
-  font-family: "Noe Display", serif;
+  font-family: var(--heading-font-family);
   font-size: 28px;
   font-weight: 400;
   line-height: 38px;
@@ -58,7 +58,7 @@ main .recommended-hotels-grid .recommended-hotels-grid-cta {
   width: fit-content;
   align-items: center;
   color: #1b2828;
-  font-family: Inter, sans-serif;
+  font-family: var(--body-font-family);
   font-size: 14px;
   font-weight: 500;
   line-height: 1.4;
@@ -93,7 +93,7 @@ main .recommended-hotels-grid .recommended-hotels-empty {
   margin: 0;
   padding: 0 16px;
   color: #636363;
-  font-family: Inter, sans-serif;
+  font-family: var(--body-font-family);
   font-size: 14px;
   font-style: italic;
 }
@@ -228,7 +228,7 @@ main .recommended-hotels-grid .recommended-hotels-dot:focus-visible {
 
   main .recommended-hotels-grid .recommended-hotels-status {
     color: #1b2828;
-    font-family: Inter, sans-serif;
+    font-family: var(--body-font-family);
     font-size: 14px;
     font-weight: 400;
     line-height: 1.4;

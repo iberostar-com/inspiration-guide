@@ -10,7 +10,7 @@ header .nav-backdrop {
 }
 
 header nav {
-  font-family: inter, sans-serif;
+  font-family: var(--body-font-family);
   color: #1b2828;
 }
 
@@ -157,7 +157,7 @@ header nav .nav-stripe {
   border: 0;
   background: transparent;
   color: #1b2828;
-  font-family: inter, sans-serif;
+  font-family: var(--body-font-family);
   font-size: 16px;
   font-weight: 400;
   line-height: 140%;
@@ -222,7 +222,7 @@ header nav .nav-breadcrumb-back {
   border: 0;
   background: transparent;
   color: #1b2828;
-  font-family: inter, sans-serif;
+  font-family: var(--body-font-family);
   font-size: 14px;
   font-weight: 500;
   line-height: 140%;
@@ -253,7 +253,7 @@ header nav .nav-viewall {
   /* el padding lateral lo pone .nav-accordion: asi queda alineado con los destinos */
   padding: 16px 0;
   color: #1b2828;
-  font-family: inter, sans-serif;
+  font-family: var(--body-font-family);
   font-size: 16px;
   font-weight: 500;
   line-height: 140%;
@@ -293,7 +293,7 @@ header nav .nav-util--lang {
   border: 0;
   background: transparent;
   color: #1b2828;
-  font-family: inter, sans-serif;
+  font-family: var(--body-font-family);
   font-size: 16px;
   font-weight: 400;
   line-height: 140%;
