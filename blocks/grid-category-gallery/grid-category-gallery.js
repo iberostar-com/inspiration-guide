@@ -212,7 +212,7 @@ function createCard(row) {
   body.className = 'grid-category-gallery-body';
 
   if (pretitle) {
-    const subtitleEl = document.createElement('p');
+    const subtitleEl = document.createElement('h2');
     subtitleEl.className = 'grid-category-gallery-subtitle';
     subtitleEl.textContent = pretitle;
     body.append(subtitleEl);
@@ -333,7 +333,7 @@ export default function decorate(block) {
     }
 
     if (subtitle) {
-      const subtitleEl = document.createElement('h2');
+      const subtitleEl = document.createElement('p');
       subtitleEl.className = 'grid-category-gallery-subheading';
       subtitleEl.textContent = subtitle;
       headerText.append(subtitleEl);
