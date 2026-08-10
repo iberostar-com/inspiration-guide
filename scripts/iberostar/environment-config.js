@@ -233,6 +233,14 @@ function getEnvironmentConfig(hostname = window.location.hostname) {
       ...config.currency,
       exchangeRatesEndpoint: SAME_ORIGIN_CURRENCY_ENDPOINT,
     };
+    config.hotels = {
+      ...config.hotels,
+      graphqlHost: '',
+    };
+    config.dynamicMedia = {
+      ...config.dynamicMedia,
+      assetHost: '',
+    };
   }
 
   return config;
