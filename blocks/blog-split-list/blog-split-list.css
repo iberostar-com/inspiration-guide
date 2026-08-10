@@ -163,6 +163,11 @@ main .blog-split-list .blog-split-description {
   line-height: 1.4;
 }
 
+/* Figma: los items de lista no muestran descripción (el destacado sí) */
+main .blog-split-list .blog-split-item .blog-split-description {
+  display: none;
+}
+
 main .blog-split-list .blog-split-featured-cta,
 main .blog-split-list .blog-split-item-cta {
   display: inline-flex;
