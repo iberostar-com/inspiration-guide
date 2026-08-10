@@ -333,7 +333,7 @@ export default function decorate(block) {
     }
 
     if (subtitle) {
-      const subtitleEl = document.createElement('p');
+      const subtitleEl = document.createElement('h2');
       subtitleEl.className = 'grid-category-gallery-subheading';
       subtitleEl.textContent = subtitle;
       headerText.append(subtitleEl);
