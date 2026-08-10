@@ -121,6 +121,30 @@ async function buildAutoItems(block) {
   return items;
 }
 
+function getBackLink(items) {
+  // Bug 166013 (mobile): un único back-link al padre directo, como en el resto de Iberostar.com
+  if (items.length < 2) return null;
+  const parent = items[items.length - 2];
+  return parent?.url ? parent : null;
+}
+
+function renderBackLink(back) {
+  const link = document.createElement('a');
+  link.className = 'breadcrumbs-back';
+  link.href = back.url;
+
+  const icon = document.createElement('i');
+  icon.className = 'ibh-icon-arrow-back';
+  icon.setAttribute('aria-hidden', 'true');
+
+  const label = document.createElement('span');
+  label.className = 'breadcrumbs-back-label';
+  label.textContent = back.label;
+
+  link.append(icon, label);
+  return link;
+}
+
 function createBreadcrumbItem(item, isLast) {
   const li = document.createElement('li');
   li.className = 'breadcrumbs-item';
@@ -144,6 +168,9 @@ function renderBreadcrumbs(items) {
   const nav = document.createElement('nav');
   nav.className = 'breadcrumbs-rendered';
   nav.setAttribute('aria-label', 'Breadcrumb');
+
+  const back = getBackLink(items);
+  if (back) nav.append(renderBackLink(back));
 
   const list = document.createElement('ol');
   list.className = 'breadcrumbs-list';

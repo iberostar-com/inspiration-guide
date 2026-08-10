@@ -11,8 +11,28 @@ main .breadcrumbs .breadcrumbs-rendered {
   padding: 12px 0;
 }
 
+/* Bug 166013 — Figma mobile: solo back-link al padre; la ruta completa aparece desde 820px */
+main .breadcrumbs .breadcrumbs-back {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 4px 8px 4px 0;
+  color: #1b2828;
+  font-size: 0.875rem;
+  font-weight: 500;
+  line-height: 1.4;
+  text-decoration: none;
+}
+
+main .breadcrumbs .breadcrumbs-back:hover,
+main .breadcrumbs .breadcrumbs-back:focus-visible {
+  color: #1b2828;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
 main .breadcrumbs .breadcrumbs-list {
-  display: flex;
+  display: none;
   flex-wrap: wrap;
   align-items: center;
   gap: 0;
@@ -55,6 +75,14 @@ main .breadcrumbs .breadcrumbs-item [aria-current="page"] {
 @media (width >= 820px) {
   main .breadcrumbs .breadcrumbs-rendered {
     padding: 16px 0;
+  }
+
+  main .breadcrumbs .breadcrumbs-back {
+    display: none;
+  }
+
+  main .breadcrumbs .breadcrumbs-list {
+    display: flex;
   }
 
   main .breadcrumbs .breadcrumbs-item {
