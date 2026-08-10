@@ -129,18 +129,29 @@ function manualItems(block) {
   });
 }
 
+function articleTimestamp(article) {
+  const ts = Number.parseInt(article.publicationTimestamp, 10);
+  if (Number.isFinite(ts) && ts) return ts;
+  const parsed = Date.parse(article.publicationDate || article.publishDate || '');
+  return Number.isFinite(parsed) ? parsed : 0;
+}
+
+function sortArticles(articles, order) {
+  return [...articles].sort((a, b) => (order === 'oldest'
+    ? articleTimestamp(a) - articleTimestamp(b)
+    : articleTimestamp(b) - articleTimestamp(a)));
+}
+
 async function autoItems(block, source) {
   const all = await getArticles();
   if (source === 'auto-tag') {
     const tag = getContextTag();
-    return all
-      .filter((article) => !tag || article.tags.includes(tag))
+    return sortArticles(all.filter((article) => !tag || article.tags.includes(tag)), 'newest')
       .map((article) => ({ ...article, href: article.href || `/article/${article.id}` }));
   }
   if (source === 'auto-category') {
     const category = getCurrentCategory(block);
-    return all
-      .filter((article) => articleMatchesCategory(article, category))
+    return sortArticles(all.filter((article) => articleMatchesCategory(article, category)), 'newest')
       .map((article) => ({ ...article, href: article.href || `/article/${article.id}` }));
   }
   return [];
@@ -356,19 +367,6 @@ const TAG_SORTS = [
 
 function sortButtonLabel(label) {
   return `${SORT_PREFIX} ${label.charAt(0).toLowerCase()}${label.slice(1)}`;
-}
-
-function articleTimestamp(article) {
-  const ts = Number.parseInt(article.publicationTimestamp, 10);
-  if (Number.isFinite(ts) && ts) return ts;
-  const parsed = Date.parse(article.publicationDate || article.publishDate || '');
-  return Number.isFinite(parsed) ? parsed : 0;
-}
-
-function sortArticles(articles, order) {
-  return [...articles].sort((a, b) => (order === 'oldest'
-    ? articleTimestamp(a) - articleTimestamp(b)
-    : articleTimestamp(b) - articleTimestamp(a)));
 }
 
 function articleHasTag(article, tag) {
