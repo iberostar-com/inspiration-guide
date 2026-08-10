@@ -88,7 +88,7 @@ main .blog-split-list .blog-split-badge {
   min-height: 32px;
   max-width: calc(100% - 24px);
   border-radius: 100px;
-  padding: 4px 16px;
+  padding: 4px 20px;
   background: var(--blog-split-chip-bg);
   color: var(--blog-split-text);
   font-size: 14px;
