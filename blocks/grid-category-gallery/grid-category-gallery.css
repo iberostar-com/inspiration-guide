@@ -297,6 +297,11 @@ main .grid-category-gallery .grid-category-gallery-dot.is-active {
     justify-content: space-between;
   }
 
+  /* Figma M/L/XL: el texto nunca invade el CTA (197px) ni su gap (16px) */
+  main .grid-category-gallery .grid-category-gallery-header-text {
+    max-width: calc(100% - 222px);
+  }
+
   main .grid-category-gallery .grid-category-gallery-heading {
     font-size: 32px;
     line-height: 42px;
