@@ -128,7 +128,12 @@ function buildChips(tags, tagParentPage) {
     chip.href = appendPageSegment(tagParentPage, tagSlug(tagPath));
     chip.textContent = label;
     chip.setAttribute('rel', 'tag');
-    return chip;
+
+    // SEO: cada tag va dentro de un h3 (Bug 167097)
+    const heading = document.createElement('h3');
+    heading.className = 'topic-tag-cloud-chip-heading';
+    heading.append(chip);
+    return heading;
   }));
 }
 
@@ -161,7 +166,8 @@ export default async function decorate(block) {
   rendered.className = 'topic-tag-cloud-rendered';
 
   if (title) {
-    const label = document.createElement('p');
+    // SEO: el título del módulo es un h2 (Bug 167097)
+    const label = document.createElement('h2');
     label.className = 'topic-tag-cloud-label';
     label.textContent = title;
     rendered.append(label);

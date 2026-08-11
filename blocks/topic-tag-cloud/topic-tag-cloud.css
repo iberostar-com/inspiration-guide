@@ -33,6 +33,12 @@ main > .section:has(.topic-tag-cloud) > div {
   gap: 12px 8px;
 }
 
+/* Bug 167097 — el h3 es solo envoltorio SEO del chip, sin estilos de heading */
+.topic-tag-cloud .topic-tag-cloud-chip-heading {
+  margin: 0;
+  font: inherit;
+}
+
 .topic-tag-cloud-chip {
   box-sizing: border-box;
   display: inline-flex;
