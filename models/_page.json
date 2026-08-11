@@ -26,15 +26,13 @@
           "component": "text",
           "valueType": "string",
           "name": "meta-title",
-          "label": "Meta Title (SEO)",
-          "description": "Title tag for search engines (max 60 chars)"
+          "label": "Meta Title (SEO)"
         },
         {
           "component": "text",
           "valueType": "string",
           "name": "meta-description",
-          "label": "Meta Description (SEO)",
-          "description": "Meta description for search engines (max 160 chars)"
+          "label": "Meta Description (SEO)"
         },
         {
           "component": "aem-content",
