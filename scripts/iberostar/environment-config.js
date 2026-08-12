@@ -77,13 +77,19 @@ const CLOUD_ENVIRONMENT_OVERRIDES = [
     pattern: /(?:-e1898096\.|main--inspiration-guide-qa--iberostar-com\.aem\.(?:live|page)$)/i,
     overrides: {
       hotels: {
-        graphqlHost: 'https://author-p179213-e1898096.adobeaemcloud.com',
+        graphqlHost: 'https://publish-p179213-e1898096.adobeaemcloud.com',
       },
       currency: {
+        // QA EDS consume desde un origen .aem.live/.aem.page distinto al
+        // publish de AEMaaCS; mientras publish no exponga CORS para ese origen,
+        // se desactiva selector para evitar errores de red en consola.
+        // Se puede forzar por pagina con metadata "currency-selector: on"
+        // cuando la politica CORS ya este habilitada.
+        enabled: false,
         exchangeRatesEndpoint: 'https://publish-p179213-e1898096.adobeaemcloud.com/content/dam/iberostar-com/shared-data/jsons/currency-exchange-rates.json',
       },
       dynamicMedia: {
-        assetHost: 'https://author-p179213-e1898096.adobeaemcloud.com',
+        assetHost: 'https://publish-p179213-e1898096.adobeaemcloud.com',
         imageServer: 'https://delivery-p179213-e1898096.adobeaemcloud.com',
       },
     },
