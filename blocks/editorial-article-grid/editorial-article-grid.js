@@ -9,6 +9,7 @@ const CTA_COPY = 'Leer artículo';
 const MODE_VALUES = new Set(['manual', 'auto-tag', 'auto-category']);
 const HEADING_TAGS = new Set(['p', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6']);
 const LINK_TARGETS = new Set(['_self', '_blank']);
+const LOCALE_PATTERN = /^\/[a-z]{2}-[a-z]{2}(?:\/|$)/i;
 const LEGACY_CONFIG_PROP_ORDER = [
   'eyebrow',
   'eyebrowHeading',
@@ -140,6 +141,28 @@ function sanitizeMode(value) {
 function sanitizeLinkTarget(value) {
   const target = `${value || ''}`.trim().toLowerCase();
   return LINK_TARGETS.has(target) ? target : '_self';
+}
+
+function getCurrentLocale() {
+  const segments = window.location.pathname.split('/').filter(Boolean);
+  const locale = segments.find((segment) => /^[a-z]{2}-[a-z]{2}$/i.test(segment));
+  return locale?.toLowerCase() || '';
+}
+
+function getArticleLocale(article) {
+  const rawPath = article?.path || article?.url || article?.href || '';
+  const normalized = `${rawPath || ''}`.trim();
+  if (!normalized) return '';
+
+  const path = normalizePath(normalized);
+  return (path.match(LOCALE_PATTERN)?.[0] || '').replaceAll('/', '').toLowerCase();
+}
+
+function filterArticlesByCurrentLocale(articles) {
+  const currentLocale = getCurrentLocale();
+  if (!currentLocale) return articles;
+
+  return articles.filter((article) => getArticleLocale(article) === currentLocale);
 }
 
 function getMetaContent(name) {
@@ -432,7 +455,7 @@ function getFallbackTitle(sourceProp, refPath) {
 }
 
 async function getAutoArticles(mode) {
-  const all = await safeGetVisibleArticles();
+  const all = filterArticlesByCurrentLocale(await safeGetVisibleArticles());
   const currentArticle = extractCurrentArticle(all);
   const currentPath = normalizePath(window.location.pathname);
   const withoutCurrent = all.filter(

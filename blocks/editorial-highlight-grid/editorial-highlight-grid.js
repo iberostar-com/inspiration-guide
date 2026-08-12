@@ -10,6 +10,37 @@ import { moveInstrumentation } from '../../scripts/scripts.js';
 
 const HEADING_TAGS = new Set(['h2', 'h3', 'h4', 'h5', 'h6']);
 const CARD_CTA = 'Leer artículo';
+const LOCALE_PATTERN = /^\/[a-z]{2}-[a-z]{2}(?:\/|$)/i;
+
+function getCurrentLocale() {
+  const segments = window.location.pathname.split('/').filter(Boolean);
+  const locale = segments.find((segment) => /^[a-z]{2}-[a-z]{2}$/i.test(segment));
+  return locale?.toLowerCase() || '';
+}
+
+function getArticleLocale(article) {
+  const rawPath = article?.path || article?.url || article?.href || '';
+  const normalized = `${rawPath || ''}`.trim();
+  if (!normalized) return '';
+
+  try {
+    const pathname = new URL(normalized, window.location.origin).pathname || '';
+    const match = pathname.match(LOCALE_PATTERN)?.[0] || '';
+    return match.replaceAll('/', '').toLowerCase();
+  } catch {
+    return '';
+  }
+}
+
+function filterArticlesByCurrentLocale(articles) {
+  const currentLocale = getCurrentLocale();
+  if (!currentLocale) return articles;
+
+  return articles.filter((article) => {
+    const articleLocale = getArticleLocale(article);
+    return articleLocale === currentLocale;
+  });
+}
 
 // ---------- source rows ----------
 
@@ -143,7 +174,7 @@ function sortArticles(articles, order) {
 }
 
 async function autoItems(block, source) {
-  const all = await getArticles();
+  const all = filterArticlesByCurrentLocale(await getArticles());
   if (source === 'auto-tag') {
     const tag = getContextTag();
     return sortArticles(all.filter((article) => !tag || article.tags.includes(tag)), 'newest')
@@ -505,7 +536,7 @@ function buildFeed(block, matched, pageSize) {
 }
 
 async function decorateTag(block) {
-  const all = await getArticles();
+  const all = filterArticlesByCurrentLocale(await getArticles());
 
   if (getArticleRows(block).length) {
     renderManualGrid(block, all);
@@ -520,7 +551,7 @@ async function decorateTag(block) {
 }
 
 async function decorateCategory(block) {
-  const all = await getArticles();
+  const all = filterArticlesByCurrentLocale(await getArticles());
 
   if (getArticleRows(block).length) {
     renderManualGrid(block, all);

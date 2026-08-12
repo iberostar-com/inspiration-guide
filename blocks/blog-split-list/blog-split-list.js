@@ -35,6 +35,7 @@ const RESERVED_PROPS = new Set([
 
 const DATA_MODES = new Set(['manual', 'auto-category', 'auto-filter', 'auto-tag']);
 const RENDER_TAGS = new Set(['p', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6']);
+const LOCALE_PATTERN = /^\/[a-z]{2}-[a-z]{2}(?:\/|$)/i;
 
 const POSITIONAL_PROP_CANDIDATES = {
   featuredLabel: [0],
@@ -345,6 +346,20 @@ function getCurrentLocale() {
   return locale || document.documentElement.lang || 'en';
 }
 
+function getArticleLocale(article = {}) {
+  const rawPath = article.path || article.url || article.href || '';
+  const normalizedPath = toPublicContentPath(rawPath);
+  const match = `${normalizedPath || ''}`.match(LOCALE_PATTERN)?.[0] || '';
+  return match.replaceAll('/', '').toLowerCase();
+}
+
+function filterArticlesByCurrentLocale(articles = []) {
+  const currentLocale = getCurrentLocale().toLowerCase();
+  if (!/^[a-z]{2}-[a-z]{2}$/.test(currentLocale)) return articles;
+
+  return articles.filter((article) => getArticleLocale(article) === currentLocale);
+}
+
 function formatDate(value) {
   if (!value) return '';
   if (!hasValidDate(value)) return value;
@@ -549,9 +564,9 @@ function getFeaturedReference(block) {
 }
 
 async function getAutoItems(block, mode, maxItems) {
-  const articles = (await getArticles())
+  const articles = filterArticlesByCurrentLocale((await getArticles())
     .map(normalizeArticle)
-    .filter(isRenderableArticle);
+    .filter(isRenderableArticle));
   const featuredPath = toPublicContentPath(getFeaturedReference(block));
   const sortedArticles = sortArticles(articles);
   const filtered = sortArticles(filterArticles(articles, block, mode));
