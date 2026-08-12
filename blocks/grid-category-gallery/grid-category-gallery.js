@@ -203,7 +203,10 @@ function createCard(row) {
     media.append(createResponsiveImage(
       imageSrc,
       imageAlt,
-      { preset: 'category-card' },
+      {
+        dynamicMediaEnabled: true,
+        preset: 'category-card',
+      },
     ));
     card.append(media);
   }

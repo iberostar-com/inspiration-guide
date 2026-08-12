@@ -89,12 +89,15 @@ function attachImageFallback(image, fallbackSrc) {
   });
 }
 
-function getDynamicMediaConfig() {
+function getDynamicMediaConfig(options = {}) {
   const environmentConfig = getEnvironmentConfig();
   const environmentDynamicMedia = environmentConfig.dynamicMedia || {};
+  const forcedEnabled = typeof options.dynamicMediaEnabled === 'boolean'
+    ? options.dynamicMediaEnabled
+    : null;
 
   return {
-    enabled: normalizeBoolean(
+    enabled: forcedEnabled ?? normalizeBoolean(
       getMetaContent('dynamic-media-enabled'),
       normalizeBoolean(
         `${window.hlx?.dynamicMediaEnabled || ''}`,
@@ -244,6 +247,7 @@ function createDynamicMediaPicture(src, alt, options, preset, config) {
   );
   attachImageFallback(image, src);
   image.addEventListener('error', () => {
+    if (image.dataset.imageFallbackApplied === 'true') return;
     if (image.dataset.dynamicMediaFallback === 'true') return;
 
     image.dataset.dynamicMediaFallback = 'true';
@@ -263,7 +267,7 @@ export function createResponsiveImage(src, alt, eagerOrOptions, breakpoints) {
   const fallbackBreakpoints = options.breakpoints
     || preset.fallbackBreakpoints
     || DEFAULT_BREAKPOINTS;
-  const dynamicMediaConfig = getDynamicMediaConfig();
+  const dynamicMediaConfig = getDynamicMediaConfig(options);
   const resolvedSrc = resolveDamAssetUrl(normalizedSrc, dynamicMediaConfig);
 
   if (!normalizedSrc) {

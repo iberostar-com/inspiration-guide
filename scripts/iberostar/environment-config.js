@@ -13,9 +13,9 @@ const DEFAULT_CONFIG = {
     utagSrc: 'https://tags.iberostar.com/core/prod/utag.js',
   },
   dynamicMedia: {
-    enabled: false,
+    enabled: true,
     imageServer: 'https://delivery-p179213-e1886364.adobeaemcloud.com',
-    company: '',
+    company: 'BALEARDEINVERSIONESFINANCIERASSL',
     damRoot: '/content/dam',
     stripExtension: true,
     assetHost: 'https://publish-p179213-e1886364.adobeaemcloud.com',
@@ -116,7 +116,7 @@ const ENVIRONMENT_CONFIG = {
   },
   author: {
     dynamicMedia: {
-      enabled: false,
+      enabled: true,
       imageServer: 'https://delivery-p179213-e1886364.adobeaemcloud.com',
       company: 'BALEARDEINVERSIONESFINANCIERASSL',
       damRoot: '/content/dam',
@@ -126,7 +126,7 @@ const ENVIRONMENT_CONFIG = {
   },
   preview: {
     dynamicMedia: {
-      enabled: false,
+      enabled: true,
       imageServer: 'https://delivery-p179213-e1886364.adobeaemcloud.com',
       company: 'BALEARDEINVERSIONESFINANCIERASSL',
       damRoot: '/content/dam',
@@ -136,7 +136,7 @@ const ENVIRONMENT_CONFIG = {
   },
   live: {
     dynamicMedia: {
-      enabled: false,
+      enabled: true,
       imageServer: 'https://delivery-p179213-e1886364.adobeaemcloud.com',
       company: 'BALEARDEINVERSIONESFINANCIERASSL',
       damRoot: '/content/dam',
