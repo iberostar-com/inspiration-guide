@@ -13,7 +13,7 @@ const DEFAULT_CONFIG = {
     utagSrc: 'https://tags.iberostar.com/core/prod/utag.js',
   },
   dynamicMedia: {
-    enabled: true,
+    enabled: false,
     imageServer: 'https://delivery-p179213-e1886364.adobeaemcloud.com',
     company: 'BALEARDEINVERSIONESFINANCIERASSL',
     damRoot: '/content/dam',
@@ -51,6 +51,7 @@ const CLOUD_ENVIRONMENT_OVERRIDES = [
       // repite aqui para que el fixture local (ENVIRONMENT_CONFIG.local)
       // no quede pisado por el override cloud por defecto.
       dynamicMedia: {
+        enabled: false,
         assetHost: 'https://publish-p179213-e1886364.adobeaemcloud.com',
         imageServer: 'https://delivery-p179213-e1886364.adobeaemcloud.com',
       },
@@ -67,6 +68,7 @@ const CLOUD_ENVIRONMENT_OVERRIDES = [
         exchangeRatesEndpoint: 'https://publish-p179213-e1898042.adobeaemcloud.com/content/dam/iberostar-com/shared-data/jsons/currency-exchange-rates.json',
       },
       dynamicMedia: {
+        enabled: false,
         assetHost: 'https://publish-p179213-e1898042.adobeaemcloud.com',
         imageServer: 'https://delivery-p179213-e1898042.adobeaemcloud.com',
       },
@@ -89,6 +91,7 @@ const CLOUD_ENVIRONMENT_OVERRIDES = [
         exchangeRatesEndpoint: 'https://publish-p179213-e1898096.adobeaemcloud.com/content/dam/iberostar-com/shared-data/jsons/currency-exchange-rates.json',
       },
       dynamicMedia: {
+        enabled: false,
         assetHost: 'https://publish-p179213-e1898096.adobeaemcloud.com',
         imageServer: 'https://delivery-p179213-e1898096.adobeaemcloud.com',
       },
@@ -116,7 +119,7 @@ const ENVIRONMENT_CONFIG = {
   },
   author: {
     dynamicMedia: {
-      enabled: true,
+      enabled: false,
       imageServer: 'https://delivery-p179213-e1886364.adobeaemcloud.com',
       company: 'BALEARDEINVERSIONESFINANCIERASSL',
       damRoot: '/content/dam',
@@ -126,7 +129,7 @@ const ENVIRONMENT_CONFIG = {
   },
   preview: {
     dynamicMedia: {
-      enabled: true,
+      enabled: false,
       imageServer: 'https://delivery-p179213-e1886364.adobeaemcloud.com',
       company: 'BALEARDEINVERSIONESFINANCIERASSL',
       damRoot: '/content/dam',
@@ -136,7 +139,7 @@ const ENVIRONMENT_CONFIG = {
   },
   live: {
     dynamicMedia: {
-      enabled: true,
+      enabled: false,
       imageServer: 'https://delivery-p179213-e1886364.adobeaemcloud.com',
       company: 'BALEARDEINVERSIONESFINANCIERASSL',
       damRoot: '/content/dam',
