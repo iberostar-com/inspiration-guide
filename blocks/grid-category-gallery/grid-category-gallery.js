@@ -204,7 +204,6 @@ function createCard(row) {
       imageSrc,
       imageAlt,
       {
-        dynamicMediaEnabled: true,
         preset: 'category-card',
       },
     ));
