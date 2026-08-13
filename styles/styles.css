@@ -325,10 +325,12 @@ body.page-article main > .article-layout-shell {
 }
 
 body.page-article main > .article-layout-shell .section {
+  min-width: 0;
   margin: 0;
 }
 
 body.page-article main > .article-layout-shell .section > div {
+  min-width: 0;
   max-width: unset;
   margin: 0;
   padding: 0;
@@ -348,10 +350,12 @@ body.page-article main.article-layout-author {
 }
 
 body.page-article main.article-layout-author > .section {
+  min-width: 0;
   margin: 0;
 }
 
 body.page-article main.article-layout-author > .section > div {
+  min-width: 0;
   max-width: unset;
   margin: 0;
   padding: 0;
