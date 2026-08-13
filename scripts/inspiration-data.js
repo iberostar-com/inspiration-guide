@@ -766,7 +766,8 @@ function buildTagFrequency(articles) {
   return frequency;
 }
 
-async function enrichSparseArticles(articles = []) {
+async function enrichSparseArticles(articles = [], options = {}) {
+  const { discardUnresolved = false } = options;
   const enriched = await Promise.all(
     articles.map(async (article, index) => {
       const needsEnrichment = !article.title
@@ -788,12 +789,13 @@ async function enrichSparseArticles(articles = []) {
           index,
         );
       } catch (error) {
+        if (discardUnresolved) return null;
         return article;
       }
     }),
   );
 
-  return enriched;
+  return enriched.filter(Boolean);
 }
 
 async function getAemArticles() {
@@ -818,7 +820,9 @@ async function getAemArticles() {
         .map((article, index) => normalizeArticle(article, index))
         .filter((article) => article.id && article.visible);
 
-      const enriched = await enrichSparseArticles(normalized);
+      const enriched = await enrichSparseArticles(normalized, {
+        discardUnresolved: isPageIndexUrl(currentUrl),
+      });
       const results = enriched.filter(isCompleteArticle);
 
       if (results.length > 0) {

@@ -826,7 +826,6 @@ export default async function decorate(block) {
 
   const mode = getConfiguredMode(block);
   const maxItems = getConfiguredMaxItems(block);
-  const authoringPage = isAuthoringPage(block);
   // Authored headings are optional: an empty field renders no heading at all,
   // so a page can show a single title instead of one per column.
   const featuredTitle = getTextValue(block, 'featuredLabel', '');
@@ -840,18 +839,13 @@ export default async function decorate(block) {
     || await getTranslation('readArticle', 'Leer artículo')
     || await getPlaceholder('readArticle', 'Leer artículo');
   const featuredReference = getFeaturedReference(block);
-  let items = [];
-  const manualItems = fromManualRows(block);
-
-  if (manualItems.length) {
-    items = splitManualItems(manualItems, maxItems, featuredReference);
-  } else if (mode !== 'manual' && !authoringPage) {
-    items = await getAutoItems(block, mode, maxItems);
-  }
+  let items = mode === 'manual'
+    ? splitManualItems(fromManualRows(block), maxItems, featuredReference)
+    : await getAutoItems(block, mode, maxItems);
 
   // Manual source without authored article rows still honours the featured
   // article reference, resolving the rest of the list from the article index.
-  if (!items.length && mode === 'manual' && featuredReference && !authoringPage) {
+  if (!items.length && mode === 'manual' && featuredReference) {
     items = await getAutoItems(block, 'auto-filter', maxItems);
   }
 
