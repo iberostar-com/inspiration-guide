@@ -16,3 +16,4 @@ helix-importer-ui
 .vscode/*
 .github/*
 .tmp/*
+.claude/*/*.md
