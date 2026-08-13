@@ -1,3 +1,13 @@
+/* Figma 24254:38168 — el breadcrumb lleva su propio inset lateral, fijo desde el
+   borde y ajeno a la rejilla del contenido. Se fija sobre el wrapper porque los
+   bloques full-bleed de la seccion (grid-category-gallery) anulan el padding de
+   todos los wrappers hermanos con `:has(...) > div`; el `:has(.breadcrumbs)`
+   iguala esa especificidad para que no dependa del orden de carga de los bloques. */
+main > .section:has(.breadcrumbs) > .breadcrumbs-wrapper {
+  max-width: none;
+  padding-inline: 16px;
+}
+
 main .breadcrumbs {
   color: #1b2828;
   font-family: var(--body-font-family);
@@ -27,6 +37,12 @@ main .breadcrumbs .breadcrumbs-back {
 main .breadcrumbs .breadcrumbs-back:hover,
 main .breadcrumbs .breadcrumbs-back:focus-visible {
   color: #1b2828;
+  text-decoration: none;
+}
+
+/* El subrayado se aplica solo al texto: la flecha no debe quedar subrayada */
+main .breadcrumbs .breadcrumbs-back:hover .breadcrumbs-back-label,
+main .breadcrumbs .breadcrumbs-back:focus-visible .breadcrumbs-back-label {
   text-decoration: underline;
   text-underline-offset: 3px;
 }
@@ -49,8 +65,9 @@ main .breadcrumbs .breadcrumbs-item {
   line-height: 1.4;
 }
 
+/* Figma: gap de 8px a cada lado del separador */
 main .breadcrumbs .breadcrumbs-item:not(:last-child)::after {
-  margin: 0 6px;
+  margin: 0 8px;
   color: #aaa;
   content: "/";
 }
@@ -70,6 +87,12 @@ main .breadcrumbs .breadcrumbs-item a:focus-visible {
 main .breadcrumbs .breadcrumbs-item [aria-current="page"] {
   color: #1b2828;
   font-weight: 500;
+}
+
+@media (width >= 576px) {
+  main > .section:has(.breadcrumbs) > .breadcrumbs-wrapper {
+    padding-inline: 24px;
+  }
 }
 
 @media (width >= 820px) {

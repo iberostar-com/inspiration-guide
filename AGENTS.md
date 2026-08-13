@@ -232,6 +232,13 @@ For EDS/XWalk block implementation:
 - Use array methods like map, find, forEach.
 - Always end files with a newline.
 
+For git commits:
+- Never mention AI models, AI assistants or their vendors (Anthropic, Claude, OpenAI, GitHub
+  Copilot, Cursor, Gemini, etc.) in commit messages, PR titles or PR descriptions.
+- Never credit any third-party company, agency or tool as the author of the code.
+- Do not add Co-Authored-By trailers for AI assistants, nor "Generated with ..." footers.
+- No emojis or AI-tooling badges. Write the message as a human developer of the project would.
+
 For Figma work:
 - Use Figma MCP when a Figma node URL or selection is provided.
 - Extract layout, typography, spacing, colors and responsive behavior from Figma.

@@ -503,6 +503,8 @@ function buildFeed(block, matched, pageSize) {
 
   optionButtons.forEach((optionButton, index) => {
     optionButton.addEventListener('click', () => {
+      // changing the order restarts the feed on the first page
+      if (state.order !== TAG_SORTS[index].value) state.shown = pageSize;
       state.order = TAG_SORTS[index].value;
       sortLabel.textContent = sortButtonLabel(TAG_SORTS[index].label);
       sortButton.setAttribute('aria-expanded', 'false');

@@ -1,7 +1,6 @@
 import { getMetadata } from '../../scripts/aem.js';
 import { tagTitle } from '../../scripts/iberostar/tag-label.js';
 import { getTranslation } from '../../scripts/iberostar/i18n.js';
-import { getPlaceholder } from '../../scripts/iberostar/placeholders.js';
 
 const LOCALE_PATTERN = /^[a-z]{2}-[a-z]{2}$/i;
 const CONTENT_PREFIX_PATTERN = /^\/content\/[^/]+/;
@@ -19,6 +18,13 @@ const SEGMENT_LABEL_FALLBACKS = {
   category: 'Categorías',
   tag: 'Tags',
 };
+
+// Bug 169657: /category, /tag y /articles son segmentos de enrutado, no niveles de navegacion.
+// Solo se muestran cuando el usuario esta en su propia pagina indice.
+const ROUTING_SEGMENTS = Object.keys(SEGMENT_LABEL_KEYS);
+
+const GUIDE_SEGMENT = 'inspiration-guide';
+const GUIDE_LABEL_FALLBACK = 'Inspiration Guide';
 
 function normalizePath(path) {
   const { pathname } = new URL(path || window.location.pathname, window.location);
@@ -55,16 +61,20 @@ function getCurrentLocale(segments) {
   return segments.find((segment) => LOCALE_PATTERN.test(segment)) || '';
 }
 
+function getLocaleRoot(locale) {
+  return locale ? `/${locale}` : '/';
+}
+
 function getGuideRoot(path) {
   const segments = path.split('/').filter(Boolean);
   const locale = getCurrentLocale(segments);
-  const guideIndex = segments.indexOf('inspiration-guide');
+  const guideIndex = segments.indexOf(GUIDE_SEGMENT);
 
   if (guideIndex > -1) {
     return `/${segments.slice(0, guideIndex + 1).join('/')}`;
   }
 
-  return locale ? `/${locale}` : '/';
+  return getLocaleRoot(locale);
 }
 
 function toLabel(segment) {
@@ -83,35 +93,50 @@ async function getLocalizedSegmentLabel(segment) {
   if (!key) return toLabel(segment);
 
   const fallback = SEGMENT_LABEL_FALLBACKS[segment] || toLabel(segment);
-  return getTranslation(key, fallback) || getPlaceholder(key, fallback);
+  return getTranslation(key, fallback);
 }
 
 async function buildAutoItems(block) {
   const path = normalizePath(window.location.pathname);
   const segments = path.split('/').filter(Boolean);
   const locale = getCurrentLocale(segments);
-  const guideIndex = segments.indexOf('inspiration-guide');
-  const visibleSegments = guideIndex > -1 ? segments.slice(guideIndex + 1) : segments
+  const guideIndex = segments.indexOf(GUIDE_SEGMENT);
+  const insideGuide = guideIndex > -1;
+  const guideRoot = getGuideRoot(path);
+  const visibleSegments = insideGuide ? segments.slice(guideIndex + 1) : segments
     .filter((segment) => !LOCALE_PATTERN.test(segment));
+  const lastIndex = visibleSegments.length - 1;
+  const basePath = insideGuide ? guideRoot : getLocaleRoot(locale).replace(/\/$/, '');
   const homeLabel = getTextValue(
     block,
     'homeLabel',
-    await getTranslation('breadcrumbHome', 'Inicio') || await getPlaceholder('breadcrumbHome', 'Inicio'),
+    await getTranslation('breadcrumbHome', 'Inicio'),
   );
-  const homeUrl = normalizePath(getHrefValue(block, 'homeUrl', getGuideRoot(path)));
+  const homeUrl = normalizePath(getHrefValue(block, 'homeUrl', getLocaleRoot(locale)));
   const currentLabel = getTextValue(block, 'currentLabel', getTitleFallback());
   const items = [{ label: homeLabel, url: homeUrl }];
-  const baseSegments = locale ? [locale, 'inspiration-guide'] : ['inspiration-guide'];
+
+  if (insideGuide) {
+    items.push({
+      label: await getTranslation('breadcrumbGuide', GUIDE_LABEL_FALLBACK),
+      url: guideRoot,
+    });
+  }
 
   const labels = await Promise.all(visibleSegments.map((segment, index) => {
-    if (index === visibleSegments.length - 1 && currentLabel) {
+    if (SEGMENT_LABEL_KEYS[segment]) {
+      return getLocalizedSegmentLabel(segment);
+    }
+    if (index === lastIndex && currentLabel) {
       return currentLabel;
     }
-    return getLocalizedSegmentLabel(segment);
+    return toLabel(segment);
   }));
 
   visibleSegments.forEach((segment, index) => {
-    const url = `/${[...baseSegments, ...visibleSegments.slice(0, index + 1)].join('/')}`;
+    if (index !== lastIndex && ROUTING_SEGMENTS.includes(segment)) return;
+
+    const url = `${basePath}/${visibleSegments.slice(0, index + 1).join('/')}`;
     items.push({
       label: labels[index] || toLabel(segment),
       url,

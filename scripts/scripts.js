@@ -192,6 +192,47 @@ function applyArticleTwoColumnLayout(main) {
   }
 }
 
+const SIDEBAR_ANCHOR_SELECTOR = '.article-main-image, .article-content-image';
+
+/**
+ * Aligns the top of the sticky sidebar with the first image of the article.
+ * The offset is exposed as `--article-sidebar-offset` and only used on wide viewports.
+ * @param {Element} shell The article layout shell
+ */
+function updateArticleSidebarOffset(shell) {
+  const isTwoColumn = window.matchMedia('(width >= 1440px)').matches;
+  const anchor = shell.querySelector(`.article-layout-main ${SIDEBAR_ANCHOR_SELECTOR}`);
+
+  if (!isTwoColumn || !anchor) {
+    shell.style.removeProperty('--article-sidebar-offset');
+    return;
+  }
+
+  // the main column is start aligned, so its position does not change with the offset applied
+  const offset = anchor.getBoundingClientRect().top - shell.getBoundingClientRect().top;
+
+  shell.style.setProperty('--article-sidebar-offset', `${Math.max(0, Math.round(offset))}px`);
+}
+
+/**
+ * Keeps the sticky sidebar aligned when the article content reflows.
+ * @param {Element} main The main element
+ */
+function initArticleSidebarAlignment(main) {
+  const shells = [...main.querySelectorAll(':scope > .article-layout-shell')];
+  if (!shells.length) return;
+
+  const update = () => shells.forEach((shell) => updateArticleSidebarOffset(shell));
+  update();
+
+  if (window.ResizeObserver) {
+    const observer = new ResizeObserver(() => update());
+    shells.forEach((shell) => observer.observe(shell.querySelector('.article-layout-main')));
+  }
+
+  window.addEventListener('resize', update);
+}
+
 /**
  * Decorates the main element.
  * @param {Element} main The main element
@@ -250,6 +291,7 @@ async function loadLazy(doc) {
   const main = doc.querySelector('main');
   await loadSections(main);
   decoratePageLinks(main);
+  initArticleSidebarAlignment(main);
 
   const { hash } = window.location;
   const element = hash ? doc.getElementById(hash.substring(1)) : false;
