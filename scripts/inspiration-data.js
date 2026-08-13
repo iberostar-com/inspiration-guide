@@ -775,7 +775,11 @@ async function enrichSparseArticles(articles = [], options = {}) {
         || !article.image
         || !article.description;
 
-      if (!needsEnrichment || !article.path || article.path === '#') {
+      if (!article.path || article.path === '#') {
+        return discardUnresolved ? null : article;
+      }
+
+      if (!needsEnrichment && !discardUnresolved) {
         return article;
       }
 
