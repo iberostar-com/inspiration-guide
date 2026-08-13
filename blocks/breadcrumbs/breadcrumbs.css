@@ -27,6 +27,12 @@ main .breadcrumbs .breadcrumbs-back {
 main .breadcrumbs .breadcrumbs-back:hover,
 main .breadcrumbs .breadcrumbs-back:focus-visible {
   color: #1b2828;
+  text-decoration: none;
+}
+
+/* El subrayado se aplica solo al texto: la flecha no debe quedar subrayada */
+main .breadcrumbs .breadcrumbs-back:hover .breadcrumbs-back-label,
+main .breadcrumbs .breadcrumbs-back:focus-visible .breadcrumbs-back-label {
   text-decoration: underline;
   text-underline-offset: 3px;
 }
