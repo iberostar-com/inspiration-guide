@@ -1,6 +1,9 @@
 import { tagTitle } from '../../scripts/iberostar/tag-label.js';
 
-const HEADING_TAGS = new Set(['h1', 'h2', 'h3']);
+// levels an author may have configured in content
+const HEADING_TOKENS = new Set(['h1', 'h2', 'h3']);
+// levels we actually render (h1 is reserved for the page title)
+const HEADING_TAGS = new Set(['h2', 'h3']);
 
 function getSourceRows(block) {
   return [...block.children].filter((row) => !row.classList.contains('hero-tag-name-rendered'));
@@ -13,6 +16,10 @@ function propText(block, prop) {
 function sanitizeHeading(value, fallback) {
   const tag = `${value || fallback}`.trim().toLowerCase();
   return HEADING_TAGS.has(tag) ? tag : fallback;
+}
+
+function isHeadingToken(text) {
+  return !!text && HEADING_TOKENS.has(text);
 }
 
 function getPageMeta(name) {
@@ -48,13 +55,13 @@ export default function decorate(block) {
   const rows = getSourceRows(block);
   const levels = rows
     .map((row) => row.textContent?.trim().toLowerCase())
-    .filter((text) => HEADING_TAGS.has(text));
-  const headingTag = sanitizeHeading(propText(block, 'titleHeading') || levels[0], 'h1');
+    .filter((text) => isHeadingToken(text));
+  const headingTag = sanitizeHeading(propText(block, 'titleHeading') || levels[0], 'h2');
 
   const authored = propText(block, 'title')
     || rows.find((row) => {
       const text = row.textContent?.trim().toLowerCase();
-      return text && !HEADING_TAGS.has(text);
+      return text && !isHeadingToken(text);
     })?.textContent?.trim()
     || '';
   const title = authored || tagLabel(getCurrentTag());
