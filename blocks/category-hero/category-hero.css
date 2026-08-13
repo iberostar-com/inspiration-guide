@@ -4,6 +4,12 @@ main > .section > .category-hero-wrapper {
   padding: 0;
 }
 
+/* El separador cierra el hero, así que cuando el bloque siguiente comparte
+   sección no hay margen de sección que lo despegue del título de la lista. */
+main > .section > .category-hero-wrapper:not(:last-child) {
+  margin-bottom: 40px;
+}
+
 main .category-hero .category-hero-source {
   display: none;
 }
