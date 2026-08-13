@@ -389,6 +389,18 @@ body.page-article main.article-layout-author > .section > div {
   body.page-article main.article-layout-author > .section:not(.article-main, .article-sidebar) {
     grid-column: 1 / -1;
   }
+
+  /* the sidebar starts aligned with the article image and sticks from there down */
+  body.page-article main > .article-layout-shell .article-layout-sidebar {
+    align-content: start;
+    align-self: stretch;
+    padding-top: var(--article-sidebar-offset, 0);
+  }
+
+  body.page-article main > .article-layout-shell .article-layout-sidebar > .section {
+    position: sticky;
+    top: 24px;
+  }
 }
 
 /* section metadata */
