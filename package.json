@@ -4,7 +4,8 @@
   "version": "1.3.0",
   "description": "Starter project for Adobe Helix",
   "scripts": {
-    "dev": "cross-env AEM_OPEN=/es-es/inspiration-guide/ npx @adobe/aem-cli up --url https://main--inspiration-guide-dev--iberostar-com.aem.page",
+    "dev": "cross-env AEM_OPEN=/es-es/inspiration-guide/ npx @adobe/aem-cli up --url https://develop--inspiration-guide-dev--iberostar-com.aem.page",
+    "qa": "cross-env AEM_OPEN=/es-es/inspiration-guide/ npx @adobe/aem-cli up --url https://qa--inspiration-guide-qa--iberostar-com.aem.page",
     "prod": "cross-env AEM_OPEN=/es-es/inspiration-guide/ npx @adobe/aem-cli up --url https://main--inspiration-guide--iberostar-com.aem.page",
     "lint:js": "eslint . --ext .json,.js,.mjs",
     "lint:css": "stylelint \"blocks/**/*.css\" \"styles/*.css\"",
