@@ -32,6 +32,7 @@ main .category-hero .category-hero-content {
   align-items: center;
   gap: 16px;
   width: 100%;
+  max-width: 793px;
 }
 
 main .category-hero .category-hero-heading {
