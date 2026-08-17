@@ -5,6 +5,7 @@ import { getPlaceholder } from '../../scripts/iberostar/placeholders.js';
 import { toPageHref } from '../../scripts/iberostar/page-links.js';
 import {
   buildHotelPublicUrl,
+  buildHotelsPublicIndexUrl,
   fetchHotelByCode,
   fetchHotelPriceByCode,
   isValidHotelCode,
@@ -126,16 +127,25 @@ function normalizeTarget(value) {
   return `${value || ''}`.trim().toLowerCase() === '_blank' ? '_blank' : '_self';
 }
 
-function getCtaConfig(block) {
+function getLocaleSegment(pathname = window.location.pathname) {
+  const segments = `${pathname || ''}`.split('/').filter(Boolean);
+  const segment = segments.find((item) => /^[a-z]{2}-[a-z]{2}$/i.test(item));
+  return segment ? segment.toLowerCase() : '';
+}
+
+function getCtaConfig(block, fallbackText) {
   const field = getConfigField(block, 'gridCta_linkTarget', 'data-cta-link-target');
   const anchor = getAnchor(field);
   const target = anchor?.getAttribute('target')
     || getConfigValue(block, 'gridCta_linkTarget', 'data-cta-link-target');
+  const localeSegment = getLocaleSegment();
 
   return {
-    href: getConfigHref(block, 'gridCta_link', 'data-cta-link'),
+    href: getConfigHref(block, 'gridCta_link', 'data-cta-link')
+      || buildHotelsPublicIndexUrl(localeSegment),
     target: normalizeTarget(target),
-    text: getConfigValue(block, 'gridCta_linkText', 'data-cta-link-text'),
+    text: getConfigValue(block, 'gridCta_linkText', 'data-cta-link-text')
+      || fallbackText,
   };
 }
 
@@ -157,12 +167,6 @@ function getText(field) {
 function isDebugEnabled() {
   const query = new URLSearchParams(window.location.search).get('hotel-api-debug');
   return query === '1' || query?.toLowerCase() === 'true';
-}
-
-function getLocaleSegment(pathname = window.location.pathname) {
-  const segments = `${pathname || ''}`.split('/').filter(Boolean);
-  const segment = segments.find((item) => /^[a-z]{2}-[a-z]{2}$/i.test(item));
-  return segment ? segment.toLowerCase() : '';
 }
 
 function createHotelHref(hotel) {
@@ -515,17 +519,19 @@ export default async function decorate(block) {
     next,
     goTo,
     of,
+    viewAllHotels,
   ] = await Promise.all([
     getPlaceholder('hotelsCarousel', 'Recommended hotels'),
     getPlaceholder('carouselPrevious', 'Previous hotels'),
     getPlaceholder('carouselNext', 'Next hotels'),
     getPlaceholder('carouselGoTo', 'Go to hotel group'),
     getPlaceholder('carouselOf', 'of'),
+    getPlaceholder('viewAllHotels', 'View all hotels'),
   ]);
 
   const labels = {
     carousel,
-    cta: getCtaConfig(block),
+    cta: getCtaConfig(block, viewAllHotels),
     eyebrow: getConfigValue(block, 'eyebrow', 'data-eyebrow'),
     goTo,
     next,
