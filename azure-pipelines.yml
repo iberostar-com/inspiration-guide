@@ -11,6 +11,15 @@ pr: none
 variables:
   - group: 'azure-aem'
 
+  - ${{ if eq(variables['Build.SourceBranchName'], 'main') }}:
+      - group: 'p84-grscms-stage'
+
+  - ${{ if eq(variables['Build.SourceBranchName'], 'qa') }}:
+      - group: 'p84-grscms-qa'
+
+  - ${{ if eq(variables['Build.SourceBranchName'], 'develop') }}:
+      - group: 'p84-grscms-develop'
+
   - name: agentPoolName
     value: 'P38 CMS AgentPool'
 
@@ -169,3 +178,41 @@ stages:
               CM_GIT_USERNAME: $(CM_GIT_USERNAME)
               CM_GIT_PASSWORD: $(CM_GIT_PASSWORD)
               CM_GIT_REPO_URL_IS: $(CM_GIT_REPO_URL_IS)
+
+  # ── STAGE 4: Purge AEM CDN ─────────────────
+
+  - stage: PurgeCDN
+    displayName: 'Purge AEM CDN'
+    dependsOn: MirrorPush_CloudManager_Merge
+    condition: |
+      and(
+        succeeded('MirrorPush_CloudManager_Merge'),
+        eq(variables['Build.SourceBranchName'], 'main')
+      )
+    jobs:
+      - job: PurgeCDN
+        displayName: 'Purge AEM CDN'
+        steps:
+          - checkout: none
+          - bash: |
+              set -euo pipefail
+              AEM_CDN_HOST="https://aem-grspre.iberostar.com"
+              if [ -z "${CDN_PURGEKEY_EXTERNAL_SPA:-}" ]; then
+                echo "Falta variable CDN_PURGEKEY_EXTERNAL_SPA"
+                exit 1
+              fi
+              echo "Purgando AEM CDN por Surrogate-Key en ${AEM_CDN_HOST}"
+              HTTP_STATUS=$(curl -s -o /tmp/purge_response.log -w "%{http_code}" -X PURGE "${AEM_CDN_HOST}/" \
+                -H "X-AEM-Purge-Key: ${CDN_PURGEKEY_EXTERNAL_SPA}" \
+                -H "X-AEM-Purge: soft" \
+                -H "Surrogate-Key: inspiration-guide")
+              echo "Código HTTP: ${HTTP_STATUS}"
+              cat /tmp/purge_response.log
+              if [ "$HTTP_STATUS" -lt 200 ] || [ "$HTTP_STATUS" -ge 300 ]; then
+                echo "La purga de CDN falló con código HTTP ${HTTP_STATUS}"
+                exit 1
+              fi
+              echo "Purga de CDN completada correctamente."
+            displayName: 'Purge AEM CDN'
+            env:
+              CDN_PURGEKEY_EXTERNAL_SPA: $(CDN_PURGEKEY_EXTERNAL_SPA)
