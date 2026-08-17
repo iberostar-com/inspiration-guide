@@ -26,6 +26,7 @@ const DEFAULT_CONFIG = {
     graphqlOperationName: 'HotelByCode',
     priceFromChannel: 'b2c-web',
     priceFromEndpoint: 'https://gisapim.iberostar.com/mule/ae/price-from',
+    publicHost: 'https://aem-grspre.iberostar.com',
   },
   currency: {
     // PENDIENTE (no bloquea deploy): el JSON de tasas responde 200 en publish
@@ -46,6 +47,7 @@ const CLOUD_ENVIRONMENT_OVERRIDES = [
     overrides: {
       hotels: {
         graphqlHost: 'https://publish-p179213-e1886364.adobeaemcloud.com',
+        publicHost: 'https://aem-grspre.iberostar.com',
       },
       // currency: el endpoint de stage ya es el de DEFAULT_CONFIG; no se
       // repite aqui para que el fixture local (ENVIRONMENT_CONFIG.local)
@@ -63,6 +65,7 @@ const CLOUD_ENVIRONMENT_OVERRIDES = [
     overrides: {
       hotels: {
         graphqlHost: 'https://publish-p179213-e1898042.adobeaemcloud.com',
+        publicHost: 'https://aem-grsdev.iberostar.com',
       },
       currency: {
         exchangeRatesEndpoint: 'https://publish-p179213-e1898042.adobeaemcloud.com/content/dam/iberostar-com/shared-data/jsons/currency-exchange-rates.json',
@@ -80,6 +83,7 @@ const CLOUD_ENVIRONMENT_OVERRIDES = [
     overrides: {
       hotels: {
         graphqlHost: 'https://publish-p179213-e1898096.adobeaemcloud.com',
+        publicHost: 'https://aem-grsqa.iberostar.com',
       },
       currency: {
         exchangeRatesEndpoint: 'https://publish-p179213-e1898096.adobeaemcloud.com/content/dam/iberostar-com/shared-data/jsons/currency-exchange-rates.json',

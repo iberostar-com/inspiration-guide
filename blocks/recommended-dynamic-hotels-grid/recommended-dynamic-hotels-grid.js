@@ -6,6 +6,7 @@ import { toPageHref } from '../../scripts/iberostar/page-links.js';
 import {
   fetchHotelByCode,
   fetchHotelPriceByCode,
+  getHotelsPublicHost,
   isValidHotelCode,
 } from '../../scripts/iberostar/hotels-api.js';
 import {
@@ -48,6 +49,10 @@ function getAnchor(field) {
   return field?.querySelector?.('a[href]') || null;
 }
 
+function isTargetValue(value) {
+  return /^_(self|blank)$/i.test(`${value || ''}`.trim());
+}
+
 function hasConfigFields(row) {
   return Boolean(row.querySelector?.(
     '[data-aue-prop="eyebrow"], [data-aue-prop="title"], '
@@ -80,12 +85,19 @@ function getConfigField(block, propName, legacyAttr) {
   if (block.hasAttribute(legacyAttr)) return null;
 
   const rows = getConfigRows(block);
-  const ctaRow = rows.find((row) => getAnchor(row));
+  const ctaLinkRow = rows.find((row) => {
+    const href = getAnchor(row)?.getAttribute('href')?.trim();
+    return href && !isTargetValue(href);
+  });
+  const ctaTargetRow = rows.find((row) => {
+    const href = getAnchor(row)?.getAttribute('href')?.trim();
+    return isTargetValue(href) || isTargetValue(row.textContent);
+  });
   let row = rows[CONFIG_FIELD_POSITIONS[propName]];
 
-  if (propName === 'gridCta_linkText') row = ctaRow || rows[2];
-  if (propName === 'gridCta_link') row = ctaRow || rows[3] || rows[2];
-  if (propName === 'gridCta_linkTarget') row = ctaRow || rows[4] || rows[2];
+  if (propName === 'gridCta_linkText') row = rows[2] || ctaLinkRow;
+  if (propName === 'gridCta_link') row = ctaLinkRow || rows[3];
+  if (propName === 'gridCta_linkTarget') row = ctaTargetRow || rows[4];
 
   const cells = getCells(row);
   return cells[cells.length - 1] || null;
@@ -102,9 +114,11 @@ function getConfigValue(block, propName, legacyAttr) {
 function getConfigHref(block, propName, legacyAttr) {
   const field = getConfigField(block, propName, legacyAttr);
   const legacyValue = block.getAttribute(legacyAttr);
-  return getAnchor(field)?.getAttribute('href')?.trim()
+  const hrefValue = getAnchor(field)?.getAttribute('href')?.trim();
+  const textValue = field?.textContent?.trim();
+  return (isTargetValue(hrefValue) ? '' : hrefValue)
     || legacyValue?.trim()
-    || field?.textContent?.trim()
+    || (isTargetValue(textValue) ? '' : textValue)
     || '';
 }
 
@@ -154,19 +168,36 @@ function getLocaleSegment(pathname = window.location.pathname) {
 function createHotelHref(hotel) {
   if (!hotel?.slug) return '';
   const localeSegment = getLocaleSegment();
-  const slug = `${hotel.slug}`.split('/').filter(Boolean).join('/');
+  const slug = `${hotel.slug}`.split('/').filter(Boolean).join('/').replace(/\.html$/i, '');
   if (!slug) return '';
 
-  return localeSegment
-    ? `/${localeSegment}/hotels/${slug}`
-    : `/hotels/${slug}`;
+  const path = localeSegment
+    ? `/${localeSegment}/hotels/${slug}.html`
+    : `/hotels/${slug}.html`;
+  const publicHost = getHotelsPublicHost();
+
+  return publicHost ? `${publicHost}${path}` : path;
 }
 
 function getItemHref(row) {
   const linkProp = row.querySelector('[data-aue-prop="cta_link"]');
   const link = getAnchor(linkProp);
-  if (link?.getAttribute('href')) return link.getAttribute('href').trim();
-  return getText(linkProp);
+  const href = link?.getAttribute('href')?.trim();
+  const text = getText(linkProp);
+  if (href && !isTargetValue(href)) return href;
+  if (text && !isTargetValue(text)) return text;
+
+  const cells = getCells(row);
+  const fallback = cells
+    .map((cell) => getAnchor(cell)?.getAttribute('href')?.trim() || getText(cell))
+    .find((value) => {
+      const normalized = `${value || ''}`.trim();
+      return normalized
+        && !isTargetValue(normalized)
+        && (normalized.startsWith('/') || /^https?:\/\//i.test(normalized));
+    });
+
+  return fallback || '';
 }
 
 function getItemTarget(row) {

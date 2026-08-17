@@ -54,6 +54,9 @@ function getHotelsConfig() {
     graphqlHost: getMetaContent('hotel-graphql-host')
       || configuredHotels.graphqlHost
       || '',
+    publicHost: getMetaContent('hotel-public-host')
+      || configuredHotels.publicHost
+      || '',
     priceFromChannel: getMetaContent('hotel-price-channel')
       || configuredHotels.priceFromChannel
       || 'b2c-web',
@@ -61,6 +64,11 @@ function getHotelsConfig() {
       || configuredHotels.priceFromEndpoint
       || '',
   };
+}
+
+export function getHotelsPublicHost() {
+  const { publicHost } = getHotelsConfig();
+  return `${publicHost || ''}`.trim().replace(/\/+$/, '');
 }
 
 function normalizeLocaleTag(locale) {
