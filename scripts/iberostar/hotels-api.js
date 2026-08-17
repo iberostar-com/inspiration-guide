@@ -99,6 +99,17 @@ export function buildHotelPublicUrl(slug, locale = '') {
   return publicHost ? `${publicHost}${path}` : path;
 }
 
+export function buildHotelsPublicIndexUrl(locale = '') {
+  const normalizedLocale = `${locale || ''}`.trim().toLowerCase().replace('_', '-');
+  const pathSegment = getHotelsPublicPathSegment(normalizedLocale);
+  const path = normalizedLocale
+    ? `/${normalizedLocale}/${pathSegment}.html`
+    : `/${pathSegment}.html`;
+  const publicHost = getHotelsPublicHost();
+
+  return publicHost ? `${publicHost}${path}` : path;
+}
+
 function normalizeLocaleTag(locale) {
   const value = `${locale || ''}`.trim().toLowerCase().replace('_', '-');
   if (/^[a-z]{2}-[a-z]{2}$/.test(value)) return value;
