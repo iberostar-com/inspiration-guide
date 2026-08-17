@@ -27,6 +27,10 @@ const DEFAULT_CONFIG = {
     priceFromChannel: 'b2c-web',
     priceFromEndpoint: 'https://gisapim.iberostar.com/mule/ae/price-from',
     publicHost: 'https://aem-grspre.iberostar.com',
+    publicPathSegments: {
+      default: 'hoteles',
+      'es-es': 'hoteles',
+    },
   },
   currency: {
     // PENDIENTE (no bloquea deploy): el JSON de tasas responde 200 en publish

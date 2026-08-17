@@ -1,6 +1,7 @@
 import { createHotelMiniCard } from '../hotel-mini-card/hotel-mini-card.js';
 import { getPlaceholder } from '../../scripts/iberostar/placeholders.js';
 import {
+  buildHotelPublicUrl,
   fetchHotelByCode,
   isValidHotelCode,
 } from '../../scripts/iberostar/hotels-api.js';
@@ -105,13 +106,7 @@ function getLocaleSegment(pathname = window.location.pathname) {
 
 function createHotelHref(hotel) {
   if (!hotel?.slug) return '';
-  const localeSegment = getLocaleSegment();
-  const slug = `${hotel.slug}`.split('/').filter(Boolean).join('/');
-  if (!slug) return '';
-
-  return localeSegment
-    ? `/${localeSegment}/hotels/${slug}`
-    : `/hotels/${slug}`;
+  return buildHotelPublicUrl(hotel.slug, getLocaleSegment());
 }
 
 function normalizeStars(value) {

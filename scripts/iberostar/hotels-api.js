@@ -57,6 +57,8 @@ function getHotelsConfig() {
     publicHost: getMetaContent('hotel-public-host')
       || configuredHotels.publicHost
       || '',
+    publicPathSegments: configuredHotels.publicPathSegments
+      || {},
     priceFromChannel: getMetaContent('hotel-price-channel')
       || configuredHotels.priceFromChannel
       || 'b2c-web',
@@ -69,6 +71,32 @@ function getHotelsConfig() {
 export function getHotelsPublicHost() {
   const { publicHost } = getHotelsConfig();
   return `${publicHost || ''}`.trim().replace(/\/+$/, '');
+}
+
+export function getHotelsPublicPathSegment(locale = '') {
+  const { publicPathSegments } = getHotelsConfig();
+  const normalizedLocale = `${locale || ''}`.trim().toLowerCase().replace('_', '-');
+  const language = normalizedLocale.split('-')[0];
+  const segment = publicPathSegments[normalizedLocale]
+    || publicPathSegments[language]
+    || publicPathSegments.default
+    || 'hoteles';
+
+  return `${segment}`.trim().split('/').filter(Boolean).join('/');
+}
+
+export function buildHotelPublicUrl(slug, locale = '') {
+  const normalizedSlug = `${slug || ''}`.split('/').filter(Boolean).join('/').replace(/\.html$/i, '');
+  if (!normalizedSlug) return '';
+
+  const normalizedLocale = `${locale || ''}`.trim().toLowerCase().replace('_', '-');
+  const pathSegment = getHotelsPublicPathSegment(normalizedLocale);
+  const path = normalizedLocale
+    ? `/${normalizedLocale}/${pathSegment}/${normalizedSlug}.html`
+    : `/${pathSegment}/${normalizedSlug}.html`;
+  const publicHost = getHotelsPublicHost();
+
+  return publicHost ? `${publicHost}${path}` : path;
 }
 
 function normalizeLocaleTag(locale) {

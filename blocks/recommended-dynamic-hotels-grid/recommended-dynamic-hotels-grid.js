@@ -4,9 +4,9 @@ import {
 import { getPlaceholder } from '../../scripts/iberostar/placeholders.js';
 import { toPageHref } from '../../scripts/iberostar/page-links.js';
 import {
+  buildHotelPublicUrl,
   fetchHotelByCode,
   fetchHotelPriceByCode,
-  getHotelsPublicHost,
   isValidHotelCode,
 } from '../../scripts/iberostar/hotels-api.js';
 import {
@@ -167,16 +167,7 @@ function getLocaleSegment(pathname = window.location.pathname) {
 
 function createHotelHref(hotel) {
   if (!hotel?.slug) return '';
-  const localeSegment = getLocaleSegment();
-  const slug = `${hotel.slug}`.split('/').filter(Boolean).join('/').replace(/\.html$/i, '');
-  if (!slug) return '';
-
-  const path = localeSegment
-    ? `/${localeSegment}/hotels/${slug}.html`
-    : `/hotels/${slug}.html`;
-  const publicHost = getHotelsPublicHost();
-
-  return publicHost ? `${publicHost}${path}` : path;
+  return buildHotelPublicUrl(hotel.slug, getLocaleSegment());
 }
 
 function getItemHref(row) {
