@@ -142,6 +142,10 @@ function resolveDamAssetUrl(src, config) {
   return `${assetHost}${normalized}`;
 }
 
+export function resolveAssetUrl(src) {
+  return resolveDamAssetUrl(src, getDynamicMediaConfig());
+}
+
 export function isDynamicMediaImage(src = '') {
   if (!isRemoteImage(src)) return false;
 
