@@ -109,10 +109,25 @@
 }
 
 .hero-article-detail .hero-article-detail-actions {
+  position: relative;
   display: flex;
   align-items: flex-start;
   justify-content: space-between;
   gap: 16px;
+}
+
+.hero-article-detail .hero-article-detail-share-feedback {
+  position: absolute;
+  right: 0;
+  bottom: calc(100% + 8px);
+  padding: 6px 10px;
+  border-radius: 6px;
+  background: #1b2828;
+  color: #fff;
+  font-size: 12px;
+  line-height: 1.4;
+  white-space: nowrap;
+  pointer-events: none;
 }
 
 .hero-article-detail .hero-article-detail-metadata {
