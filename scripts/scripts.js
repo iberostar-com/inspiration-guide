@@ -162,11 +162,18 @@ function buildArticleLayoutShell(layoutSections) {
   }
 }
 
+function isArticleLayout(main) {
+  return getPageType() === 'article'
+    || Boolean(main.querySelector(':scope > .section.article-main, :scope > .section.article-sidebar'));
+}
+
 function applyArticleTwoColumnLayout(main) {
   const isUniversalEditorPage = main.querySelector(':scope > [data-aue-resource]');
-  if (getPageType() !== 'article') {
+  if (!isArticleLayout(main)) {
     return;
   }
+
+  document.body.classList.add('page-article');
 
   if (isUniversalEditorPage) {
     main.classList.add('article-layout-author');
