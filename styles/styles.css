@@ -388,6 +388,8 @@ body.page-article main.article-layout-author > .section > div {
 
   body.page-article main.article-layout-author > .section.article-sidebar {
     grid-column: 2;
+    align-self: start;
+    padding-top: var(--article-sidebar-offset, 0);
   }
 
   body.page-article main.article-layout-author > .section:not(.article-main, .article-sidebar) {

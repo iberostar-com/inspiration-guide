@@ -206,19 +206,19 @@ const SIDEBAR_ANCHOR_SELECTOR = '.article-main-image, .article-content-image';
  * The offset is exposed as `--article-sidebar-offset` and only used on wide viewports.
  * @param {Element} shell The article layout shell
  */
-function updateArticleSidebarOffset(shell) {
+function updateArticleSidebarOffset(container, anchorSelector) {
   const isTwoColumn = window.matchMedia('(width >= 1440px)').matches;
-  const anchor = shell.querySelector(`.article-layout-main ${SIDEBAR_ANCHOR_SELECTOR}`);
+  const anchor = container.querySelector(anchorSelector);
 
   if (!isTwoColumn || !anchor) {
-    shell.style.removeProperty('--article-sidebar-offset');
+    container.style.removeProperty('--article-sidebar-offset');
     return;
   }
 
   // the main column is start aligned, so its position does not change with the offset applied
-  const offset = anchor.getBoundingClientRect().top - shell.getBoundingClientRect().top;
+  const offset = anchor.getBoundingClientRect().top - container.getBoundingClientRect().top;
 
-  shell.style.setProperty('--article-sidebar-offset', `${Math.max(0, Math.round(offset))}px`);
+  container.style.setProperty('--article-sidebar-offset', `${Math.max(0, Math.round(offset))}px`);
 }
 
 /**
@@ -227,14 +227,19 @@ function updateArticleSidebarOffset(shell) {
  */
 function initArticleSidebarAlignment(main) {
   const shells = [...main.querySelectorAll(':scope > .article-layout-shell')];
-  if (!shells.length) return;
+  const authorMain = main.classList.contains('article-layout-author') ? main : null;
+  if (!shells.length && !authorMain) return;
 
-  const update = () => shells.forEach((shell) => updateArticleSidebarOffset(shell));
+  const update = () => {
+    shells.forEach((shell) => updateArticleSidebarOffset(shell, `.article-layout-main ${SIDEBAR_ANCHOR_SELECTOR}`));
+    if (authorMain) updateArticleSidebarOffset(authorMain, SIDEBAR_ANCHOR_SELECTOR);
+  };
   update();
 
   if (window.ResizeObserver) {
     const observer = new ResizeObserver(() => update());
     shells.forEach((shell) => observer.observe(shell.querySelector('.article-layout-main')));
+    if (authorMain) observer.observe(authorMain);
   }
 
   window.addEventListener('resize', update);
