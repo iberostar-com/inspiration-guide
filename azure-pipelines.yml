@@ -196,6 +196,11 @@ stages:
           - bash: |
               set -euo pipefail
 
+              if [ -z "${EDS_ORIGIN_URL:-}" ]; then
+                echo "Falta variable EDS_ORIGIN_URL"
+                exit 1
+              fi
+
               if [ -z "${AEM_CDN_HOST:-}" ]; then
                 echo "Falta variable AEM_CDN_HOST"
                 exit 1
@@ -205,6 +210,28 @@ stages:
                 echo "Falta variable CDN_PURGEKEY_EXTERNAL_SPA"
                 exit 1
               fi
+
+              echo "Esperando a que EDS responda con la version desplegada: ${EDS_ORIGIN_URL}"
+              for attempt in $(seq 1 12); do
+                HTTP_ORIGIN_STATUS=$(curl -s -o /tmp/eds_origin_headers.log -w "%{http_code}" -I "${EDS_ORIGIN_URL}" || true)
+                echo "Intento ${attempt}/12 - EDS origin status: ${HTTP_ORIGIN_STATUS}"
+                cat /tmp/eds_origin_headers.log || true
+
+                if [ "${HTTP_ORIGIN_STATUS}" -ge 200 ] && [ "${HTTP_ORIGIN_STATUS}" -lt 400 ]; then
+                  break
+                fi
+
+                sleep 10
+              done
+
+              if [ "${HTTP_ORIGIN_STATUS}" -lt 200 ] || [ "${HTTP_ORIGIN_STATUS}" -ge 400 ]; then
+                echo "EDS origin no respondio correctamente tras esperar. No se purga CDN para evitar recachear contenido antiguo."
+                exit 1
+              fi
+
+              EDS_PURGE_DELAY_SECONDS="${EDS_PURGE_DELAY_SECONDS:-120}"
+              echo "Esperando ${EDS_PURGE_DELAY_SECONDS}s para dar tiempo a la propagacion de EDS antes de purgar CDN publica."
+              sleep "${EDS_PURGE_DELAY_SECONDS}"
 
               echo "Purgando AEM CDN por Surrogate-Key en ${AEM_CDN_HOST}"
 
@@ -224,5 +251,6 @@ stages:
               echo "Purga de CDN completada correctamente."
             displayName: 'Purge AEM CDN'
             env:
+              EDS_ORIGIN_URL: $(EDS_ORIGIN_URL)
               AEM_CDN_HOST: $(AEM_CDN_HOST)
               CDN_PURGEKEY_EXTERNAL_SPA: $(CDN_PURGEKEY_EXTERNAL_SPA)
