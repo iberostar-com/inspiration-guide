@@ -51,6 +51,10 @@ function tagLabel(slug) {
   return tagTitle(slug);
 }
 
+function getPageTitle() {
+  return document.title?.split('|')[0]?.trim() || '';
+}
+
 export default function decorate(block) {
   const rows = getSourceRows(block);
   const levels = rows
@@ -64,7 +68,7 @@ export default function decorate(block) {
       return text && !isHeadingToken(text);
     })?.textContent?.trim()
     || '';
-  const title = authored || tagLabel(getCurrentTag());
+  const title = authored || getPageTitle() || tagLabel(getCurrentTag());
 
   rows.forEach((row) => {
     row.classList.add('hero-tag-name-source');
