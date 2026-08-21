@@ -368,6 +368,8 @@ header nav .nav-util--lang .nav-chevron {
 
   header nav .nav-logo--desktop {
     display: inline-flex;
+    width: auto;
+    height: 32px;
   }
 
   header nav .nav-logo--desktop img {
