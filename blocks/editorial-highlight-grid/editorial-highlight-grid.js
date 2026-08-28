@@ -95,6 +95,12 @@ function readSource(block) {
   return found || block.getAttribute('data-source') || 'manual';
 }
 
+function readPageSize(block) {
+  const value = textByProp(block, 'pageSize') || block.getAttribute('data-page-size') || '';
+  const parsed = Number.parseInt(value, 10);
+  return Number.isFinite(parsed) && parsed > 0 ? parsed : 4;
+}
+
 // ---------- default variant (auto/manual list with "load more") ----------
 
 function getContextSegment(name) {
@@ -340,6 +346,7 @@ function renderManualGrid(block, all) {
   const cardHeading = sanitizeHeading(levels[1], 'h3');
 
   const isEditor = !!block.closest('[data-aue-resource]');
+  const pageSize = readPageSize(block);
 
   block.classList.add('editorial-highlight-grid-home');
 
@@ -355,6 +362,8 @@ function renderManualGrid(block, all) {
 
   const list = document.createElement('ul');
   list.className = 'editorial-highlight-grid-list';
+
+  const items = [];
   getArticleRows(block).forEach((row) => {
     const article = findArticle(all, getRefPath(row));
     // Skip unresolved items on published pages, but keep an editable placeholder
@@ -376,9 +385,31 @@ function renderManualGrid(block, all) {
       li.append(placeholder);
     }
 
-    list.append(li);
+    items.push(li);
   });
+  list.append(...items);
   rendered.append(list);
+
+  if (!isEditor && items.length > pageSize) {
+    const moreButton = document.createElement('button');
+    moreButton.type = 'button';
+    moreButton.className = 'editorial-highlight-grid-more';
+    moreButton.textContent = 'Ver más artículos';
+
+    const state = { shown: pageSize };
+    const applyVisibility = () => {
+      items.forEach((li, index) => { li.hidden = index >= state.shown; });
+      moreButton.hidden = state.shown >= items.length;
+    };
+
+    moreButton.addEventListener('click', () => {
+      state.shown += pageSize;
+      applyVisibility();
+    });
+
+    applyVisibility();
+    rendered.append(moreButton);
+  }
 
   block.replaceChildren(rendered);
 }
@@ -411,12 +442,6 @@ function articleHasTag(article, tag) {
     return normalized.split('/').pop().trim() === target
       || normalized.split(':').pop().trim() === target;
   });
-}
-
-function readPageSize(block) {
-  const value = textByProp(block, 'pageSize') || block.getAttribute('data-page-size') || '';
-  const parsed = Number.parseInt(value, 10);
-  return Number.isFinite(parsed) && parsed > 0 ? parsed : 4;
 }
 
 function buildFeed(block, matched, pageSize) {
