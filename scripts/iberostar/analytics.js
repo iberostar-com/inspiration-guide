@@ -598,14 +598,16 @@ function handleHeroMultimedia(target) {
 }
 
 function handleHeroViewHotels(actionable) {
-  if (!actionable.closest('.hotel-graphql-mini-card, .hotel-mini-card')) return false;
-  if (actionable.closest(HOTEL_LIST_ITEM)) return false;
+  const miniCard = actionable.closest('.hotel-graphql-mini-card, .hotel-mini-card');
+  const banner = actionable.closest('.editorial-article-banner');
+  if (!miniCard && !banner) return false;
+  if (miniCard && actionable.closest(HOTEL_LIST_ITEM)) return false;
   if (!actionable.matches('a')) return false;
 
   trackLink({
     tealium_event: 'inspiration_guide_module',
     event_cat: 'inspiration guide module',
-    event_act: '',
+    event_act: banner ? 'click' : '',
     event_lbl: normalize('view hotels'),
     event_purpose: 'inspiration',
     event_structure: 'body',
