@@ -8,7 +8,7 @@ main .recommended-dynamic-hotels-grid .recommended-dynamic-hotels-grid-rendered 
   position: relative;
   left: 50%;
   display: flex;
-  width: 100vw;
+  width: var(--full-bleed-width);
   max-width: 1440px;
   flex-direction: column;
   gap: 32px;

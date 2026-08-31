@@ -5,9 +5,9 @@
   --lead-subscription-form-muted: #636363;
   --lead-subscription-form-border: #dedede;
 
-  width: 100vw;
-  margin-right: calc(50% - 50vw);
-  margin-left: calc(50% - 50vw);
+  width: var(--full-bleed-width);
+  margin-right: calc(50% - var(--full-bleed-width) / 2);
+  margin-left: calc(50% - var(--full-bleed-width) / 2);
   background: var(--lead-subscription-form-bg-grey);
 }
 

@@ -261,6 +261,25 @@ export function decorateMain(main) {
   decoratePageLinks(main);
 }
 
+function trackScrollbarWidth() {
+  const root = document.documentElement;
+  let current = null;
+
+  const update = () => {
+    const width = Math.max(window.innerWidth - root.clientWidth, 0);
+    if (width === current) return;
+    current = width;
+    root.style.setProperty('--scrollbar-width', `${width}px`);
+  };
+
+  update();
+  window.addEventListener('resize', update, { passive: true });
+
+  if (typeof ResizeObserver !== 'undefined') {
+    new ResizeObserver(update).observe(root);
+  }
+}
+
 /**
  * Loads everything needed to get to LCP.
  * @param {Element} doc The container element
@@ -292,6 +311,8 @@ async function loadEager(doc) {
  * @param {Element} doc The container element
  */
 async function loadLazy(doc) {
+  trackScrollbarWidth();
+
   const pageType = getPageType();
   const isFragmentPage = pageType === 'fragment';
 

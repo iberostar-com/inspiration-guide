@@ -39,6 +39,8 @@
 
   /* nav height */
   --nav-height: 64px;
+  --scrollbar-width: 0px;
+  --full-bleed-width: calc(100vw - var(--scrollbar-width));
 }
 
 /* fallback fonts */
@@ -64,7 +66,6 @@
 body {
   display: none;
   margin: 0;
-  overflow-x: scroll;
   background-color: var(--background-color);
   color: var(--text-color);
   font-family: var(--body-font-family);
