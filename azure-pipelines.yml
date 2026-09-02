@@ -10,27 +10,17 @@ pr: none
 
 variables:
   - group: 'azure-aem'
+  - group: 'p84-grscms-eds-inspiration-guide'
 
   - ${{ if eq(variables['Build.SourceBranchName'], 'main') }}:
       - group: 'p84-grscms-stage'
-
   - ${{ if eq(variables['Build.SourceBranchName'], 'qa') }}:
       - group: 'p84-grscms-qa'
-
   - ${{ if eq(variables['Build.SourceBranchName'], 'develop') }}:
       - group: 'p84-grscms-develop'
 
-  - name: agentPoolName
-    value: 'P38 CMS AgentPool'
-
-  - name: sonarCloudEndpointName
-    value: 'DevSecOps-Sonar-p84-grscms-eds-inspiration-guide'
-  - name: sonarCloudOrganization
-    value: 'sfcgrupoiberostar'
-  - name: sonarCloudProjectKey
-    value: 'SFCGrupoIberostar_p84-grscms-eds-inspiration-guide'
-  - name: sonarCloudProjectName
-    value: 'p84-grscms-eds-inspiration-guide'
+  - name: Environment
+    value: '$(EnvironmentPrefix)-$(Stage)'
 
 pool:
   name: $(agentPoolName)
@@ -42,6 +32,8 @@ stages:
     displayName: 'SonarCloud'
     dependsOn: []
     condition: in(variables['Build.SourceBranchName'], 'main', 'stage', 'qa', 'develop')
+    pool:
+      name: $(agentPoolName)
     jobs:
       - job: SonarCloud
         displayName: 'SonarCloud'
@@ -73,9 +65,10 @@ stages:
             displayName: 'SonarCloudPublish'
             inputs:
               pollingTimeoutSec: '900'
+            continueOnError: true
 
-  # ── STAGE 2: Manual approval ────────────────────────────────────
-  - stage: Approval_Sonar
+  # ── STAGE 2: Approval SonarCloud ────────────────────────────────
+  - stage: Approval_SonarCloud
     displayName: 'Approval SonarCloud'
     dependsOn: SonarCloud
     condition: >
@@ -83,27 +76,29 @@ stages:
         eq(dependencies.SonarCloud.result, 'SucceededWithIssues'),
         eq(variables['Build.SourceBranchName'], 'main')
       )
+    pool:
+      name: $(agentPoolName)
     jobs:
-      - deployment: Approval_Sonar
+      - deployment: Approval_SonarCloud
         displayName: 'Approval SonarCloud'
-        environment: 'sonarcloud'
+        environment: '$(Environment)'
         strategy:
           runOnce:
             deploy:
               steps:
                 - checkout: self
 
-  # ── STAGE 3: Push a Cloud Manager Git (Adobe EDS) ───────────────
-  - stage: MirrorPush_CloudManager_Merge
-    displayName: 'Push CloudManager'
+  # ── STAGE 3: Approval Push CloudManager ──────────────────────────
+  - stage: Approval_Push_CloudManager
+    displayName: 'Approval Push CloudManager'
     dependsOn:
       - SonarCloud
-      - Approval_Sonar
-    condition: |
+      - Approval_SonarCloud
+    condition: >
       and(
         ne(variables['Build.Reason'], 'PullRequest'),
         in(dependencies.SonarCloud.result, 'Succeeded', 'SucceededWithIssues'),
-        in(dependencies.Approval_Sonar.result, 'Succeeded', 'Skipped'),
+        in(dependencies.Approval_SonarCloud.result, 'Succeeded', 'Skipped'),
         or(
           eq(variables['Build.SourceBranch'], 'refs/heads/main'),
           eq(variables['Build.SourceBranch'], 'refs/heads/develop'),
@@ -111,6 +106,40 @@ stages:
           eq(variables['Build.SourceBranch'], 'refs/heads/stage')
         )
       )
+    pool:
+      name: $(agentPoolName)
+    jobs:
+      - deployment: Approval_Push_CloudManager
+        displayName: 'Approval Push CloudManager'
+        environment: '$(Environment)'
+        strategy:
+          runOnce:
+            deploy:
+              steps:
+                - checkout: self
+
+  # ── STAGE 4: Push a Cloud Manager Git (Adobe EDS) ───────────────
+  - stage: MirrorPush_CloudManager_Merge
+    displayName: 'Push CloudManager'
+    dependsOn:
+      - SonarCloud
+      - Approval_SonarCloud
+      - Approval_Push_CloudManager
+    condition: |
+      and(
+        ne(variables['Build.Reason'], 'PullRequest'),
+        in(dependencies.SonarCloud.result, 'Succeeded', 'SucceededWithIssues'),
+        in(dependencies.Approval_SonarCloud.result, 'Succeeded', 'Skipped'),
+        in(dependencies.Approval_Push_CloudManager.result, 'Succeeded', 'Skipped'),
+        or(
+          eq(variables['Build.SourceBranch'], 'refs/heads/main'),
+          eq(variables['Build.SourceBranch'], 'refs/heads/develop'),
+          eq(variables['Build.SourceBranch'], 'refs/heads/qa'),
+          eq(variables['Build.SourceBranch'], 'refs/heads/stage')
+        )
+      )
+    pool:
+      name: $(agentPoolName)
     jobs:
       - job: PushMerge
         displayName: 'Push CloudManager'
@@ -179,15 +208,17 @@ stages:
               CM_GIT_PASSWORD: $(CM_GIT_PASSWORD)
               CM_GIT_REPO_URL_IS: $(CM_GIT_REPO_URL_IS)
 
-  # ── STAGE 4: Purge AEM CDN ─────────────────
+  # ── STAGE 5: Purge AEM CDN ─────────────────
   - stage: PurgeCDN
     displayName: 'Purge AEM CDN'
     dependsOn: MirrorPush_CloudManager_Merge
     condition: |
       and(
-        succeeded('MirrorPush_CloudManager_Merge'),
+        in(dependencies.MirrorPush_CloudManager_Merge.result, 'Succeeded', 'SucceededWithIssues'),
         in(variables['Build.SourceBranchName'], 'main', 'qa', 'develop')
       )
+    pool:
+      name: $(agentPoolName)
     jobs:
       - job: PurgeCDN
         displayName: 'Purge AEM CDN'
