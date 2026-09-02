@@ -19,12 +19,18 @@ const SEGMENT_LABEL_FALLBACKS = {
   tag: 'Tags',
 };
 
+const CATEGORY_ROOT_SEGMENTS = new Set(['categorias', 'categorías', 'categories', 'category']);
+const BREADCRUMB_TITLE_META = 'breadcrumb-title';
+const BREADCRUMB_VISIBLE_META = 'breadcrumb-visible';
+const NAVIGATION_TITLE_META = 'navigation-title';
+
 // Bug 169657: /category, /tag y /articles son segmentos de enrutado, no niveles de navegacion.
 // Solo se muestran cuando el usuario esta en su propia pagina indice.
 const ROUTING_SEGMENTS = Object.keys(SEGMENT_LABEL_KEYS);
 
 const GUIDE_SEGMENT = 'inspiration-guide';
 const GUIDE_LABEL_FALLBACK = 'Inspiration Guide';
+const pageBreadcrumbCache = new Map();
 
 function normalizePath(path) {
   const { pathname } = new URL(path || window.location.pathname, window.location);
@@ -33,6 +39,22 @@ function normalizePath(path) {
     .replace(/(\.plain)?\.html$/, '')
     .replace(/\/index$/, '')
     .replace(/\/$/, '') || '/';
+}
+
+function getAuthorContentPrefix() {
+  const { pathname } = new URL(window.location.pathname, window.location);
+  return pathname.match(CONTENT_PREFIX_PATTERN)?.[0] || '';
+}
+
+function toBreadcrumbDataFetchPath(path) {
+  const normalizedPath = normalizePath(path);
+  const authorContentPrefix = getAuthorContentPrefix();
+
+  if (authorContentPrefix) {
+    return `${authorContentPrefix}${normalizedPath}.html`;
+  }
+
+  return normalizedPath;
 }
 
 function getSourceRows(block) {
@@ -82,10 +104,108 @@ function toLabel(segment) {
 }
 
 function getTitleFallback() {
-  return getMetadata('og:title')
+  return getMetadata(BREADCRUMB_TITLE_META)
+    || getMetadata(NAVIGATION_TITLE_META)
+    || getMetadata('og:title')
     || document.querySelector('h1')?.textContent?.trim()
     || document.title?.split('|')?.[0]?.trim()
     || '';
+}
+
+function getMetaFromDocument(doc, name) {
+  const attr = name && name.includes(':') ? 'property' : 'name';
+  return [...doc.querySelectorAll(`meta[${attr}="${name}"]`)]
+    .map((meta) => meta.content?.trim())
+    .filter(Boolean)
+    .join(', ');
+}
+
+function isFalseValue(value = '') {
+  const text = `${value}`.trim().toLowerCase();
+  return text === 'false' || text === 'no' || text === 'off' || text === '0';
+}
+
+function normalizeTaxonomySegments(value = '') {
+  const rawValue = `${value || ''}`.split(',')[0].trim();
+  if (!rawValue) return [];
+
+  let taxonomyPath = rawValue;
+
+  if (taxonomyPath.includes(':')) {
+    taxonomyPath = taxonomyPath.slice(taxonomyPath.indexOf(':') + 1);
+  } else if (taxonomyPath.startsWith('/')) {
+    const path = normalizePath(taxonomyPath);
+    const segments = path.split('/').filter(Boolean);
+    const categoryIndex = segments.indexOf('category');
+    taxonomyPath = categoryIndex > -1
+      ? segments.slice(categoryIndex + 1).join('/')
+      : segments.join('/');
+  }
+
+  return taxonomyPath
+    .split('/')
+    .map((segment) => decodeURIComponent(segment).trim())
+    .filter(Boolean)
+    .filter((segment, index) => index > 0 || !CATEGORY_ROOT_SEGMENTS.has(segment.toLowerCase()));
+}
+
+function getArticleCategorySegments() {
+  return normalizeTaxonomySegments(
+    getMetadata('article-category-path') || getMetadata('article-category'),
+  );
+}
+
+async function fetchPageBreadcrumbData(path) {
+  const fetchPath = toBreadcrumbDataFetchPath(path);
+  if (pageBreadcrumbCache.has(fetchPath)) {
+    return pageBreadcrumbCache.get(fetchPath);
+  }
+
+  const dataPromise = fetch(fetchPath)
+    .then(async (response) => {
+      if (!response.ok) return {};
+      const html = await response.text();
+      const doc = new DOMParser().parseFromString(html, 'text/html');
+      return {
+        title: getMetaFromDocument(doc, BREADCRUMB_TITLE_META)
+          || getMetaFromDocument(doc, NAVIGATION_TITLE_META)
+          || getMetaFromDocument(doc, 'og:title')
+          || doc.querySelector('h1')?.textContent?.trim()
+          || doc.title?.split('|')?.[0]?.trim()
+          || '',
+        visible: !isFalseValue(getMetaFromDocument(doc, BREADCRUMB_VISIBLE_META)),
+      };
+    })
+    .catch(() => ({}));
+
+  pageBreadcrumbCache.set(fetchPath, dataPromise);
+  return dataPromise;
+}
+
+async function enrichBreadcrumbItem(item, isCurrent = false) {
+  if (isCurrent || !item.url) {
+    return {
+      ...item,
+      label: getTitleFallback() || item.label,
+    };
+  }
+
+  const data = await fetchPageBreadcrumbData(item.url);
+  if (data.visible === false) return null;
+
+  return {
+    ...item,
+    label: data.title || item.label,
+  };
+}
+
+async function buildArticleCategoryItems(categorySegments, guideRoot) {
+  const itemPromises = categorySegments.map((segment, index) => enrichBreadcrumbItem({
+    label: toLabel(segment),
+    url: `${guideRoot}/category/${categorySegments.slice(0, index + 1).join('/')}`,
+  }));
+  const items = await Promise.all(itemPromises);
+  return items.filter(Boolean);
 }
 
 async function getLocalizedSegmentLabel(segment) {
@@ -103,6 +223,7 @@ async function buildAutoItems(block) {
   const guideIndex = segments.indexOf(GUIDE_SEGMENT);
   const insideGuide = guideIndex > -1;
   const guideRoot = getGuideRoot(path);
+  const pageType = getMetadata('page-type')?.trim().toLowerCase() || '';
   const visibleSegments = insideGuide ? segments.slice(guideIndex + 1) : segments
     .filter((segment) => !LOCALE_PATTERN.test(segment));
   const lastIndex = visibleSegments.length - 1;
@@ -123,6 +244,17 @@ async function buildAutoItems(block) {
     });
   }
 
+  if (insideGuide && pageType === 'article') {
+    const categoryItems = await buildArticleCategoryItems(getArticleCategorySegments(), guideRoot);
+    const currentSegment = visibleSegments[lastIndex] || '';
+    const currentItem = await enrichBreadcrumbItem({
+      label: currentLabel || toLabel(currentSegment),
+      url: path,
+    }, true);
+
+    return [...items, ...categoryItems, currentItem];
+  }
+
   const labels = await Promise.all(visibleSegments.map((segment, index) => {
     if (SEGMENT_LABEL_KEYS[segment]) {
       return getLocalizedSegmentLabel(segment);
@@ -133,15 +265,16 @@ async function buildAutoItems(block) {
     return toLabel(segment);
   }));
 
-  visibleSegments.forEach((segment, index) => {
-    if (index !== lastIndex && ROUTING_SEGMENTS.includes(segment)) return;
+  const segmentItems = await Promise.all(visibleSegments.map((segment, index) => {
+    if (index !== lastIndex && ROUTING_SEGMENTS.includes(segment)) return null;
 
-    const url = `${basePath}/${visibleSegments.slice(0, index + 1).join('/')}`;
-    items.push({
+    return enrichBreadcrumbItem({
       label: labels[index] || toLabel(segment),
-      url,
-    });
-  });
+      url: `${basePath}/${visibleSegments.slice(0, index + 1).join('/')}`,
+    }, index === lastIndex);
+  }));
+
+  items.push(...segmentItems.filter(Boolean));
 
   return items;
 }
