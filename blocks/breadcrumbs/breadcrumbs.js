@@ -41,6 +41,22 @@ function normalizePath(path) {
     .replace(/\/$/, '') || '/';
 }
 
+function getAuthorContentPrefix() {
+  const { pathname } = new URL(window.location.pathname, window.location);
+  return pathname.match(CONTENT_PREFIX_PATTERN)?.[0] || '';
+}
+
+function toBreadcrumbDataFetchPath(path) {
+  const normalizedPath = normalizePath(path);
+  const authorContentPrefix = getAuthorContentPrefix();
+
+  if (authorContentPrefix) {
+    return `${authorContentPrefix}${normalizedPath}.html`;
+  }
+
+  return normalizedPath;
+}
+
 function getSourceRows(block) {
   return [...block.children].filter((child) => !child.classList.contains('breadcrumbs-rendered'));
 }
@@ -140,12 +156,12 @@ function getArticleCategorySegments() {
 }
 
 async function fetchPageBreadcrumbData(path) {
-  const normalizedPath = normalizePath(path);
-  if (pageBreadcrumbCache.has(normalizedPath)) {
-    return pageBreadcrumbCache.get(normalizedPath);
+  const fetchPath = toBreadcrumbDataFetchPath(path);
+  if (pageBreadcrumbCache.has(fetchPath)) {
+    return pageBreadcrumbCache.get(fetchPath);
   }
 
-  const dataPromise = fetch(normalizedPath)
+  const dataPromise = fetch(fetchPath)
     .then(async (response) => {
       if (!response.ok) return {};
       const html = await response.text();
@@ -162,7 +178,7 @@ async function fetchPageBreadcrumbData(path) {
     })
     .catch(() => ({}));
 
-  pageBreadcrumbCache.set(normalizedPath, dataPromise);
+  pageBreadcrumbCache.set(fetchPath, dataPromise);
   return dataPromise;
 }
 
