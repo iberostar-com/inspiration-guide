@@ -11,6 +11,28 @@
       {
         "component": "text",
         "valueType": "string",
+        "name": "navigation-title",
+        "label": "Navigation Title",
+        "description": "Optional. Used as a shorter label in navigation surfaces such as breadcrumbs."
+      },
+      {
+        "component": "text",
+        "valueType": "string",
+        "name": "breadcrumb-title",
+        "label": "Breadcrumb Title",
+        "description": "Optional. Overrides Navigation Title and page title when this page appears in breadcrumbs."
+      },
+      {
+        "component": "checkbox",
+        "valueType": "boolean",
+        "name": "breadcrumb-visible",
+        "label": "Include in Breadcrumb",
+        "description": "When disabled, this page is skipped when it is used as an intermediate breadcrumb level.",
+        "value": true
+      },
+      {
+        "component": "text",
+        "valueType": "string",
         "name": "jcr:description",
         "label": "Description"
       },
@@ -20,18 +42,6 @@
         "name": "keywords",
         "multi": true,
         "label": "Keywords"
-      },
-      {
-        "component": "text",
-        "valueType": "string",
-        "name": "meta-title",
-        "label": "Meta Title (SEO)"
-      },
-      {
-        "component": "text",
-        "valueType": "string",
-        "name": "meta-description",
-        "label": "Meta Description (SEO)"
       },
       {
         "component": "aem-content",
