@@ -1,5 +1,11 @@
 {
   "readArticle": "Leer artículo",
+  "viewMoreArticles": "Ver más artículos",
+  "sortOrder": "Orden:",
+  "sortMostRecent": "Los más recientes",
+  "sortOldest": "Los más antiguos",
+  "selectArticle": "Selecciona un artículo",
+  "loadMore": "Cargar más",
   "featuredArticle": "Artículo destacado",
   "featuredColumnTitle": "En portada",
   "latestColumnTitle": "Últimas publicaciones",

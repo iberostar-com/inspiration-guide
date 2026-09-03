@@ -6,11 +6,44 @@ import {
 } from '../../scripts/inspiration-data.js';
 import { createArticleCard } from '../../scripts/iberostar/article-card.js';
 import { toPublicPagePath } from '../../scripts/iberostar/page-links.js';
+import { getTranslation } from '../../scripts/iberostar/i18n.js';
 import { moveInstrumentation } from '../../scripts/scripts.js';
 
 const HEADING_TAGS = new Set(['h2', 'h3', 'h4', 'h5', 'h6']);
-const CARD_CTA = 'Leer artículo';
 const LOCALE_PATTERN = /^\/[a-z]{2}-[a-z]{2}(?:\/|$)/i;
+const SORT_VALUES = ['recent', 'oldest'];
+
+async function getUiLabels() {
+  const [
+    readArticle,
+    viewMoreArticles,
+    sortOrder,
+    sortMostRecent,
+    sortOldest,
+    selectArticle,
+    loadMore,
+  ] = await Promise.all([
+    getTranslation('readArticle', 'Leer artículo'),
+    getTranslation('viewMoreArticles', 'Ver más artículos'),
+    getTranslation('sortOrder', 'Orden:'),
+    getTranslation('sortMostRecent', 'Los más recientes'),
+    getTranslation('sortOldest', 'Los más antiguos'),
+    getTranslation('selectArticle', 'Selecciona un artículo'),
+    getTranslation('loadMore', 'Load more'),
+  ]);
+
+  return {
+    loadMore,
+    readArticle,
+    selectArticle,
+    sortOptions: [
+      { value: SORT_VALUES[0], label: sortMostRecent },
+      { value: SORT_VALUES[1], label: sortOldest },
+    ],
+    sortOrder,
+    viewMoreArticles,
+  };
+}
 
 function getCurrentLocale() {
   const segments = window.location.pathname.split('/').filter(Boolean);
@@ -239,7 +272,8 @@ function renderPage(list, items, pageSize, currentPage) {
 async function decorateDefault(block) {
   const source = readSource(block);
   const pageSize = Number.parseInt(block.getAttribute('data-page-size') || '4', 10);
-  const ctaLabel = block.getAttribute('data-cta-label') || 'Load more';
+  const labels = await getUiLabels();
+  const ctaLabel = block.getAttribute('data-cta-label') || labels.loadMore;
 
   const items = source === 'manual' ? manualItems(block) : await autoItems(block, source);
 
@@ -301,7 +335,7 @@ function getRefPath(row) {
 }
 
 // Maps an indexed article to the shape expected by the shared ArticleCard helper.
-function toCardData(article) {
+function toCardData(article, labels) {
   return {
     title: article.title,
     description: article.description || article.summary || '',
@@ -312,7 +346,7 @@ function toCardData(article) {
     publicationDate: article.publicationDate || article.publishDate || '',
     readTime: article.readTime || '',
     url: toPublicPagePath(article.url || article.path || '') || '',
-    ctaText: CARD_CTA,
+    ctaText: labels.readArticle,
   };
 }
 
@@ -336,7 +370,7 @@ function enhanceCard(card) {
   }
 }
 
-function renderManualGrid(block, all) {
+function renderManualGrid(block, all, labels) {
   const configRows = getConfigRows(block);
   const title = textByProp(block, 'title') || configRows[1]?.textContent?.trim() || '';
   const levels = configRows
@@ -375,13 +409,13 @@ function renderManualGrid(block, all) {
     moveInstrumentation(row, li);
 
     if (article) {
-      const card = createArticleCard(toCardData(article), { headingTag: cardHeading });
+      const card = createArticleCard(toCardData(article, labels), { headingTag: cardHeading });
       enhanceCard(card);
       li.append(card);
     } else {
       const placeholder = document.createElement('p');
       placeholder.className = 'editorial-highlight-grid-placeholder';
-      placeholder.textContent = 'Selecciona un artículo';
+      placeholder.textContent = labels.selectArticle;
       li.append(placeholder);
     }
 
@@ -394,7 +428,7 @@ function renderManualGrid(block, all) {
     const moreButton = document.createElement('button');
     moreButton.type = 'button';
     moreButton.className = 'editorial-highlight-grid-more';
-    moreButton.textContent = 'Ver más artículos';
+    moreButton.textContent = labels.viewMoreArticles;
 
     const state = { shown: pageSize };
     const applyVisibility = () => {
@@ -416,19 +450,13 @@ function renderManualGrid(block, all) {
 
 async function decorateHome(block) {
   const all = await getArticles();
-  renderManualGrid(block, all);
+  renderManualGrid(block, all, await getUiLabels());
 }
 
 // ---------- tag variant (feed of articles for the current tag page) ----------
 
-const SORT_PREFIX = 'Orden:';
-const TAG_SORTS = [
-  { value: 'recent', label: 'Los más recientes' },
-  { value: 'oldest', label: 'Los más antiguos' },
-];
-
-function sortButtonLabel(label) {
-  return `${SORT_PREFIX} ${label.charAt(0).toLowerCase()}${label.slice(1)}`;
+function sortButtonLabel(prefix, label) {
+  return `${prefix} ${label.charAt(0).toLowerCase()}${label.slice(1)}`;
 }
 
 function articleHasTag(article, tag) {
@@ -444,7 +472,9 @@ function articleHasTag(article, tag) {
   });
 }
 
-function buildFeed(block, matched, pageSize) {
+function buildFeed(block, matched, pageSize, labels) {
+  const { sortOptions } = labels;
+
   block.classList.add('editorial-highlight-grid-home', 'editorial-highlight-grid-listing');
 
   const configRows = getConfigRows(block);
@@ -481,7 +511,7 @@ function buildFeed(block, matched, pageSize) {
 
   const sortLabel = document.createElement('span');
   sortLabel.className = 'editorial-highlight-grid-sort-label';
-  sortLabel.textContent = sortButtonLabel(TAG_SORTS[0].label);
+  sortLabel.textContent = sortButtonLabel(labels.sortOrder, sortOptions[0].label);
 
   const sortIcon = document.createElement('i');
   sortIcon.className = 'editorial-highlight-grid-sort-icon ibh-icon-keyboard-arrow-down';
@@ -497,15 +527,15 @@ function buildFeed(block, matched, pageSize) {
   const moreButton = document.createElement('button');
   moreButton.type = 'button';
   moreButton.className = 'editorial-highlight-grid-more';
-  moreButton.textContent = 'Ver más artículos';
+  moreButton.textContent = labels.viewMoreArticles;
 
-  const state = { order: TAG_SORTS[0].value, shown: pageSize };
+  const state = { order: sortOptions[0].value, shown: pageSize };
 
   const renderCards = () => {
     const items = sortArticles(matched, state.order).slice(0, state.shown).map((article) => {
       const li = document.createElement('li');
       li.className = 'editorial-highlight-grid-item';
-      const card = createArticleCard(toCardData(article), { headingTag: cardHeading });
+      const card = createArticleCard(toCardData(article, labels), { headingTag: cardHeading });
       enhanceCard(card);
       li.append(card);
       return li;
@@ -514,7 +544,7 @@ function buildFeed(block, matched, pageSize) {
     moreButton.hidden = state.shown >= matched.length;
   };
 
-  const optionButtons = TAG_SORTS.map((option, index) => {
+  const optionButtons = sortOptions.map((option, index) => {
     const li = document.createElement('li');
     const optionButton = document.createElement('button');
     optionButton.type = 'button';
@@ -529,9 +559,9 @@ function buildFeed(block, matched, pageSize) {
   optionButtons.forEach((optionButton, index) => {
     optionButton.addEventListener('click', () => {
       // changing the order restarts the feed on the first page
-      if (state.order !== TAG_SORTS[index].value) state.shown = pageSize;
-      state.order = TAG_SORTS[index].value;
-      sortLabel.textContent = sortButtonLabel(TAG_SORTS[index].label);
+      if (state.order !== sortOptions[index].value) state.shown = pageSize;
+      state.order = sortOptions[index].value;
+      sortLabel.textContent = sortButtonLabel(labels.sortOrder, sortOptions[index].label);
       sortButton.setAttribute('aria-expanded', 'false');
       optionButtons.forEach((button) => button.classList.remove('is-selected'));
       optionButton.classList.add('is-selected');
@@ -564,9 +594,10 @@ function buildFeed(block, matched, pageSize) {
 
 async function decorateTag(block) {
   const all = filterArticlesByCurrentLocale(await getArticles());
+  const labels = await getUiLabels();
 
   if (getArticleRows(block).length) {
-    renderManualGrid(block, all);
+    renderManualGrid(block, all, labels);
     return;
   }
 
@@ -574,14 +605,15 @@ async function decorateTag(block) {
   const matched = tags.length
     ? all.filter((article) => tags.some((tag) => articleHasTag(article, tag)))
     : all;
-  buildFeed(block, matched, readPageSize(block));
+  buildFeed(block, matched, readPageSize(block), labels);
 }
 
 async function decorateCategory(block) {
   const all = filterArticlesByCurrentLocale(await getArticles());
+  const labels = await getUiLabels();
 
   if (getArticleRows(block).length) {
-    renderManualGrid(block, all);
+    renderManualGrid(block, all, labels);
     return;
   }
 
@@ -589,7 +621,7 @@ async function decorateCategory(block) {
   const matched = category
     ? all.filter((article) => articleMatchesCategory(article, category))
     : all;
-  buildFeed(block, matched, readPageSize(block));
+  buildFeed(block, matched, readPageSize(block), labels);
 }
 
 export default async function decorate(block) {

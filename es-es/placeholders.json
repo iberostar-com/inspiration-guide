@@ -1,6 +1,12 @@
 {
   "data": [
     { "Key": "readArticle", "Text": "Leer artículo" },
+    { "Key": "viewMoreArticles", "Text": "Ver más artículos" },
+    { "Key": "sortOrder", "Text": "Orden:" },
+    { "Key": "sortMostRecent", "Text": "Los más recientes" },
+    { "Key": "sortOldest", "Text": "Los más antiguos" },
+    { "Key": "selectArticle", "Text": "Selecciona un artículo" },
+    { "Key": "loadMore", "Text": "Cargar más" },
     { "Key": "featuredArticle", "Text": "Artículo destacado" },
     { "Key": "featuredColumnTitle", "Text": "En portada" },
     { "Key": "latestColumnTitle", "Text": "Últimas publicaciones" },

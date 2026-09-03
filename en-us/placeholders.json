@@ -1,6 +1,12 @@
 {
   "data": [
     { "Key": "readArticle", "Text": "Read Article" },
+    { "Key": "viewMoreArticles", "Text": "View more articles" },
+    { "Key": "sortOrder", "Text": "Order:" },
+    { "Key": "sortMostRecent", "Text": "Most recent" },
+    { "Key": "sortOldest", "Text": "Oldest" },
+    { "Key": "selectArticle", "Text": "Select an article" },
+    { "Key": "loadMore", "Text": "Load more" },
     { "Key": "featuredArticle", "Text": "Featured Article" },
     { "Key": "featuredColumnTitle", "Text": "Featured" },
     { "Key": "latestColumnTitle", "Text": "Latest Publications" },
