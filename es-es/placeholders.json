@@ -38,6 +38,11 @@
     { "Key": "currencyNameCLP", "Text": "Peso chileno" },
     { "Key": "currencyNameMXN", "Text": "Peso mexicano" },
     { "Key": "currencyNameBRL", "Text": "Real brasileño" },
-    { "Key": "close", "Text": "Cerrar" }
+    { "Key": "close", "Text": "Cerrar" },
+    { "Key": "notFoundPageTitle", "Text": "Página no encontrada" },
+    { "Key": "notFoundTitle", "Text": "Esta página se ha tomado un descanso" },
+    { "Key": "notFoundSubtitle", "Text": "Parece que esta página se ha ido de viaje. ¿Qué te parece si planificamos el tuyo?" },
+    { "Key": "notFoundCta", "Text": "Volver al inicio" },
+    { "Key": "notFoundImageAlt", "Text": "Playa tropical soleada con sombrillas inclinadas" }
   ]
 }

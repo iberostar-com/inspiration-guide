@@ -1,0 +1,67 @@
+<!-- Draft local de la pagina 404 (bug 171636): copia de /404.html para revisarla en http://localhost:3000/drafts/es-es/inspiration-guide/error-404.html -->
+<!DOCTYPE html>
+<html>
+
+<head>
+  <meta
+    http-equiv="Content-Security-Policy"
+    content="script-src 'nonce-aem' 'strict-dynamic' 'unsafe-inline' http: https:; base-uri 'self'; object-src 'none';"
+    move-to-http-header="true"
+  >
+  <title>Page not found</title>
+  <script nonce="aem" type="text/javascript">
+    window.isErrorPage = true;
+    window.errorCode = '404';
+  </script>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="nav" content="/es-es/inspiration-guide/nav">
+  <meta name="footer" content="/es-es/inspiration-guide/footer">
+  <meta property="og:title" content="Page not found">
+  <script nonce="aem" src="/scripts/aem.js" type="module"></script>
+  <script nonce="aem" src="/scripts/scripts.js" type="module"></script>
+  <script nonce="aem" type="module">
+    import { sampleRUM } from '/scripts/aem.js';
+    sampleRUM('404', { source: document.referrer });
+  </script>
+  <link rel="stylesheet" href="/styles/styles.css">
+  <link rel="icon" href="/favicon.ico" sizes="any">
+</head>
+
+<body>
+  <header></header>
+  <main>
+    <div>
+      <div class="not-found">
+        <div>
+          <div>
+            <h1>This page has taken a break</h1>
+            <p>It looks like this page has gone on a trip. How about we plan yours?</p>
+            <p><a href="/en-us/inspiration-guide">Back to home</a></p>
+          </div>
+          <div>
+            <picture>
+              <source
+                type="image/avif"
+                srcset="/images/not-found/not-found-520.avif 520w, /images/not-found/not-found-1040.avif 1040w"
+                sizes="(min-width: 1440px) 520px, (min-width: 820px) 400px, calc(100vw - 64px)"
+              >
+              <img
+                src="/images/not-found/not-found-1040.webp"
+                srcset="/images/not-found/not-found-520.webp 520w, /images/not-found/not-found-1040.webp 1040w"
+                sizes="(min-width: 1440px) 520px, (min-width: 820px) 400px, calc(100vw - 64px)"
+                width="1040"
+                height="1040"
+                alt="Sunny tropical beach with tilted umbrellas"
+                loading="eager"
+                fetchpriority="high"
+              >
+            </picture>
+          </div>
+        </div>
+      </div>
+    </div>
+  </main>
+  <footer></footer>
+</body>
+
+</html>
