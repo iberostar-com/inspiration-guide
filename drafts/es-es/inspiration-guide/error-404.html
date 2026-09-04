@@ -31,13 +31,29 @@
   <header></header>
   <main>
     <div>
+      <!--
+        Bloque not-found con las mismas filas que genera el modelo autorable (title, subtitle,
+        cta, image). El bloque carga la pagina 404 contribuida en AEM del locale de la URL
+        (/{locale}/inspiration-guide/404); estos valores solo se usan si esa pagina no existe
+        y, para los textos, por detras de los placeholders del locale.
+      -->
       <div class="not-found">
         <div>
           <div>
-            <h1>This page has taken a break</h1>
+            <p>This page has taken a break</p>
+          </div>
+        </div>
+        <div>
+          <div>
             <p>It looks like this page has gone on a trip. How about we plan yours?</p>
+          </div>
+        </div>
+        <div>
+          <div>
             <p><a href="/en-us/inspiration-guide">Back to home</a></p>
           </div>
+        </div>
+        <div>
           <div>
             <picture>
               <source
@@ -52,8 +68,7 @@
                 width="1040"
                 height="1040"
                 alt="Sunny tropical beach with tilted umbrellas"
-                loading="eager"
-                fetchpriority="high"
+                loading="lazy"
               >
             </picture>
           </div>

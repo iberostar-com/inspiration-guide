@@ -24,6 +24,11 @@ main > .section.not-found-container {
   background: #d8f7f3;
 }
 
+/* Filas fuente del bloque (editor y entrega): se ocultan y se pintan las columnas renderizadas */
+.not-found .not-found-source {
+  display: none;
+}
+
 /* Columna de texto */
 .not-found .not-found-content {
   display: flex;
@@ -111,6 +116,11 @@ main > .section.not-found-container {
 
 .not-found .not-found-link:hover [class^="ibh-icon-"] {
   transform: translateX(4px);
+}
+
+/* Sin imagen contribuida el texto ocupa todo el ancho */
+.not-found .not-found-content:last-child {
+  grid-column: 1 / -1;
 }
 
 /* Columna de imagen: en movil va debajo del texto */
