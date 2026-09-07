@@ -54,7 +54,10 @@ function keyFromId(id) {
   return slug ? `/tag/${slug}` : '';
 }
 
-function toKey(value) {
+// Canonical `/tag/<slug>` or `/category/<path>` key for either shape, so callers
+// that only need the taxonomy path (e.g. the analytics Content Grouping) can
+// reuse this parsing synchronously, without loading the published index.
+export function taxonomyKey(value) {
   return /\/(tag|category)\//i.test(`${value || ''}`)
     ? keyFromPath(value)
     : keyFromId(value);
@@ -100,7 +103,7 @@ async function loadTaxonomy() {
 // Title of the landing page for a tag/category id or landing path, or '' when the
 // page does not exist. Callers pair it with their own slug-derived fallback.
 export async function taxonomyTitle(value) {
-  const key = toKey(value);
+  const key = taxonomyKey(value);
   if (!key) return '';
 
   const map = await loadTaxonomy();
