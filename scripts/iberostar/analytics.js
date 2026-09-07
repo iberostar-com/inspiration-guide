@@ -705,17 +705,22 @@ function handleHeroMultimedia(target) {
   return true;
 }
 
+/**
+ * HERO ARTICLE DETAIL (spec 7.2.9): only the sidebar banner CTA, "el componente
+ * de la derecha en el cta de ver hoteles". Hotel mini-cards used to match here
+ * as well, which made the "ver disponibilidad" CTA of the article body report
+ * this event instead of the editorial article content one (bug 170877).
+ * @param {Element} actionable clicked link or button
+ * @returns {boolean} true when the click was tracked
+ */
 function handleHeroViewHotels(actionable) {
-  const miniCard = actionable.closest('.hotel-graphql-mini-card, .hotel-mini-card');
-  const banner = actionable.closest('.editorial-article-banner');
-  if (!miniCard && !banner) return false;
-  if (miniCard && actionable.closest(HOTEL_LIST_ITEM)) return false;
+  if (!actionable.closest('.editorial-article-banner')) return false;
   if (!actionable.matches('a')) return false;
 
   trackLink({
     tealium_event: 'inspiration_guide_module',
     event_cat: 'inspiration guide module',
-    event_act: banner ? 'click' : '',
+    event_act: 'click',
     event_lbl: normalize('view hotels'),
     event_purpose: 'inspiration',
     event_structure: 'body',
@@ -725,9 +730,31 @@ function handleHeroViewHotels(actionable) {
   return true;
 }
 
+/**
+ * EDITORIAL ARTICLE CONTENT (spec 7.2.10): the "ver disponibilidad" CTA of a
+ * hotel mini-card placed in the article body, plus any CTA authored inside the
+ * text block.
+ *
+ * The mini-card is a sibling block of `.editorial-article-content`, not a
+ * descendant, so it needs its own branch. Any anchor of the card counts, the
+ * way the hotel grid treats a whole card as one product: the vertical variant
+ * renders no CTA link at all, only the hotel title.
+ *
+ * The four card blocks share `createHotelMiniCard`, so the card classes exist
+ * inside the recommended grids too. Those clicks are the ecommerce
+ * `select_item` of `handleHotelSelect` and are told apart by their list
+ * ancestor, never by the card class.
+ * @param {Element} actionable clicked link or button
+ * @returns {boolean} true when the click was tracked
+ */
 function handleArticleContentCta(actionable) {
-  if (!actionable.closest('.editorial-article-content')) return false;
-  if (!actionable.matches('a.button, .button-wrapper a')) return false;
+  if (!actionable.matches('a')) return false;
+
+  const inArticleMiniCard = Boolean(actionable.closest('.hotel-graphql-mini-card, .hotel-mini-card'))
+    && !actionable.closest(HOTEL_LIST_ITEM);
+  const inTextBlock = Boolean(actionable.closest('.editorial-article-content'))
+    && actionable.matches('a.button, .button-wrapper a');
+  if (!inArticleMiniCard && !inTextBlock) return false;
 
   trackLink({
     tealium_event: 'inspiration_guide_module',
