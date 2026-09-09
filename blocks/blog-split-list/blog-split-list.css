@@ -5,7 +5,7 @@ main .blog-split-list {
   --blog-split-radius: 4px;
 
   color: var(--blog-split-text);
-  font-family: inter, sans-serif;
+  font-family: var(--body-font-family);
 }
 
 main .blog-split-list .blog-split-list-source {
@@ -30,6 +30,7 @@ main .blog-split-list .blog-split-meta time,
 main .blog-split-list .blog-split-read-time {
   margin: 0;
   color: var(--blog-split-muted);
+  font-family: var(--body-font-family);
   font-size: 12px;
   font-weight: 500;
   letter-spacing: 0.02em;
@@ -88,7 +89,7 @@ main .blog-split-list .blog-split-badge {
   min-height: 32px;
   max-width: calc(100% - 24px);
   border-radius: 100px;
-  padding: 4px 16px;
+  padding: 4px 20px;
   background: var(--blog-split-chip-bg);
   color: var(--blog-split-text);
   font-size: 14px;
@@ -127,10 +128,10 @@ main .blog-split-list .blog-split-item h3 {
 }
 
 main .blog-split-list .blog-split-featured h2 {
-  font-family: noe-display, serif;
-  font-size: 24px;
+  font-family: var(--heading-font-family);
+  font-size: 32px;
   font-weight: 400;
-  line-height: 32px;
+  line-height: 42px;
 }
 
 main .blog-split-list .blog-split-author {
@@ -163,6 +164,11 @@ main .blog-split-list .blog-split-description {
   line-height: 1.4;
 }
 
+/* Figma: los items de lista no muestran descripción (el destacado sí) */
+main .blog-split-list .blog-split-item .blog-split-description {
+  display: none;
+}
+
 main .blog-split-list .blog-split-featured-cta,
 main .blog-split-list .blog-split-item-cta {
   display: inline-flex;
@@ -186,7 +192,7 @@ main .blog-split-list .blog-split-item-cta:hover span {
 
 main .blog-split-list .blog-split-side-list {
   display: grid;
-  gap: 48px;
+  gap: 56px;
   margin: 0;
   padding: 0;
   list-style: none;
@@ -216,36 +222,62 @@ main .blog-split-list .blog-split-item-body {
 }
 
 main .blog-split-list .blog-split-item h3 {
-  font-family: inter, sans-serif;
+  font-family: var(--body-font-family);
   font-size: 18px;
   font-weight: 500;
   line-height: 1.4;
 }
 
-@media (width >= 900px) {
+@media (width >= 576px) {
+  main > .section:has(.blog-split-list) > div {
+    padding-inline: 24px;
+  }
+
+  main .blog-split-list .blog-split-media,
+  main .blog-split-list .blog-split-item-media {
+    aspect-ratio: 528 / 300;
+  }
+}
+
+@media (width >= 820px) {
   main .blog-split-list .blog-split-list-rendered {
-    display: flex;
-    flex-direction: row;
-    gap: 74px;
-    align-items: flex-start;
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) 241px;
+    align-items: start;
+    column-gap: 40px;
   }
 
-  main .blog-split-list .blog-split-list-featured-column {
-    width: 864px;
-    flex-shrink: 0;
+  main .blog-split-list .blog-split-list-has-headings {
+    grid-template-rows: auto 1fr;
+    row-gap: 24px;
   }
 
-  main .blog-split-list .blog-split-list-latest-column {
-    width: 336px;
-    flex-shrink: 0;
+  main .blog-split-list .blog-split-list-has-headings .blog-split-list-featured-column,
+  main .blog-split-list .blog-split-list-has-headings .blog-split-list-latest-column {
+    display: grid;
+    grid-row: span 2;
+    grid-template-rows: subgrid;
+  }
+
+  main .blog-split-list .blog-split-list-has-headings .blog-split-list-eyebrow {
+    grid-row: 1;
+  }
+
+  main .blog-split-list .blog-split-list-has-headings .blog-split-featured,
+  main .blog-split-list .blog-split-list-has-headings .blog-split-side-list {
+    grid-row: 2;
   }
 
   main .blog-split-list .blog-split-media {
-    aspect-ratio: 16 / 10;
+    aspect-ratio: 491 / 381;
   }
 
   main .blog-split-list .blog-split-item-media {
-    aspect-ratio: 336 / 260;
+    aspect-ratio: 241 / 210;
+  }
+
+  main .blog-split-list .blog-split-body {
+    padding: 32px 16px 0;
   }
 
   main .blog-split-list .blog-split-author picture,
@@ -253,26 +285,57 @@ main .blog-split-list .blog-split-item h3 {
     width: 40px;
     height: 40px;
   }
+}
 
-  main .blog-split-list .blog-split-description {
-    font-size: 18px;
+@media (width >= 1440px) {
+  main > .section:has(.blog-split-list) > div {
+    max-width: unset;
   }
 
-  main .blog-split-list .blog-split-badge {
-    top: 16px;
-    left: 16px;
+  main .blog-split-list .blog-split-list-rendered {
+    max-width: 1274px;
+    margin-inline: auto;
+    grid-template-columns: minmax(0, 1fr) 336px;
+    column-gap: 74px;
+  }
+
+  main .blog-split-list .blog-split-media {
+    aspect-ratio: 16 / 10;
+  }
+
+  main .blog-split-list .blog-split-item-media {
+    aspect-ratio: 336 / 250;
   }
 
   main .blog-split-list .blog-split-body {
     padding: 32px 16px 0;
   }
 
-  main .blog-split-list .blog-split-side-list {
-    gap: 56px;
+  main .blog-split-list .blog-split-description {
+    font-size: 18px;
   }
 
-  main .blog-split-list .blog-split-featured h2 {
-    font-size: 32px;
-    line-height: 42px;
+  main .blog-split-list .blog-split-author picture,
+  main .blog-split-list .blog-split-author img {
+    width: 40px;
+    height: 40px;
   }
+}
+
+@media (width >= 1920px) {
+  main .blog-split-list .blog-split-list-rendered {
+    max-width: 1450px;
+    grid-template-columns: minmax(0, 1fr) 496px;
+    column-gap: 90px;
+  }
+
+  main .blog-split-list .blog-split-item-media {
+    aspect-ratio: 496 / 250;
+  }
+}
+
+main .blog-split-list .blog-split-list-empty {
+  margin: 0;
+  color: var(--blog-split-muted);
+  font-size: 14px;
 }

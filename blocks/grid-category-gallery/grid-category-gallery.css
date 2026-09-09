@@ -28,7 +28,6 @@ main .grid-category-gallery .grid-category-gallery-rendered {
 
 main .grid-category-gallery .grid-category-gallery-header {
   display: flex;
-  align-items: flex-start;
   flex-direction: column;
   gap: 16px;
 }
@@ -44,7 +43,7 @@ main .grid-category-gallery .grid-category-gallery-header-text {
 main .grid-category-gallery .grid-category-gallery-heading {
   margin: 0;
   color: #1b2828;
-  font-family: noe-display, serif;
+  font-family: var(--heading-font-family);
   font-size: 28px;
   font-weight: 400;
   line-height: 38px;
@@ -54,7 +53,7 @@ main .grid-category-gallery .grid-category-gallery-subheading {
   order: -1;
   margin: 0;
   color: #1b2828;
-  font-family: inter, sans-serif;
+  font-family: var(--body-font-family);
   font-size: 12px;
   font-weight: 500;
   letter-spacing: 0.24px;
@@ -69,7 +68,7 @@ main .grid-category-gallery .grid-category-gallery-cta {
   align-items: center;
   gap: 8px;
   color: #1b2828;
-  font-family: inter, sans-serif;
+  font-family: var(--body-font-family);
   font-size: 16px;
   font-weight: 500;
   line-height: 1.4;
@@ -107,7 +106,7 @@ main .grid-category-gallery .grid-category-gallery-list::-webkit-scrollbar {
 }
 
 main .grid-category-gallery .grid-category-gallery-item {
-  flex: 0 0 calc(100% - 17px);
+  flex: 0 0 min(310px, calc(100% - 17px));
   scroll-snap-align: start;
 }
 
@@ -182,7 +181,7 @@ main .grid-category-gallery .grid-category-gallery-body {
 main .grid-category-gallery .grid-category-gallery-subtitle {
   margin: 0;
   color: #fff;
-  font-family: inter, sans-serif;
+  font-family: var(--body-font-family);
   font-size: 12px;
   font-weight: 500;
   letter-spacing: 0.24px;
@@ -193,7 +192,7 @@ main .grid-category-gallery .grid-category-gallery-subtitle {
 main .grid-category-gallery .grid-category-gallery-title {
   margin: 0;
   color: #fff;
-  font-family: noe-display, serif;
+  font-family: var(--heading-font-family);
   font-size: 24px;
   font-weight: 400;
   line-height: 32px;
@@ -274,21 +273,49 @@ main .grid-category-gallery .grid-category-gallery-dot.is-active {
   background: #38a596;
 }
 
-@media (width >= 600px) {
+@media (width >= 576px) {
+  main .grid-category-gallery .grid-category-gallery-rendered {
+    padding-inline: 24px;
+  }
+
+  main .grid-category-gallery .grid-category-gallery-list {
+    margin: 0 -24px;
+    padding: 0 24px;
+    scroll-padding-left: 24px;
+  }
+}
+
+@media (width >= 820px) {
   main .grid-category-gallery .grid-category-gallery-rendered {
     gap: 40px;
+    padding: 64px 24px;
   }
 
   main .grid-category-gallery .grid-category-gallery-header {
-    align-items: flex-end;
     flex-direction: row;
+    align-items: flex-end;
     justify-content: space-between;
+  }
+
+  /* Figma M/L/XL: el texto nunca invade el CTA (197px) ni su gap (16px) */
+  main .grid-category-gallery .grid-category-gallery-header-text {
+    max-width: calc(100% - 222px);
+  }
+
+  main .grid-category-gallery .grid-category-gallery-heading {
+    font-size: 32px;
+    line-height: 42px;
+  }
+
+  main .grid-category-gallery .grid-category-gallery-card {
+    height: auto;
+    aspect-ratio: 1;
   }
 
   main .grid-category-gallery .grid-category-gallery-list {
     display: grid;
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-    gap: 24px;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 16px;
     margin: 0;
     padding: 0;
     overflow: visible;
@@ -299,31 +326,12 @@ main .grid-category-gallery .grid-category-gallery-dot.is-active {
     flex: initial;
   }
 
-  main .grid-category-gallery .grid-category-gallery-card.has-image::after {
-    background: rgb(0 0 0 / 15%);
+  main .grid-category-gallery .grid-category-gallery-body {
+    padding: 0 0 8px 16px;
   }
 
   main .grid-category-gallery .grid-category-gallery-controls {
     display: none;
-  }
-}
-
-@media (width >= 900px) {
-  main .grid-category-gallery .grid-category-gallery-rendered {
-    padding: 64px clamp(32px, 5.76vw, 83px);
-  }
-
-  main .grid-category-gallery .grid-category-gallery-heading {
-    font-size: 32px;
-    line-height: 42px;
-  }
-
-  main .grid-category-gallery .grid-category-gallery-list {
-    grid-template-columns: repeat(4, minmax(0, 1fr));
-  }
-
-  main .grid-category-gallery .grid-category-gallery-body {
-    padding: 0 0 24px 32px;
   }
 
   main .article-layout-main .grid-category-gallery .grid-category-gallery-rendered,
@@ -334,5 +342,35 @@ main .grid-category-gallery .grid-category-gallery-dot.is-active {
   main .article-layout-main .grid-category-gallery .grid-category-gallery-list,
   main .section.article-main .grid-category-gallery .grid-category-gallery-list {
     grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (width >= 1440px) {
+  main .grid-category-gallery .grid-category-gallery-rendered {
+    padding: 64px 83px;
+  }
+
+  main .grid-category-gallery .grid-category-gallery-list {
+    gap: 24px;
+  }
+
+  main .grid-category-gallery .grid-category-gallery-body {
+    padding: 0 0 24px 32px;
+  }
+}
+
+@media (width >= 1920px) {
+  main > .section:has(.grid-category-gallery) > div {
+    max-width: 1920px;
+  }
+
+  main .grid-category-gallery .grid-category-gallery-rendered {
+    max-width: 1920px;
+    padding-inline: 235px;
+  }
+
+  main .grid-category-gallery .grid-category-gallery-title {
+    font-size: 28px;
+    line-height: 38px;
   }
 }

@@ -10,8 +10,27 @@
  */
 
 import getEnvironmentConfig from './environment-config.js';
+import { taxonomyKey } from './taxonomy.js';
 
 const ONETRUST_SRC = 'https://cdn.cookielaw.org/scripttemplates/otSDKStub.js';
+
+// Content Grouping (bug 170880). `page_section` is constant for the whole
+// microsite; pages with no category of their own (home, tag landings) report
+// the same `other` default the AEM data layer uses.
+const PAGE_SECTION = 'inspiration guide';
+const PAGE_CATEGORY_DEFAULT = 'other';
+// Page types that already identify the page on their own, so their screen_name
+// needs no third segment (there is a single home and a single error page).
+const SELF_IDENTIFYING_PAGE_TYPES = ['home', '404', 'error'];
+// Spec values for variables that carry no data on this page: `not set` when the
+// value is simply unknown, `not applicable` when the concept does not exist in
+// the blog (there is no booking funnel in the Inspiration Guide).
+const NOT_SET = 'not set';
+const NOT_APPLICABLE = 'not applicable';
+// sessionStorage key holding the screen_name of the page the visitor comes
+// from. Shared on purpose with the AEM data layer: both sites are served from
+// the same origin, so hops between iberostar.com and the blog keep the chain.
+const SCREEN_NAME_STORAGE_KEY = 'ibs_analytics_screen_name';
 
 const HOTEL_LIST_RENDERED = '.recommended-hotels-grid-rendered, .recommended-dynamic-hotels-grid-rendered';
 const HOTEL_LIST_ITEM = '.recommended-hotels-item, .recommended-dynamic-hotels-item';
@@ -126,11 +145,19 @@ function getLocaleFromPath() {
   return (locale || document.documentElement.lang || 'en').toLowerCase();
 }
 
+/**
+ * Tealium `environment`, using the same vocabulary as the AEM data layer:
+ * `prod` only for the live domain, `dev` for everything else (DEV/QA/PRE
+ * behind the CDN, aem.page/aem.live, author and localhost). Anything that is
+ * not an `aem-grs*` host under iberostar.com is production, so a future live
+ * domain never leaks blog traffic into a test property.
+ * @returns {string}
+ */
 function getEnvironment() {
   const { hostname } = window.location;
-  if (hostname === 'localhost' || hostname === '127.0.0.1') return 'dev';
-  if (hostname.endsWith('.aem.page') || /^author-p\d+/.test(hostname)) return 'stage';
-  return 'prod';
+  const isIberostarDomain = /(^|\.)iberostar\.com$/i.test(hostname);
+  const isNonProduction = /(^|\.)aem-grs[a-z]+\.iberostar\.com$/i.test(hostname);
+  return isIberostarDomain && !isNonProduction ? 'prod' : 'dev';
 }
 
 /**
@@ -154,6 +181,10 @@ function getDeviceType() {
 }
 
 function getPageType() {
+  // 404.html declares these globals before scripts.js runs. Without them every
+  // error page would fall through to `home` and pollute that content group.
+  if (window.isErrorPage) return `${window.errorCode || 'error'}`.toLowerCase();
+
   const fromMeta = getMeta('page-type').toLowerCase();
   if (fromMeta && fromMeta !== 'default') return fromMeta;
 
@@ -165,6 +196,80 @@ function getPageType() {
 }
 
 /**
+ * `page_category` for Content Grouping: the category taxonomy of the page with
+ * the "categorias" prefix of the AEM tag stripped, e.g.
+ * `inspiration-guide:categorias/destinos/islas-baleares` -> `destinos
+ * islas-baleares`. Articles take it from their own metadata, category landings
+ * fall back to their URL. Home and tag landings have no category and report the
+ * `other` default. Only the first category is used when an article has several.
+ * @returns {string}
+ */
+function getPageCategory() {
+  const path = window.location.pathname;
+  const source = getMeta('article-category') || (/\/category\//i.test(path) ? path : '');
+  const key = source ? taxonomyKey(source) : '';
+  if (!key.startsWith('/category/')) return PAGE_CATEGORY_DEFAULT;
+
+  // sanitizeValue already turns the `/` separators into spaces.
+  return sanitizeValue(key.replace('/category/', '')) || PAGE_CATEGORY_DEFAULT;
+}
+
+/**
+ * `screen_name` for Content Grouping: `{page_section}:{page_type}` followed by
+ * the identity of the page, e.g. `inspiration guide:article:hoteles tranquilos
+ * de baleares`. Keeps the `{section}:{type}` composition the AEM data layer
+ * uses for `page_name`, so both sites group traffic the same way. Category and
+ * tag landings are identified by their taxonomy slug, which is stable across
+ * locales; articles by their visible H1, falling back to the document title.
+ * @param {string} pageType resolved page_type
+ * @param {string} pageCategory resolved page_category
+ * @returns {string}
+ */
+function buildScreenName(pageType, pageCategory) {
+  const parts = [PAGE_SECTION, pageType];
+
+  if (pageType === 'category') {
+    parts.push(pageCategory);
+  } else if (pageType === 'tag') {
+    parts.push(sanitizeValue(taxonomyKey(window.location.pathname).replace('/tag/', '')));
+  } else if (!SELF_IDENTIFYING_PAGE_TYPES.includes(pageType)) {
+    parts.push(textOf(document.querySelector('main h1')) || sanitizeValue(document.title));
+  }
+
+  return parts.filter((part) => part && part !== PAGE_CATEGORY_DEFAULT).join(':');
+}
+
+/**
+ * `previous_page` must carry the previous `screen_name` in the same format
+ * (Merkle validation, 21/08/2026), not the raw referrer, because GA4 builds
+ * navigation paths from screen names. Falls back to `not set` on the first page
+ * view of the session, on direct access and whenever sessionStorage is
+ * unavailable (private browsing, blocked storage).
+ * @returns {string}
+ */
+function readPreviousScreenName() {
+  try {
+    return window.sessionStorage.getItem(SCREEN_NAME_STORAGE_KEY) || NOT_SET;
+  } catch (error) {
+    return NOT_SET;
+  }
+}
+
+/**
+ * Stores the screen_name of the current page so the next one can report it as
+ * `previous_page`.
+ * @param {string} screenName value already published in the data layer
+ */
+function storeScreenName(screenName) {
+  if (!screenName) return;
+  try {
+    window.sessionStorage.setItem(SCREEN_NAME_STORAGE_KEY, screenName);
+  } catch (error) {
+    // Storage unavailable: previous_page degrades to `not set` on the next view.
+  }
+}
+
+/**
  * Builds the universal data object (utag_data) with every value that can be
  * derived from the page. Per spec, fields that do not apply are omitted.
  * @returns {Object}
@@ -172,12 +277,15 @@ function getPageType() {
 export function buildPageData() {
   const url = new URL(window.location.href);
   const params = url.searchParams;
+  const pageType = getPageType();
+  const pageCategory = getPageCategory();
 
   const data = {
-    screen_name: url.pathname.toLowerCase(),
-    page_section: 'inspiration guide',
-    page_category: sanitizeValue(getMeta('article-category').split(/[,:]/).pop()),
-    page_type: getPageType(),
+    screen_name: buildScreenName(pageType, pageCategory),
+    page_section: PAGE_SECTION,
+    page_category: pageCategory,
+    page_type: pageType,
+    page_booking_process: NOT_APPLICABLE,
     page_platform: 'web',
     page_language: getLocaleFromPath(),
     page_domain: url.hostname.toLowerCase(),
@@ -187,7 +295,7 @@ export function buildPageData() {
     page_pathname: url.pathname.toLowerCase(),
     page_content_title: textOf(document.querySelector('main h1')),
     page_query_string: url.search.replace(/^\?/, ''),
-    previous_page: document.referrer || '',
+    previous_page: readPreviousScreenName(),
     device_type: getDeviceType(),
     environment: getEnvironment(),
     campaign_name: params.get('utm_campaign') || '',
@@ -372,6 +480,25 @@ function handleLanguageOption(actionable) {
     module_name: 'intra module',
     module_content: 'information',
     ...(locale ? { page_language: locale } : {}),
+  });
+  return true;
+}
+
+function handleCurrencyOption(actionable) {
+  const option = actionable.closest('.nav-language-currency-button');
+  if (!option) return false;
+
+  const code = `${option.dataset.currency || ''}`.trim().toUpperCase();
+  trackLink({
+    tealium_event: 'change_currency',
+    event_cat: 'page info',
+    event_act: 'change currency',
+    event_lbl: normalize(code),
+    event_purpose: 'information',
+    event_structure: languageContext,
+    module_name: 'intra module',
+    module_content: 'information',
+    ...(code ? { page_currency: code } : {}),
   });
   return true;
 }
@@ -578,15 +705,22 @@ function handleHeroMultimedia(target) {
   return true;
 }
 
+/**
+ * HERO ARTICLE DETAIL (spec 7.2.9): only the sidebar banner CTA, "el componente
+ * de la derecha en el cta de ver hoteles". Hotel mini-cards used to match here
+ * as well, which made the "ver disponibilidad" CTA of the article body report
+ * this event instead of the editorial article content one (bug 170877).
+ * @param {Element} actionable clicked link or button
+ * @returns {boolean} true when the click was tracked
+ */
 function handleHeroViewHotels(actionable) {
-  if (!actionable.closest('.hotel-graphql-mini-card, .hotel-mini-card')) return false;
-  if (actionable.closest(HOTEL_LIST_ITEM)) return false;
+  if (!actionable.closest('.editorial-article-banner')) return false;
   if (!actionable.matches('a')) return false;
 
   trackLink({
     tealium_event: 'inspiration_guide_module',
     event_cat: 'inspiration guide module',
-    event_act: '',
+    event_act: 'click',
     event_lbl: normalize('view hotels'),
     event_purpose: 'inspiration',
     event_structure: 'body',
@@ -596,9 +730,31 @@ function handleHeroViewHotels(actionable) {
   return true;
 }
 
+/**
+ * EDITORIAL ARTICLE CONTENT (spec 7.2.10): the "ver disponibilidad" CTA of a
+ * hotel mini-card placed in the article body, plus any CTA authored inside the
+ * text block.
+ *
+ * The mini-card is a sibling block of `.editorial-article-content`, not a
+ * descendant, so it needs its own branch. Any anchor of the card counts, the
+ * way the hotel grid treats a whole card as one product: the vertical variant
+ * renders no CTA link at all, only the hotel title.
+ *
+ * The four card blocks share `createHotelMiniCard`, so the card classes exist
+ * inside the recommended grids too. Those clicks are the ecommerce
+ * `select_item` of `handleHotelSelect` and are told apart by their list
+ * ancestor, never by the card class.
+ * @param {Element} actionable clicked link or button
+ * @returns {boolean} true when the click was tracked
+ */
 function handleArticleContentCta(actionable) {
-  if (!actionable.closest('.editorial-article-content')) return false;
-  if (!actionable.matches('a.button, .button-wrapper a')) return false;
+  if (!actionable.matches('a')) return false;
+
+  const inArticleMiniCard = Boolean(actionable.closest('.hotel-graphql-mini-card, .hotel-mini-card'))
+    && !actionable.closest(HOTEL_LIST_ITEM);
+  const inTextBlock = Boolean(actionable.closest('.editorial-article-content'))
+    && actionable.matches('a.button, .button-wrapper a');
+  if (!inArticleMiniCard && !inTextBlock) return false;
 
   trackLink({
     tealium_event: 'inspiration_guide_module',
@@ -660,18 +816,22 @@ function getProductId(item, name) {
 function readProduct(item, index) {
   const title = item.querySelector('.hotel-mini-card-title');
   const name = sanitizeValue(getCleanText(title));
+  const priceEl = item.querySelector('.hotel-mini-card-price');
   return {
     id: getProductId(item, name),
     name,
-    price: parsePrice(item.querySelector('.hotel-mini-card-price')?.textContent),
+    // product_unit_price must stay in the market base currency: prefer the
+    // base amount stamped by the dynamic blocks over the displayed text,
+    // which may be converted to the visitor-selected currency.
+    price: priceEl?.dataset.priceAmount || parsePrice(priceEl?.textContent),
     position: `${index + 1}`,
     stars: item.dataset.analyticsStars || '',
     location: textOf(item.querySelector('.hotel-mini-card-location')),
     continent: item.dataset.analyticsContinent || '',
     country: item.dataset.analyticsCountry || '',
-    // Taxonomia ecommerce (plan fase 2): hoy HotelByCode aun no devuelve estos
-    // campos, asi que llegan vacios; cuando backend amplie la query, el grid
-    // los estampa como data-analytics-* y los eventos se completan solos.
+    // Taxonomia ecommerce: el grid la obtiene de hotels_data.json del DAM
+    // (via hotels-api.js) y la estampa como data-analytics-*; misma fuente
+    // que las metricas de la home clasica de iberostar.com.
     brand: item.dataset.analyticsBrand || '',
     category: item.dataset.analyticsCategory || '',
     subcategory: item.dataset.analyticsSubcategory || '',
@@ -841,6 +1001,7 @@ function initNewsletterTracking() {
 
 const CLICK_HANDLERS = [
   handleLanguageOption,
+  handleCurrencyOption,
   handleHeaderClick,
   handleFooterClick,
   handleHotelSelect,
@@ -891,6 +1052,7 @@ export default function initAnalytics() {
 
   initConsent();
   window.utag_data = { ...buildPageData(), ...(window.utag_data || {}) };
+  storeScreenName(window.utag_data.screen_name);
   loadTealium();
 
   document.addEventListener('click', onDocumentClick, { capture: true });

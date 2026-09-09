@@ -4,11 +4,16 @@ import {
 import { getPlaceholder } from '../../scripts/iberostar/placeholders.js';
 import { toPageHref } from '../../scripts/iberostar/page-links.js';
 import {
+  buildHotelPublicUrl,
+  buildHotelsPublicIndexUrl,
   fetchHotelByCode,
   fetchHotelPriceByCode,
-  getLocaleTagFromPath,
   isValidHotelCode,
 } from '../../scripts/iberostar/hotels-api.js';
+import {
+  getHotelPriceData,
+  initHotelPriceLiveUpdate,
+} from '../../scripts/iberostar/hotel-price-line.js';
 import { moveInstrumentation } from '../../scripts/scripts.js';
 
 const DEFAULT_VISIBLE_COUNT = 4;
@@ -45,6 +50,10 @@ function getAnchor(field) {
   return field?.querySelector?.('a[href]') || null;
 }
 
+function isTargetValue(value) {
+  return /^_(self|blank)$/i.test(`${value || ''}`.trim());
+}
+
 function hasConfigFields(row) {
   return Boolean(row.querySelector?.(
     '[data-aue-prop="eyebrow"], [data-aue-prop="title"], '
@@ -77,12 +86,19 @@ function getConfigField(block, propName, legacyAttr) {
   if (block.hasAttribute(legacyAttr)) return null;
 
   const rows = getConfigRows(block);
-  const ctaRow = rows.find((row) => getAnchor(row));
+  const ctaLinkRow = rows.find((row) => {
+    const href = getAnchor(row)?.getAttribute('href')?.trim();
+    return href && !isTargetValue(href);
+  });
+  const ctaTargetRow = rows.find((row) => {
+    const href = getAnchor(row)?.getAttribute('href')?.trim();
+    return isTargetValue(href) || isTargetValue(row.textContent);
+  });
   let row = rows[CONFIG_FIELD_POSITIONS[propName]];
 
-  if (propName === 'gridCta_linkText') row = ctaRow || rows[2];
-  if (propName === 'gridCta_link') row = ctaRow || rows[3] || rows[2];
-  if (propName === 'gridCta_linkTarget') row = ctaRow || rows[4] || rows[2];
+  if (propName === 'gridCta_linkText') row = rows[2] || ctaLinkRow;
+  if (propName === 'gridCta_link') row = ctaLinkRow || rows[3];
+  if (propName === 'gridCta_linkTarget') row = ctaTargetRow || rows[4];
 
   const cells = getCells(row);
   return cells[cells.length - 1] || null;
@@ -99,9 +115,11 @@ function getConfigValue(block, propName, legacyAttr) {
 function getConfigHref(block, propName, legacyAttr) {
   const field = getConfigField(block, propName, legacyAttr);
   const legacyValue = block.getAttribute(legacyAttr);
-  return getAnchor(field)?.getAttribute('href')?.trim()
+  const hrefValue = getAnchor(field)?.getAttribute('href')?.trim();
+  const textValue = field?.textContent?.trim();
+  return (isTargetValue(hrefValue) ? '' : hrefValue)
     || legacyValue?.trim()
-    || field?.textContent?.trim()
+    || (isTargetValue(textValue) ? '' : textValue)
     || '';
 }
 
@@ -109,16 +127,25 @@ function normalizeTarget(value) {
   return `${value || ''}`.trim().toLowerCase() === '_blank' ? '_blank' : '_self';
 }
 
-function getCtaConfig(block) {
+function getLocaleSegment(pathname = window.location.pathname) {
+  const segments = `${pathname || ''}`.split('/').filter(Boolean);
+  const segment = segments.find((item) => /^[a-z]{2}-[a-z]{2}$/i.test(item));
+  return segment ? segment.toLowerCase() : '';
+}
+
+function getCtaConfig(block, fallbackText) {
   const field = getConfigField(block, 'gridCta_linkTarget', 'data-cta-link-target');
   const anchor = getAnchor(field);
   const target = anchor?.getAttribute('target')
     || getConfigValue(block, 'gridCta_linkTarget', 'data-cta-link-target');
+  const localeSegment = getLocaleSegment();
 
   return {
-    href: getConfigHref(block, 'gridCta_link', 'data-cta-link'),
+    href: getConfigHref(block, 'gridCta_link', 'data-cta-link')
+      || buildHotelsPublicIndexUrl(localeSegment),
     target: normalizeTarget(target),
-    text: getConfigValue(block, 'gridCta_linkText', 'data-cta-link-text'),
+    text: getConfigValue(block, 'gridCta_linkText', 'data-cta-link-text')
+      || fallbackText,
   };
 }
 
@@ -142,28 +169,30 @@ function isDebugEnabled() {
   return query === '1' || query?.toLowerCase() === 'true';
 }
 
-function getLocaleSegment(pathname = window.location.pathname) {
-  const segments = `${pathname || ''}`.split('/').filter(Boolean);
-  const segment = segments.find((item) => /^[a-z]{2}-[a-z]{2}$/i.test(item));
-  return segment ? segment.toLowerCase() : '';
-}
-
 function createHotelHref(hotel) {
   if (!hotel?.slug) return '';
-  const localeSegment = getLocaleSegment();
-  const slug = `${hotel.slug}`.split('/').filter(Boolean).join('/');
-  if (!slug) return '';
-
-  return localeSegment
-    ? `/${localeSegment}/hotels/${slug}`
-    : `/hotels/${slug}`;
+  return buildHotelPublicUrl(hotel.slug, getLocaleSegment());
 }
 
 function getItemHref(row) {
   const linkProp = row.querySelector('[data-aue-prop="cta_link"]');
   const link = getAnchor(linkProp);
-  if (link?.getAttribute('href')) return link.getAttribute('href').trim();
-  return getText(linkProp);
+  const href = link?.getAttribute('href')?.trim();
+  const text = getText(linkProp);
+  if (href && !isTargetValue(href)) return href;
+  if (text && !isTargetValue(text)) return text;
+
+  const cells = getCells(row);
+  const fallback = cells
+    .map((cell) => getAnchor(cell)?.getAttribute('href')?.trim() || getText(cell))
+    .find((value) => {
+      const normalized = `${value || ''}`.trim();
+      return normalized
+        && !isTargetValue(normalized)
+        && (normalized.startsWith('/') || /^https?:\/\//i.test(normalized));
+    });
+
+  return fallback || '';
 }
 
 function getItemTarget(row) {
@@ -430,49 +459,6 @@ function createEmptyState(message) {
   return empty;
 }
 
-function formatCurrencyValue(value, currency) {
-  if (!Number.isFinite(value) || !currency) return '';
-
-  const locale = getLocaleTagFromPath();
-  return new Intl.NumberFormat(locale, {
-    currency,
-    maximumFractionDigits: 0,
-    minimumFractionDigits: 0,
-    style: 'currency',
-  }).format(Math.round(value));
-}
-
-async function getPriceText(hotel, hotelCode, endpointPrice = null) {
-  const [prefix, perNightLabel, personSingular, personPlural] = await Promise.all([
-    getPlaceholder('hotelPriceFromPrefix', 'Desde'),
-    getPlaceholder('hotelPricePerNight', '/ noche'),
-    getPlaceholder('hotelPricePersonSingular', 'persona'),
-    getPlaceholder('hotelPricePersonPlural', 'personas'),
-  ]);
-
-  const resolvedEndpointPrice = endpointPrice || await fetchHotelPriceByCode(hotelCode);
-  const fallbackPrice = Number.isFinite(hotel?.estimatedMinPrice)
-    ? {
-      currency: hotel?.estimatedMinCurrency || '',
-      defaultOccupancy: { adults: 2, children: [] },
-      priceFrom: hotel.estimatedMinPrice,
-    }
-    : null;
-  const selectedPrice = resolvedEndpointPrice || fallbackPrice;
-
-  if (!selectedPrice?.currency || !Number.isFinite(selectedPrice?.priceFrom)) return '';
-
-  const adults = selectedPrice?.defaultOccupancy?.adults || 2;
-  const peopleLabel = adults === 1 ? personSingular : personPlural;
-  const formattedPrice = formatCurrencyValue(selectedPrice.priceFrom, selectedPrice.currency);
-
-  return [prefix, formattedPrice, `${adults} ${peopleLabel}`, perNightLabel]
-    .filter(Boolean)
-    .join(' ')
-    .replace(/\s+/g, ' ')
-    .trim();
-}
-
 function createList(entries, labels) {
   const list = document.createElement('ul');
   list.className = 'recommended-dynamic-hotels-list';
@@ -515,6 +501,7 @@ function createList(entries, labels) {
 }
 
 export default async function decorate(block) {
+  initHotelPriceLiveUpdate();
   const existing = block.querySelector(':scope > .recommended-dynamic-hotels-grid-rendered');
   if (existing) {
     existing.sliderCleanup?.();
@@ -532,17 +519,19 @@ export default async function decorate(block) {
     next,
     goTo,
     of,
+    viewAllHotels,
   ] = await Promise.all([
     getPlaceholder('hotelsCarousel', 'Recommended hotels'),
     getPlaceholder('carouselPrevious', 'Previous hotels'),
     getPlaceholder('carouselNext', 'Next hotels'),
     getPlaceholder('carouselGoTo', 'Go to hotel group'),
     getPlaceholder('carouselOf', 'of'),
+    getPlaceholder('viewAllHotels', 'View all hotels'),
   ]);
 
   const labels = {
     carousel,
-    cta: getCtaConfig(block),
+    cta: getCtaConfig(block, viewAllHotels),
     eyebrow: getConfigValue(block, 'eyebrow', 'data-eyebrow'),
     goTo,
     next,
@@ -594,7 +583,7 @@ export default async function decorate(block) {
         const hotelWithPrice = price
           ? { ...hotel, estimatedMinPrice: price.priceFrom, estimatedMinCurrency: price.currency }
           : hotel;
-        const priceFrom = await getPriceText(hotelWithPrice, hotelCode, price);
+        const priceData = await getHotelPriceData(hotelWithPrice, hotelCode, price);
         const fallbackHref = createHotelHref(hotel);
         return {
           hotelData: {
@@ -604,7 +593,8 @@ export default async function decorate(block) {
             imageAlt: hotel.title || '',
             location: destination || hotel.destination || '',
             name: hotel.title || '',
-            priceFrom,
+            priceFrom: priceData?.text || '',
+            priceData,
             stars: hotel.stars || 0,
             tagLabel: tagLabel || '',
             target,

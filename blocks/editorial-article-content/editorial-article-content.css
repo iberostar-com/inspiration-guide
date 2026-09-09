@@ -1,6 +1,6 @@
 main .editorial-article-content {
   color: #1b2828;
-  font-family: Inter, sans-serif;
+  font-family: var(--body-font-family);
 }
 
 main .editorial-article-content .editorial-article-content-source {
@@ -34,7 +34,7 @@ main .editorial-article-content .editorial-article-content-rendered b {
 
 main .editorial-article-content .editorial-article-content-rendered h2 {
   color: #1b2828;
-  font-family: "Noe Display", serif;
+  font-family: var(--heading-font-family);
   font-size: 32px;
   font-weight: 400;
   line-height: 42px;
@@ -42,7 +42,7 @@ main .editorial-article-content .editorial-article-content-rendered h2 {
 
 main .editorial-article-content .editorial-article-content-rendered h3 {
   color: #1b2828;
-  font-family: "Noe Display", serif;
+  font-family: var(--heading-font-family);
   font-size: 24px;
   font-weight: 400;
   line-height: 32px;

@@ -7,6 +7,7 @@ indices:
     exclude:
       - '/**.json'
       - '/**/*.json'
+      - '/**/404'
     target: /query-index.json
     properties:
       path:

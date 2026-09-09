@@ -8,6 +8,7 @@ Recommended public path structure for the microsite:
 /inspiration-guide/
   /nav
   /footer
+  /404
   /home
   /category/
     /beach
@@ -32,6 +33,10 @@ If the project is mapped from AEM Author, the author-side source pages should re
 - `/inspiration-guide/footer`
   - dedicated fragment page for the microsite footer
   - consumed by `blocks/footer/footer.js`
+- `/inspiration-guide/404`
+  - authorable 404 page, one per locale, built with the `not-found` block (title, subtitle, CTA, image)
+  - `404.html` loads it as the generic error page for every missing path of that locale; when it does not exist the block falls back to the locale placeholders and the default image
+  - excluded from `/query-index.json` (and the sitemap) in `helix-query.yaml`
 - `/inspiration-guide/home`
   - Home page
 - `/inspiration-guide/category/{slug}`

@@ -1,0 +1,55 @@
+<!--
+  Mock del bloque not-found con la instrumentacion de Universal Editor (data-aue-*), para
+  comprobar que los campos se leen por data-aue-prop y que la imagen conserva la instrumentacion.
+  http://localhost:3000/drafts/not-found-ue-test.html
+-->
+<!DOCTYPE html>
+<html>
+
+<head>
+  <title>Not found (UE mock)</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="nav" content="/es-es/inspiration-guide/nav">
+  <meta name="footer" content="/es-es/inspiration-guide/footer">
+  <script nonce="aem" src="/scripts/aem.js" type="module"></script>
+  <script nonce="aem" src="/scripts/scripts.js" type="module"></script>
+  <link rel="stylesheet" href="/styles/styles.css">
+</head>
+
+<body>
+  <header></header>
+  <main>
+    <div data-aue-resource="urn:aemconnection:/content/inspiration-guide/es-es/inspiration-guide/404/jcr:content/root/section" data-aue-type="container" data-aue-model="section" data-aue-label="Section">
+      <div class="not-found" data-aue-resource="urn:aemconnection:/content/inspiration-guide/es-es/inspiration-guide/404/jcr:content/root/section/not_found" data-aue-type="component" data-aue-model="not-found" data-aue-label="Not Found (404)">
+        <div>
+          <div>
+            <p data-aue-prop="title" data-aue-type="text" data-aue-label="Title">Título instrumentado</p>
+          </div>
+        </div>
+        <div>
+          <div>
+            <p data-aue-prop="subtitle" data-aue-type="text" data-aue-label="Subtitle">Subtítulo instrumentado</p>
+          </div>
+        </div>
+        <div>
+          <div>
+            <p><a href="/content/inspiration-guide/es-es/inspiration-guide">Ir a la portada</a></p>
+          </div>
+        </div>
+        <div>
+          <div>
+            <picture>
+              <source type="image/webp" srcset="./media_19afe7b674a8430d11f4658d53e27c8df6cfbab6a.jpg?width=2000&#x26;format=webply&#x26;optimize=medium" media="(min-width: 600px)">
+              <source type="image/webp" srcset="./media_19afe7b674a8430d11f4658d53e27c8df6cfbab6a.jpg?width=750&#x26;format=webply&#x26;optimize=medium">
+              <source type="image/jpeg" srcset="./media_19afe7b674a8430d11f4658d53e27c8df6cfbab6a.jpg?width=2000&#x26;format=jpg&#x26;optimize=medium" media="(min-width: 600px)">
+              <img loading="lazy" alt="Alt instrumentado" src="./media_19afe7b674a8430d11f4658d53e27c8df6cfbab6a.jpg?width=750&#x26;format=jpg&#x26;optimize=medium" width="5000" height="3333" data-aue-prop="image" data-aue-type="media" data-aue-label="Image">
+            </picture>
+          </div>
+        </div>
+      </div>
+    </div>
+  </main>
+  <footer></footer>
+</body>
+
+</html>

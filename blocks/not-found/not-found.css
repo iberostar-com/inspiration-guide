@@ -1,0 +1,227 @@
+/* Bug 171636 — 404 de Inspiration Guide igual a la 404 de iberostar.com sin fastbooking
+   (AEM organisms/not-found). Breakpoints de AEM: S 576, M 820, L 1440, XL 1920. */
+
+/* La seccion ocupa todo el ancho, sin el margen vertical ni la rejilla de 1200px del contenido */
+main > .section.not-found-container {
+  margin: 0;
+  padding: 0 16px 16px;
+  background: #fff;
+}
+
+.not-found-container .not-found-wrapper {
+  max-width: none;
+  margin: 0;
+  padding: 0;
+}
+
+.not-found {
+  position: relative;
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 16px;
+  padding: 40px 16px 24px;
+  border-radius: 4px;
+  background: #d8f7f3;
+}
+
+/* Filas fuente del bloque (editor y entrega): se ocultan y se pintan las columnas renderizadas */
+.not-found .not-found-source {
+  display: none;
+}
+
+/* Columna de texto */
+.not-found .not-found-content {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 16px;
+}
+
+.not-found .not-found-content h1,
+.not-found .not-found-content p {
+  margin: 0;
+}
+
+.not-found .not-found-content h1 {
+  color: #1b2828;
+  font-family: var(--heading-font-family);
+  font-size: 24px;
+  font-weight: 400;
+  line-height: 32px;
+  letter-spacing: 0;
+}
+
+.not-found .not-found-subtitle {
+  color: #636363;
+  font-family: var(--body-font-family);
+  font-size: 14px;
+  font-weight: 400;
+  line-height: normal;
+}
+
+.not-found .not-found-cta {
+  padding-top: 23px;
+  margin-bottom: 24px;
+}
+
+/* Enlace con flecha: subrayado que crece al hover y flecha que se desplaza */
+.not-found .not-found-link {
+  display: inline-flex;
+  gap: 8px;
+  align-items: center;
+  color: #1b2828;
+  font-family: var(--body-font-family);
+  font-size: 16px;
+  font-weight: 500;
+  line-height: 1.4;
+  text-decoration: none;
+}
+
+.not-found .not-found-link:hover,
+.not-found .not-found-link:focus-visible {
+  color: #1b2828;
+  text-decoration: none;
+}
+
+.not-found .not-found-link:focus-visible {
+  outline: 2px solid #636363;
+  outline-offset: 2px;
+}
+
+.not-found .not-found-link-text {
+  position: relative;
+}
+
+.not-found .not-found-link-text::after {
+  content: "";
+  position: absolute;
+  bottom: -1px;
+  left: 0;
+  width: 0;
+  height: 1px;
+  background-color: #1b2828;
+}
+
+.not-found .not-found-link:hover .not-found-link-text::after {
+  width: 100%;
+  transition: width 0.3s ease;
+}
+
+.not-found .not-found-link [class^="ibh-icon-"] {
+  position: relative;
+  margin-top: 2px;
+  font-size: 16px;
+  transition: transform 0.2s ease;
+}
+
+.not-found .not-found-link:hover [class^="ibh-icon-"] {
+  transform: translateX(4px);
+}
+
+/* Sin imagen contribuida el texto ocupa todo el ancho */
+.not-found .not-found-content:last-child {
+  grid-column: 1 / -1;
+}
+
+/* Columna de imagen: en movil va debajo del texto */
+.not-found .not-found-media {
+  min-height: 260px;
+  padding-top: 16px;
+}
+
+.not-found .not-found-media picture {
+  display: block;
+}
+
+.not-found .not-found-media img {
+  display: block;
+  width: 100%;
+  max-width: 100%;
+  height: auto;
+  aspect-ratio: 1 / 1;
+  object-fit: cover;
+  object-position: center;
+  border-radius: 4px;
+}
+
+@media (width >= 576px) {
+  main > .section.not-found-container {
+    padding: 0 24px 24px;
+  }
+
+  .not-found {
+    padding: 32px 68px;
+  }
+
+  .not-found .not-found-content h1 {
+    font-size: 28px;
+    line-height: 38px;
+  }
+}
+
+@media (width >= 820px) {
+  .not-found {
+    grid-template-columns: 57fr 43fr;
+    align-items: stretch;
+    padding: 0;
+  }
+
+  .not-found .not-found-content {
+    padding: 177.5px 56px;
+  }
+
+  .not-found .not-found-content h1 {
+    font-size: 32px;
+    line-height: 42px;
+  }
+
+  .not-found .not-found-cta {
+    margin-bottom: 0;
+  }
+
+  .not-found .not-found-media {
+    padding: 127px 20px 127px 0;
+  }
+
+  .not-found .not-found-media img {
+    max-width: 400px;
+  }
+}
+
+@media (width >= 1440px) {
+  .not-found {
+    grid-template-columns: 47fr 53fr;
+  }
+
+  .not-found .not-found-content {
+    padding: 275.5px 117px;
+  }
+
+  .not-found .not-found-content h1 {
+    font-size: 40px;
+    line-height: 54px;
+  }
+
+  .not-found .not-found-media {
+    justify-self: end;
+    padding: 128px 84px;
+  }
+
+  .not-found .not-found-media img {
+    max-width: 520px;
+  }
+}
+
+@media (width >= 1920px) {
+  main > .section.not-found-container {
+    padding: 0 88px 24px;
+  }
+
+  .not-found .not-found-content {
+    padding: 285.5px 117px 285.5px 147px;
+  }
+
+  .not-found .not-found-media {
+    padding: 128px 172px;
+  }
+}

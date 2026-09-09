@@ -12,6 +12,7 @@ import {
 } from './aem.js';
 import { decorateRichtext } from './editor-support-rte.js';
 import { decoratePageLinks } from './iberostar/page-links.js';
+import { getContentLocale } from './iberostar/date-format.js';
 
 /**
  * Moves all the attributes from a given elmenet to another given element.
@@ -161,11 +162,18 @@ function buildArticleLayoutShell(layoutSections) {
   }
 }
 
+function isArticleLayout(main) {
+  return getPageType() === 'article'
+    || Boolean(main.querySelector(':scope > .section.article-main, :scope > .section.article-sidebar'));
+}
+
 function applyArticleTwoColumnLayout(main) {
   const isUniversalEditorPage = main.querySelector(':scope > [data-aue-resource]');
-  if (getPageType() !== 'article') {
+  if (!isArticleLayout(main)) {
     return;
   }
+
+  document.body.classList.add('page-article');
 
   if (isUniversalEditorPage) {
     main.classList.add('article-layout-author');
@@ -191,6 +199,52 @@ function applyArticleTwoColumnLayout(main) {
   }
 }
 
+const SIDEBAR_ANCHOR_SELECTOR = '.article-main-image, .article-content-image';
+
+/**
+ * Aligns the top of the sticky sidebar with the first image of the article.
+ * The offset is exposed as `--article-sidebar-offset` and only used on wide viewports.
+ * @param {Element} shell The article layout shell
+ */
+function updateArticleSidebarOffset(container, anchorSelector) {
+  const isTwoColumn = window.matchMedia('(width >= 1440px)').matches;
+  const anchor = container.querySelector(anchorSelector);
+
+  if (!isTwoColumn || !anchor) {
+    container.style.removeProperty('--article-sidebar-offset');
+    return;
+  }
+
+  // the main column is start aligned, so its position does not change with the offset applied
+  const offset = anchor.getBoundingClientRect().top - container.getBoundingClientRect().top;
+
+  container.style.setProperty('--article-sidebar-offset', `${Math.max(0, Math.round(offset))}px`);
+}
+
+/**
+ * Keeps the sticky sidebar aligned when the article content reflows.
+ * @param {Element} main The main element
+ */
+function initArticleSidebarAlignment(main) {
+  const shells = [...main.querySelectorAll(':scope > .article-layout-shell')];
+  const authorMain = main.classList.contains('article-layout-author') ? main : null;
+  if (!shells.length && !authorMain) return;
+
+  const update = () => {
+    shells.forEach((shell) => updateArticleSidebarOffset(shell, `.article-layout-main ${SIDEBAR_ANCHOR_SELECTOR}`));
+    if (authorMain) updateArticleSidebarOffset(authorMain, SIDEBAR_ANCHOR_SELECTOR);
+  };
+  update();
+
+  if (window.ResizeObserver) {
+    const observer = new ResizeObserver(() => update());
+    shells.forEach((shell) => observer.observe(shell.querySelector('.article-layout-main')));
+    if (authorMain) observer.observe(authorMain);
+  }
+
+  window.addEventListener('resize', update);
+}
+
 /**
  * Decorates the main element.
  * @param {Element} main The main element
@@ -207,12 +261,31 @@ export function decorateMain(main) {
   decoratePageLinks(main);
 }
 
+function trackScrollbarWidth() {
+  const root = document.documentElement;
+  let current = null;
+
+  const update = () => {
+    const width = Math.max(window.innerWidth - root.clientWidth, 0);
+    if (width === current) return;
+    current = width;
+    root.style.setProperty('--scrollbar-width', `${width}px`);
+  };
+
+  update();
+  window.addEventListener('resize', update, { passive: true });
+
+  if (typeof ResizeObserver !== 'undefined') {
+    new ResizeObserver(update).observe(root);
+  }
+}
+
 /**
  * Loads everything needed to get to LCP.
  * @param {Element} doc The container element
  */
 async function loadEager(doc) {
-  document.documentElement.lang = 'en';
+  document.documentElement.lang = getContentLocale();
   decorateTemplateAndTheme();
   applyPageMetadataState();
   const main = doc.querySelector('main');
@@ -238,6 +311,8 @@ async function loadEager(doc) {
  * @param {Element} doc The container element
  */
 async function loadLazy(doc) {
+  trackScrollbarWidth();
+
   const pageType = getPageType();
   const isFragmentPage = pageType === 'fragment';
 
@@ -249,6 +324,7 @@ async function loadLazy(doc) {
   const main = doc.querySelector('main');
   await loadSections(main);
   decoratePageLinks(main);
+  initArticleSidebarAlignment(main);
 
   const { hash } = window.location;
   const element = hash ? doc.getElementById(hash.substring(1)) : false;

@@ -1,6 +1,12 @@
 {
   "data": [
     { "Key": "readArticle", "Text": "Read Article" },
+    { "Key": "viewMoreArticles", "Text": "View more articles" },
+    { "Key": "sortOrder", "Text": "Order:" },
+    { "Key": "sortMostRecent", "Text": "Most recent" },
+    { "Key": "sortOldest", "Text": "Oldest" },
+    { "Key": "selectArticle", "Text": "Select an article" },
+    { "Key": "loadMore", "Text": "Load more" },
     { "Key": "featuredArticle", "Text": "Featured Article" },
     { "Key": "featuredColumnTitle", "Text": "Featured" },
     { "Key": "latestColumnTitle", "Text": "Latest Publications" },
@@ -25,6 +31,24 @@
     { "Key": "hotelPricePersonSingular", "Text": "person" },
     { "Key": "hotelPricePersonPlural", "Text": "people" },
     { "Key": "chooseLanguage", "Text": "Choose a language" },
-    { "Key": "close", "Text": "Close" }
+    { "Key": "chooseCurrency", "Text": "Select a currency" },
+    { "Key": "languageTabLabel", "Text": "Language" },
+    { "Key": "currencyTabLabel", "Text": "Currency" },
+    { "Key": "currencyNameEUR", "Text": "Euro" },
+    { "Key": "currencyNameTND", "Text": "Tunisian dinar" },
+    { "Key": "currencyNameMAD", "Text": "Moroccan dirham" },
+    { "Key": "currencyNameCAD", "Text": "Canadian dollar" },
+    { "Key": "currencyNameUSD", "Text": "US dollar" },
+    { "Key": "currencyNameCHF", "Text": "Swiss franc" },
+    { "Key": "currencyNameGBP", "Text": "Pound sterling" },
+    { "Key": "currencyNameCLP", "Text": "Chilean peso" },
+    { "Key": "currencyNameMXN", "Text": "Mexican peso" },
+    { "Key": "currencyNameBRL", "Text": "Brazilian real" },
+    { "Key": "close", "Text": "Close" },
+    { "Key": "notFoundPageTitle", "Text": "Page not found" },
+    { "Key": "notFoundTitle", "Text": "This page has taken a break" },
+    { "Key": "notFoundSubtitle", "Text": "It looks like this page has gone on a trip. How about we plan yours?" },
+    { "Key": "notFoundCta", "Text": "Back to home" },
+    { "Key": "notFoundImageAlt", "Text": "Sunny tropical beach with tilted umbrellas" }
   ]
 }

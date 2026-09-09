@@ -10,18 +10,17 @@ pr: none
 
 variables:
   - group: 'azure-aem'
+  - group: 'p84-grscms-eds-inspiration-guide'
 
-  - name: agentPoolName
-    value: 'P38 CMS AgentPool'
+  - ${{ if eq(variables['Build.SourceBranchName'], 'main') }}:
+      - group: 'p84-grscms-stage'
+  - ${{ if eq(variables['Build.SourceBranchName'], 'qa') }}:
+      - group: 'p84-grscms-qa'
+  - ${{ if eq(variables['Build.SourceBranchName'], 'develop') }}:
+      - group: 'p84-grscms-develop'
 
-  - name: sonarCloudEndpointName
-    value: 'DevSecOps-Sonar-p84-grscms-eds-inspiration-guide'
-  - name: sonarCloudOrganization
-    value: 'sfcgrupoiberostar'
-  - name: sonarCloudProjectKey
-    value: 'SFCGrupoIberostar_p84-grscms-eds-inspiration-guide'
-  - name: sonarCloudProjectName
-    value: 'p84-grscms-eds-inspiration-guide'
+  - name: Environment
+    value: '$(EnvironmentPrefix)-$(Stage)'
 
 pool:
   name: $(agentPoolName)
@@ -33,6 +32,8 @@ stages:
     displayName: 'SonarCloud'
     dependsOn: []
     condition: in(variables['Build.SourceBranchName'], 'main', 'stage', 'qa', 'develop')
+    pool:
+      name: $(agentPoolName)
     jobs:
       - job: SonarCloud
         displayName: 'SonarCloud'
@@ -64,9 +65,10 @@ stages:
             displayName: 'SonarCloudPublish'
             inputs:
               pollingTimeoutSec: '900'
+            continueOnError: true
 
-  # ── STAGE 2: Manual approval ────────────────────────────────────
-  - stage: Approval_Sonar
+  # ── STAGE 2: Approval SonarCloud ────────────────────────────────
+  - stage: Approval_SonarCloud
     displayName: 'Approval SonarCloud'
     dependsOn: SonarCloud
     condition: >
@@ -74,27 +76,29 @@ stages:
         eq(dependencies.SonarCloud.result, 'SucceededWithIssues'),
         eq(variables['Build.SourceBranchName'], 'main')
       )
+    pool:
+      name: $(agentPoolName)
     jobs:
-      - deployment: Approval_Sonar
+      - deployment: Approval_SonarCloud
         displayName: 'Approval SonarCloud'
-        environment: 'sonarcloud'
+        environment: '$(Environment)'
         strategy:
           runOnce:
             deploy:
               steps:
                 - checkout: self
 
-  # ── STAGE 3: Push a Cloud Manager Git (Adobe EDS) ───────────────
-  - stage: MirrorPush_CloudManager_Merge
-    displayName: 'Push CloudManager'
+  # ── STAGE 3: Approval Push CloudManager ──────────────────────────
+  - stage: Approval_Push_CloudManager
+    displayName: 'Approval Push CloudManager'
     dependsOn:
       - SonarCloud
-      - Approval_Sonar
-    condition: |
+      - Approval_SonarCloud
+    condition: >
       and(
         ne(variables['Build.Reason'], 'PullRequest'),
         in(dependencies.SonarCloud.result, 'Succeeded', 'SucceededWithIssues'),
-        in(dependencies.Approval_Sonar.result, 'Succeeded', 'Skipped'),
+        in(dependencies.Approval_SonarCloud.result, 'Succeeded', 'Skipped'),
         or(
           eq(variables['Build.SourceBranch'], 'refs/heads/main'),
           eq(variables['Build.SourceBranch'], 'refs/heads/develop'),
@@ -102,6 +106,40 @@ stages:
           eq(variables['Build.SourceBranch'], 'refs/heads/stage')
         )
       )
+    pool:
+      name: $(agentPoolName)
+    jobs:
+      - deployment: Approval_Push_CloudManager
+        displayName: 'Approval Push CloudManager'
+        environment: '$(Environment)'
+        strategy:
+          runOnce:
+            deploy:
+              steps:
+                - checkout: self
+
+  # ── STAGE 4: Push a Cloud Manager Git (Adobe EDS) ───────────────
+  - stage: MirrorPush_CloudManager_Merge
+    displayName: 'Push CloudManager'
+    dependsOn:
+      - SonarCloud
+      - Approval_SonarCloud
+      - Approval_Push_CloudManager
+    condition: |
+      and(
+        ne(variables['Build.Reason'], 'PullRequest'),
+        in(dependencies.SonarCloud.result, 'Succeeded', 'SucceededWithIssues'),
+        in(dependencies.Approval_SonarCloud.result, 'Succeeded', 'Skipped'),
+        in(dependencies.Approval_Push_CloudManager.result, 'Succeeded', 'Skipped'),
+        or(
+          eq(variables['Build.SourceBranch'], 'refs/heads/main'),
+          eq(variables['Build.SourceBranch'], 'refs/heads/develop'),
+          eq(variables['Build.SourceBranch'], 'refs/heads/qa'),
+          eq(variables['Build.SourceBranch'], 'refs/heads/stage')
+        )
+      )
+    pool:
+      name: $(agentPoolName)
     jobs:
       - job: PushMerge
         displayName: 'Push CloudManager'
@@ -169,3 +207,81 @@ stages:
               CM_GIT_USERNAME: $(CM_GIT_USERNAME)
               CM_GIT_PASSWORD: $(CM_GIT_PASSWORD)
               CM_GIT_REPO_URL_IS: $(CM_GIT_REPO_URL_IS)
+
+  # ── STAGE 5: Purge AEM CDN ─────────────────
+  - stage: PurgeCDN
+    displayName: 'Purge AEM CDN'
+    dependsOn: MirrorPush_CloudManager_Merge
+    condition: |
+      and(
+        in(dependencies.MirrorPush_CloudManager_Merge.result, 'Succeeded', 'SucceededWithIssues'),
+        in(variables['Build.SourceBranchName'], 'main', 'qa', 'develop')
+      )
+    pool:
+      name: $(agentPoolName)
+    jobs:
+      - job: PurgeCDN
+        displayName: 'Purge AEM CDN'
+        steps:
+          - checkout: none
+          - bash: |
+              set -euo pipefail
+
+              if [ -z "${EDS_ORIGIN_URL:-}" ]; then
+                echo "Falta variable EDS_ORIGIN_URL"
+                exit 1
+              fi
+
+              if [ -z "${AEM_CDN_HOST:-}" ]; then
+                echo "Falta variable AEM_CDN_HOST"
+                exit 1
+              fi
+
+              if [ -z "${CDN_PURGEKEY_EXTERNAL_SPA:-}" ]; then
+                echo "Falta variable CDN_PURGEKEY_EXTERNAL_SPA"
+                exit 1
+              fi
+
+              echo "Esperando a que EDS responda con la version desplegada: ${EDS_ORIGIN_URL}"
+              for attempt in $(seq 1 12); do
+                HTTP_ORIGIN_STATUS=$(curl -s -o /tmp/eds_origin_headers.log -w "%{http_code}" -I "${EDS_ORIGIN_URL}" || true)
+                echo "Intento ${attempt}/12 - EDS origin status: ${HTTP_ORIGIN_STATUS}"
+                cat /tmp/eds_origin_headers.log || true
+
+                if [ "${HTTP_ORIGIN_STATUS}" -ge 200 ] && [ "${HTTP_ORIGIN_STATUS}" -lt 400 ]; then
+                  break
+                fi
+
+                sleep 10
+              done
+
+              if [ "${HTTP_ORIGIN_STATUS}" -lt 200 ] || [ "${HTTP_ORIGIN_STATUS}" -ge 400 ]; then
+                echo "EDS origin no respondio correctamente tras esperar. No se purga CDN para evitar recachear contenido antiguo."
+                exit 1
+              fi
+
+              EDS_PURGE_DELAY_SECONDS="${EDS_PURGE_DELAY_SECONDS:-120}"
+              echo "Esperando ${EDS_PURGE_DELAY_SECONDS}s para dar tiempo a la propagacion de EDS antes de purgar CDN publica."
+              sleep "${EDS_PURGE_DELAY_SECONDS}"
+
+              echo "Purgando AEM CDN por Surrogate-Key en ${AEM_CDN_HOST}"
+
+              HTTP_STATUS=$(curl -s -o /tmp/purge_response.log -w "%{http_code}" -X PURGE "${AEM_CDN_HOST}/" \
+                -H "X-AEM-Purge-Key: ${CDN_PURGEKEY_EXTERNAL_SPA}" \
+                -H "X-AEM-Purge: soft" \
+                -H "Surrogate-Key: inspiration-guide")
+
+              echo "Código HTTP: ${HTTP_STATUS}"
+              cat /tmp/purge_response.log
+
+              if [ "$HTTP_STATUS" -lt 200 ] || [ "$HTTP_STATUS" -ge 300 ]; then
+                echo "La purga de CDN falló con código HTTP ${HTTP_STATUS}"
+                exit 1
+              fi
+
+              echo "Purga de CDN completada correctamente."
+            displayName: 'Purge AEM CDN'
+            env:
+              EDS_ORIGIN_URL: $(EDS_ORIGIN_URL)
+              AEM_CDN_HOST: $(AEM_CDN_HOST)
+              CDN_PURGEKEY_EXTERNAL_SPA: $(CDN_PURGEKEY_EXTERNAL_SPA)

@@ -2,7 +2,11 @@ import { createResponsiveImage } from '../../scripts/iberostar/media.js';
 import formatLocalizedDate, { hasValidDate } from '../../scripts/iberostar/date-format.js';
 import { getPlaceholder } from '../../scripts/iberostar/placeholders.js';
 import { getTranslation } from '../../scripts/iberostar/i18n.js';
-import { getArticles } from '../../scripts/inspiration-data.js';
+import {
+  articleMatchesCategory,
+  getArticles,
+  getPageCategoryPath,
+} from '../../scripts/inspiration-data.js';
 import {
   toPageHref,
   toPublicPagePath as toPublicContentPath,
@@ -31,6 +35,7 @@ const RESERVED_PROPS = new Set([
 
 const DATA_MODES = new Set(['manual', 'auto-category', 'auto-filter', 'auto-tag']);
 const RENDER_TAGS = new Set(['p', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6']);
+const LOCALE_PATTERN = /^\/[a-z]{2}-[a-z]{2}(?:\/|$)/i;
 
 const POSITIONAL_PROP_CANDIDATES = {
   featuredLabel: [0],
@@ -44,6 +49,7 @@ const POSITIONAL_PROP_CANDIDATES = {
   featuredBadge: [6, 4],
   featuredArticleTitleHeading: [7, 6],
   latestArticleTitleHeading: [8, 7],
+  filterCategory: [10],
 };
 
 const FIELD_SELECTORS = {
@@ -114,8 +120,14 @@ function isValidPositionalValue(propName, value, legacyMode) {
     return lowered.startsWith('/') || lowered.startsWith('http') || lowered.startsWith('urn:');
   }
 
+  if (propName === 'filterCategory') {
+    return lowered.includes(':');
+  }
+
   if (propName === 'filterTags' || propName === 'featuredLabel' || propName === 'latestLabel' || propName === 'featuredBadge') {
-    return !RENDER_TAGS.has(lowered) && !DATA_MODES.has(lowered);
+    // A visible label is never a reference, so paths and urls belong to another field.
+    const isReference = lowered.startsWith('/') || lowered.startsWith('http') || lowered.startsWith('urn:');
+    return !isReference && !RENDER_TAGS.has(lowered) && !DATA_MODES.has(lowered);
   }
 
   return true;
@@ -155,6 +167,15 @@ function isAuthoredArticleRow(row) {
     .some((el) => el.getAttribute('data-aue-prop')?.startsWith('article_'));
 }
 
+// The mode select renders as a plain config row whose position depends on the
+// model revision the page was published with, so it is detected by value.
+function getModeRowValue(block) {
+  return getSourceRows(block)
+    .filter((row) => !isAuthoredArticleRow(row))
+    .map((row) => getRowText(row).toLowerCase())
+    .find((text) => DATA_MODES.has(text)) || '';
+}
+
 function getPropElement(root, propName) {
   const selector = `[data-aue-prop="${propName}"]`;
   if (root?.matches?.(selector)) return root;
@@ -176,18 +197,15 @@ function getFieldByProp(block, propName) {
 }
 
 function getTextValue(block, propName, fallback = '') {
+  // An instrumented field is authoritative: if the author cleared it, it stays
+  // empty instead of leaking a neighbouring row through positional extraction.
   const el = getFieldByProp(block, propName);
-  const text = el?.textContent?.trim();
-  if (text) return text;
+  if (el) return el.textContent?.trim() || fallback;
 
   // Universal Editor can output mixed rows (some fields instrumented, others positional only).
   // Fall back to positional extraction when the specific prop is not instrumented.
   const positional = getPositionalTextValue(block, propName);
   if (positional) return positional;
-
-  if (!hasAuthoredProps(block)) {
-    return fallback;
-  }
 
   return fallback;
 }
@@ -300,16 +318,46 @@ function normalizeValue(value) {
   return normalized.toLowerCase() === 'undefined' ? '' : normalized;
 }
 
+function toPathKey(value) {
+  return normalizeUrl(value)
+    .split(/[?#]/, 1)[0]
+    .replace(/^urn:[^:]*:/i, '')
+    .replace(/\.html$/i, '')
+    .split('/')
+    .map(normalizeSlug)
+    .filter(Boolean)
+    .join('/');
+}
+
 function samePath(a, b) {
-  const left = normalizeUrl(a).replace(/\/$/, '');
-  const right = normalizeUrl(b).replace(/\/$/, '');
-  return !!left && !!right && left === right;
+  const left = toPathKey(a);
+  const right = toPathKey(b);
+
+  if (!left || !right) return false;
+  if (left === right) return true;
+
+  return (left.includes('/') && right.endsWith(`/${left}`))
+    || (right.includes('/') && left.endsWith(`/${right}`));
 }
 
 function getCurrentLocale() {
   const segments = window.location.pathname.split('/').filter(Boolean);
   const locale = segments.find((segment) => /^[a-z]{2}-[a-z]{2}$/i.test(segment));
   return locale || document.documentElement.lang || 'en';
+}
+
+function getArticleLocale(article = {}) {
+  const rawPath = article.path || article.url || article.href || '';
+  const normalizedPath = toPublicContentPath(rawPath);
+  const match = `${normalizedPath || ''}`.match(LOCALE_PATTERN)?.[0] || '';
+  return match.replaceAll('/', '').toLowerCase();
+}
+
+function filterArticlesByCurrentLocale(articles = []) {
+  const currentLocale = getCurrentLocale().toLowerCase();
+  if (!/^[a-z]{2}-[a-z]{2}$/.test(currentLocale)) return articles;
+
+  return articles.filter((article) => getArticleLocale(article) === currentLocale);
 }
 
 function formatDate(value) {
@@ -342,13 +390,18 @@ function getManualRows(block) {
     : [];
 }
 
+// Manually added article rows always win, regardless of the Source selector: an
+// author who drops articles into the block should not also have to remember to
+// switch Source to "Manual" for them to show up.
 function getConfiguredMode(block) {
-  const configured = getTextValue(block, 'mode', block.getAttribute('data-mode') || '').toLowerCase();
-  const hasManualItems = getManualRows(block).length > 0;
+  if (getManualRows(block).length > 0) return 'manual';
 
-  if (configured === 'manual' && !hasManualItems) return 'auto-filter';
-  if (configured) return configured;
-  return hasManualItems ? 'manual' : 'auto-filter';
+  const configured = (getTextValue(block, 'mode', '')
+    || getModeRowValue(block)
+    || block.getAttribute('data-mode')
+    || '').toLowerCase();
+
+  return configured || 'auto-filter';
 }
 
 function getConfiguredMaxItems(block) {
@@ -439,12 +492,26 @@ function fromManualRows(block) {
     .filter(Boolean);
 }
 
+// Category pages emit `page-type=category` metadata; nested subcategory pages
+// may miss the category metadata, so the `/category/` URL segment is the fallback.
+function isCategoryPageContext() {
+  const pageType = document.querySelector('meta[name="page-type"]')?.content?.trim().toLowerCase() || '';
+  return pageType === 'category' || !!getCurrentPathSegment('category');
+}
+
 function filterArticles(articles, block, mode) {
-  const configuredCategory = normalizeSlug(getTextValue(block, 'filterCategory', ''));
+  const configuredCategory = getTextValue(block, 'filterCategory', '');
   const configuredTags = getConfiguredTags(block);
   const configuredTagKeys = buildTagKeySet(configuredTags);
-  const contextCategory = normalizeSlug(getCurrentPathSegment('category'));
   const contextTag = normalizeSlug(getCurrentPathSegment('tag'));
+
+  // Hierarchical target: on parent category pages the page context resolves to the
+  // full category path, so articles of any child subcategory also match. Auto-filter
+  // only inherits the page context on category pages to keep other pages unscoped.
+  const contextCategory = (mode === 'auto-category' || isCategoryPageContext())
+    ? getPageCategoryPath()
+    : '';
+  const categoryTarget = configuredCategory || contextCategory;
 
   return articles.filter((article) => {
     const item = normalizeArticle(article);
@@ -455,14 +522,12 @@ function filterArticles(articles, block, mode) {
       item.categoryPath,
       item.categoryUrl,
     ]);
-    const category = normalizeSlug(item.categorySlug || item.category);
-    const categoryMatches = !configuredCategory || category === configuredCategory;
+    const categoryMatches = !categoryTarget || articleMatchesCategory(item, categoryTarget);
     const tagMatches = !configuredTagKeys.size
       || [...configuredTagKeys].some((tag) => articleTagKeys.has(tag));
 
     if (mode === 'auto-category') {
-      const target = configuredCategory || contextCategory;
-      return !target || category === target;
+      return categoryMatches;
     }
 
     if (mode === 'auto-tag') {
@@ -493,14 +558,16 @@ function isRenderableArticle(article) {
   return Boolean(item.title && item.title.toLowerCase() !== 'untitled' && item.href && item.href !== '#');
 }
 
+function getFeaturedReference(block) {
+  return getHrefFromElement(getFieldByProp(block, 'featuredArticlePath'))
+    || getTextValue(block, 'featuredArticlePath', '');
+}
+
 async function getAutoItems(block, mode, maxItems) {
-  const articles = (await getArticles())
+  const articles = filterArticlesByCurrentLocale((await getArticles())
     .map(normalizeArticle)
-    .filter(isRenderableArticle);
-  const featuredPath = toPublicContentPath(
-    getHrefFromElement(getFieldByProp(block, 'featuredArticlePath'))
-      || getTextValue(block, 'featuredArticlePath', ''),
-  );
+    .filter(isRenderableArticle));
+  const featuredPath = toPublicContentPath(getFeaturedReference(block));
   const sortedArticles = sortArticles(articles);
   const filtered = sortArticles(filterArticles(articles, block, mode));
   const featured = sortedArticles.find((article) => (
@@ -530,7 +597,25 @@ function hideSource(block) {
   });
 }
 
+function isAuthoringPage(block) {
+  return Boolean(block.closest('[data-aue-resource]') || document.querySelector('[data-aue-resource]'));
+}
+
+function appendAuthoringPlaceholder(block) {
+  if (!isAuthoringPage(block)) return;
+
+  const placeholder = document.createElement('div');
+  placeholder.className = 'blog-split-list-rendered blog-split-list-empty';
+
+  const message = document.createElement('p');
+  message.textContent = 'Blog Split List: add Article items, or pick a Featured Article Page. Automatic listings are resolved from the published article index, so they only render on preview and publish.';
+  placeholder.append(message);
+  block.append(placeholder);
+}
+
 function createEyebrow(text, tagName = 'p') {
+  if (!text) return null;
+
   const eyebrow = document.createElement(tagName);
   eyebrow.className = 'blog-split-list-eyebrow';
   eyebrow.textContent = text;
@@ -712,8 +797,12 @@ function createListItem(item, ctaLabel, titleTagName = 'h3') {
   return li;
 }
 
-function splitManualItems(items, maxItems) {
-  const featured = items.find((item) => item.placement === 'featured') || items[0];
+function splitManualItems(items, maxItems, featuredReference = '') {
+  const featuredPath = toPublicContentPath(featuredReference);
+  const referenced = featuredPath
+    ? items.find((item) => samePath(item.href, featuredPath) || samePath(item.path, featuredPath))
+    : null;
+  const featured = items.find((item) => item.placement === 'featured') || referenced || items[0];
   if (!featured) return [];
 
   const latest = items
@@ -733,52 +822,61 @@ function splitManualItems(items, maxItems) {
 }
 
 export default async function decorate(block) {
-  block.querySelector(':scope > .blog-split-list-rendered')?.remove();
+  block.querySelectorAll(':scope > .blog-split-list-rendered').forEach((rendered) => rendered.remove());
 
   const mode = getConfiguredMode(block);
   const maxItems = getConfiguredMaxItems(block);
-  const featuredTitle = getTextValue(block, 'featuredLabel', '')
-    || await getTranslation('featuredColumnTitle', 'En portada')
-    || await getPlaceholder('featuredColumnTitle', 'En portada');
+  // Authored headings are optional: an empty field renders no heading at all,
+  // so a page can show a single title instead of one per column.
+  const featuredTitle = getTextValue(block, 'featuredLabel', '');
   const featuredTitleTag = getRenderTag(block, 'featuredLabelHeading', 'p');
-  const latestTitle = getTextValue(block, 'latestLabel', '')
-    || await getTranslation('latestColumnTitle', 'Últimas publicaciones')
-    || await getPlaceholder('latestColumnTitle', 'Últimas publicaciones');
+  const latestTitle = getTextValue(block, 'latestLabel', '');
   const latestTitleTag = getRenderTag(block, 'latestLabelHeading', 'p');
-  const featuredBadge = getTextValue(block, 'featuredBadge', '')
-    || await getTranslation('featuredArticle', 'Artículo destacado')
-    || await getPlaceholder('featuredArticle', 'Artículo destacado');
+  const featuredBadge = getTextValue(block, 'featuredBadge', '');
   const featuredArticleTitleTag = getRenderTag(block, 'featuredArticleTitleHeading', 'h2');
   const latestArticleTitleTag = getRenderTag(block, 'latestArticleTitleHeading', 'h3');
   const ctaLabel = getTextValue(block, 'ctaLabel', '')
     || await getTranslation('readArticle', 'Leer artículo')
     || await getPlaceholder('readArticle', 'Leer artículo');
-  const items = mode === 'manual'
-    ? splitManualItems(fromManualRows(block), maxItems)
+  const featuredReference = getFeaturedReference(block);
+  let items = mode === 'manual'
+    ? splitManualItems(fromManualRows(block), maxItems, featuredReference)
     : await getAutoItems(block, mode, maxItems);
 
-  if (!items.length) {
-    // Silently exit if no items; block remains undecorated or shows empty
-    return;
+  // Manual source without authored article rows still honours the featured
+  // article reference, resolving the rest of the list from the article index.
+  if (!items.length && mode === 'manual' && featuredReference) {
+    items = await getAutoItems(block, 'auto-filter', maxItems);
   }
 
   hideSource(block);
 
+  if (!items.length) {
+    appendAuthoringPlaceholder(block);
+    return;
+  }
+
   const wrapper = document.createElement('div');
   wrapper.className = 'blog-split-list-rendered';
+  // With at least one column heading both columns share a heading row, so the
+  // media of each column stays aligned even when only one title is authored.
+  if (featuredTitle || latestTitle) wrapper.classList.add('blog-split-list-has-headings');
 
   const featuredColumn = document.createElement('section');
   featuredColumn.className = 'blog-split-list-featured-column';
   featuredColumn.append(
-    createEyebrow(featuredTitle, featuredTitleTag),
-    createFeatured(items[0], ctaLabel, featuredBadge, featuredArticleTitleTag),
+    ...[
+      createEyebrow(featuredTitle, featuredTitleTag),
+      createFeatured(items[0], ctaLabel, featuredBadge, featuredArticleTitleTag),
+    ].filter(Boolean),
   );
   wrapper.append(featuredColumn);
 
   if (items.length > 1) {
     const latestColumn = document.createElement('section');
     latestColumn.className = 'blog-split-list-latest-column';
-    latestColumn.append(createEyebrow(latestTitle, latestTitleTag));
+    const latestEyebrow = createEyebrow(latestTitle, latestTitleTag);
+    if (latestEyebrow) latestColumn.append(latestEyebrow);
 
     const list = document.createElement('ul');
     list.className = 'blog-split-side-list';

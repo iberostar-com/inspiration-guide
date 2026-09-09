@@ -203,7 +203,9 @@ function createCard(row) {
     media.append(createResponsiveImage(
       imageSrc,
       imageAlt,
-      { preset: 'category-card' },
+      {
+        preset: 'category-card',
+      },
     ));
     card.append(media);
   }
@@ -212,7 +214,7 @@ function createCard(row) {
   body.className = 'grid-category-gallery-body';
 
   if (pretitle) {
-    const subtitleEl = document.createElement('p');
+    const subtitleEl = document.createElement('h2');
     subtitleEl.className = 'grid-category-gallery-subtitle';
     subtitleEl.textContent = pretitle;
     body.append(subtitleEl);

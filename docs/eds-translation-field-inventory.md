@@ -335,6 +335,12 @@ Totales consolidados:
 | placeholder | value/example | source | classification | reason |
 | --- | --- | --- | --- | --- |
 | readArticle | Read Article | placeholders.json | translate | Placeholder value is UI copy displayed to end users. |
+| viewMoreArticles | View more articles | placeholders.json | translate | Placeholder value is UI copy displayed to end users. |
+| sortOrder | Order: | placeholders.json | translate | Placeholder value is UI copy displayed to end users. |
+| sortMostRecent | Most recent | placeholders.json | translate | Placeholder value is UI copy displayed to end users. |
+| sortOldest | Oldest | placeholders.json | translate | Placeholder value is UI copy displayed to end users. |
+| selectArticle | Select an article | placeholders.json | translate | Placeholder value is UI copy displayed to authors in Universal Editor. |
+| loadMore | Load more | placeholders.json | translate | Placeholder value is UI copy displayed to end users. |
 | featuredArticle | Featured Article | placeholders.json | translate | Placeholder value is UI copy displayed to end users. |
 | featuredColumnTitle | Featured | placeholders.json | translate | Placeholder value is UI copy displayed to end users. |
 | latestColumnTitle | Latest Publications | placeholders.json | translate | Placeholder value is UI copy displayed to end users. |
@@ -353,6 +359,12 @@ Totales consolidados:
 | chooseLanguage | Choose a language | placeholders.json | translate | Placeholder value is UI copy displayed to end users. |
 | close | Close | placeholders.json | translate | Placeholder value is UI copy displayed to end users. |
 | readArticle (key) | readArticle | placeholders.json | do_not_translate | Placeholder key is a technical lookup identifier. |
+| viewMoreArticles (key) | viewMoreArticles | placeholders.json | do_not_translate | Placeholder key is a technical lookup identifier. |
+| sortOrder (key) | sortOrder | placeholders.json | do_not_translate | Placeholder key is a technical lookup identifier. |
+| sortMostRecent (key) | sortMostRecent | placeholders.json | do_not_translate | Placeholder key is a technical lookup identifier. |
+| sortOldest (key) | sortOldest | placeholders.json | do_not_translate | Placeholder key is a technical lookup identifier. |
+| selectArticle (key) | selectArticle | placeholders.json | do_not_translate | Placeholder key is a technical lookup identifier. |
+| loadMore (key) | loadMore | placeholders.json | do_not_translate | Placeholder key is a technical lookup identifier. |
 | featuredArticle (key) | featuredArticle | placeholders.json | do_not_translate | Placeholder key is a technical lookup identifier. |
 | featuredColumnTitle (key) | featuredColumnTitle | placeholders.json | do_not_translate | Placeholder key is a technical lookup identifier. |
 | latestColumnTitle (key) | latestColumnTitle | placeholders.json | do_not_translate | Placeholder key is a technical lookup identifier. |
@@ -717,4 +729,3 @@ Si faltan rutas completas, hay fallback a slug/id en [scripts/inspiration-data.j
 - Si existe propiedad especifica de slug publico del proyecto: review.
 - En tags: name/id tecnico do_not_translate; title/label visible translate.
 - Resolver enlaces publicos con alias cuando exista, manteniendo estable el nombre real del nodo.
-

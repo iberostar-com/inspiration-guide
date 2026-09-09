@@ -167,8 +167,15 @@ function createStars(count, variant) {
   const stars = document.createElement('span');
   stars.className = 'hotel-mini-card-stars';
   stars.setAttribute('aria-label', `${count} stars`);
-  stars.textContent = '★'.repeat(count);
   if (variant === 'vertical') stars.classList.add('hotel-mini-card-stars-small');
+
+  Array.from({ length: count }).forEach(() => {
+    const star = document.createElement('i');
+    star.className = 'ibh-icon-star';
+    star.setAttribute('aria-hidden', 'true');
+    stars.append(star);
+  });
+
   return stars;
 }
 
@@ -279,6 +286,15 @@ export function createHotelMiniCard(hotel, variant = 'horizontal') {
     const price = document.createElement('p');
     price.className = 'hotel-mini-card-price';
     price.textContent = hotel.priceFrom;
+
+    // Base (unconverted) price from the API, used to re-render the line when
+    // the visitor changes currency. Manual cards don't provide priceData.
+    if (Number.isFinite(hotel.priceData?.base?.amount) && hotel.priceData?.base?.currency) {
+      price.dataset.priceAmount = `${hotel.priceData.base.amount}`;
+      price.dataset.priceCurrency = hotel.priceData.base.currency;
+      price.dataset.priceAdults = `${hotel.priceData.adults || 2}`;
+    }
+
     action.append(price);
   }
 

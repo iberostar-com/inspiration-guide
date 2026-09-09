@@ -1,6 +1,12 @@
 {
   "data": [
     { "Key": "readArticle", "Text": "Leer artículo" },
+    { "Key": "viewMoreArticles", "Text": "Ver más artículos" },
+    { "Key": "sortOrder", "Text": "Orden:" },
+    { "Key": "sortMostRecent", "Text": "Los más recientes" },
+    { "Key": "sortOldest", "Text": "Los más antiguos" },
+    { "Key": "selectArticle", "Text": "Selecciona un artículo" },
+    { "Key": "loadMore", "Text": "Cargar más" },
     { "Key": "featuredArticle", "Text": "Artículo destacado" },
     { "Key": "featuredColumnTitle", "Text": "En portada" },
     { "Key": "latestColumnTitle", "Text": "Últimas publicaciones" },
@@ -25,6 +31,24 @@
     { "Key": "hotelPricePersonSingular", "Text": "persona" },
     { "Key": "hotelPricePersonPlural", "Text": "personas" },
     { "Key": "chooseLanguage", "Text": "Selecciona un idioma" },
-    { "Key": "close", "Text": "Cerrar" }
+    { "Key": "chooseCurrency", "Text": "Selecciona una moneda" },
+    { "Key": "languageTabLabel", "Text": "Idioma" },
+    { "Key": "currencyTabLabel", "Text": "Moneda" },
+    { "Key": "currencyNameEUR", "Text": "Euro" },
+    { "Key": "currencyNameTND", "Text": "Dinar tunecino" },
+    { "Key": "currencyNameMAD", "Text": "Dírham marroquí" },
+    { "Key": "currencyNameCAD", "Text": "Dólar canadiense" },
+    { "Key": "currencyNameUSD", "Text": "Dólar estadounidense" },
+    { "Key": "currencyNameCHF", "Text": "Franco suizo" },
+    { "Key": "currencyNameGBP", "Text": "Libra esterlina" },
+    { "Key": "currencyNameCLP", "Text": "Peso chileno" },
+    { "Key": "currencyNameMXN", "Text": "Peso mexicano" },
+    { "Key": "currencyNameBRL", "Text": "Real brasileño" },
+    { "Key": "close", "Text": "Cerrar" },
+    { "Key": "notFoundPageTitle", "Text": "Página no encontrada" },
+    { "Key": "notFoundTitle", "Text": "Esta página se ha tomado un descanso" },
+    { "Key": "notFoundSubtitle", "Text": "Parece que esta página se ha ido de viaje. ¿Qué te parece si planificamos el tuyo?" },
+    { "Key": "notFoundCta", "Text": "Volver al inicio" },
+    { "Key": "notFoundImageAlt", "Text": "Playa tropical soleada con sombrillas inclinadas" }
   ]
 }

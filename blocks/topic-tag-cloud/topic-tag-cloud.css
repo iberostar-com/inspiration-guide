@@ -2,9 +2,14 @@
   display: none;
 }
 
+main > .section:has(.topic-tag-cloud) > div {
+  padding-inline: 16px;
+}
+
 .topic-tag-cloud-rendered {
   display: flex;
   flex-direction: column;
+  align-items: flex-start;
   gap: 24px;
   padding: 40px 0;
 }
@@ -12,7 +17,7 @@
 .topic-tag-cloud-label {
   margin: 0;
   color: #1b2828;
-  font-family: inter, sans-serif;
+  font-family: var(--body-font-family);
   font-size: 12px;
   font-weight: 500;
   letter-spacing: 0.02em;
@@ -23,7 +28,15 @@
 .topic-tag-cloud-list {
   display: flex;
   flex-wrap: wrap;
+  align-content: flex-start;
+  align-items: center;
   gap: 12px 8px;
+}
+
+/* Bug 167097 — el h3 es solo envoltorio SEO del chip, sin estilos de heading */
+.topic-tag-cloud .topic-tag-cloud-chip-heading {
+  margin: 0;
+  font: inherit;
 }
 
 .topic-tag-cloud-chip {
@@ -38,7 +51,7 @@
   background: #f5f5f5;
   border-radius: 100px;
   color: #1b2828;
-  font-family: inter, sans-serif;
+  font-family: var(--body-font-family);
   font-size: 14px;
   font-weight: 400;
   line-height: 1.4;
@@ -58,8 +71,42 @@
   outline-offset: 2px;
 }
 
-@media (width >= 900px) {
+/* Bug 167109 — mobile artículo: los módulos van pegados como en Figma,
+   el aire lo ponen los paddings internos de cada bloque (40px + 40px) */
+@media (width < 820px) {
+  body.page-article main > .section:has(.topic-tag-cloud) {
+    margin-block: 0;
+  }
+
+  body.page-article main > .section:has(+ .section .topic-tag-cloud) {
+    margin-bottom: 0;
+  }
+
+  body.page-article main > .section:has(.topic-tag-cloud) + .section {
+    margin-top: 0;
+  }
+}
+
+@media (width >= 576px) {
+  main > .section:has(.topic-tag-cloud) > div {
+    padding-inline: 24px;
+  }
+}
+
+@media (width >= 1440px) {
+  main > .section:has(.topic-tag-cloud) > div {
+    max-width: 1440px;
+    padding-inline: 83px;
+  }
+
   .topic-tag-cloud-rendered {
-    padding: 56px 0;
+    padding-block: 64px;
+  }
+}
+
+@media (width >= 1920px) {
+  main > .section:has(.topic-tag-cloud) > div {
+    max-width: 1920px;
+    padding-inline: 235px;
   }
 }

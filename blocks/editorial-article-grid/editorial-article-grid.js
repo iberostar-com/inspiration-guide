@@ -1,4 +1,6 @@
 import { createResponsiveImage } from '../../scripts/iberostar/media.js';
+import { tagTitle } from '../../scripts/iberostar/tag-label.js';
+import { taxonomyTitle } from '../../scripts/iberostar/taxonomy.js';
 import { getArticles, normalizeArticlePath } from '../../scripts/inspiration-data.js';
 import { moveInstrumentation } from '../../scripts/scripts.js';
 
@@ -7,6 +9,7 @@ const CTA_COPY = 'Leer artículo';
 const MODE_VALUES = new Set(['manual', 'auto-tag', 'auto-category']);
 const HEADING_TAGS = new Set(['p', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6']);
 const LINK_TARGETS = new Set(['_self', '_blank']);
+const LOCALE_PATTERN = /^\/[a-z]{2}-[a-z]{2}(?:\/|$)/i;
 const LEGACY_CONFIG_PROP_ORDER = [
   'eyebrow',
   'eyebrowHeading',
@@ -140,6 +143,28 @@ function sanitizeLinkTarget(value) {
   return LINK_TARGETS.has(target) ? target : '_self';
 }
 
+function getCurrentLocale() {
+  const segments = window.location.pathname.split('/').filter(Boolean);
+  const locale = segments.find((segment) => /^[a-z]{2}-[a-z]{2}$/i.test(segment));
+  return locale?.toLowerCase() || '';
+}
+
+function getArticleLocale(article) {
+  const rawPath = article?.path || article?.url || article?.href || '';
+  const normalized = `${rawPath || ''}`.trim();
+  if (!normalized) return '';
+
+  const path = normalizePath(normalized);
+  return (path.match(LOCALE_PATTERN)?.[0] || '').replaceAll('/', '').toLowerCase();
+}
+
+function filterArticlesByCurrentLocale(articles) {
+  const currentLocale = getCurrentLocale();
+  if (!currentLocale) return articles;
+
+  return articles.filter((article) => getArticleLocale(article) === currentLocale);
+}
+
 function getMetaContent(name) {
   return document.querySelector(`meta[name="${name}"]`)?.content?.trim() || '';
 }
@@ -152,6 +177,30 @@ function getMetaFromDocument(doc, name) {
 
 function unique(values) {
   return [...new Set(values.filter(Boolean))];
+}
+
+function normalizeFetchPath(path) {
+  const base = `${path || ''}`
+    .trim()
+    .split(/[?#]/, 1)[0]
+    .replace(/\/+/g, '/')
+    .replace(/\.html$/i, '')
+    .replace(/\.plain\.html$/i, '')
+    .replace(/\/$/, '');
+
+  if (!base) return '';
+  return base.startsWith('/') ? base : `/${base}`;
+}
+
+function withHtmlVariants(path) {
+  const base = normalizeFetchPath(path);
+  if (!base) return [];
+
+  return [
+    base,
+    `${base}.html`,
+    `${base}.plain.html`,
+  ];
 }
 
 function toFetchCandidates(refPath) {
@@ -167,12 +216,15 @@ function toFetchCandidates(refPath) {
     }
   }
 
+  const fromContentRoot = rawPath.replace(/^\/content\/inspiration-guide(?:\/|$)/i, '/');
   const normalized = normalizePath(rawPath);
-  const publicFromContent = normalizePath(rawPath.replace(/^\/content\/inspiration-guide(?:\/|$)/i, '/'));
+  const normalizedFromContentRoot = normalizePath(fromContentRoot);
 
   return unique([
-    normalized,
-    publicFromContent,
+    ...withHtmlVariants(rawPath),
+    ...withHtmlVariants(fromContentRoot),
+    ...withHtmlVariants(normalized),
+    ...withHtmlVariants(normalizedFromContentRoot),
   ]);
 }
 
@@ -213,13 +265,25 @@ function splitPathSegments(value) {
     .filter(Boolean);
 }
 
+// Tag tree roots (`categorías`, `categories`…) are structural, not real categories;
+// keeping them would make every article match every other one.
+const CATEGORY_ROOT_SEGMENTS = new Set(['categorias', 'categorías', 'categories', 'category']);
+
+function stripCategoryRootSegments(segments) {
+  const result = [...segments];
+  while (result.length > 1 && CATEGORY_ROOT_SEGMENTS.has(normalizeStr(result[0]))) {
+    result.shift();
+  }
+  return result;
+}
+
 function toCategoryTree(value) {
   const directSegments = splitPathSegments(value);
-  if (directSegments.length) return directSegments;
+  if (directSegments.length) return stripCategoryRootSegments(directSegments);
 
-  return splitList(value)
+  return stripCategoryRootSegments(splitList(value)
     .map((item) => item.replace(/^[^:]+:/, '').trim())
-    .filter(Boolean);
+    .filter(Boolean));
 }
 
 function getArticleTags(article) {
@@ -244,10 +308,8 @@ function getLeafCategoryLabel(raw) {
   const tree = toCategoryTree(raw)
     .flatMap((part) => `${part}`.split('/'))
     .map((part) => part.split(':').pop() || '')
-    .map((part) => part.replace(/-/g, ' ').trim())
     .filter(Boolean);
-  const leaf = tree[tree.length - 1] || '';
-  return leaf.charAt(0).toUpperCase() + leaf.slice(1);
+  return tagTitle(tree[tree.length - 1] || '');
 }
 
 function getComparableTimestamp(article) {
@@ -322,6 +384,7 @@ function toResolvedCardItem(article) {
     imageAlt: article.imageAlt || '',
     title: article.title || '',
     category: getLeafCategoryLabel(article.categoryPath || article.category),
+    categoryRef: article.categoryUrl || article.categoryPath,
   };
 }
 
@@ -356,6 +419,7 @@ async function fetchArticleCardItem(refPath) {
             || doc.querySelector('title')?.textContent?.trim()
             || '',
           category: getLeafCategoryLabel(category),
+          categoryRef: category,
         };
       } catch (e) {
         return null;
@@ -381,11 +445,7 @@ function toFallbackTitleFromPath(path) {
   const slug = normalizePath(path).split('/').filter(Boolean).pop() || '';
   if (!slug) return '';
 
-  return slug
-    .replace(/[-_]+/g, ' ')
-    .replace(/\s+/g, ' ')
-    .trim()
-    .replace(/\b\w/g, (char) => char.toUpperCase());
+  return tagTitle(slug);
 }
 
 function getFallbackTitle(sourceProp, refPath) {
@@ -395,7 +455,7 @@ function getFallbackTitle(sourceProp, refPath) {
 }
 
 async function getAutoArticles(mode) {
-  const all = await safeGetVisibleArticles();
+  const all = filterArticlesByCurrentLocale(await safeGetVisibleArticles());
   const currentArticle = extractCurrentArticle(all);
   const currentPath = normalizePath(window.location.pathname);
   const withoutCurrent = all.filter(
@@ -474,6 +534,7 @@ function parseLegacyManualItem(row, index) {
     imageAlt: img?.alt || '',
     title,
     category: getLeafCategoryLabel(rawCategory) || rawCategory,
+    categoryRef: rawCategory,
     picture,
     sourceRow: row,
     sortOrder: index,
@@ -575,8 +636,7 @@ function createCard(item, config) {
   const body = document.createElement('div');
   body.className = 'editorial-article-grid-card-body';
 
-  const rawPretitle = item.pretitle || item.category;
-  const pretitleText = getLeafCategoryLabel(rawPretitle) || rawPretitle;
+  const pretitleText = item.pretitle || item.category;
   if (pretitleText) {
     body.append(createTag('p', 'editorial-article-grid-card-pretitle', pretitleText));
   }
@@ -698,6 +758,13 @@ export default async function decorate(block) {
   const items = config.mode === 'manual'
     ? await getManualItems(block)
     : await getAutoArticles(config.mode);
+
+  // Prefer the Title of each category landing page; keep the slug-derived label
+  // when the landing does not exist.
+  await Promise.all(items.filter(Boolean).map(async (item) => {
+    const title = await taxonomyTitle(item.categoryRef);
+    if (title) item.category = title;
+  }));
 
   if (!hasRenderableCards(items)) {
     block.classList.add('editorial-article-grid-empty');

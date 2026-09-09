@@ -84,9 +84,9 @@ main .article-content-video .article-content-video-embed {
 
 main .article-content-video .article-content-video-caption {
   margin-block: 8px 0;
-  color: #717171;
-  font-family: Inter, sans-serif;
-  font-size: 14px;
+  color: #636363;
+  font-family: var(--body-font-family);
+  font-size: 12px;
   font-style: italic;
   font-weight: 400;
   line-height: 1.4;
@@ -98,21 +98,21 @@ main .article-content-video.article-content-video-center .article-content-video-
   margin: 0 auto;
 }
 
-main .article-content-video.article-content-video-left .article-content-video-figure {
-  max-width: 55%;
-  margin-right: auto;
-}
-
+main .article-content-video.article-content-video-left .article-content-video-figure,
 main .article-content-video.article-content-video-right .article-content-video-figure {
-  max-width: 55%;
-  margin-left: auto;
+  max-width: 100%;
+  margin: 0 auto;
 }
 
-@media (width < 600px) {
-  main .article-content-video.article-content-video-left .article-content-video-figure,
+@media (width >= 576px) {
+  main .article-content-video.article-content-video-left .article-content-video-figure {
+    max-width: 55%;
+    margin: 0 auto 0 0;
+  }
+
   main .article-content-video.article-content-video-right .article-content-video-figure {
-    max-width: 100%;
-    margin: 0 auto;
+    max-width: 55%;
+    margin: 0 0 0 auto;
   }
 }
 

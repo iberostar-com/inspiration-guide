@@ -11,6 +11,7 @@
  */
 
 import { appendPageSegment } from '../../scripts/iberostar/page-links.js';
+import { tagDisplayTitle } from '../../scripts/iberostar/taxonomy.js';
 
 const MAX_TAGS = 20;
 const FIELD_POSITIONS = {
@@ -19,16 +20,6 @@ const FIELD_POSITIONS = {
   title: 0,
   useArticleTags: 1,
 };
-
-function tagLabel(tagPath) {
-  // "inspiration-guide:adventure" → "Adventure"
-  const raw = `${tagPath || ''}`.trim();
-  const name = raw.includes(':') ? raw.split(':').pop() : raw;
-  const slug = name.split('/').pop();
-  return slug
-    .replace(/-/g, ' ')
-    .replace(/\b\w/g, (c) => c.toUpperCase());
-}
 
 function tagSlug(tagPath) {
   const raw = `${tagPath || ''}`.trim();
@@ -126,16 +117,24 @@ function getTagParentPage(block) {
 }
 
 function buildChips(tags, tagParentPage) {
-  return tags.filter((tagPath) => tagSlug(tagPath) !== '').slice(0, MAX_TAGS).map((tagPath) => {
-    const label = tagLabel(tagPath);
-    const slug = tagSlug(tagPath);
+  const visible = tags.filter((tagPath) => tagSlug(tagPath) !== '').slice(0, MAX_TAGS);
+
+  // The chip label prefers the Title of the tag landing page; tagDisplayTitle
+  // falls back to the slug-derived label when that page does not exist.
+  return Promise.all(visible.map(async (tagPath) => {
+    const label = await tagDisplayTitle(tagPath);
     const chip = document.createElement('a');
     chip.className = 'topic-tag-cloud-chip';
-    chip.href = appendPageSegment(tagParentPage, slug);
+    chip.href = appendPageSegment(tagParentPage, tagSlug(tagPath));
     chip.textContent = label;
     chip.setAttribute('rel', 'tag');
-    return chip;
-  });
+
+    // SEO: cada tag va dentro de un h3 (Bug 167097)
+    const heading = document.createElement('h3');
+    heading.className = 'topic-tag-cloud-chip-heading';
+    heading.append(chip);
+    return heading;
+  }));
 }
 
 function getLanguageRoot() {
@@ -144,7 +143,7 @@ function getLanguageRoot() {
   return locale ? `/${locale}` : '';
 }
 
-export default function decorate(block) {
+export default async function decorate(block) {
   const previous = block.querySelector(':scope > .topic-tag-cloud-rendered');
   if (previous) previous.remove();
 
@@ -167,7 +166,8 @@ export default function decorate(block) {
   rendered.className = 'topic-tag-cloud-rendered';
 
   if (title) {
-    const label = document.createElement('p');
+    // SEO: el título del módulo es un h2 (Bug 167097)
+    const label = document.createElement('h2');
     label.className = 'topic-tag-cloud-label';
     label.textContent = title;
     rendered.append(label);
@@ -175,7 +175,7 @@ export default function decorate(block) {
 
   const list = document.createElement('div');
   list.className = 'topic-tag-cloud-list';
-  buildChips(tags, tagParentPage).forEach((chip) => list.append(chip));
+  (await buildChips(tags, tagParentPage)).forEach((chip) => list.append(chip));
 
   if (!list.children.length) return;
 

@@ -1,11 +1,14 @@
 import { createHotelMiniCard } from '../hotel-mini-card/hotel-mini-card.js';
 import { getPlaceholder } from '../../scripts/iberostar/placeholders.js';
 import {
+  buildHotelPublicUrl,
   fetchHotelByCode,
-  fetchHotelPriceByCode,
-  getLocaleTagFromPath,
   isValidHotelCode,
 } from '../../scripts/iberostar/hotels-api.js';
+import {
+  getHotelPriceData,
+  initHotelPriceLiveUpdate,
+} from '../../scripts/iberostar/hotel-price-line.js';
 
 const FIELD_POSITIONS = {
   cta_link: [3, 0],
@@ -103,13 +106,7 @@ function getLocaleSegment(pathname = window.location.pathname) {
 
 function createHotelHref(hotel) {
   if (!hotel?.slug) return '';
-  const localeSegment = getLocaleSegment();
-  const slug = `${hotel.slug}`.split('/').filter(Boolean).join('/');
-  if (!slug) return '';
-
-  return localeSegment
-    ? `/${localeSegment}/hotels/${slug}`
-    : `/hotels/${slug}`;
+  return buildHotelPublicUrl(hotel.slug, getLocaleSegment());
 }
 
 function normalizeStars(value) {
@@ -163,85 +160,6 @@ function createEmptyState(message) {
   return empty;
 }
 
-function getStarCount(starsElement) {
-  const fromLabel = starsElement
-    ?.getAttribute('aria-label')
-    ?.match(/\d+/)?.[0];
-  const parsed = Number.parseInt(fromLabel || '', 10);
-  if (Number.isFinite(parsed)) return Math.max(0, Math.min(parsed, 5));
-
-  return Math.max(0, Math.min((starsElement?.textContent || '').replace(/[^★]/g, '').length, 5));
-}
-
-function createStarIcon() {
-  const star = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
-  star.classList.add('hotel-mini-card-star-icon');
-  star.setAttribute('viewBox', '0 0 24 24');
-  star.setAttribute('aria-hidden', 'true');
-
-  const path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
-  path.setAttribute('d', 'M12 2.5 14.76 8.1l6.19.9-4.48 4.37 1.06 6.17L12 16.64 6.47 19.54l1.06-6.17L3.05 9l6.19-.9L12 2.5Z');
-  path.setAttribute('fill', 'currentColor');
-
-  star.append(path);
-  return star;
-}
-
-function enhanceStarsForGraphql(renderedBlock) {
-  renderedBlock.querySelectorAll('.hotel-mini-card-stars').forEach((starsElement) => {
-    const count = getStarCount(starsElement);
-    if (!count) return;
-
-    starsElement.textContent = '';
-    Array.from({ length: count }).forEach(() => {
-      starsElement.append(createStarIcon());
-    });
-  });
-}
-
-function formatCurrencyValue(value, currency) {
-  if (!Number.isFinite(value) || !currency) return '';
-
-  const locale = getLocaleTagFromPath();
-  return new Intl.NumberFormat(locale, {
-    currency,
-    maximumFractionDigits: 0,
-    minimumFractionDigits: 0,
-    style: 'currency',
-  }).format(Math.round(value));
-}
-
-async function getPriceText(hotel, hotelCode) {
-  const [prefix, perNightLabel, personSingular, personPlural] = await Promise.all([
-    getPlaceholder('hotelPriceFromPrefix', 'Desde'),
-    getPlaceholder('hotelPricePerNight', '/ noche'),
-    getPlaceholder('hotelPricePersonSingular', 'persona'),
-    getPlaceholder('hotelPricePersonPlural', 'personas'),
-  ]);
-
-  const endpointPrice = await fetchHotelPriceByCode(hotelCode);
-  const fallbackPrice = Number.isFinite(hotel?.estimatedMinPrice)
-    ? {
-      currency: hotel?.estimatedMinCurrency || '',
-      defaultOccupancy: { adults: 2, children: [] },
-      priceFrom: hotel.estimatedMinPrice,
-    }
-    : null;
-  const selectedPrice = endpointPrice || fallbackPrice;
-
-  if (!selectedPrice?.currency || !Number.isFinite(selectedPrice?.priceFrom)) return '';
-
-  const adults = selectedPrice?.defaultOccupancy?.adults || 2;
-  const peopleLabel = adults === 1 ? personSingular : personPlural;
-  const formattedPrice = formatCurrencyValue(selectedPrice.priceFrom, selectedPrice.currency);
-
-  return [prefix, formattedPrice, `${adults} ${peopleLabel}`, perNightLabel]
-    .filter(Boolean)
-    .join(' ')
-    .replace(/\s+/g, ' ')
-    .trim();
-}
-
 function toMiniCardData(hotel, destinationText, cta) {
   if (!hotel) return null;
 
@@ -267,6 +185,7 @@ function toMiniCardData(hotel, destinationText, cta) {
     location: destinationText || '',
     name: hotel.title || '',
     priceFrom: hotel.priceFrom || '',
+    priceData: hotel.priceData || null,
     stars: normalizedStars,
     tagLabel: '',
     target: cta.target,
@@ -296,6 +215,7 @@ function observeAuthorChanges(block) {
 }
 
 export default async function decorate(block) {
+  initHotelPriceLiveUpdate();
   block.hotelGraphqlMiniCardObserver?.disconnect();
 
   const previous = block.querySelector(':scope > .hotel-graphql-mini-card-rendered');
@@ -342,17 +262,16 @@ export default async function decorate(block) {
   const hotel = await fetchHotelByCode(hotelCode);
   if (runId !== block.hotelGraphqlMiniCardRunId) return;
 
-  const priceFrom = hotel ? await getPriceText(hotel, hotelCode) : '';
+  const priceData = hotel ? await getHotelPriceData(hotel, hotelCode) : null;
   if (runId !== block.hotelGraphqlMiniCardRunId) return;
 
   const miniCardData = toMiniCardData(
-    hotel ? { ...hotel, priceFrom } : null,
+    hotel ? { ...hotel, priceFrom: priceData?.text || '', priceData } : null,
     destinationText,
     cta,
   );
   if (miniCardData) {
     const card = createHotelMiniCard(miniCardData, 'horizontal');
-    enhanceStarsForGraphql(card);
     rendered.append(card);
   } else if (isAuthoringPage(block)) {
     rendered.append(createEmptyState(`No active hotel found for code ${hotelCode}.`));

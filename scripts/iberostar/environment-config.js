@@ -15,7 +15,7 @@ const DEFAULT_CONFIG = {
   dynamicMedia: {
     enabled: false,
     imageServer: 'https://delivery-p179213-e1886364.adobeaemcloud.com',
-    company: '',
+    company: 'BALEARDEINVERSIONESFINANCIERASSL',
     damRoot: '/content/dam',
     stripExtension: true,
     assetHost: 'https://publish-p179213-e1886364.adobeaemcloud.com',
@@ -26,6 +26,21 @@ const DEFAULT_CONFIG = {
     graphqlOperationName: 'HotelByCode',
     priceFromChannel: 'b2c-web',
     priceFromEndpoint: 'https://gisapim.iberostar.com/mule/ae/price-from',
+    publicHost: 'https://aem-grspre.iberostar.com',
+    publicPathSegments: {
+      default: 'hoteles',
+      'es-es': 'hoteles',
+    },
+  },
+  currency: {
+    // PENDIENTE (no bloquea deploy): el JSON de tasas responde 200 en publish
+    // pero sin cabeceras CORS para origenes EDS; hay que ampliar la politica
+    // CORS de publish a /content/dam/iberostar-com/shared-data/jsons/*. Hasta
+    // entonces el selector degrada automaticamente a solo-idioma.
+    // Overrides sin deploy: metadata "currency-exchange-rates-endpoint" y
+    // kill-switch metadata "currency-selector: off".
+    enabled: true,
+    exchangeRatesEndpoint: 'https://publish-p179213-e1886364.adobeaemcloud.com/content/dam/iberostar-com/shared-data/jsons/currency-exchange-rates.json',
   },
 };
 
@@ -36,8 +51,13 @@ const CLOUD_ENVIRONMENT_OVERRIDES = [
     overrides: {
       hotels: {
         graphqlHost: 'https://publish-p179213-e1886364.adobeaemcloud.com',
+        publicHost: 'https://aem-grspre.iberostar.com',
       },
+      // currency: el endpoint de stage ya es el de DEFAULT_CONFIG; no se
+      // repite aqui para que el fixture local (ENVIRONMENT_CONFIG.local)
+      // no quede pisado por el override cloud por defecto.
       dynamicMedia: {
+        enabled: false,
         assetHost: 'https://publish-p179213-e1886364.adobeaemcloud.com',
         imageServer: 'https://delivery-p179213-e1886364.adobeaemcloud.com',
       },
@@ -45,12 +65,17 @@ const CLOUD_ENVIRONMENT_OVERRIDES = [
   },
   {
     key: 'dev',
-    pattern: /(?:-e1898042\.|main--inspiration-guide-dev--iberostar-com\.aem\.(?:live|page)$)/i,
+    pattern: /(?:-e1898042\.|(?:main|dev)--inspiration-guide-dev--iberostar-com\.aem\.(?:live|page)$)/i,
     overrides: {
       hotels: {
         graphqlHost: 'https://publish-p179213-e1898042.adobeaemcloud.com',
+        publicHost: 'https://aem-grsdev.iberostar.com',
+      },
+      currency: {
+        exchangeRatesEndpoint: 'https://publish-p179213-e1898042.adobeaemcloud.com/content/dam/iberostar-com/shared-data/jsons/currency-exchange-rates.json',
       },
       dynamicMedia: {
+        enabled: false,
         assetHost: 'https://publish-p179213-e1898042.adobeaemcloud.com',
         imageServer: 'https://delivery-p179213-e1898042.adobeaemcloud.com',
       },
@@ -58,13 +83,18 @@ const CLOUD_ENVIRONMENT_OVERRIDES = [
   },
   {
     key: 'qa',
-    pattern: /(?:-e1898096\.|main--inspiration-guide-qa--iberostar-com\.aem\.(?:live|page)$)/i,
+    pattern: /(?:-e1898096\.|(?:main|qa)--inspiration-guide-qa--iberostar-com\.aem\.(?:live|page)$)/i,
     overrides: {
       hotels: {
-        graphqlHost: 'https://author-p179213-e1898096.adobeaemcloud.com',
+        graphqlHost: 'https://publish-p179213-e1898096.adobeaemcloud.com',
+        publicHost: 'https://aem-grsqa.iberostar.com',
+      },
+      currency: {
+        exchangeRatesEndpoint: 'https://publish-p179213-e1898096.adobeaemcloud.com/content/dam/iberostar-com/shared-data/jsons/currency-exchange-rates.json',
       },
       dynamicMedia: {
-        assetHost: 'https://author-p179213-e1898096.adobeaemcloud.com',
+        enabled: false,
+        assetHost: 'https://publish-p179213-e1898096.adobeaemcloud.com',
         imageServer: 'https://delivery-p179213-e1898096.adobeaemcloud.com',
       },
     },
@@ -75,6 +105,11 @@ const DEFAULT_CLOUD_ENVIRONMENT = 'stage';
 
 const ENVIRONMENT_CONFIG = {
   local: {
+    currency: {
+      // Fixture local (mismo shape que el JSON del DAM): el publish todavia
+      // no expone CORS para ese path, asi que en localhost usamos una copia.
+      exchangeRatesEndpoint: '/drafts/currency-exchange-rates.json',
+    },
     dynamicMedia: {
       enabled: false,
       imageServer: 'https://delivery-p179213-e1886364.adobeaemcloud.com',
@@ -181,6 +216,11 @@ function getEnvironmentConfig(hostname = window.location.hostname) {
       ...DEFAULT_CONFIG.hotels,
       ...(overrides.hotels || {}),
       ...(cloudOverrides.hotels || {}),
+    },
+    currency: {
+      ...DEFAULT_CONFIG.currency,
+      ...(overrides.currency || {}),
+      ...(cloudOverrides.currency || {}),
     },
   };
 }

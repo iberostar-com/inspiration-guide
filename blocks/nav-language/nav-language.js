@@ -1,8 +1,20 @@
 import { getTranslation } from '../../scripts/iberostar/i18n.js';
 import { getLocaleFromPath } from '../../scripts/iberostar/placeholders.js';
+import {
+  CURRENCY_CHANGE_EVENT,
+  getCurrencyDisplayName,
+  getCurrencyMetadata,
+  getSelectedCurrency,
+  getSupportedCurrencies,
+  isConversionAvailable,
+  isCurrencySelectorEnabled,
+  setSelectedCurrency,
+} from '../../scripts/iberostar/currency.js';
 
 const LOCALE_CODE = /^[a-z]{2}-[a-z]{2}$/i;
 const GUIDE_SEGMENT = 'inspiration-guide';
+
+let instanceCounter = 0;
 
 function getPropElement(container, prop) {
   if (container?.matches?.(`[data-aue-prop="${prop}"]`)) return container;
@@ -70,7 +82,7 @@ function resolveOptionUrl(value) {
   if (!LOCALE_CODE.test(raw)) return raw;
 
   const locale = raw.toLowerCase();
-  return `/${GUIDE_SEGMENT}/${locale}/`;
+  return `/${locale}/${GUIDE_SEGMENT}/`;
 }
 
 function createOptionData(row) {
@@ -126,30 +138,107 @@ function createRenderedContainer(block) {
   return rendered;
 }
 
-function buildTrigger(labelText) {
+function buildTriggerText(langLabel, currencyCode) {
+  const text = document.createElement('span');
+  text.className = 'nav-language-trigger-text';
+
+  const lang = document.createElement('span');
+  lang.className = 'nav-language-trigger-lang';
+  lang.textContent = langLabel;
+  text.append(lang);
+
+  if (currencyCode) {
+    const separator = document.createElement('span');
+    separator.className = 'nav-language-trigger-separator';
+    separator.setAttribute('aria-hidden', 'true');
+    separator.textContent = '|';
+
+    const currency = document.createElement('span');
+    currency.className = 'nav-language-trigger-currency';
+    currency.textContent = currencyCode;
+
+    text.append(separator, currency);
+  }
+
+  return text;
+}
+
+function buildTrigger(langLabel, currencyCode) {
   const trigger = document.createElement('button');
   trigger.type = 'button';
   trigger.className = 'nav-language-trigger';
   trigger.setAttribute('aria-expanded', 'false');
   trigger.setAttribute('aria-haspopup', 'dialog');
 
-  const text = document.createElement('span');
-  text.className = 'nav-language-trigger-text';
-  text.textContent = labelText;
-
   const chevron = document.createElement('span');
   chevron.className = 'nav-language-trigger-chevron';
   chevron.setAttribute('aria-hidden', 'true');
 
-  trigger.append(text, chevron);
+  trigger.append(buildTriggerText(langLabel, currencyCode), chevron);
   return trigger;
 }
 
+function buildTab(key, label, instanceId) {
+  const tab = document.createElement('button');
+  tab.type = 'button';
+  tab.className = 'nav-language-tab';
+  tab.id = `nav-language-tab-${key}-${instanceId}`;
+  tab.dataset.tab = key;
+  tab.setAttribute('role', 'tab');
+  tab.setAttribute('aria-selected', 'false');
+  tab.setAttribute('aria-controls', `nav-language-panel-${key}-${instanceId}`);
+  tab.textContent = label;
+  return tab;
+}
+
+function buildPanel(key, titleText, instanceId) {
+  const panel = document.createElement('div');
+  panel.className = 'nav-language-panel';
+  panel.id = `nav-language-panel-${key}-${instanceId}`;
+  panel.dataset.panel = key;
+  panel.setAttribute('role', 'tabpanel');
+  panel.setAttribute('aria-labelledby', `nav-language-tab-${key}-${instanceId}`);
+
+  const title = document.createElement('h2');
+  title.className = 'nav-language-modal-title';
+  title.textContent = titleText;
+  panel.append(title);
+
+  return panel;
+}
+
+function buildCurrencyOption(code, displayName, selectedCurrency) {
+  const metadata = getCurrencyMetadata(code);
+  const button = document.createElement('button');
+  button.type = 'button';
+  button.className = 'nav-language-currency-button';
+  button.dataset.currency = code;
+
+  const name = document.createElement('span');
+  name.className = 'nav-language-currency-name';
+  name.textContent = displayName || metadata?.nameFallback || code;
+
+  const codeLine = document.createElement('span');
+  codeLine.className = 'nav-language-currency-code';
+  codeLine.textContent = `${code}${metadata?.symbol ? ` - ${metadata.symbol}` : ''}`;
+
+  button.append(name, codeLine);
+
+  const isActive = code === selectedCurrency;
+  button.classList.toggle('is-active', isActive);
+  button.setAttribute('aria-pressed', isActive ? 'true' : 'false');
+  return button;
+}
+
 /**
- * Nav Language Selector block: modal trigger + language options modal.
+ * Nav Language Selector block: "ESP | EUR" trigger + modal with
+ * Language / Currency tabs (aligned with iberostar.com behavior).
  * @param {Element} block The nav-language block element
  */
 export default async function decorate(block) {
+  instanceCounter += 1;
+  const instanceId = instanceCounter;
+
   const optionRows = getOptionsRows(block);
   const options = optionRows.map(createOptionData).filter(Boolean);
   const activeOption = findActiveOption(options);
@@ -157,7 +246,13 @@ export default async function decorate(block) {
   // Block-level field rows (label / modalTitle) are everything that is not an option.
   const fieldRows = [...block.children].filter((child) => !optionRows.includes(child));
 
-  const [modalTitleText, closeText] = await Promise.all([
+  const [
+    modalTitleText,
+    closeText,
+    currencyTitleText,
+    languageTabText,
+    currencyTabText,
+  ] = await Promise.all([
     getTranslation(
       'chooseLanguage',
       getTextFromField(getPropElement(block, 'modalHeading'))
@@ -165,20 +260,43 @@ export default async function decorate(block) {
         || 'Selecciona un idioma',
     ),
     getTranslation('close', 'Cerrar'),
+    getTranslation('chooseCurrency', 'Selecciona una moneda'),
+    getTranslation('languageTabLabel', 'Idioma'),
+    getTranslation('currencyTabLabel', 'Moneda'),
   ]);
 
   const authoredLabel = getTextFromField(getPropElement(block, 'label'))
     || getTextFromField(fieldRows[0])
     || block.getAttribute('data-label');
 
-  const currentLabel = authoredLabel
-    || activeOption?.label
+  // Like iberostar.com, the trigger shows the full label of the active
+  // language option ("English US | EUR"); authored label is the fallback.
+  const currentLabel = activeOption?.label
+    || authoredLabel
     || options[0]?.label
-    || 'ES';
+    || 'Español';
+
+  const currencyEnabled = isCurrencySelectorEnabled();
+  const selectedCurrency = currencyEnabled ? getSelectedCurrency() : '';
+
+  // Hydrate page-level state (body dataset) without emitting or re-persisting.
+  if (currencyEnabled) {
+    setSelectedCurrency(selectedCurrency, { emit: false, persist: false });
+  }
 
   // Keep authored source for UE instrumentation, but hide it visually.
   hideSourceRows([...block.children]);
   const rendered = createRenderedContainer(block);
+
+  const updateTriggerCurrency = (code) => {
+    const currencySpan = rendered.querySelector('.nav-language-trigger-currency');
+    if (currencySpan) currencySpan.textContent = code;
+  };
+
+  const removeTriggerCurrency = () => {
+    rendered.querySelector('.nav-language-trigger-separator')?.remove();
+    rendered.querySelector('.nav-language-trigger-currency')?.remove();
+  };
 
   // If only 0 or 1 options, render as link instead of modal.
   if (options.length <= 1) {
@@ -190,12 +308,21 @@ export default async function decorate(block) {
       triggerLink.target = '_blank';
       triggerLink.rel = 'noopener';
     }
-    triggerLink.textContent = currentLabel;
+    triggerLink.append(buildTriggerText(currentLabel, selectedCurrency));
     rendered.append(triggerLink);
+
+    if (currencyEnabled) {
+      document.addEventListener(CURRENCY_CHANGE_EVENT, (event) => {
+        if (event.detail?.currency) updateTriggerCurrency(event.detail.currency);
+      });
+      isConversionAvailable().then((available) => {
+        if (!available) removeTriggerCurrency();
+      });
+    }
     return;
   }
 
-  const trigger = buildTrigger(currentLabel);
+  const trigger = buildTrigger(currentLabel, selectedCurrency);
 
   // Modal backdrop (mounted on <body> so fixed positioning is never clipped).
   const backdrop = document.createElement('div');
@@ -213,16 +340,12 @@ export default async function decorate(block) {
   const header = document.createElement('div');
   header.className = 'nav-language-modal-header';
 
-  const title = document.createElement('h2');
-  title.className = 'nav-language-modal-title';
-  title.textContent = modalTitleText;
-
   const closeBtn = document.createElement('button');
   closeBtn.type = 'button';
   closeBtn.className = 'nav-language-modal-close';
   closeBtn.setAttribute('aria-label', closeText);
 
-  header.append(title, closeBtn);
+  const languagePanel = buildPanel('language', modalTitleText, instanceId);
 
   const optionsContainer = document.createElement('div');
   optionsContainer.className = 'nav-language-modal-options';
@@ -244,18 +367,99 @@ export default async function decorate(block) {
 
     // Reflect the chosen language in the trigger before navigating.
     optionLink.addEventListener('click', () => {
-      trigger.querySelector('.nav-language-trigger-text').textContent = option.label;
+      const langSpan = trigger.querySelector('.nav-language-trigger-lang');
+      if (langSpan) langSpan.textContent = option.label;
     });
 
     optionsContainer.append(optionLink);
   });
 
-  modal.append(header, optionsContainer);
+  languagePanel.append(optionsContainer);
+
+  let tablist = null;
+  let currencyPanel = null;
+
+  if (currencyEnabled) {
+    tablist = document.createElement('div');
+    tablist.className = 'nav-language-tabs';
+    tablist.setAttribute('role', 'tablist');
+
+    const languageTab = buildTab('language', languageTabText, instanceId);
+    const currencyTab = buildTab('currency', currencyTabText, instanceId);
+    tablist.append(languageTab, currencyTab);
+
+    currencyPanel = buildPanel('currency', currencyTitleText, instanceId);
+    currencyPanel.hidden = true;
+
+    const currencyOptions = document.createElement('div');
+    currencyOptions.className = 'nav-language-modal-options nav-language-modal-options-currency';
+
+    const supportedCurrencies = getSupportedCurrencies();
+    const displayNames = await Promise.all(
+      supportedCurrencies.map((code) => getCurrencyDisplayName(code)),
+    );
+    supportedCurrencies.forEach((code, index) => {
+      currencyOptions.append(buildCurrencyOption(code, displayNames[index], selectedCurrency));
+    });
+    currencyPanel.append(currencyOptions);
+
+    const activateTab = (key) => {
+      [languageTab, currencyTab].forEach((tab) => {
+        const isSelected = tab.dataset.tab === key;
+        tab.classList.toggle('is-active', isSelected);
+        tab.setAttribute('aria-selected', isSelected ? 'true' : 'false');
+      });
+      languagePanel.hidden = key !== 'language';
+      currencyPanel.hidden = key !== 'currency';
+    };
+    activateTab('language');
+
+    tablist.addEventListener('click', (event) => {
+      const tab = event.target.closest('.nav-language-tab');
+      if (tab) activateTab(tab.dataset.tab);
+    });
+
+    // Currency selection: persist + emit, keep the modal open (AEM parity).
+    currencyOptions.addEventListener('click', (event) => {
+      const button = event.target.closest('.nav-language-currency-button');
+      if (button?.dataset.currency) setSelectedCurrency(button.dataset.currency);
+    });
+
+    document.addEventListener(CURRENCY_CHANGE_EVENT, (event) => {
+      const code = event.detail?.currency;
+      if (!code) return;
+      updateTriggerCurrency(code);
+      [...currencyOptions.children].forEach((button) => {
+        const isActive = button.dataset.currency === code;
+        button.classList.toggle('is-active', isActive);
+        button.setAttribute('aria-pressed', isActive ? 'true' : 'false');
+      });
+    });
+  }
+
+  if (tablist) header.append(tablist);
+  header.append(closeBtn);
+
+  modal.append(header, languagePanel);
+  if (currencyPanel) modal.append(currencyPanel);
   backdrop.append(modal);
+
+  // Degrade to the language-only selector when exchange rates are unreachable
+  // (e.g. CORS not yet enabled on the AEM publish tier).
+  if (currencyEnabled) {
+    isConversionAvailable().then((available) => {
+      if (available) return;
+      removeTriggerCurrency();
+      tablist?.remove();
+      currencyPanel?.remove();
+      languagePanel.hidden = false;
+    });
+  }
 
   let keydownHandler;
 
-  const getFocusable = () => [...modal.querySelectorAll('a[href], button:not([disabled])')];
+  const getFocusable = () => [...modal.querySelectorAll('a[href], button:not([disabled])')]
+    .filter((element) => !element.closest('[hidden]'));
 
   const closeModal = () => {
     backdrop.hidden = true;

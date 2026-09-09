@@ -1,4 +1,4 @@
-import { createResponsiveImage } from '../../scripts/iberostar/media.js';
+import { createResponsiveImage, resolveAssetUrl } from '../../scripts/iberostar/media.js';
 import { getTranslation } from '../../scripts/iberostar/i18n.js';
 
 const VIDEO_EXTENSIONS = /\.(mp4|webm|ogg|mov)(\?.*)?$/i;
@@ -385,7 +385,7 @@ export default async function decorate(block) {
 
         const resolvedUrl = videoUrl || await resolveVideoUrl(videoRef);
         if (!resolvedUrl) return;
-        activateVideo(figure, resolvedUrl);
+        activateVideo(figure, resolveAssetUrl(resolvedUrl));
       });
       poster.append(playButton);
     }

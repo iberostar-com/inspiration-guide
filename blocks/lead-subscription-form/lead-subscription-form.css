@@ -1,14 +1,19 @@
 .lead-subscription-form {
-  --lead-subscription-form-bg-grey: #f5f5f5;
+  --lead-subscription-form-bg-grey: var(--color-bg-neutral-100, #f5f5f5);
   --lead-subscription-form-bg-white: #fff;
   --lead-subscription-form-text: #1b2828;
   --lead-subscription-form-muted: #636363;
   --lead-subscription-form-border: #dedede;
 
-  width: 100vw;
-  margin-right: calc(50% - 50vw);
-  margin-left: calc(50% - 50vw);
+  width: var(--full-bleed-width);
+  margin-right: calc(50% - var(--full-bleed-width) / 2);
+  margin-left: calc(50% - var(--full-bleed-width) / 2);
   background: var(--lead-subscription-form-bg-grey);
+}
+
+/* Bug 167106 — cuando la newsletter es la última sección va pegada al footer, sin franja blanca */
+main > .section.lead-subscription-form-container:last-of-type {
+  margin-bottom: 0;
 }
 
 .lead-subscription-form-source {
@@ -42,7 +47,7 @@
 .lead-subscription-form-content h2 {
   margin: 0;
   color: var(--lead-subscription-form-text);
-  font-family: noe-display, serif;
+  font-family: var(--heading-font-family);
   font-size: 32px;
   font-weight: 400;
   font-feature-settings: 'pnum' on, 'lnum' on;
@@ -52,7 +57,7 @@
 .lead-subscription-form-content p {
   margin: 0;
   color: var(--lead-subscription-form-text);
-  font-family: inter, sans-serif;
+  font-family: var(--body-font-family);
   font-size: 14px;
   font-weight: 400;
   line-height: 140%;
@@ -94,7 +99,7 @@
   border: 0;
   border-radius: 0;
   color: var(--lead-subscription-form-text);
-  font-family: inter, sans-serif;
+  font-family: var(--body-font-family);
   font-size: 14px;
   font-weight: 400;
   line-height: 140%;
@@ -116,7 +121,7 @@
 .lead-subscription-form-alert {
   margin: 0;
   color: var(--color-feedback-error-500, #b00020);
-  font-size: var(--ibh-text-body-s);
+  font-size: 14px;
 }
 
 .lead-subscription-form-legal {
@@ -127,7 +132,7 @@
   margin: 0;
   color: var(--lead-subscription-form-muted);
   cursor: pointer;
-  font-family: inter, sans-serif;
+  font-family: var(--body-font-family);
   font-size: 12px;
   font-weight: 400;
   line-height: 140%;
@@ -179,7 +184,7 @@
   color: #fff;
   border: none;
   border-radius: 4px;
-  font-family: inter, sans-serif;
+  font-family: var(--body-font-family);
   font-size: 16px;
   font-weight: 400;
   line-height: 140%;
@@ -189,7 +194,7 @@
 }
 
 .lead-subscription-form-fields button:hover {
-  background: var(--color-neutral-900);
+  background: #1b2828;
 }
 
 .lead-subscription-form-fields button:disabled {
@@ -205,7 +210,7 @@
 .lead-subscription-form-success {
   display: flex;
   flex-direction: column;
-  gap: var(--margin-margin-8);
+  gap: 8px;
 }
 
 .lead-subscription-form-success[hidden],
@@ -220,7 +225,7 @@
 
 .lead-subscription-form-success-title {
   color: var(--lead-subscription-form-text);
-  font-family: noe-display, serif;
+  font-family: var(--heading-font-family);
   font-size: 32px;
   font-weight: 400;
   line-height: 42px;
@@ -228,23 +233,22 @@
 
 .lead-subscription-form-success-description {
   color: var(--lead-subscription-form-muted);
-  font-family: inter, sans-serif;
+  font-family: var(--body-font-family);
   font-size: 14px;
   line-height: 140%;
 }
 
-/* Tablet and up: title/description left, form right */
-@media (width >= 600px) {
+@media (width >= 576px) {
   .lead-subscription-form-rendered {
     padding-right: 32px;
     padding-left: 32px;
   }
 }
 
-@media (width >= 900px) {
+@media (width >= 1440px) {
   .lead-subscription-form-rendered {
     display: grid;
-    grid-template-columns: minmax(0, 629px) minmax(380px, 453px);
+    grid-template-columns: 629px 453px;
     align-items: center;
     justify-content: space-between;
     min-height: 234px;
@@ -266,11 +270,5 @@
 
   .lead-subscription-form-legal {
     font-size: 14px;
-  }
-}
-
-@media (width >= 1200px) {
-  .lead-subscription-form-rendered {
-    grid-template-columns: 629px 453px;
   }
 }

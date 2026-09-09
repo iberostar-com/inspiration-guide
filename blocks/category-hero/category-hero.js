@@ -1,4 +1,6 @@
 import { getMetadata } from '../../scripts/aem.js';
+import { tagTitle } from '../../scripts/iberostar/tag-label.js';
+import { taxonomyTitle } from '../../scripts/iberostar/taxonomy.js';
 import { getTranslation } from '../../scripts/iberostar/i18n.js';
 import { getPlaceholder } from '../../scripts/iberostar/placeholders.js';
 
@@ -42,11 +44,7 @@ function getHrefValueFromElement(element) {
 
 function labelFromHref(href) {
   const segment = `${href || ''}`.replace(/(^\/+|\/+$|(\.(html|plain\.html))$)/g, '').split('/').filter(Boolean).pop() || '';
-  return decodeURIComponent(segment)
-    .replace(/[-_]+/g, ' ')
-    .replace(/\s+/g, ' ')
-    .trim()
-    .replace(/\b\w/g, (letter) => letter.toUpperCase());
+  return tagTitle(decodeURIComponent(segment));
 }
 
 function getTitleFallback() {
@@ -119,27 +117,11 @@ function sanitizeHeadingTag(value) {
   return HEADING_TAGS.has(normalized) ? normalized : 'h2';
 }
 
-async function fetchPageTitle(href) {
-  try {
-    const resp = await fetch(href, { redirect: 'follow' });
-    if (!resp.ok) return null;
-    const text = await resp.text();
-    const ogMatch = text.match(/<meta[^>]+property=["']og:title["'][^>]+content=["']([^"']+)["']/i)
-      || text.match(/<meta[^>]+content=["']([^"']+)["'][^>]+property=["']og:title["']/i);
-    if (ogMatch?.[1]) return ogMatch[1].trim();
-    const titleMatch = text.match(/<title[^>]*>([^<]+)<\/title>/i);
-    return titleMatch?.[1]?.split('|')?.[0]?.trim() || null;
-  } catch {
-    return null;
-  }
-}
-
 async function enhanceSubcategoryTitles(list) {
   const links = [...list.querySelectorAll('.category-hero-subcategories-link')];
   if (!links.length) return;
 
-  const fetches = links.map((link) => fetchPageTitle(link.getAttribute('href')));
-  const titles = await Promise.all(fetches);
+  const titles = await Promise.all(links.map((link) => taxonomyTitle(link.getAttribute('href'))));
 
   titles.forEach((pageTitle, index) => {
     if (pageTitle && links[index]) {

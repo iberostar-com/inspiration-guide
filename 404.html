@@ -14,57 +14,63 @@
   </script>
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta property="og:title" content="Page not found">
+  <script nonce="aem" src="/scripts/aem.js" type="module"></script>
   <script nonce="aem" src="/scripts/scripts.js" type="module"></script>
-  <script nonce="aem" type="module">
-    window.addEventListener('load', () => {
-      if (document.referrer) {
-        const { origin, pathname } = new URL(document.referrer);
-        if (origin === window.location.origin) {
-          const backBtn = document.createElement('a');
-          backBtn.classList.add('button', 'error-button-back');
-          backBtn.href = pathname;
-          backBtn.textContent = 'Go back';
-          backBtn.title = 'Go back';
-          const btnContainer = document.querySelector('.button-container');
-          btnContainer.append(backBtn);
-        }
-      }
-    });
-  </script>
   <script nonce="aem" type="module">
     import { sampleRUM } from '/scripts/aem.js';
     sampleRUM('404', { source: document.referrer });
   </script>
   <link rel="stylesheet" href="/styles/styles.css">
-  <style>
-    main.error {
-      min-height: calc(100vh - var(--nav-height));
-      display: flex;
-      align-items: center;
-    }
-
-    main.error .error-number {
-      width: 100%;
-    }
-
-    main.error .error-number text {
-      font-family: monospace;
-    }
-  </style>
-  <link rel="stylesheet" href="/styles/lazy-styles.css">
+  <link rel="icon" href="/favicon.ico" sizes="any">
 </head>
 
 <body>
   <header></header>
-  <main class="error">
-    <div class="section">
-      <svg viewBox="1 0 38 18" class="error-number">
-        <text x="0" y="17">404</text>
-      </svg>
-      <h2 class="error-message">Page Not Found</h2>
-      <p class="button-container">
-        <a href="/" class="button secondary error-button-home">Go home</a>
-      </p>
+  <main>
+    <div>
+      <!--
+        Bloque not-found con las mismas filas que genera el modelo autorable (title, subtitle,
+        cta, image). El bloque carga la pagina 404 contribuida en AEM del locale de la URL
+        (/{locale}/inspiration-guide/404); estos valores solo se usan si esa pagina no existe
+        y, para los textos, por detras de los placeholders del locale.
+      -->
+      <div class="not-found">
+        <div>
+          <div>
+            <p>This page has taken a break</p>
+          </div>
+        </div>
+        <div>
+          <div>
+            <p>It looks like this page has gone on a trip. How about we plan yours?</p>
+          </div>
+        </div>
+        <div>
+          <div>
+            <p><a href="/en-us/inspiration-guide">Back to home</a></p>
+          </div>
+        </div>
+        <div>
+          <div>
+            <picture>
+              <source
+                type="image/avif"
+                srcset="/images/not-found/not-found-520.avif 520w, /images/not-found/not-found-1040.avif 1040w"
+                sizes="(min-width: 1440px) 520px, (min-width: 820px) 400px, calc(100vw - 64px)"
+              >
+              <img
+                src="/images/not-found/not-found-1040.webp"
+                srcset="/images/not-found/not-found-520.webp 520w, /images/not-found/not-found-1040.webp 1040w"
+                sizes="(min-width: 1440px) 520px, (min-width: 820px) 400px, calc(100vw - 64px)"
+                width="1040"
+                height="1040"
+                alt="Sunny tropical beach with tilted umbrellas"
+                loading="lazy"
+              >
+            </picture>
+          </div>
+        </div>
+      </div>
     </div>
   </main>
   <footer></footer>

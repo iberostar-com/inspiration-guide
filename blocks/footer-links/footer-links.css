@@ -12,7 +12,7 @@
 .footer-links .footer-links-group {
   margin: 0;
   padding: 24px 0;
-  border-top: 1px solid var(--color-neutral-300, #dedede);
+  border-top: 1px solid #dedede;
 }
 
 .footer-links .footer-links-group:first-child {
@@ -34,12 +34,12 @@
 }
 
 .footer-links .footer-column-title {
-  font-size: var(--ibh-text-caption-xs, 0.75rem);
-  font-weight: var(--ibh-weight-medium, 500);
+  font-size: 0.75rem;
+  font-weight: 500;
   line-height: 1.4;
   letter-spacing: 0.04em;
   text-transform: uppercase;
-  color: var(--color-neutral-700, #636363);
+  color: #636363;
 }
 
 .footer-links .footer-accordion-chevron {
@@ -84,10 +84,10 @@
 }
 
 .footer-links .footer-links-item a:any-link {
-  font-size: var(--ibh-text-body-s, 0.875rem);
+  font-size: 0.875rem;
   font-weight: 400;
   line-height: 1.45;
-  color: var(--color-neutral-1000, #1b2828);
+  color: #1b2828;
   text-decoration: none;
 }
 

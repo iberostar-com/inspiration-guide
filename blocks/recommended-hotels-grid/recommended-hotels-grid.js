@@ -180,15 +180,20 @@ function createHeader(labels) {
   const copy = document.createElement('div');
   copy.className = 'recommended-hotels-grid-copy';
 
-  const eyebrow = document.createElement('p');
-  eyebrow.className = 'recommended-hotels-grid-eyebrow';
-  eyebrow.textContent = labels.eyebrow;
+  if (labels.eyebrow) {
+    const eyebrow = document.createElement('p');
+    eyebrow.className = 'recommended-hotels-grid-eyebrow';
+    eyebrow.textContent = labels.eyebrow;
+    copy.append(eyebrow);
+  }
 
-  const title = document.createElement('h2');
-  title.className = 'recommended-hotels-grid-title';
-  title.textContent = labels.title;
+  if (labels.title) {
+    const title = document.createElement('h2');
+    title.className = 'recommended-hotels-grid-title';
+    title.textContent = labels.title;
+    copy.append(title);
+  }
 
-  copy.append(eyebrow, title);
   if (labels.cta.text && labels.cta.href) {
     const cta = document.createElement('a');
     cta.className = 'recommended-hotels-grid-cta';
@@ -382,27 +387,23 @@ async function getLabels(block) {
     next,
     goTo,
     of,
-    defaultEyebrow,
-    defaultTitle,
   ] = await Promise.all([
     getTranslation('hotelsCarousel', 'Recommended hotels'),
     getTranslation('carouselPrevious', 'Previous hotels'),
     getTranslation('carouselNext', 'Next hotels'),
     getTranslation('carouselGoTo', 'Go to hotel group'),
     getTranslation('carouselOf', 'of'),
-    getTranslation('recommendedHotelsEyebrow', 'Hoteles mencionados en el artículo'),
-    getTranslation('recommendedHotelsTitle', 'Hoteles recomendados'),
   ]);
 
   return {
     carousel,
     cta: getCtaConfig(block),
-    eyebrow: getConfigValue(block, 'eyebrow', 'data-eyebrow') || defaultEyebrow,
+    eyebrow: getConfigValue(block, 'eyebrow', 'data-eyebrow'),
     goTo,
     next,
     of,
     previous,
-    title: getConfigValue(block, 'title', 'data-title') || defaultTitle,
+    title: getConfigValue(block, 'title', 'data-title'),
   };
 }
 

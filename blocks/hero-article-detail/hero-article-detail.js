@@ -1,5 +1,47 @@
 import { getMetadata } from '../../scripts/aem.js';
 import { createResponsiveImage } from '../../scripts/iberostar/media.js';
+import { formatDate, hasValidDate } from '../../scripts/iberostar/date-format.js';
+import { tagDisplayTitle } from '../../scripts/iberostar/taxonomy.js';
+import { getTranslation } from '../../scripts/iberostar/i18n.js';
+
+async function copyLink(text) {
+  if (navigator.clipboard?.writeText) {
+    try {
+      await navigator.clipboard.writeText(text);
+      return true;
+    } catch {
+      // noop
+    }
+  }
+
+  try {
+    const textarea = document.createElement('textarea');
+    textarea.value = text;
+    textarea.setAttribute('readonly', '');
+    textarea.style.position = 'fixed';
+    textarea.style.top = '0';
+    textarea.style.opacity = '0';
+    document.body.append(textarea);
+    textarea.select();
+    const copied = document.execCommand('copy');
+    textarea.remove();
+    return copied;
+  } catch {
+    return false;
+  }
+}
+
+function showShareFeedback(button, message) {
+  const container = button.closest('.hero-article-detail-actions') || button.parentElement;
+  container?.querySelector('.hero-article-detail-share-feedback')?.remove();
+
+  const feedback = document.createElement('span');
+  feedback.className = 'hero-article-detail-share-feedback';
+  feedback.setAttribute('role', 'status');
+  feedback.textContent = message;
+  container?.append(feedback);
+  window.setTimeout(() => feedback.remove(), 2500);
+}
 
 function getSourceRows(block) {
   return Array.from(block.children).filter((child) => !child.classList.contains('hero-article-detail-content'));
@@ -35,33 +77,21 @@ function getMetaValue(name, fallback = '') {
   return value || fallback;
 }
 
+// The category metadata holds a hierarchical tag id such as
+// `inspiration-guide:categorías/destinos/islas-baleares`; the concrete category
+// is the last segment, never the tag tree root.
 function toCategoryLabel(rawValue) {
   const source = `${rawValue || ''}`.trim();
   if (!source) return '';
 
-  const first = source.split(',')[0].trim();
-  const withoutNamespace = first.includes(':') ? first.split(':')[1] : first;
-  const segment = withoutNamespace.split('/')[0].trim();
-  const normalized = segment.replace(/[-_]+/g, ' ');
-
-  if (!normalized) return '';
-  return normalized.charAt(0).toUpperCase() + normalized.slice(1).toLowerCase();
+  return tagDisplayTitle(source.split(',')[0]);
 }
 
 function toDisplayDate(value) {
   if (!value) return '';
+  if (!hasValidDate(value)) return `${value}`.toUpperCase();
 
-  const parsed = new Date(value);
-  if (Number.isNaN(parsed.getTime())) {
-    return `${value}`.toUpperCase();
-  }
-
-  const locale = document.documentElement.lang || 'es-ES';
-  return new Intl.DateTimeFormat(locale, {
-    day: 'numeric',
-    month: 'long',
-    year: 'numeric',
-  }).format(parsed).toUpperCase();
+  return formatDate(value).toUpperCase();
 }
 
 function createClockIcon() {
@@ -85,7 +115,7 @@ function createText(tagName, className, text) {
   return element;
 }
 
-export default function decorate(block) {
+export default async function decorate(block) {
   const existing = block.querySelector(':scope > .hero-article-detail-content');
   if (existing) {
     existing.remove();
@@ -106,7 +136,7 @@ export default function decorate(block) {
   const authorName = getMetaValue('article-author-name');
   const authorDescription = getMetaValue('article-author-description');
   const authorImage = getMetaValue('article-author-image');
-  const category = toCategoryLabel(getMetaValue('article-category'));
+  const category = await toCategoryLabel(getMetaValue('article-category'));
   const publicationDate = toDisplayDate(getMetaValue('article-publication-date'));
   const readTime = getMetaValue('article-read-time').toUpperCase();
 
@@ -202,17 +232,14 @@ export default function decorate(block) {
       try {
         await navigator.share(shareData);
         return;
-      } catch {
-        // continue to clipboard fallback
+      } catch (error) {
+        if (error?.name === 'AbortError') return;
       }
     }
 
-    if (navigator.clipboard?.writeText) {
-      try {
-        await navigator.clipboard.writeText(window.location.href);
-      } catch {
-        // no-op
-      }
+    const copied = await copyLink(window.location.href);
+    if (copied) {
+      showShareFeedback(shareButton, await getTranslation('shareLinkCopied', 'Enlace copiado'));
     }
   });
 

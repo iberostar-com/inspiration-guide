@@ -39,14 +39,12 @@
         {
           "component": "text",
           "name": "featuredLabel",
-          "label": "Featured Column Title",
-          "value": "En portada"
+          "label": "Featured Column Title"
         },
         {
           "component": "text",
           "name": "latestLabel",
-          "label": "Latest Column Title",
-          "value": "Últimas publicaciones"
+          "label": "Latest Column Title"
         },
         {
           "component": "aem-content",
@@ -95,8 +93,7 @@
         {
           "component": "text",
           "name": "featuredBadge",
-          "label": "Featured Badge Text",
-          "value": "Artículo destacado"
+          "label": "Featured Badge Text"
         },
         {
           "component": "select",
@@ -129,6 +126,24 @@
             { "name": "H5", "value": "h5" },
             { "name": "H6", "value": "h6" }
           ]
+        },
+        {
+          "component": "select",
+          "valueType": "string",
+          "name": "mode",
+          "label": "Source",
+          "value": "manual",
+          "options": [
+            { "name": "Manual", "value": "manual" },
+            { "name": "Auto by Tag", "value": "auto-tag" },
+            { "name": "Auto by Category (incl. Subcategories)", "value": "auto-category" }
+          ]
+        },
+        {
+          "component": "aem-tag",
+          "valueType": "string",
+          "name": "filterCategory",
+          "label": "Filter Category (Auto by Category)"
         }
       ]
     },

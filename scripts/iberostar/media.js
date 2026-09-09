@@ -89,12 +89,15 @@ function attachImageFallback(image, fallbackSrc) {
   });
 }
 
-function getDynamicMediaConfig() {
+function getDynamicMediaConfig(options = {}) {
   const environmentConfig = getEnvironmentConfig();
   const environmentDynamicMedia = environmentConfig.dynamicMedia || {};
+  const forcedEnabled = typeof options.dynamicMediaEnabled === 'boolean'
+    ? options.dynamicMediaEnabled
+    : null;
 
   return {
-    enabled: normalizeBoolean(
+    enabled: forcedEnabled ?? normalizeBoolean(
       getMetaContent('dynamic-media-enabled'),
       normalizeBoolean(
         `${window.hlx?.dynamicMediaEnabled || ''}`,
@@ -139,11 +142,19 @@ function resolveDamAssetUrl(src, config) {
   return `${assetHost}${normalized}`;
 }
 
+export function resolveAssetUrl(src) {
+  return resolveDamAssetUrl(src, getDynamicMediaConfig());
+}
+
 export function isDynamicMediaImage(src = '') {
   if (!isRemoteImage(src)) return false;
 
   try {
-    return new URL(src, window.location).pathname.includes(DYNAMIC_MEDIA_PATH_SEGMENT);
+    const url = new URL(src, window.location);
+    const { pathname } = url;
+    // Detect both traditional IS/Image format and new Adobe Assets format
+    return pathname.includes(DYNAMIC_MEDIA_PATH_SEGMENT)
+      || pathname.includes('/adobe/assets/');
   } catch (error) {
     return false;
   }
@@ -209,16 +220,41 @@ function setImageServingParams(url, rendition) {
 }
 
 function buildDynamicMediaUrl(baseUrl, rendition = {}) {
-  const url = new URL(baseUrl, window.location);
-  setSmartCrop(url, rendition.crop);
-  setImageServingParams(url, rendition);
-  return url.toString();
+  try {
+    const url = new URL(baseUrl, window.location);
+
+    // If this is an Adobe Assets Dynamic Media URL, handle it specially
+    const { pathname } = url;
+    if (pathname.includes('/adobe/assets/')) {
+      // For Adobe Assets URLs, preserve existing smart crop if present
+      // and allow rendition crop to override
+      if (rendition.crop && rendition.crop !== '') {
+        url.searchParams.set('smartcrop', rendition.crop);
+      }
+      // Set width/height as needed for the rendition
+      if (rendition.width) url.searchParams.set('width', rendition.width);
+      if (rendition.height) url.searchParams.set('height', rendition.height);
+    } else {
+      // Traditional IS/Image format
+      setSmartCrop(url, rendition.crop);
+      setImageServingParams(url, rendition);
+    }
+
+    // Apply any additional modifiers
+    Object.entries(rendition.modifiers || {}).forEach(([key, value]) => {
+      if (value !== undefined && value !== null && value !== '') {
+        url.searchParams.set(key, value);
+      }
+    });
+
+    return url.toString();
+  } catch (error) {
+    // If URL parsing fails, return as-is with basic parameters
+    return baseUrl;
+  }
 }
 
-function createDynamicMediaPicture(src, alt, options, preset, config) {
-  const dynamicMediaUrl = resolveDynamicMediaBaseUrl(src, config);
-  if (!dynamicMediaUrl) return null;
-
+function createDynamicMediaPictureFromValidUrl(dynamicMediaUrl, alt, options, preset) {
   const renditions = preset.renditions || [];
   if (!renditions.length) {
     return createImage(dynamicMediaUrl, alt, options.eager);
@@ -242,8 +278,9 @@ function createDynamicMediaPicture(src, alt, options, preset, config) {
     alt,
     options.eager,
   );
-  attachImageFallback(image, src);
+  attachImageFallback(image, dynamicMediaUrl);
   image.addEventListener('error', () => {
+    if (image.dataset.imageFallbackApplied === 'true') return;
     if (image.dataset.dynamicMediaFallback === 'true') return;
 
     image.dataset.dynamicMediaFallback = 'true';
@@ -255,6 +292,19 @@ function createDynamicMediaPicture(src, alt, options, preset, config) {
   return picture;
 }
 
+function createDynamicMediaPicture(src, alt, options, preset, config) {
+  // If src is already a valid Dynamic Media image, use it directly
+  if (isDynamicMediaImage(src)) {
+    return createDynamicMediaPictureFromValidUrl(src, alt, options, preset);
+  }
+
+  // Otherwise, try to build the Dynamic Media URL from the asset path
+  const dynamicMediaUrl = resolveDynamicMediaBaseUrl(src, config);
+  if (!dynamicMediaUrl) return null;
+
+  return createDynamicMediaPictureFromValidUrl(dynamicMediaUrl, alt, options, preset);
+}
+
 export function createResponsiveImage(src, alt, eagerOrOptions, breakpoints) {
   const normalizedSrc = normalizeSource(src);
   const imageAlt = alt || '';
@@ -263,8 +313,7 @@ export function createResponsiveImage(src, alt, eagerOrOptions, breakpoints) {
   const fallbackBreakpoints = options.breakpoints
     || preset.fallbackBreakpoints
     || DEFAULT_BREAKPOINTS;
-  const dynamicMediaConfig = getDynamicMediaConfig();
-  const resolvedSrc = resolveDamAssetUrl(normalizedSrc, dynamicMediaConfig);
+  const dynamicMediaConfig = getDynamicMediaConfig(options);
 
   if (!normalizedSrc) {
     const placeholder = document.createElement('span');
@@ -274,7 +323,7 @@ export function createResponsiveImage(src, alt, eagerOrOptions, breakpoints) {
 
   if (dynamicMediaConfig.enabled) {
     const dynamicMediaPicture = createDynamicMediaPicture(
-      resolvedSrc,
+      normalizedSrc,
       imageAlt,
       options,
       preset,
@@ -284,6 +333,9 @@ export function createResponsiveImage(src, alt, eagerOrOptions, breakpoints) {
       return dynamicMediaPicture;
     }
   }
+
+  // For non-Dynamic Media images, resolve DAM asset URLs
+  const resolvedSrc = resolveDamAssetUrl(normalizedSrc, dynamicMediaConfig);
 
   if (isRemoteImage(resolvedSrc) || isDamAssetPath(resolvedSrc)) {
     const image = createImage(resolvedSrc, imageAlt, options.eager);

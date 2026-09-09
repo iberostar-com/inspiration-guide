@@ -1,11 +1,79 @@
 import { createResponsiveImage } from '../../scripts/iberostar/media.js';
-import { getArticles } from '../../scripts/inspiration-data.js';
+import {
+  articleMatchesCategory,
+  getArticles,
+  getPageCategoryPath,
+} from '../../scripts/inspiration-data.js';
 import { createArticleCard } from '../../scripts/iberostar/article-card.js';
 import { toPublicPagePath } from '../../scripts/iberostar/page-links.js';
+import { getTranslation } from '../../scripts/iberostar/i18n.js';
 import { moveInstrumentation } from '../../scripts/scripts.js';
 
 const HEADING_TAGS = new Set(['h2', 'h3', 'h4', 'h5', 'h6']);
-const CARD_CTA = 'Leer artículo';
+const LOCALE_PATTERN = /^\/[a-z]{2}-[a-z]{2}(?:\/|$)/i;
+const SORT_VALUES = ['recent', 'oldest'];
+
+async function getUiLabels() {
+  const [
+    readArticle,
+    viewMoreArticles,
+    sortOrder,
+    sortMostRecent,
+    sortOldest,
+    selectArticle,
+    loadMore,
+  ] = await Promise.all([
+    getTranslation('readArticle', 'Leer artículo'),
+    getTranslation('viewMoreArticles', 'Ver más artículos'),
+    getTranslation('sortOrder', 'Orden:'),
+    getTranslation('sortMostRecent', 'Los más recientes'),
+    getTranslation('sortOldest', 'Los más antiguos'),
+    getTranslation('selectArticle', 'Selecciona un artículo'),
+    getTranslation('loadMore', 'Load more'),
+  ]);
+
+  return {
+    loadMore,
+    readArticle,
+    selectArticle,
+    sortOptions: [
+      { value: SORT_VALUES[0], label: sortMostRecent },
+      { value: SORT_VALUES[1], label: sortOldest },
+    ],
+    sortOrder,
+    viewMoreArticles,
+  };
+}
+
+function getCurrentLocale() {
+  const segments = window.location.pathname.split('/').filter(Boolean);
+  const locale = segments.find((segment) => /^[a-z]{2}-[a-z]{2}$/i.test(segment));
+  return locale?.toLowerCase() || '';
+}
+
+function getArticleLocale(article) {
+  const rawPath = article?.path || article?.url || article?.href || '';
+  const normalized = `${rawPath || ''}`.trim();
+  if (!normalized) return '';
+
+  try {
+    const pathname = new URL(normalized, window.location.origin).pathname || '';
+    const match = pathname.match(LOCALE_PATTERN)?.[0] || '';
+    return match.replaceAll('/', '').toLowerCase();
+  } catch {
+    return '';
+  }
+}
+
+function filterArticlesByCurrentLocale(articles) {
+  const currentLocale = getCurrentLocale();
+  if (!currentLocale) return articles;
+
+  return articles.filter((article) => {
+    const articleLocale = getArticleLocale(article);
+    return articleLocale === currentLocale;
+  });
+}
 
 // ---------- source rows ----------
 
@@ -50,6 +118,22 @@ function readVariant(block) {
   return found || block.getAttribute('data-variant') || 'default';
 }
 
+function readSource(block) {
+  const byProp = textByProp(block, 'source').toLowerCase();
+  if (byProp) return byProp;
+  const known = new Set(['manual', 'auto-tag', 'auto-category']);
+  const found = getConfigRows(block)
+    .map((row) => row.textContent?.trim().toLowerCase())
+    .find((text) => known.has(text));
+  return found || block.getAttribute('data-source') || 'manual';
+}
+
+function readPageSize(block) {
+  const value = textByProp(block, 'pageSize') || block.getAttribute('data-page-size') || '';
+  const parsed = Number.parseInt(value, 10);
+  return Number.isFinite(parsed) && parsed > 0 ? parsed : 4;
+}
+
 // ---------- default variant (auto/manual list with "load more") ----------
 
 function getContextSegment(name) {
@@ -62,10 +146,6 @@ function getContextSegment(name) {
 
 function getContextTag() {
   return getContextSegment('tag');
-}
-
-function getContextCategory() {
-  return getContextSegment('category');
 }
 
 // The current tag/category comes from the page metadata (Article Primary Category /
@@ -81,9 +161,19 @@ function normalizeSlug(value) {
   return afterNamespace.split('/').pop().trim();
 }
 
-function getCurrentCategory() {
-  const fromMeta = normalizeSlug(getPageMeta('article-category') || getPageMeta('article-category-path'));
-  return fromMeta || getContextCategory();
+// An authored category override (aem-tag id such as `inspiration-guide:categorías/destinos`)
+// renders as a config row without instrumentation, so it is detected by its tag-id shape.
+function getConfiguredCategory(block) {
+  const byProp = textByProp(block, 'filterCategory');
+  if (byProp) return byProp;
+  return getConfigRows(block)
+    .map((row) => row.textContent?.trim() || '')
+    .find((text) => /^[a-z0-9_-]+:\S+$/i.test(text)) || '';
+}
+
+// Full hierarchy path so parent categories also match their subcategories.
+function getCurrentCategory(block) {
+  return getConfiguredCategory(block) || getPageCategoryPath();
 }
 
 function getCurrentTags() {
@@ -109,19 +199,30 @@ function manualItems(block) {
   });
 }
 
-async function autoItems(source) {
-  const all = await getArticles();
+function articleTimestamp(article) {
+  const ts = Number.parseInt(article.publicationTimestamp, 10);
+  if (Number.isFinite(ts) && ts) return ts;
+  const parsed = Date.parse(article.publicationDate || article.publishDate || '');
+  return Number.isFinite(parsed) ? parsed : 0;
+}
+
+function sortArticles(articles, order) {
+  return [...articles].sort((a, b) => (order === 'oldest'
+    ? articleTimestamp(a) - articleTimestamp(b)
+    : articleTimestamp(b) - articleTimestamp(a)));
+}
+
+async function autoItems(block, source) {
+  const all = filterArticlesByCurrentLocale(await getArticles());
   if (source === 'auto-tag') {
     const tag = getContextTag();
-    return all
-      .filter((article) => !tag || article.tags.includes(tag))
-      .map((article) => ({ ...article, href: `/article/${article.id}` }));
+    return sortArticles(all.filter((article) => !tag || article.tags.includes(tag)), 'newest')
+      .map((article) => ({ ...article, href: article.href || `/article/${article.id}` }));
   }
   if (source === 'auto-category') {
-    const category = getContextCategory();
-    return all
-      .filter((article) => !category || article.category === category)
-      .map((article) => ({ ...article, href: `/article/${article.id}` }));
+    const category = getCurrentCategory(block);
+    return sortArticles(all.filter((article) => articleMatchesCategory(article, category)), 'newest')
+      .map((article) => ({ ...article, href: article.href || `/article/${article.id}` }));
   }
   return [];
 }
@@ -169,11 +270,12 @@ function renderPage(list, items, pageSize, currentPage) {
 }
 
 async function decorateDefault(block) {
-  const source = block.getAttribute('data-source') || 'manual';
+  const source = readSource(block);
   const pageSize = Number.parseInt(block.getAttribute('data-page-size') || '4', 10);
-  const ctaLabel = block.getAttribute('data-cta-label') || 'Load more';
+  const labels = await getUiLabels();
+  const ctaLabel = block.getAttribute('data-cta-label') || labels.loadMore;
 
-  const items = source === 'manual' ? manualItems(block) : await autoItems(source);
+  const items = source === 'manual' ? manualItems(block) : await autoItems(block, source);
 
   const wrapper = document.createElement('div');
   wrapper.className = 'editorial-highlight-grid';
@@ -233,7 +335,7 @@ function getRefPath(row) {
 }
 
 // Maps an indexed article to the shape expected by the shared ArticleCard helper.
-function toCardData(article) {
+function toCardData(article, labels) {
   return {
     title: article.title,
     description: article.description || article.summary || '',
@@ -244,7 +346,7 @@ function toCardData(article) {
     publicationDate: article.publicationDate || article.publishDate || '',
     readTime: article.readTime || '',
     url: toPublicPagePath(article.url || article.path || '') || '',
-    ctaText: CARD_CTA,
+    ctaText: labels.readArticle,
   };
 }
 
@@ -268,7 +370,7 @@ function enhanceCard(card) {
   }
 }
 
-function renderManualGrid(block, all) {
+function renderManualGrid(block, all, labels) {
   const configRows = getConfigRows(block);
   const title = textByProp(block, 'title') || configRows[1]?.textContent?.trim() || '';
   const levels = configRows
@@ -278,6 +380,7 @@ function renderManualGrid(block, all) {
   const cardHeading = sanitizeHeading(levels[1], 'h3');
 
   const isEditor = !!block.closest('[data-aue-resource]');
+  const pageSize = readPageSize(block);
 
   block.classList.add('editorial-highlight-grid-home');
 
@@ -293,6 +396,8 @@ function renderManualGrid(block, all) {
 
   const list = document.createElement('ul');
   list.className = 'editorial-highlight-grid-list';
+
+  const items = [];
   getArticleRows(block).forEach((row) => {
     const article = findArticle(all, getRefPath(row));
     // Skip unresolved items on published pages, but keep an editable placeholder
@@ -304,51 +409,54 @@ function renderManualGrid(block, all) {
     moveInstrumentation(row, li);
 
     if (article) {
-      const card = createArticleCard(toCardData(article), { headingTag: cardHeading });
+      const card = createArticleCard(toCardData(article, labels), { headingTag: cardHeading });
       enhanceCard(card);
       li.append(card);
     } else {
       const placeholder = document.createElement('p');
       placeholder.className = 'editorial-highlight-grid-placeholder';
-      placeholder.textContent = 'Selecciona un artículo';
+      placeholder.textContent = labels.selectArticle;
       li.append(placeholder);
     }
 
-    list.append(li);
+    items.push(li);
   });
+  list.append(...items);
   rendered.append(list);
+
+  if (!isEditor && items.length > pageSize) {
+    const moreButton = document.createElement('button');
+    moreButton.type = 'button';
+    moreButton.className = 'editorial-highlight-grid-more';
+    moreButton.textContent = labels.viewMoreArticles;
+
+    const state = { shown: pageSize };
+    const applyVisibility = () => {
+      items.forEach((li, index) => { li.hidden = index >= state.shown; });
+      moreButton.hidden = state.shown >= items.length;
+    };
+
+    moreButton.addEventListener('click', () => {
+      state.shown += pageSize;
+      applyVisibility();
+    });
+
+    applyVisibility();
+    rendered.append(moreButton);
+  }
 
   block.replaceChildren(rendered);
 }
 
 async function decorateHome(block) {
   const all = await getArticles();
-  renderManualGrid(block, all);
+  renderManualGrid(block, all, await getUiLabels());
 }
 
 // ---------- tag variant (feed of articles for the current tag page) ----------
 
-const SORT_PREFIX = 'Orden:';
-const TAG_SORTS = [
-  { value: 'recent', label: 'Los más recientes' },
-  { value: 'oldest', label: 'Los más antiguos' },
-];
-
-function sortButtonLabel(label) {
-  return `${SORT_PREFIX} ${label.charAt(0).toLowerCase()}${label.slice(1)}`;
-}
-
-function articleTimestamp(article) {
-  const ts = Number.parseInt(article.publicationTimestamp, 10);
-  if (Number.isFinite(ts) && ts) return ts;
-  const parsed = Date.parse(article.publicationDate || article.publishDate || '');
-  return Number.isFinite(parsed) ? parsed : 0;
-}
-
-function sortArticles(articles, order) {
-  return [...articles].sort((a, b) => (order === 'oldest'
-    ? articleTimestamp(a) - articleTimestamp(b)
-    : articleTimestamp(b) - articleTimestamp(a)));
+function sortButtonLabel(prefix, label) {
+  return `${prefix} ${label.charAt(0).toLowerCase()}${label.slice(1)}`;
 }
 
 function articleHasTag(article, tag) {
@@ -364,27 +472,9 @@ function articleHasTag(article, tag) {
   });
 }
 
-function readPageSize(block) {
-  const value = textByProp(block, 'pageSize') || block.getAttribute('data-page-size') || '';
-  const parsed = Number.parseInt(value, 10);
-  return Number.isFinite(parsed) && parsed > 0 ? parsed : 4;
-}
+function buildFeed(block, matched, pageSize, labels) {
+  const { sortOptions } = labels;
 
-function articleHasCategory(article, category) {
-  const target = category.trim().toLowerCase();
-  if (!target) return false;
-
-  return [article.categorySlug, article.category, article.categoryPath]
-    .some((value) => {
-      const normalized = `${value || ''}`.trim().toLowerCase();
-      if (!normalized) return false;
-      if (normalized === target) return true;
-      return normalized.split('/').pop() === target
-        || normalized.split(':').pop().trim() === target;
-    });
-}
-
-function buildFeed(block, matched, pageSize) {
   block.classList.add('editorial-highlight-grid-home', 'editorial-highlight-grid-listing');
 
   const configRows = getConfigRows(block);
@@ -421,7 +511,7 @@ function buildFeed(block, matched, pageSize) {
 
   const sortLabel = document.createElement('span');
   sortLabel.className = 'editorial-highlight-grid-sort-label';
-  sortLabel.textContent = sortButtonLabel(TAG_SORTS[0].label);
+  sortLabel.textContent = sortButtonLabel(labels.sortOrder, sortOptions[0].label);
 
   const sortIcon = document.createElement('i');
   sortIcon.className = 'editorial-highlight-grid-sort-icon ibh-icon-keyboard-arrow-down';
@@ -437,15 +527,15 @@ function buildFeed(block, matched, pageSize) {
   const moreButton = document.createElement('button');
   moreButton.type = 'button';
   moreButton.className = 'editorial-highlight-grid-more';
-  moreButton.textContent = 'Ver más artículos';
+  moreButton.textContent = labels.viewMoreArticles;
 
-  const state = { order: TAG_SORTS[0].value, shown: pageSize };
+  const state = { order: sortOptions[0].value, shown: pageSize };
 
   const renderCards = () => {
     const items = sortArticles(matched, state.order).slice(0, state.shown).map((article) => {
       const li = document.createElement('li');
       li.className = 'editorial-highlight-grid-item';
-      const card = createArticleCard(toCardData(article), { headingTag: cardHeading });
+      const card = createArticleCard(toCardData(article, labels), { headingTag: cardHeading });
       enhanceCard(card);
       li.append(card);
       return li;
@@ -454,7 +544,7 @@ function buildFeed(block, matched, pageSize) {
     moreButton.hidden = state.shown >= matched.length;
   };
 
-  const optionButtons = TAG_SORTS.map((option, index) => {
+  const optionButtons = sortOptions.map((option, index) => {
     const li = document.createElement('li');
     const optionButton = document.createElement('button');
     optionButton.type = 'button';
@@ -468,8 +558,10 @@ function buildFeed(block, matched, pageSize) {
 
   optionButtons.forEach((optionButton, index) => {
     optionButton.addEventListener('click', () => {
-      state.order = TAG_SORTS[index].value;
-      sortLabel.textContent = sortButtonLabel(TAG_SORTS[index].label);
+      // changing the order restarts the feed on the first page
+      if (state.order !== sortOptions[index].value) state.shown = pageSize;
+      state.order = sortOptions[index].value;
+      sortLabel.textContent = sortButtonLabel(labels.sortOrder, sortOptions[index].label);
       sortButton.setAttribute('aria-expanded', 'false');
       optionButtons.forEach((button) => button.classList.remove('is-selected'));
       optionButton.classList.add('is-selected');
@@ -501,10 +593,11 @@ function buildFeed(block, matched, pageSize) {
 }
 
 async function decorateTag(block) {
-  const all = await getArticles();
+  const all = filterArticlesByCurrentLocale(await getArticles());
+  const labels = await getUiLabels();
 
   if (getArticleRows(block).length) {
-    renderManualGrid(block, all);
+    renderManualGrid(block, all, labels);
     return;
   }
 
@@ -512,22 +605,23 @@ async function decorateTag(block) {
   const matched = tags.length
     ? all.filter((article) => tags.some((tag) => articleHasTag(article, tag)))
     : all;
-  buildFeed(block, matched, readPageSize(block));
+  buildFeed(block, matched, readPageSize(block), labels);
 }
 
 async function decorateCategory(block) {
-  const all = await getArticles();
+  const all = filterArticlesByCurrentLocale(await getArticles());
+  const labels = await getUiLabels();
 
   if (getArticleRows(block).length) {
-    renderManualGrid(block, all);
+    renderManualGrid(block, all, labels);
     return;
   }
 
-  const category = getCurrentCategory();
+  const category = getCurrentCategory(block);
   const matched = category
-    ? all.filter((article) => articleHasCategory(article, category))
+    ? all.filter((article) => articleMatchesCategory(article, category))
     : all;
-  buildFeed(block, matched, readPageSize(block));
+  buildFeed(block, matched, readPageSize(block), labels);
 }
 
 export default async function decorate(block) {

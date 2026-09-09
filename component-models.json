@@ -11,6 +11,28 @@
       {
         "component": "text",
         "valueType": "string",
+        "name": "navigation-title",
+        "label": "Navigation Title",
+        "description": "Optional. Used as a shorter label in navigation surfaces such as breadcrumbs."
+      },
+      {
+        "component": "text",
+        "valueType": "string",
+        "name": "breadcrumb-title",
+        "label": "Breadcrumb Title",
+        "description": "Optional. Overrides Navigation Title and page title when this page appears in breadcrumbs."
+      },
+      {
+        "component": "boolean",
+        "valueType": "boolean",
+        "name": "breadcrumb-visible",
+        "label": "Include in Breadcrumb",
+        "description": "When disabled, this page is skipped when it is used as an intermediate breadcrumb level.",
+        "value": true
+      },
+      {
+        "component": "text",
+        "valueType": "string",
         "name": "jcr:description",
         "label": "Description"
       },
@@ -653,14 +675,12 @@
       {
         "component": "text",
         "name": "featuredLabel",
-        "label": "Featured Column Title",
-        "value": "En portada"
+        "label": "Featured Column Title"
       },
       {
         "component": "text",
         "name": "latestLabel",
-        "label": "Latest Column Title",
-        "value": "Últimas publicaciones"
+        "label": "Latest Column Title"
       },
       {
         "component": "aem-content",
@@ -751,8 +771,7 @@
       {
         "component": "text",
         "name": "featuredBadge",
-        "label": "Featured Badge Text",
-        "value": "Artículo destacado"
+        "label": "Featured Badge Text"
       },
       {
         "component": "select",
@@ -827,6 +846,33 @@
             "value": "h6"
           }
         ]
+      },
+      {
+        "component": "select",
+        "valueType": "string",
+        "name": "mode",
+        "label": "Source",
+        "value": "manual",
+        "options": [
+          {
+            "name": "Manual",
+            "value": "manual"
+          },
+          {
+            "name": "Auto by Tag",
+            "value": "auto-tag"
+          },
+          {
+            "name": "Auto by Category (incl. Subcategories)",
+            "value": "auto-category"
+          }
+        ]
+      },
+      {
+        "component": "aem-tag",
+        "valueType": "string",
+        "name": "filterCategory",
+        "label": "Filter Category (Auto by Category)"
       }
     ]
   },
@@ -1537,7 +1583,7 @@
             "value": "auto-tag"
           },
           {
-            "name": "Auto by Category",
+            "name": "Auto by Category (incl. Subcategories)",
             "value": "auto-category"
           }
         ]
@@ -1555,6 +1601,12 @@
         "name": "ctaLabel",
         "label": "Load More Label (Default variant)",
         "value": "Load more"
+      },
+      {
+        "component": "aem-tag",
+        "valueType": "string",
+        "name": "filterCategory",
+        "label": "Filter Category (Auto by Category / Category variant)"
       }
     ]
   },
@@ -2153,15 +2205,15 @@
         "valueType": "string",
         "name": "titleHeading",
         "label": "Title Heading Level",
-        "value": "h1",
+        "value": "h2",
         "options": [
-          {
-            "name": "H1",
-            "value": "h1"
-          },
           {
             "name": "H2",
             "value": "h2"
+          },
+          {
+            "name": "H3",
+            "value": "h3"
           }
         ]
       }
@@ -2410,8 +2462,7 @@
         "component": "text",
         "valueType": "string",
         "name": "title",
-        "label": "Title",
-        "value": "Suscríbete a nuestra Newsletter"
+        "label": "Title"
       },
       {
         "component": "text",
@@ -2703,6 +2754,49 @@
         "name": "link",
         "label": "Link URL",
         "value": "/search"
+      }
+    ]
+  },
+  {
+    "id": "not-found",
+    "fields": [
+      {
+        "component": "text",
+        "valueType": "string",
+        "name": "title",
+        "label": "Title",
+        "required": true
+      },
+      {
+        "component": "textarea",
+        "valueType": "string",
+        "name": "subtitle",
+        "label": "Subtitle"
+      },
+      {
+        "component": "text",
+        "valueType": "string",
+        "name": "ctaText",
+        "label": "CTA Text"
+      },
+      {
+        "component": "aem-content",
+        "valueType": "string",
+        "name": "cta",
+        "label": "CTA Link"
+      },
+      {
+        "component": "reference",
+        "valueType": "string",
+        "name": "image",
+        "label": "Image",
+        "multi": false
+      },
+      {
+        "component": "text",
+        "valueType": "string",
+        "name": "imageAlt",
+        "label": "Image Alt"
       }
     ]
   },
