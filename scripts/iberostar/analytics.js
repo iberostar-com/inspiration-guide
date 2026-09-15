@@ -11,6 +11,8 @@
 
 import getEnvironmentConfig from './environment-config.js';
 import { taxonomyKey } from './taxonomy.js';
+import { getCookieValue, getClientCountrySync } from './client-country.js';
+import { getSelectedCurrency } from './currency.js';
 
 const ONETRUST_SRC = 'https://cdn.cookielaw.org/scripttemplates/otSDKStub.js';
 
@@ -19,9 +21,20 @@ const ONETRUST_SRC = 'https://cdn.cookielaw.org/scripttemplates/otSDKStub.js';
 // the same `other` default the AEM data layer uses.
 const PAGE_SECTION = 'inspiration guide';
 const PAGE_CATEGORY_DEFAULT = 'other';
-// Page types that already identify the page on their own, so their screen_name
-// needs no third segment (there is a single home and a single error page).
-const SELF_IDENTIFYING_PAGE_TYPES = ['home', '404', 'error'];
+const CATEGORY_VIEW_ALL = 'view all';
+const PAGE_PLATFORM = 'web';
+const PAGE_SITE_ORIGIN = 'iberostar';
+const PAGE_TYPE_HOME = 'home inspiration guide';
+const PAGE_TYPE_DEFAULT = 'inspiration channel';
+const ERROR_SECTION = 'error';
+const AME_COUNTRIES = new Set([
+  'ag', 'ai', 'ar', 'aw', 'bb', 'bl', 'bo', 'bq', 'br', 'bs', 'bz', 'ca', 'cl', 'co', 'cr', 'cu',
+  'cw', 'dm', 'do', 'ec', 'fk', 'gd', 'gf', 'gp', 'gt', 'gy', 'hn', 'ht', 'jm', 'kn', 'ky', 'lc',
+  'mf', 'mq', 'ms', 'mx', 'ni', 'pa', 'pe', 'pm', 'pr', 'py', 'sr', 'sv', 'sx', 'tc', 'tt', 'us',
+  'uy', 'vc', 've', 'vg', 'vi',
+]);
+const LAST_VISIT_STORAGE_KEY = 'ibs_analytics_last_visit';
+const RECURRENCE_SESSION_KEY = 'ibs_analytics_recurrence';
 // Spec values for variables that carry no data on this page: `not set` when the
 // value is simply unknown, `not applicable` when the concept does not exist in
 // the blog (there is no booking funnel in the Inspiration Guide).
@@ -188,55 +201,97 @@ function getPageType() {
   const fromMeta = getMeta('page-type').toLowerCase();
   if (fromMeta && fromMeta !== 'default') return fromMeta;
 
-  const path = window.location.pathname.toLowerCase();
-  if (path.includes('/category/')) return 'category';
-  if (path.includes('/tag/')) return 'tag';
+  const path = window.location.pathname.toLowerCase().replace(/\/+$/, '');
+  if (/\/category(\/|$)/.test(path)) return 'category';
+  if (/\/tag(\/|$)/.test(path)) return 'tag';
+  if (/\/articles\/.+/.test(path)) return 'article';
   if (getMeta('article-publication-date') || getMeta('article-author-name')) return 'article';
-  return fromMeta || 'home';
+  return 'home';
 }
 
-/**
- * `page_category` for Content Grouping: the category taxonomy of the page with
- * the "categorias" prefix of the AEM tag stripped, e.g.
- * `inspiration-guide:categorias/destinos/islas-baleares` -> `destinos
- * islas-baleares`. Articles take it from their own metadata, category landings
- * fall back to their URL. Home and tag landings have no category and report the
- * `other` default. Only the first category is used when an article has several.
- * @returns {string}
- */
-function getPageCategory() {
-  const path = window.location.pathname;
-  const source = getMeta('article-category') || (/\/category\//i.test(path) ? path : '');
-  const key = source ? taxonomyKey(source) : '';
-  if (!key.startsWith('/category/')) return PAGE_CATEGORY_DEFAULT;
-
-  // sanitizeValue already turns the `/` separators into spaces.
-  return sanitizeValue(key.replace('/category/', '')) || PAGE_CATEGORY_DEFAULT;
+function getHeadquarterMarket() {
+  const country = `${getClientCountrySync() || ''}`.trim().toLowerCase();
+  return AME_COUNTRIES.has(country) ? 'ame' : 'emea';
 }
 
-/**
- * `screen_name` for Content Grouping: `{page_section}:{page_type}` followed by
- * the identity of the page, e.g. `inspiration guide:article:hoteles tranquilos
- * de baleares`. Keeps the `{section}:{type}` composition the AEM data layer
- * uses for `page_name`, so both sites group traffic the same way. Category and
- * tag landings are identified by their taxonomy slug, which is stable across
- * locales; articles by their visible H1, falling back to the document title.
- * @param {string} pageType resolved page_type
- * @param {string} pageCategory resolved page_category
- * @returns {string}
- */
-function buildScreenName(pageType, pageCategory) {
-  const parts = [PAGE_SECTION, pageType];
+function getContentTitle() {
+  return textOf(document.querySelector('main h1')) || sanitizeValue(document.title);
+}
 
-  if (pageType === 'category') {
-    parts.push(pageCategory);
-  } else if (pageType === 'tag') {
-    parts.push(sanitizeValue(taxonomyKey(window.location.pathname).replace('/tag/', '')));
-  } else if (!SELF_IDENTIFYING_PAGE_TYPES.includes(pageType)) {
-    parts.push(textOf(document.querySelector('main h1')) || sanitizeValue(document.title));
+function getTaxonomyParts(value) {
+  const key = taxonomyKey(value);
+  if (!key) return [];
+  return key.replace(/^\/(?:category|tag)\//, '').split('/').filter(Boolean);
+}
+
+function getContentGroup() {
+  if (window.isErrorPage) {
+    const code = sanitizeValue(`error ${window.errorCode || 404}`);
+    return { section: ERROR_SECTION, pageType: code, pageCategory: code };
   }
 
-  return parts.filter((part) => part && part !== PAGE_CATEGORY_DEFAULT).join(':');
+  const kind = getPageType();
+
+  if (kind === 'tag') {
+    const [tag] = getTaxonomyParts(window.location.pathname);
+    return {
+      section: PAGE_SECTION,
+      pageType: sanitizeValue(tag) || PAGE_TYPE_DEFAULT,
+      pageCategory: PAGE_CATEGORY_DEFAULT,
+    };
+  }
+
+  if (kind === 'article') {
+    const [category] = getTaxonomyParts(getMeta('article-category'));
+    return {
+      section: PAGE_SECTION,
+      pageType: sanitizeValue(category) || PAGE_TYPE_DEFAULT,
+      pageCategory: getContentTitle() || PAGE_CATEGORY_DEFAULT,
+    };
+  }
+
+  if (kind === 'category') {
+    const [category, subcategory] = getTaxonomyParts(window.location.pathname);
+    if (!category) {
+      return {
+        section: PAGE_SECTION,
+        pageType: PAGE_TYPE_DEFAULT,
+        pageCategory: PAGE_CATEGORY_DEFAULT,
+      };
+    }
+    return {
+      section: PAGE_SECTION,
+      pageType: sanitizeValue(category),
+      pageCategory: sanitizeValue(subcategory) || CATEGORY_VIEW_ALL,
+    };
+  }
+
+  return {
+    section: PAGE_SECTION,
+    pageType: PAGE_TYPE_HOME,
+    pageCategory: PAGE_CATEGORY_DEFAULT,
+  };
+}
+
+function buildScreenName(section, pageType) {
+  return [PAGE_PLATFORM, getHeadquarterMarket(), PAGE_SITE_ORIGIN, section, pageType].join(':');
+}
+
+function readVisitorRecurrence() {
+  try {
+    const cached = window.sessionStorage.getItem(RECURRENCE_SESSION_KEY);
+    if (cached !== null) return cached;
+
+    const now = Date.now();
+    const previous = Number(window.localStorage.getItem(LAST_VISIT_STORAGE_KEY)) || 0;
+    const days = previous ? Math.max(Math.floor((now - previous) / 86400000), 0) : 0;
+
+    window.localStorage.setItem(LAST_VISIT_STORAGE_KEY, `${now}`);
+    window.sessionStorage.setItem(RECURRENCE_SESSION_KEY, `${days}`);
+    return `${days}`;
+  } catch (error) {
+    return '';
+  }
 }
 
 /**
@@ -269,6 +324,21 @@ function storeScreenName(screenName) {
   }
 }
 
+function buildAlwaysPresentData() {
+  return {
+    visitor_recurrence: readVisitorRecurrence(),
+    visitor_headquarter_market: getHeadquarterMarket(),
+    user_id_ihg: '',
+    user_level_ihg: '',
+    page_is_logged_ihg: 'false',
+    visitor_is_logged_ihg: 'false',
+    callcenter_user: getCookieValue('callcenter_usr') || getCookieValue('callcenter_user'),
+    callcenter_department: getCookieValue('callcenter_department'),
+    callcenter_headquarter: getCookieValue('callcenter_headquarter'),
+    callcenter_cnx: getCookieValue('callcenter_cnx'),
+  };
+}
+
 /**
  * Builds the universal data object (utag_data) with every value that can be
  * derived from the page. Per spec, fields that do not apply are omitted.
@@ -277,17 +347,17 @@ function storeScreenName(screenName) {
 export function buildPageData() {
   const url = new URL(window.location.href);
   const params = url.searchParams;
-  const pageType = getPageType();
-  const pageCategory = getPageCategory();
+  const { section, pageType, pageCategory } = getContentGroup();
 
   const data = {
-    screen_name: buildScreenName(pageType, pageCategory),
-    page_section: PAGE_SECTION,
+    screen_name: buildScreenName(section, pageType),
+    page_section: section,
     page_category: pageCategory,
     page_type: pageType,
     page_booking_process: NOT_APPLICABLE,
-    page_platform: 'web',
+    page_platform: PAGE_PLATFORM,
     page_language: getLocaleFromPath(),
+    page_currency: getSelectedCurrency(),
     page_domain: url.hostname.toLowerCase(),
     page_title: sanitizeValue(document.title),
     page_url: url.href,
@@ -306,7 +376,10 @@ export function buildPageData() {
     campaign_cp: params.get('cp') || '',
   };
 
-  return Object.fromEntries(Object.entries(data).filter(([, value]) => value !== ''));
+  return {
+    ...Object.fromEntries(Object.entries(data).filter(([, value]) => value !== '')),
+    ...buildAlwaysPresentData(),
+  };
 }
 
 // ---------- data layer + event queue ----------

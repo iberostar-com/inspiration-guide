@@ -61,7 +61,7 @@ export function getMarketCountryFromLocale(locale) {
   return normalizeCountry(market);
 }
 
-function getCookieValue(cookieName, cookieString = document.cookie || '') {
+export function getCookieValue(cookieName, cookieString = document.cookie || '') {
   const name = `${cookieName || ''}`.trim();
   if (!name) return '';
 
