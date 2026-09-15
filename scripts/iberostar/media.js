@@ -7,6 +7,7 @@ const DEFAULT_BREAKPOINTS = [{ width: '750' }];
 const DAM_EXTENSION_REGEXP = /\.[a-z0-9]+$/i;
 const DAM_PATH_PREFIX = '/content/dam/';
 const DYNAMIC_MEDIA_PATH_SEGMENT = '/is/image/';
+const MEDIA_RESOLUTION_CACHE = new Map();
 
 export function isRemoteImage(src = '') {
   return /^https?:\/\//.test(src);
@@ -104,6 +105,10 @@ function getDynamicMediaConfig(options = {}) {
         environmentDynamicMedia.enabled ?? DYNAMIC_MEDIA_CONFIG.enabled,
       ),
     ),
+    resolverEndpoint: getMetaContent('dynamic-media-resolver-endpoint')
+      || window.hlx?.dynamicMediaResolverEndpoint
+      || environmentDynamicMedia.resolverEndpoint
+      || '',
     imageServer: getMetaContent('dynamic-media-image-server')
       || window.hlx?.dynamicMediaImageServer
       || environmentDynamicMedia.imageServer
@@ -128,6 +133,39 @@ function getDynamicMediaConfig(options = {}) {
       || environmentDynamicMedia.assetHost
       || '',
   };
+}
+
+function getMediaResolverUrl(src, config) {
+  if (!config.resolverEndpoint || !isDamAssetPath(src)) return '';
+
+  try {
+    const url = new URL(config.resolverEndpoint, window.location);
+    const sourceUrl = new URL(src, window.location);
+    url.searchParams.set('path', sourceUrl.pathname);
+    return url.toString();
+  } catch (error) {
+    return '';
+  }
+}
+
+function getResolvedMediaUrl(src, config) {
+  const requestUrl = getMediaResolverUrl(src, config);
+  if (!requestUrl) return Promise.resolve('');
+
+  if (MEDIA_RESOLUTION_CACHE.has(requestUrl)) {
+    return MEDIA_RESOLUTION_CACHE.get(requestUrl);
+  }
+
+  const request = fetch(requestUrl, {
+    headers: { Accept: 'application/json' },
+    credentials: 'omit',
+  })
+    .then((response) => (response.ok ? response.json() : null))
+    .then((payload) => payload?.delivery?.url || payload?.url || '')
+    .catch(() => '');
+
+  MEDIA_RESOLUTION_CACHE.set(requestUrl, request);
+  return request;
 }
 
 function resolveDamAssetUrl(src, config) {
@@ -305,6 +343,28 @@ function createDynamicMediaPicture(src, alt, options, preset, config) {
   return createDynamicMediaPictureFromValidUrl(dynamicMediaUrl, alt, options, preset);
 }
 
+function replacePictureContent(picture, dynamicMediaPicture) {
+  picture.replaceChildren(...dynamicMediaPicture.childNodes);
+  picture.dataset.dynamicMediaResolved = 'true';
+}
+
+function resolvePictureFromDamPath(picture, src, alt, options, preset, config) {
+  getResolvedMediaUrl(src, config).then((resolvedUrl) => {
+    if (!resolvedUrl || !isDynamicMediaImage(resolvedUrl)) return;
+    if (!picture.isConnected || picture.dataset.dynamicMediaResolved === 'true') return;
+
+    const dynamicMediaPicture = createDynamicMediaPictureFromValidUrl(
+      resolvedUrl,
+      alt,
+      options,
+      preset,
+    );
+    if (dynamicMediaPicture?.tagName === 'PICTURE') {
+      replacePictureContent(picture, dynamicMediaPicture);
+    }
+  });
+}
+
 export function createResponsiveImage(src, alt, eagerOrOptions, breakpoints) {
   const normalizedSrc = normalizeSource(src);
   const imageAlt = alt || '';
@@ -321,21 +381,36 @@ export function createResponsiveImage(src, alt, eagerOrOptions, breakpoints) {
     return placeholder;
   }
 
-  if (dynamicMediaConfig.enabled) {
-    const dynamicMediaPicture = createDynamicMediaPicture(
+  if (isDynamicMediaImage(normalizedSrc)) {
+    return createDynamicMediaPicture(
       normalizedSrc,
       imageAlt,
       options,
       preset,
       dynamicMediaConfig,
     );
-    if (dynamicMediaPicture) {
-      return dynamicMediaPicture;
-    }
   }
 
   // For non-Dynamic Media images, resolve DAM asset URLs
   const resolvedSrc = resolveDamAssetUrl(normalizedSrc, dynamicMediaConfig);
+
+  if (isDamAssetPath(normalizedSrc)) {
+    const fallbackPicture = createOptimizedPicture(
+      resolvedSrc,
+      imageAlt,
+      options.eager,
+      fallbackBreakpoints,
+    );
+    resolvePictureFromDamPath(
+      fallbackPicture,
+      normalizedSrc,
+      imageAlt,
+      options,
+      preset,
+      dynamicMediaConfig,
+    );
+    return fallbackPicture;
+  }
 
   if (isRemoteImage(resolvedSrc) || isDamAssetPath(resolvedSrc)) {
     const image = createImage(resolvedSrc, imageAlt, options.eager);

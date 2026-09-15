@@ -14,6 +14,7 @@ const DEFAULT_CONFIG = {
   },
   dynamicMedia: {
     enabled: false,
+    resolverEndpoint: 'https://publish-p179213-e1886364.adobeaemcloud.com/bin/iberostar/dynamic-media/image.json',
     imageServer: 'https://delivery-p179213-e1886364.adobeaemcloud.com',
     company: 'BALEARDEINVERSIONESFINANCIERASSL',
     damRoot: '/content/dam',
@@ -58,6 +59,7 @@ const CLOUD_ENVIRONMENT_OVERRIDES = [
       // no quede pisado por el override cloud por defecto.
       dynamicMedia: {
         enabled: false,
+        resolverEndpoint: 'https://publish-p179213-e1886364.adobeaemcloud.com/bin/iberostar/dynamic-media/image.json',
         assetHost: 'https://publish-p179213-e1886364.adobeaemcloud.com',
         imageServer: 'https://delivery-p179213-e1886364.adobeaemcloud.com',
       },
@@ -76,6 +78,7 @@ const CLOUD_ENVIRONMENT_OVERRIDES = [
       },
       dynamicMedia: {
         enabled: false,
+        resolverEndpoint: 'https://publish-p179213-e1898042.adobeaemcloud.com/bin/iberostar/dynamic-media/image.json',
         assetHost: 'https://publish-p179213-e1898042.adobeaemcloud.com',
         imageServer: 'https://delivery-p179213-e1898042.adobeaemcloud.com',
       },
@@ -94,6 +97,7 @@ const CLOUD_ENVIRONMENT_OVERRIDES = [
       },
       dynamicMedia: {
         enabled: false,
+        resolverEndpoint: 'https://publish-p179213-e1898096.adobeaemcloud.com/bin/iberostar/dynamic-media/image.json',
         assetHost: 'https://publish-p179213-e1898096.adobeaemcloud.com',
         imageServer: 'https://delivery-p179213-e1898096.adobeaemcloud.com',
       },
@@ -112,6 +116,7 @@ const ENVIRONMENT_CONFIG = {
     },
     dynamicMedia: {
       enabled: false,
+      resolverEndpoint: 'https://publish-p179213-e1886364.adobeaemcloud.com/bin/iberostar/dynamic-media/image.json',
       imageServer: 'https://delivery-p179213-e1886364.adobeaemcloud.com',
       company: 'BALEARDEINVERSIONESFINANCIERASSL',
       damRoot: '/content/dam',
@@ -122,6 +127,7 @@ const ENVIRONMENT_CONFIG = {
   author: {
     dynamicMedia: {
       enabled: false,
+      resolverEndpoint: 'https://publish-p179213-e1886364.adobeaemcloud.com/bin/iberostar/dynamic-media/image.json',
       imageServer: 'https://delivery-p179213-e1886364.adobeaemcloud.com',
       company: 'BALEARDEINVERSIONESFINANCIERASSL',
       damRoot: '/content/dam',
@@ -132,6 +138,7 @@ const ENVIRONMENT_CONFIG = {
   preview: {
     dynamicMedia: {
       enabled: false,
+      resolverEndpoint: 'https://publish-p179213-e1886364.adobeaemcloud.com/bin/iberostar/dynamic-media/image.json',
       imageServer: 'https://delivery-p179213-e1886364.adobeaemcloud.com',
       company: 'BALEARDEINVERSIONESFINANCIERASSL',
       damRoot: '/content/dam',
@@ -142,6 +149,7 @@ const ENVIRONMENT_CONFIG = {
   live: {
     dynamicMedia: {
       enabled: false,
+      resolverEndpoint: 'https://publish-p179213-e1886364.adobeaemcloud.com/bin/iberostar/dynamic-media/image.json',
       imageServer: 'https://delivery-p179213-e1886364.adobeaemcloud.com',
       company: 'BALEARDEINVERSIONESFINANCIERASSL',
       damRoot: '/content/dam',
