@@ -215,7 +215,8 @@ function getHeadquarterMarket() {
 }
 
 function getContentTitle() {
-  return textOf(document.querySelector('main h1')) || sanitizeValue(document.title);
+  const heading = document.querySelector('main h1');
+  return normalize(heading ? getCleanText(heading) : '') || normalize(document.title);
 }
 
 function getTaxonomyParts(value) {
