@@ -148,9 +148,9 @@ function getMediaResolverUrl(src, config) {
   }
 }
 
-function getResolvedMediaUrl(src, config) {
+function getResolvedMediaMetadata(src, config) {
   const requestUrl = getMediaResolverUrl(src, config);
-  if (!requestUrl) return Promise.resolve('');
+  if (!requestUrl) return Promise.resolve({});
 
   if (MEDIA_RESOLUTION_CACHE.has(requestUrl)) {
     return MEDIA_RESOLUTION_CACHE.get(requestUrl);
@@ -161,11 +161,37 @@ function getResolvedMediaUrl(src, config) {
     credentials: 'omit',
   })
     .then((response) => (response.ok ? response.json() : null))
-    .then((payload) => payload?.delivery?.url || payload?.url || '')
-    .catch(() => '');
+    .then((payload) => payload || {})
+    .catch(() => ({}));
 
   MEDIA_RESOLUTION_CACHE.set(requestUrl, request);
   return request;
+}
+
+function getResolvedMediaUrl(src, config) {
+  return getResolvedMediaMetadata(src, config).then(
+    (payload) => payload?.delivery?.url || payload?.url || '',
+  );
+}
+
+export function resolveImageAlt(explicitAlt = '', metadata = {}) {
+  const providedAlt = `${explicitAlt || ''}`.trim();
+  if (providedAlt) return providedAlt;
+
+  const alt = `${metadata?.alt || ''}`.trim();
+  if (alt) return alt;
+
+  const title = `${metadata?.title || ''}`.trim();
+  if (title) return title;
+
+  const description = `${metadata?.description || ''}`.trim();
+  if (description) return description;
+
+  return '';
+}
+
+function resolveImageAltFromMetadata(metadata = {}) {
+  return resolveImageAlt('', metadata);
 }
 
 function resolveDamAssetUrl(src, config) {
@@ -349,13 +375,16 @@ function replacePictureContent(picture, dynamicMediaPicture) {
 }
 
 function resolvePictureFromDamPath(picture, src, alt, options, preset, config) {
-  getResolvedMediaUrl(src, config).then((resolvedUrl) => {
+  getResolvedMediaMetadata(src, config).then((metadata) => {
+    const resolvedUrl = metadata?.delivery?.url || metadata?.url || '';
     if (!resolvedUrl || !isDynamicMediaImage(resolvedUrl)) return;
     if (!picture.isConnected || picture.dataset.dynamicMediaResolved === 'true') return;
 
+    const fallbackAlt = resolveImageAltFromMetadata(metadata);
+    const resolvedAlt = alt && alt.trim() ? alt : fallbackAlt;
     const dynamicMediaPicture = createDynamicMediaPictureFromValidUrl(
       resolvedUrl,
-      alt,
+      resolvedAlt,
       options,
       preset,
     );
@@ -367,7 +396,7 @@ function resolvePictureFromDamPath(picture, src, alt, options, preset, config) {
 
 export function createResponsiveImage(src, alt, eagerOrOptions, breakpoints) {
   const normalizedSrc = normalizeSource(src);
-  const imageAlt = alt || '';
+  const imageAlt = resolveImageAlt(alt);
   const options = normalizeImageOptions(eagerOrOptions, breakpoints);
   const preset = getImagePreset(options.preset);
   const fallbackBreakpoints = options.breakpoints
