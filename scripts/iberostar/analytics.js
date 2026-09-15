@@ -225,6 +225,19 @@ function getTaxonomyParts(value) {
   return key.replace(/^\/(?:category|tag)\//, '').split('/').filter(Boolean);
 }
 
+function getTaxonomyPartsFromPath() {
+  const path = window.location.pathname;
+  if (!/\/(?:category|tag)\/[^/]/i.test(path)) return [];
+  return getTaxonomyParts(path);
+}
+
+function isMicrositeRoot() {
+  const path = window.location.pathname
+    .replace(/^\/[a-z]{2}-[a-z]{2}(?=\/|$)/i, '')
+    .replace(/\/+$/, '');
+  return path.split('/').filter(Boolean).length <= 1;
+}
+
 function getContentGroup() {
   if (window.isErrorPage) {
     const code = sanitizeValue(`error ${window.errorCode || 404}`);
@@ -234,7 +247,7 @@ function getContentGroup() {
   const kind = getPageType();
 
   if (kind === 'tag') {
-    const [tag] = getTaxonomyParts(window.location.pathname);
+    const [tag] = getTaxonomyPartsFromPath();
     return {
       section: PAGE_SECTION,
       pageType: sanitizeValue(tag) || PAGE_TYPE_DEFAULT,
@@ -252,7 +265,7 @@ function getContentGroup() {
   }
 
   if (kind === 'category') {
-    const [category, subcategory] = getTaxonomyParts(window.location.pathname);
+    const [category, subcategory] = getTaxonomyPartsFromPath();
     if (!category) {
       return {
         section: PAGE_SECTION,
@@ -269,7 +282,7 @@ function getContentGroup() {
 
   return {
     section: PAGE_SECTION,
-    pageType: PAGE_TYPE_HOME,
+    pageType: isMicrositeRoot() ? PAGE_TYPE_HOME : PAGE_TYPE_DEFAULT,
     pageCategory: PAGE_CATEGORY_DEFAULT,
   };
 }
