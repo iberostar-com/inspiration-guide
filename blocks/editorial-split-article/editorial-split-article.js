@@ -1,3 +1,5 @@
+import { applyImagePreset } from '../../scripts/iberostar/media.js';
+
 const HEADING_TAGS = new Set(['h1', 'h2', 'h3']);
 
 function getSourceRows(block) {
@@ -121,4 +123,8 @@ export default function decorate(block) {
   }
 
   block.append(rendered);
+
+  rendered.querySelectorAll('.editorial-split-article-image').forEach((imageBox) => {
+    applyImagePreset(imageBox, { preset: 'editorial-split-article' });
+  });
 }

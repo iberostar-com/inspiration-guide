@@ -26,14 +26,13 @@ function normalizeImageOptions(eagerOrOptions, breakpoints) {
   if (eagerOrOptions && typeof eagerOrOptions === 'object' && !Array.isArray(eagerOrOptions)) {
     return {
       eager: false,
-      breakpoints: DEFAULT_BREAKPOINTS,
       ...eagerOrOptions,
     };
   }
 
   return {
     eager: Boolean(eagerOrOptions),
-    breakpoints: breakpoints || DEFAULT_BREAKPOINTS,
+    breakpoints,
   };
 }
 
@@ -49,6 +48,28 @@ function normalizeSource(src = '') {
   const value = `${src || ''}`.trim();
   if (!value || value.toLowerCase() === 'undefined') return '';
   return value;
+}
+
+function isCrossOriginImage(src = '') {
+  if (!isRemoteImage(src)) return false;
+
+  try {
+    return new URL(src, window.location).origin !== window.location.origin;
+  } catch (error) {
+    return true;
+  }
+}
+
+function isVectorImage(src = '') {
+  const normalized = `${src || ''}`.trim().toLowerCase();
+  if (!normalized) return false;
+  if (normalized.startsWith('data:image/svg')) return true;
+
+  try {
+    return new URL(normalized, window.location).pathname.endsWith('.svg');
+  } catch (error) {
+    return normalized.split('?')[0].endsWith('.svg');
+  }
 }
 
 function isDamAssetPath(src = '') {
@@ -166,12 +187,6 @@ function getResolvedMediaMetadata(src, config) {
 
   MEDIA_RESOLUTION_CACHE.set(requestUrl, request);
   return request;
-}
-
-function getResolvedMediaUrl(src, config) {
-  return getResolvedMediaMetadata(src, config).then(
-    (payload) => payload?.delivery?.url || payload?.url || '',
-  );
 }
 
 export function resolveImageAlt(explicitAlt = '', metadata = {}) {
@@ -410,6 +425,10 @@ export function createResponsiveImage(src, alt, eagerOrOptions, breakpoints) {
     return placeholder;
   }
 
+  if (isVectorImage(normalizedSrc)) {
+    return createImage(normalizedSrc, imageAlt, options.eager);
+  }
+
   if (isDynamicMediaImage(normalizedSrc)) {
     return createDynamicMediaPicture(
       normalizedSrc,
@@ -441,7 +460,7 @@ export function createResponsiveImage(src, alt, eagerOrOptions, breakpoints) {
     return fallbackPicture;
   }
 
-  if (isRemoteImage(resolvedSrc) || isDamAssetPath(resolvedSrc)) {
+  if (isCrossOriginImage(resolvedSrc)) {
     const image = createImage(resolvedSrc, imageAlt, options.eager);
     attachImageFallback(image, '');
     return image;
@@ -469,4 +488,29 @@ export function createResponsiveImage(src, alt, eagerOrOptions, breakpoints) {
   }
 
   return optimizedPicture;
+}
+
+function getPictureElement(element) {
+  if (element?.tagName === 'PICTURE') return element;
+  return element?.querySelector?.('picture') || null;
+}
+
+export function applyImagePreset(element, options = {}) {
+  const picture = getPictureElement(element);
+  const image = picture?.querySelector('img');
+  if (!picture || !image) return element;
+
+  const src = image.getAttribute('src') || '';
+  if (!src || isVectorImage(src)) return picture;
+
+  const alt = image.getAttribute('alt') || '';
+  const rebuilt = createResponsiveImage(src, alt, options);
+  if (rebuilt?.tagName !== 'PICTURE') return picture;
+
+  [...picture.attributes].forEach((attribute) => {
+    rebuilt.setAttribute(attribute.name, attribute.value);
+  });
+  picture.replaceWith(rebuilt);
+
+  return rebuilt;
 }

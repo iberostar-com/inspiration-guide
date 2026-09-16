@@ -16,6 +16,8 @@ import {
 } from '../../scripts/iberostar/hotel-price-line.js';
 import { moveInstrumentation } from '../../scripts/scripts.js';
 
+const CARD_IMAGE_PRESET = 'hotel-mini-card-vertical-grid';
+
 const DEFAULT_VISIBLE_COUNT = 4;
 const CONFIG_FIELD_POSITIONS = {
   eyebrow: 0,
@@ -466,7 +468,7 @@ function createList(entries, labels) {
   list.tabIndex = 0;
 
   entries.forEach(({ hotelData, source, analytics }) => {
-    const card = createHotelMiniCard(hotelData, 'vertical');
+    const card = createHotelMiniCard(hotelData, 'vertical', { preset: CARD_IMAGE_PRESET });
     const item = document.createElement('li');
     item.className = 'recommended-dynamic-hotels-item';
 

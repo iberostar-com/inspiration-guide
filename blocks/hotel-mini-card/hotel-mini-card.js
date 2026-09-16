@@ -1,5 +1,10 @@
 import { createResponsiveImage } from '../../scripts/iberostar/media.js';
 
+const VARIANT_IMAGE_PRESETS = {
+  horizontal: 'hotel-mini-card-horizontal',
+  vertical: 'hotel-mini-card-vertical',
+};
+
 const FIELD_POSITIONS = {
   tag_layout: [0, 0],
   tag_tagLabel: [0, 1],
@@ -233,7 +238,11 @@ export function readHotelData(block, variant = 'horizontal') {
   };
 }
 
-export function createHotelMiniCard(hotel, variant = 'horizontal') {
+function getImagePresetName(variant, preset) {
+  return preset || VARIANT_IMAGE_PRESETS[variant] || VARIANT_IMAGE_PRESETS.horizontal;
+}
+
+export function createHotelMiniCard(hotel, variant = 'horizontal', options = {}) {
   const article = document.createElement('article');
   article.className = `hotel-mini-card hotel-mini-card-${variant}`;
 
@@ -241,7 +250,7 @@ export function createHotelMiniCard(hotel, variant = 'horizontal') {
     const media = document.createElement('div');
     media.className = 'hotel-mini-card-media';
     media.append(createResponsiveImage(hotel.image, hotel.imageAlt || hotel.name, {
-      preset: variant === 'vertical' ? 'hotel-mini-card-vertical' : 'hotel-mini-card-horizontal',
+      preset: getImagePresetName(variant, options.preset),
     }));
     article.append(media);
   }
