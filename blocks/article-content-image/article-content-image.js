@@ -116,11 +116,7 @@ export default function decorate(block) {
 
   const picture = createResponsiveImage(src, alt, {
     eager: false,
-    breakpoints: [
-      { width: '750' },
-      { media: '(min-width: 600px)', width: '900' },
-      { media: '(min-width: 900px)', width: '1200' },
-    ],
+    preset: 'article-content',
   });
   figure.append(picture);
 

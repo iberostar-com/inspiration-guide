@@ -10,6 +10,8 @@ import {
   initHotelPriceLiveUpdate,
 } from '../../scripts/iberostar/hotel-price-line.js';
 
+const CARD_IMAGE_PRESET = 'hotel-mini-card-horizontal';
+
 const FIELD_POSITIONS = {
   cta_link: [3, 0],
   cta_linkTarget: [4, 0],
@@ -271,7 +273,7 @@ export default async function decorate(block) {
     cta,
   );
   if (miniCardData) {
-    const card = createHotelMiniCard(miniCardData, 'horizontal');
+    const card = createHotelMiniCard(miniCardData, 'horizontal', { preset: CARD_IMAGE_PRESET });
     rendered.append(card);
   } else if (isAuthoringPage(block)) {
     rendered.append(createEmptyState(`No active hotel found for code ${hotelCode}.`));

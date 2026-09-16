@@ -367,10 +367,7 @@ export default async function decorate(block) {
     poster.className = 'article-content-video-poster';
     if (posterSrc) {
       poster.append(createResponsiveImage(posterSrc, posterAlt, {
-        breakpoints: [
-          { width: '768' },
-          { media: '(min-width: 900px)', width: '1200' },
-        ],
+        preset: 'article-video-poster',
       }));
     }
 

@@ -6,6 +6,8 @@ import { getTranslation } from '../../scripts/iberostar/i18n.js';
 import { toPageHref } from '../../scripts/iberostar/page-links.js';
 import { moveInstrumentation } from '../../scripts/scripts.js';
 
+const CARD_IMAGE_PRESET = 'hotel-mini-card-vertical';
+
 const DEFAULT_VISIBLE_COUNT = 4;
 const CONFIG_FIELD_POSITIONS = {
   eyebrow: 0,
@@ -445,7 +447,7 @@ export default async function decorate(block) {
     moveInstrumentation(source, li);
     source.classList.add('recommended-hotels-grid-source');
     source.setAttribute('aria-hidden', 'true');
-    li.append(source, createHotelMiniCard(hotel, 'vertical'));
+    li.append(source, createHotelMiniCard(hotel, 'vertical', { preset: CARD_IMAGE_PRESET }));
     list.append(li);
   });
 

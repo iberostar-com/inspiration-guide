@@ -1,4 +1,4 @@
-import { createOptimizedPicture } from '../../scripts/aem.js';
+import { createResponsiveImage } from '../../scripts/iberostar/media.js';
 import { moveInstrumentation } from '../../scripts/scripts.js';
 import { toPageHref } from '../../scripts/iberostar/page-links.js';
 import { getLocaleFromPath, getPlaceholder } from '../../scripts/iberostar/placeholders.js';
@@ -15,7 +15,7 @@ const NOT_FOUND_PAGE_NAME = '404';
 const DEFAULT_LOCALE = 'en-us';
 const TEXT_FIELDS = ['title', 'subtitle'];
 const RENDERED_SELECTOR = ':scope > .not-found-content, :scope > .not-found-media';
-const IMAGE_BREAKPOINTS = [{ media: '(min-width: 820px)', width: '1040' }, { width: '750' }];
+const IMAGE_PRESET = 'not-found-media';
 
 function getText(element) {
   return element?.textContent?.trim() || '';
@@ -181,16 +181,23 @@ function createPicture(img, alt, baseHref) {
     return original;
   }
 
-  const picture = createOptimizedPicture(src.href, alt, true, IMAGE_BREAKPOINTS);
-  const optimizedImg = picture.querySelector('img');
-  optimizedImg.setAttribute('fetchpriority', 'high');
-  ['width', 'height'].forEach((attr) => {
-    const value = img.getAttribute(attr);
-    if (value) optimizedImg.setAttribute(attr, value);
+  const media = createResponsiveImage(src.pathname, alt, {
+    eager: true,
+    preset: IMAGE_PRESET,
   });
-  moveInstrumentation(img, optimizedImg);
+  const optimizedImg = media.tagName === 'IMG' ? media : media.querySelector('img');
+
+  if (optimizedImg) {
+    optimizedImg.setAttribute('fetchpriority', 'high');
+    ['width', 'height'].forEach((attr) => {
+      const value = img.getAttribute(attr);
+      if (value) optimizedImg.setAttribute(attr, value);
+    });
+    moveInstrumentation(img, optimizedImg);
+  }
+
   original.remove();
-  return picture;
+  return media;
 }
 
 function renderMedia(img, alt, baseHref) {

@@ -73,6 +73,7 @@ export function createArticleCard(
     eagerImage = false,
     featured = false,
     headingTag = 'h3',
+    preset = '',
   } = {},
 ) {
   const data = normalizeArticleData(article);
@@ -89,7 +90,7 @@ export function createArticleCard(
       data.imageAlt || data.title,
       {
         eager: eagerImage,
-        preset: featured ? 'article-card-featured' : 'article-card',
+        preset: preset || (featured ? 'featured-articles-featured' : 'featured-articles-latest'),
       },
     );
 

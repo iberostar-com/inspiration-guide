@@ -1,15 +1,18 @@
-import { createResponsiveImage } from '../../scripts/iberostar/media.js';
+import { applyImagePreset, createResponsiveImage } from '../../scripts/iberostar/media.js';
 import { moveInstrumentation } from '../../scripts/scripts.js';
 import { getArticles } from '../../scripts/inspiration-data.js';
 
 /**
  * Optimize images
  */
-function optimizeImage(container) {
-  container.querySelectorAll('picture > img').forEach((img) => {
-    const optimizedImage = createResponsiveImage(img.src, img.alt, { preset: 'cards-highlight' });
-    moveInstrumentation(img, optimizedImage.querySelector?.('img') || optimizedImage);
-    img.closest('picture').replaceWith(optimizedImage);
+function optimizeImage(container, preset) {
+  container.querySelectorAll('picture').forEach((picture) => {
+    const source = picture.querySelector('img');
+    const optimized = applyImagePreset(picture, { preset });
+    if (optimized === picture) return;
+
+    const image = optimized.querySelector('img');
+    if (source && image) moveInstrumentation(source, image);
   });
 }
 
@@ -52,7 +55,7 @@ function decorateHighlight(block) {
 
     if (imageDiv) {
       card.appendChild(imageDiv);
-      optimizeImage(imageDiv);
+      optimizeImage(imageDiv, 'cards-highlight');
     }
     if (textDiv) {
       card.appendChild(textDiv);
@@ -139,7 +142,7 @@ function decorateOverlay(block) {
       picWrapper.className = 'cards-card-image';
       picWrapper.appendChild(picture.cloneNode(true));
       card.appendChild(picWrapper);
-      optimizeImage(picWrapper);
+      optimizeImage(picWrapper, 'cards-overlay');
 
       // Overlay text
       if (textContent) {
@@ -181,7 +184,7 @@ function decorateBanner(block) {
       const picture = div.querySelector('picture');
       if (picture) {
         imageDiv.appendChild(picture.cloneNode(true));
-        optimizeImage(imageDiv);
+        optimizeImage(imageDiv, 'cards-banner');
       } else if (div.textContent?.trim()) {
         bodyDiv.innerHTML += div.innerHTML;
       }
