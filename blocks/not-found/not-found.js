@@ -164,30 +164,23 @@ function renderContent({ title, subtitle, cta }) {
   return content;
 }
 
-function isHelixMedia(url) {
-  return /\/media_[^/]+$/.test(url.pathname);
-}
-
 function createPicture(img, alt, baseHref) {
   const src = new URL(img.getAttribute('src') || '', baseHref);
   const original = img.closest('picture') || img;
 
-  // Imagen por defecto de 404.html, ya optimizada en blocks/not-found: se reutiliza tal cual.
-  // Va con loading="lazy" en el HTML para no descargarla cuando hay imagen contribuida.
-  if (!isHelixMedia(src)) {
-    img.alt = alt;
-    img.setAttribute('loading', 'eager');
-    img.setAttribute('fetchpriority', 'high');
-    return original;
-  }
-
-  const media = createResponsiveImage(src.pathname, alt, {
-    eager: true,
-    preset: IMAGE_PRESET,
-  });
+  const media = createResponsiveImage(
+    src.toString(),
+    alt,
+    {
+      eager: true,
+      preset: IMAGE_PRESET,
+      damPath: img.dataset.damPath || img.getAttribute('data-dam-path') || '',
+    },
+  );
   const optimizedImg = media.tagName === 'IMG' ? media : media.querySelector('img');
 
   if (optimizedImg) {
+    optimizedImg.setAttribute('loading', 'eager');
     optimizedImg.setAttribute('fetchpriority', 'high');
     ['width', 'height'].forEach((attr) => {
       const value = img.getAttribute(attr);

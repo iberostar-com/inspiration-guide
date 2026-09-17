@@ -54,7 +54,30 @@ function normalizeSource(src = '') {
 
 function getSourceDamPath(src, options = {}) {
   const sourcePath = typeof src === 'object' ? src.damPath : '';
-  return normalizeSource(options.damPath || sourcePath);
+  return normalizeSource(
+    options.damPath
+      || sourcePath
+      || (typeof src === 'object' ? src.image?.damPath : '')
+      || '',
+  );
+}
+
+export function getImageReference(element) {
+  const image = element?.matches?.('img') ? element : element?.querySelector?.('img');
+  const source = image?.getAttribute('src')
+    || element?.getAttribute?.('href')
+    || element?.textContent
+    || '';
+  const damPath = image?.dataset?.damPath
+    || image?.getAttribute?.('data-dam-path')
+    || element?.dataset?.damPath
+    || element?.getAttribute?.('data-dam-path')
+    || '';
+
+  return {
+    src: normalizeSource(source),
+    damPath: normalizeSource(damPath),
+  };
 }
 
 function isCrossOriginImage(src = '') {
