@@ -7,6 +7,8 @@ const DEFAULT_BREAKPOINTS = [{ width: '750' }];
 const DAM_EXTENSION_REGEXP = /\.[a-z0-9]+$/i;
 const DAM_PATH_PREFIX = '/content/dam/';
 const DYNAMIC_MEDIA_PATH_SEGMENT = '/is/image/';
+const DYNAMIC_MEDIA_DELIVERY_PATH = '/adobe/dynamicmedia/deliver/';
+const ADOBE_ASSETS_PATH = '/adobe/assets/';
 const MEDIA_RESOLUTION_CACHE = new Map();
 
 export function isRemoteImage(src = '') {
@@ -45,9 +47,14 @@ function createImage(src, alt, eager) {
 }
 
 function normalizeSource(src = '') {
-  const value = `${src || ''}`.trim();
+  const value = `${typeof src === 'object' ? src.src : src || ''}`.trim();
   if (!value || value.toLowerCase() === 'undefined') return '';
   return value;
+}
+
+function getSourceDamPath(src, options = {}) {
+  const sourcePath = typeof src === 'object' ? src.damPath : '';
+  return normalizeSource(options.damPath || sourcePath);
 }
 
 function isCrossOriginImage(src = '') {
@@ -156,12 +163,13 @@ function getDynamicMediaConfig(options = {}) {
   };
 }
 
-function getMediaResolverUrl(src, config) {
-  if (!config.resolverEndpoint || !isDamAssetPath(src)) return '';
+function getMediaResolverUrl(src, config, damPath = '') {
+  const resolverSource = damPath || src;
+  if (!config.resolverEndpoint || !isDamAssetPath(resolverSource)) return '';
 
   try {
     const url = new URL(config.resolverEndpoint, window.location);
-    const sourceUrl = new URL(src, window.location);
+    const sourceUrl = new URL(resolverSource, window.location);
     url.searchParams.set('path', sourceUrl.pathname);
     return url.toString();
   } catch (error) {
@@ -169,8 +177,8 @@ function getMediaResolverUrl(src, config) {
   }
 }
 
-function getResolvedMediaMetadata(src, config) {
-  const requestUrl = getMediaResolverUrl(src, config);
+function getResolvedMediaMetadata(src, config, damPath = '') {
+  const requestUrl = getMediaResolverUrl(src, config, damPath);
   if (!requestUrl) return Promise.resolve({});
 
   if (MEDIA_RESOLUTION_CACHE.has(requestUrl)) {
@@ -233,7 +241,8 @@ export function isDynamicMediaImage(src = '') {
     const { pathname } = url;
     // Detect both traditional IS/Image format and new Adobe Assets format
     return pathname.includes(DYNAMIC_MEDIA_PATH_SEGMENT)
-      || pathname.includes('/adobe/assets/');
+      || pathname.includes('/adobe/assets/')
+      || pathname.includes(DYNAMIC_MEDIA_DELIVERY_PATH);
   } catch (error) {
     return false;
   }
@@ -302,15 +311,15 @@ function buildDynamicMediaUrl(baseUrl, rendition = {}) {
   try {
     const url = new URL(baseUrl, window.location);
 
-    // If this is an Adobe Assets Dynamic Media URL, handle it specially
     const { pathname } = url;
-    if (pathname.includes('/adobe/assets/')) {
-      // For Adobe Assets URLs, preserve existing smart crop if present
-      // and allow rendition crop to override
+    const isAdobeDeliveryUrl = pathname.includes(ADOBE_ASSETS_PATH)
+      || pathname.includes(DYNAMIC_MEDIA_DELIVERY_PATH);
+
+    if (isAdobeDeliveryUrl) {
+      // Adobe Assets Delivery uses query parameters for image transformations.
       if (rendition.crop && rendition.crop !== '') {
         url.searchParams.set('smartcrop', rendition.crop);
       }
-      // Set width/height as needed for the rendition
       if (rendition.width) url.searchParams.set('width', rendition.width);
       if (rendition.height) url.searchParams.set('height', rendition.height);
     } else {
@@ -389,8 +398,8 @@ function replacePictureContent(picture, dynamicMediaPicture) {
   picture.dataset.dynamicMediaResolved = 'true';
 }
 
-function resolvePictureFromDamPath(picture, src, alt, options, preset, config) {
-  getResolvedMediaMetadata(src, config).then((metadata) => {
+function resolvePictureFromDamPath(picture, src, alt, options, preset, config, damPath = '') {
+  getResolvedMediaMetadata(src, config, damPath).then((metadata) => {
     const resolvedUrl = metadata?.delivery?.url || metadata?.url || '';
     if (!resolvedUrl || !isDynamicMediaImage(resolvedUrl)) return;
     if (!picture.isConnected || picture.dataset.dynamicMediaResolved === 'true') return;
@@ -411,8 +420,10 @@ function resolvePictureFromDamPath(picture, src, alt, options, preset, config) {
 
 export function createResponsiveImage(src, alt, eagerOrOptions, breakpoints) {
   const normalizedSrc = normalizeSource(src);
-  const imageAlt = resolveImageAlt(alt);
   const options = normalizeImageOptions(eagerOrOptions, breakpoints);
+  const damPath = getSourceDamPath(src, options);
+  const hasDamPath = isDamAssetPath(damPath);
+  const imageAlt = resolveImageAlt(alt);
   const preset = getImagePreset(options.preset);
   const fallbackBreakpoints = options.breakpoints
     || preset.fallbackBreakpoints
@@ -429,7 +440,7 @@ export function createResponsiveImage(src, alt, eagerOrOptions, breakpoints) {
     return createImage(normalizedSrc, imageAlt, options.eager);
   }
 
-  if (isDynamicMediaImage(normalizedSrc)) {
+  if (isDynamicMediaImage(normalizedSrc) && !hasDamPath) {
     return createDynamicMediaPicture(
       normalizedSrc,
       imageAlt,
@@ -440,9 +451,10 @@ export function createResponsiveImage(src, alt, eagerOrOptions, breakpoints) {
   }
 
   // For non-Dynamic Media images, resolve DAM asset URLs
-  const resolvedSrc = resolveDamAssetUrl(normalizedSrc, dynamicMediaConfig);
+  const sourcePath = hasDamPath ? damPath : normalizedSrc;
+  const resolvedSrc = resolveDamAssetUrl(sourcePath, dynamicMediaConfig);
 
-  if (isDamAssetPath(normalizedSrc)) {
+  if (hasDamPath || isDamAssetPath(normalizedSrc)) {
     const fallbackPicture = createOptimizedPicture(
       resolvedSrc,
       imageAlt,
@@ -456,6 +468,7 @@ export function createResponsiveImage(src, alt, eagerOrOptions, breakpoints) {
       options,
       preset,
       dynamicMediaConfig,
+      hasDamPath ? damPath : '',
     );
     return fallbackPicture;
   }

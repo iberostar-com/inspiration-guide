@@ -52,6 +52,14 @@ function getImageSrc(block) {
   return getSourceImage(block)?.src || '';
 }
 
+function getImageDamPath(block) {
+  const propEl = getPropEl(block, 'image');
+  const image = getElement(propEl, 'img');
+  return image?.dataset?.damPath
+    || propEl?.getAttribute('data-dam-path')
+    || '';
+}
+
 function getImageAlt(block) {
   // In UE mode: authored via data-aue-prop
   const propEl = getPropEl(block, 'imageAlt');
@@ -92,6 +100,7 @@ function getAlignment(block) {
 
 export default function decorate(block) {
   const src = getImageSrc(block);
+  const damPath = getImageDamPath(block);
   const alt = getImageAlt(block);
   const caption = getCaption(block);
   const alignment = getAlignment(block);
@@ -117,6 +126,7 @@ export default function decorate(block) {
   const picture = createResponsiveImage(src, alt, {
     eager: false,
     preset: 'article-content',
+    damPath,
   });
   figure.append(picture);
 
