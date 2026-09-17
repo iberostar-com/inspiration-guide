@@ -17,7 +17,7 @@
       }
     },
     {
-      "title": "Article",
+          "configUrl": "https://develop--inspiration-guide-dev--iberostar-com.aem.page/tools/assets-selector/image.config.json",
       "id": "featured-article",
       "plugins": {
         "xwalk": {
@@ -157,7 +157,8 @@
           "value": ""
         },
         {
-          "component": "reference",
+          "component": "custom-asset-namespace:custom-asset",
+          "configUrl": "https://develop--inspiration-guide-dev--iberostar-com.aem.page/tools/assets-selector/image.config.json",
           "valueType": "string",
           "name": "article_image",
           "label": "Image",

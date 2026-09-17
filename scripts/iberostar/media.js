@@ -1,5 +1,9 @@
 import { createOptimizedPicture } from '../aem.js';
 import DYNAMIC_MEDIA_CONFIG from './dynamic-media-config.js';
+import {
+  createDynamicMediaPicture as createOpenApiPicture,
+  isDynamicMediaOpenApiUrl,
+} from './dynamic-media.js';
 import getEnvironmentConfig from './environment-config.js';
 import getImagePreset from './image-presets.js';
 
@@ -319,6 +323,16 @@ export function createResponsiveImage(src, alt, eagerOrOptions, breakpoints) {
     const placeholder = document.createElement('span');
     placeholder.className = 'media-image-unavailable';
     return placeholder;
+  }
+
+  if (isDynamicMediaOpenApiUrl(normalizedSrc)) {
+    return createOpenApiPicture({
+      url: normalizedSrc,
+      alt: imageAlt,
+      eager: options.eager,
+      preset: options.preset,
+      fetchpriority: options.fetchpriority,
+    });
   }
 
   if (dynamicMediaConfig.enabled) {

@@ -269,7 +269,7 @@
           }
         },
         {
-          "title": "Carousel Category Gallery Card",
+          "configUrl": "https://develop--inspiration-guide-dev--iberostar-com.aem.page/tools/assets-selector/image.config.json",
           "id": "carousel-category-gallery-card",
           "plugins": {
             "xwalk": {
@@ -384,7 +384,7 @@
           }
         },
         {
-          "title": "Article",
+          "configUrl": "https://develop--inspiration-guide-dev--iberostar-com.aem.page/tools/assets-selector/image.config.json",
           "id": "editorial-article",
           "plugins": {
             "xwalk": {
@@ -462,7 +462,7 @@
           }
         },
         {
-          "title": "Article",
+          "configUrl": "https://develop--inspiration-guide-dev--iberostar-com.aem.page/tools/assets-selector/image.config.json",
           "id": "featured-article",
           "plugins": {
             "xwalk": {
@@ -598,7 +598,7 @@
           }
         },
         {
-          "title": "Grid Category Gallery Card",
+          "configUrl": "https://develop--inspiration-guide-dev--iberostar-com.aem.page/tools/assets-selector/image.config.json",
           "id": "grid-category-gallery-card",
           "plugins": {
             "xwalk": {
@@ -921,7 +921,7 @@
           }
         },
         {
-          "title": "Hotel Mini Card",
+          "configUrl": "https://develop--inspiration-guide-dev--iberostar-com.aem.page/tools/assets-selector/image.config.json",
           "id": "recommended-hotel",
           "plugins": {
             "xwalk": {

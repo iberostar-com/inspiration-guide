@@ -17,7 +17,7 @@
       }
     },
     {
-      "title": "Grid Category Gallery Card",
+          "configUrl": "https://develop--inspiration-guide-dev--iberostar-com.aem.page/tools/assets-selector/image.config.json",
       "id": "grid-category-gallery-card",
       "plugins": {
         "xwalk": {
@@ -65,7 +65,8 @@
       "id": "grid-category-gallery-card",
       "fields": [
         {
-          "component": "reference",
+          "component": "custom-asset-namespace:custom-asset",
+          "configUrl": "https://develop--inspiration-guide-dev--iberostar-com.aem.page/tools/assets-selector/image.config.json",
           "valueType": "string",
           "name": "image",
           "label": "Image",
