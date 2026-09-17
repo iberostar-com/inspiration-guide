@@ -1,4 +1,4 @@
-import { applyImagePreset, getImageReference } from '../../scripts/iberostar/media.js';
+import { createResponsiveImage } from '../../scripts/iberostar/media.js';
 import { moveInstrumentation } from '../../scripts/scripts.js';
 
 const DEFAULT_MAX_ITEMS = 9;
@@ -59,16 +59,11 @@ function createCard(row) {
   if (picture) {
     const media = document.createElement('div');
     media.className = 'carousel-category-gallery-media';
-    media.append(picture.cloneNode(true));
-
-    const image = media.querySelector('img');
-    if (image) image.alt = title || image.getAttribute('alt') || '';
-    const imageReference = getImageReference(media);
-    applyImagePreset(media, {
-      preset: 'category-carousel',
-      damPath: imageReference.damPath,
-    });
-
+    media.append(createResponsiveImage(
+      picture.querySelector('img')?.src,
+      title,
+      { preset: 'category-carousel' },
+    ));
     card.append(media);
   }
 

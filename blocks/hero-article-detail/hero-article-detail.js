@@ -168,7 +168,7 @@ export default async function decorate(block) {
         authorName ? `Foto de ${authorName}` : '',
         {
           eager: true,
-          preset: 'article-author',
+          breakpoints: [{ width: '96' }],
         },
       );
       authorMedia.classList.add('hero-article-detail-author-image');

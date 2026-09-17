@@ -554,12 +554,6 @@ function normalizeArticle(raw, index) {
     summary: String(summary),
     description: String(summary),
     image: String(image),
-    imageDamPath: String(firstDefined(
-      raw.imageDamPath,
-      raw.damPath,
-      raw.image?.damPath,
-      '',
-    )),
     imageAlt: String(
       firstDefined(
         raw.imageAlt,
@@ -735,9 +729,6 @@ async function fetchArticleMetadata(path) {
     image:
       getMetaFromDocument(doc, 'article-image')
       || getMetaFromDocument(doc, 'og:image'),
-    imageDamPath:
-      getMetaFromDocument(doc, 'article-image-dam-path')
-      || getMetaFromDocument(doc, 'article-image-path'),
     ogImage: getMetaFromDocument(doc, 'og:image'),
     imageAlt: getMetaFromDocument(doc, 'article-image-alt'),
     authorName: getMetaFromDocument(doc, 'article-author-name'),

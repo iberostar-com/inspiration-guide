@@ -1,4 +1,4 @@
-import { createResponsiveImage } from '../../scripts/iberostar/media.js';
+import { createOptimizedPicture } from '../../scripts/aem.js';
 import { moveInstrumentation } from '../../scripts/scripts.js';
 import { toPageHref } from '../../scripts/iberostar/page-links.js';
 import { getLocaleFromPath, getPlaceholder } from '../../scripts/iberostar/placeholders.js';
@@ -15,7 +15,7 @@ const NOT_FOUND_PAGE_NAME = '404';
 const DEFAULT_LOCALE = 'en-us';
 const TEXT_FIELDS = ['title', 'subtitle'];
 const RENDERED_SELECTOR = ':scope > .not-found-content, :scope > .not-found-media';
-const IMAGE_PRESET = 'not-found-media';
+const IMAGE_BREAKPOINTS = [{ media: '(min-width: 820px)', width: '1040' }, { width: '750' }];
 
 function getText(element) {
   return element?.textContent?.trim() || '';
@@ -164,33 +164,33 @@ function renderContent({ title, subtitle, cta }) {
   return content;
 }
 
+function isHelixMedia(url) {
+  return /\/media_[^/]+$/.test(url.pathname);
+}
+
 function createPicture(img, alt, baseHref) {
   const src = new URL(img.getAttribute('src') || '', baseHref);
   const original = img.closest('picture') || img;
 
-  const media = createResponsiveImage(
-    src.toString(),
-    alt,
-    {
-      eager: true,
-      preset: IMAGE_PRESET,
-      damPath: img.dataset.damPath || img.getAttribute('data-dam-path') || '',
-    },
-  );
-  const optimizedImg = media.tagName === 'IMG' ? media : media.querySelector('img');
-
-  if (optimizedImg) {
-    optimizedImg.setAttribute('loading', 'eager');
-    optimizedImg.setAttribute('fetchpriority', 'high');
-    ['width', 'height'].forEach((attr) => {
-      const value = img.getAttribute(attr);
-      if (value) optimizedImg.setAttribute(attr, value);
-    });
-    moveInstrumentation(img, optimizedImg);
+  // Imagen por defecto de 404.html, ya optimizada en blocks/not-found: se reutiliza tal cual.
+  // Va con loading="lazy" en el HTML para no descargarla cuando hay imagen contribuida.
+  if (!isHelixMedia(src)) {
+    img.alt = alt;
+    img.setAttribute('loading', 'eager');
+    img.setAttribute('fetchpriority', 'high');
+    return original;
   }
 
+  const picture = createOptimizedPicture(src.href, alt, true, IMAGE_BREAKPOINTS);
+  const optimizedImg = picture.querySelector('img');
+  optimizedImg.setAttribute('fetchpriority', 'high');
+  ['width', 'height'].forEach((attr) => {
+    const value = img.getAttribute(attr);
+    if (value) optimizedImg.setAttribute(attr, value);
+  });
+  moveInstrumentation(img, optimizedImg);
   original.remove();
-  return media;
+  return picture;
 }
 
 function renderMedia(img, alt, baseHref) {

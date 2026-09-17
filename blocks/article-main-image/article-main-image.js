@@ -86,7 +86,7 @@ export default function decorate(block) {
   media.className = 'article-main-image-media';
   media.append(createResponsiveImage(imageSrc, imageAlt, {
     eager: true,
-    preset: 'article-main-image',
+    preset: 'article-card-featured',
   }));
 
   content.append(media);

@@ -1,5 +1,3 @@
-import { applyImagePreset } from '../../scripts/iberostar/media.js';
-
 /**
  * Decorate hero block with semantic HTML
  * Supports 4 variants: default, tag, article, blog
@@ -39,10 +37,6 @@ function decorateDefaultHero(block) {
   });
 
   block.classList.add('hero-default');
-
-  if (cells[0]) {
-    applyImagePreset(cells[0], { preset: 'hero-background' });
-  }
 }
 
 /**
@@ -84,13 +78,12 @@ function decorateArticleHero(block) {
   wrapper.className = 'hero hero-article';
 
   // Image (featured)
-  const media = cells[0]?.querySelector('picture, img');
-  let imageBox = null;
-  if (media) {
-    imageBox = document.createElement('div');
-    imageBox.className = 'hero-image';
-    imageBox.appendChild(media);
-    wrapper.appendChild(imageBox);
+  const img = cells[0]?.querySelector('img');
+  if (img) {
+    const imgWrapper = document.createElement('div');
+    imgWrapper.className = 'hero-image';
+    imgWrapper.appendChild(img);
+    wrapper.appendChild(imgWrapper);
   }
 
   // Metadata
@@ -116,10 +109,6 @@ function decorateArticleHero(block) {
   }
 
   block.replaceChildren(wrapper);
-
-  if (imageBox) {
-    applyImagePreset(imageBox, { preset: 'hero-article-image' });
-  }
 }
 
 /**
@@ -135,13 +124,12 @@ function decorateBlogHero(block) {
   wrapper.className = 'hero hero-blog';
 
   // Image
-  const media = cells[0]?.querySelector('picture, img');
-  let imageBox = null;
-  if (media) {
-    imageBox = document.createElement('div');
-    imageBox.className = 'hero-image';
-    imageBox.appendChild(media);
-    wrapper.appendChild(imageBox);
+  const img = cells[0]?.querySelector('img');
+  if (img) {
+    const imgWrapper = document.createElement('div');
+    imgWrapper.className = 'hero-image';
+    imgWrapper.appendChild(img);
+    wrapper.appendChild(imgWrapper);
   }
 
   // Title
@@ -170,10 +158,6 @@ function decorateBlogHero(block) {
   }
 
   block.replaceChildren(wrapper);
-
-  if (imageBox) {
-    applyImagePreset(imageBox, { preset: 'hero-blog-image' });
-  }
 }
 
 export default async function decorate(block) {

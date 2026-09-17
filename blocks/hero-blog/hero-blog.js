@@ -1,5 +1,3 @@
-import { applyImagePreset } from '../../scripts/iberostar/media.js';
-
 const HEADING_TAGS = new Set(['h1', 'h2', 'h3', 'h4', 'h5', 'h6']);
 const COPY_TAGS = new Set(['p', 'h2', 'h3', 'h4']);
 
@@ -187,10 +185,8 @@ export default function decorate(block) {
   const topRow = document.createElement('div');
   topRow.className = 'hero-blog-top-row';
 
-  let iconWrapper = null;
-
   if (icon) {
-    iconWrapper = document.createElement('div');
+    const iconWrapper = document.createElement('div');
 
     iconWrapper.className = 'hero-blog-icon';
     iconWrapper.append(icon);
@@ -218,8 +214,4 @@ export default function decorate(block) {
   }
 
   block.append(content);
-
-  if (iconWrapper) {
-    applyImagePreset(iconWrapper, { preset: 'hero-blog-icon', eager: true });
-  }
 }

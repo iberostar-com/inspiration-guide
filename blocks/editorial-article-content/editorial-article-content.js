@@ -1,5 +1,3 @@
-import { applyImagePreset } from '../../scripts/iberostar/media.js';
-
 function getSourceRows(block) {
   return [...block.children]
     .filter((child) => !child.classList.contains('editorial-article-content-rendered'));
@@ -60,8 +58,4 @@ export default function decorate(block) {
 
   hideSource(block);
   block.append(article);
-
-  article.querySelectorAll('picture').forEach((picture) => {
-    applyImagePreset(picture, { preset: 'article-content-inline' });
-  });
 }

@@ -128,7 +128,6 @@ export default function decorate(block) {
       eagerImage: true,
       featured: true,
       headingTag: config.articleTitleHeading,
-      preset: 'featured-articles-featured',
     });
     moveInstrumentation(featuredArticle.row, card);
     featuredSection.append(card);
@@ -150,7 +149,6 @@ export default function decorate(block) {
     latestArticles.forEach((item) => {
       const card = createArticleCard(item.article, {
         headingTag: config.articleTitleHeading,
-        preset: 'featured-articles-latest',
       });
       moveInstrumentation(item.row, card);
       list.append(card);

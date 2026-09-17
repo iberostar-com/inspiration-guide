@@ -1,4 +1,4 @@
-import { applyImagePreset, createResponsiveImage } from '../../scripts/iberostar/media.js';
+import { createResponsiveImage } from '../../scripts/iberostar/media.js';
 import { tagTitle } from '../../scripts/iberostar/tag-label.js';
 import { taxonomyTitle } from '../../scripts/iberostar/taxonomy.js';
 import { getArticles, normalizeArticlePath } from '../../scripts/inspiration-data.js';
@@ -626,13 +626,8 @@ function createCard(item, config) {
       media.append(item.picture.cloneNode(true));
       const img = media.querySelector('img');
       if (img) img.alt = item.imageAlt || img.alt || '';
-      applyImagePreset(media, { preset: 'editorial-article-grid-card' });
     } else {
-      media.append(createResponsiveImage(
-        item.image,
-        item.imageAlt || '',
-        { preset: 'editorial-article-grid-card' },
-      ));
+      media.append(createResponsiveImage(item.image, item.imageAlt || '', { preset: 'article-card' }));
     }
 
     article.append(media);

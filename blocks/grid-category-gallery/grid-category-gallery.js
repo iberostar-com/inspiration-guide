@@ -1,4 +1,4 @@
-import { createResponsiveImage, getImageReference } from '../../scripts/iberostar/media.js';
+import { createResponsiveImage } from '../../scripts/iberostar/media.js';
 import { moveInstrumentation } from '../../scripts/scripts.js';
 
 const MAX_CARDS = 4;
@@ -131,11 +131,9 @@ function getCardLink(cell) {
 function getCardImage(field) {
   const image = field?.matches?.('img') ? field : field?.querySelector?.('img');
   const anchor = field?.matches?.('a[href]') ? field : field?.querySelector?.('a[href]');
-  const imageReference = getImageReference(field);
 
   return {
     alt: image?.alt?.trim() || '',
-    damPath: imageReference.damPath,
     src: image?.src
       || anchor?.getAttribute('href')?.trim()
       || field?.textContent?.trim()
@@ -168,7 +166,6 @@ function getCardData(row) {
 
   return {
     imageAlt: imageAltField?.textContent?.trim() || image.alt || title,
-    imageDamPath: image.damPath,
     imageSrc: image.src,
     link: getCardLink(linkField),
     pretitle,
@@ -180,7 +177,6 @@ function createCard(row) {
   const {
     imageAlt,
     imageSrc,
-    imageDamPath,
     link,
     pretitle,
     title,
@@ -209,7 +205,6 @@ function createCard(row) {
       imageAlt,
       {
         preset: 'category-card',
-        damPath: imageDamPath,
       },
     ));
     card.append(media);
