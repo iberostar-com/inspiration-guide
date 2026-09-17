@@ -163,14 +163,34 @@ function getDynamicMediaConfig(options = {}) {
   };
 }
 
+function isDynamicMediaSource(src = '') {
+  if (!isRemoteImage(src)) return false;
+
+  try {
+    const url = new URL(src, window.location);
+    const { pathname } = url;
+    return pathname.includes(DYNAMIC_MEDIA_PATH_SEGMENT)
+      || pathname.includes(ADOBE_ASSETS_PATH)
+      || pathname.includes(DYNAMIC_MEDIA_DELIVERY_PATH);
+  } catch (error) {
+    return false;
+  }
+}
+
 function getMediaResolverUrl(src, config, damPath = '') {
   const resolverSource = damPath || src;
-  if (!config.resolverEndpoint || !isDamAssetPath(resolverSource)) return '';
+  if (!config.resolverEndpoint) return '';
 
   try {
     const url = new URL(config.resolverEndpoint, window.location);
-    const sourceUrl = new URL(resolverSource, window.location);
-    url.searchParams.set('path', sourceUrl.pathname);
+    if (isDamAssetPath(resolverSource)) {
+      const sourceUrl = new URL(resolverSource, window.location);
+      url.searchParams.set('path', sourceUrl.pathname);
+    } else if (isDynamicMediaSource(resolverSource)) {
+      url.searchParams.set('url', resolverSource);
+    } else {
+      return '';
+    }
     return url.toString();
   } catch (error) {
     return '';
@@ -234,18 +254,7 @@ export function resolveAssetUrl(src) {
 }
 
 export function isDynamicMediaImage(src = '') {
-  if (!isRemoteImage(src)) return false;
-
-  try {
-    const url = new URL(src, window.location);
-    const { pathname } = url;
-    // Detect both traditional IS/Image format and new Adobe Assets format
-    return pathname.includes(DYNAMIC_MEDIA_PATH_SEGMENT)
-      || pathname.includes('/adobe/assets/')
-      || pathname.includes(DYNAMIC_MEDIA_DELIVERY_PATH);
-  } catch (error) {
-    return false;
-  }
+  return isDynamicMediaSource(src);
 }
 
 function getDamAssetPath(src, config) {
@@ -401,11 +410,36 @@ function replacePictureContent(picture, dynamicMediaPicture) {
 function resolvePictureFromDamPath(picture, src, alt, options, preset, config, damPath = '') {
   getResolvedMediaMetadata(src, config, damPath).then((metadata) => {
     const resolvedUrl = metadata?.delivery?.url || metadata?.url || '';
-    if (!resolvedUrl || !isDynamicMediaImage(resolvedUrl)) return;
     if (!picture.isConnected || picture.dataset.dynamicMediaResolved === 'true') return;
 
     const fallbackAlt = resolveImageAltFromMetadata(metadata);
     const resolvedAlt = alt && alt.trim() ? alt : fallbackAlt;
+    const fallbackImage = picture.querySelector('img');
+    if (fallbackImage && resolvedAlt) fallbackImage.alt = resolvedAlt;
+    if (metadata?.status !== 'resolved' || !resolvedUrl || !isDynamicMediaImage(resolvedUrl)) return;
+
+    const dynamicMediaPicture = createDynamicMediaPictureFromValidUrl(
+      resolvedUrl,
+      resolvedAlt,
+      options,
+      preset,
+    );
+    if (dynamicMediaPicture?.tagName === 'PICTURE') {
+      replacePictureContent(picture, dynamicMediaPicture);
+    }
+  });
+}
+
+function resolvePictureFromDynamicMediaUrl(picture, src, alt, options, preset, config) {
+  getResolvedMediaMetadata(src, config).then((metadata) => {
+    if (!picture.isConnected || picture.dataset.dynamicMediaResolved === 'true') return;
+
+    const resolvedUrl = metadata?.delivery?.url || metadata?.url || '';
+    const resolvedAlt = resolveImageAlt(alt, metadata);
+    const currentImage = picture.querySelector('img');
+    if (currentImage && resolvedAlt) currentImage.alt = resolvedAlt;
+    if (metadata?.status !== 'resolved' || !resolvedUrl || !isDynamicMediaImage(resolvedUrl)) return;
+
     const dynamicMediaPicture = createDynamicMediaPictureFromValidUrl(
       resolvedUrl,
       resolvedAlt,
@@ -441,13 +475,24 @@ export function createResponsiveImage(src, alt, eagerOrOptions, breakpoints) {
   }
 
   if (isDynamicMediaImage(normalizedSrc) && !hasDamPath) {
-    return createDynamicMediaPicture(
+    const dynamicMediaPicture = createDynamicMediaPicture(
       normalizedSrc,
       imageAlt,
       options,
       preset,
       dynamicMediaConfig,
     );
+    if (dynamicMediaPicture?.tagName === 'PICTURE') {
+      resolvePictureFromDynamicMediaUrl(
+        dynamicMediaPicture,
+        normalizedSrc,
+        imageAlt,
+        options,
+        preset,
+        dynamicMediaConfig,
+      );
+    }
+    return dynamicMediaPicture;
   }
 
   // For non-Dynamic Media images, resolve DAM asset URLs
