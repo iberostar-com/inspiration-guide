@@ -141,15 +141,23 @@ function buildArticleLayoutShell(layoutSections) {
 
   const mainColumn = document.createElement('div');
   mainColumn.className = 'article-layout-main';
+  shell.append(mainColumn);
 
-  const sidebarColumn = document.createElement('aside');
-  sidebarColumn.className = 'article-layout-sidebar';
+  const hasSidebar = layoutSections.some((section) => section.classList.contains('article-sidebar'));
+  let sidebarColumn = null;
 
-  shell.append(mainColumn, sidebarColumn);
+  if (hasSidebar) {
+    sidebarColumn = document.createElement('aside');
+    sidebarColumn.className = 'article-layout-sidebar';
+    shell.append(sidebarColumn);
+  } else {
+    shell.classList.add('article-layout-single');
+  }
+
   layoutSections[0].before(shell);
 
   layoutSections.forEach((section) => {
-    if (section.classList.contains('article-sidebar')) {
+    if (sidebarColumn && section.classList.contains('article-sidebar')) {
       sidebarColumn.append(section);
       return;
     }
@@ -157,7 +165,7 @@ function buildArticleLayoutShell(layoutSections) {
     mainColumn.append(section);
   });
 
-  if (!mainColumn.children.length || !sidebarColumn.children.length) {
+  if (!mainColumn.children.length) {
     shell.replaceWith(...layoutSections);
   }
 }

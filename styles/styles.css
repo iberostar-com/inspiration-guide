@@ -371,6 +371,11 @@ body.page-article main.article-layout-author > .section > div {
     margin: 24px auto 40px;
   }
 
+  body.page-article main > .article-layout-shell.article-layout-single {
+    grid-template-columns: minmax(0, 805px);
+    max-width: 805px;
+  }
+
   body.page-article main.article-layout-author {
     grid-template-columns: minmax(0, 805px) 277px;
     gap: 40px 76px;
