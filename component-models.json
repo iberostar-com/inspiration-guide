@@ -429,8 +429,7 @@
     "id": "article-content-image",
     "fields": [
       {
-        "component": "custom-asset-namespace:custom-asset",
-        "configUrl": "https://develop--inspiration-guide-dev--iberostar-com.aem.page/tools/assets-selector/image.config.json",
+        "component": "reference",
         "valueType": "string",
         "name": "image",
         "label": "Image",
@@ -613,8 +612,7 @@
         }
       },
       {
-        "component": "custom-asset-namespace:custom-asset",
-        "configUrl": "https://develop--inspiration-guide-dev--iberostar-com.aem.page/tools/assets-selector/image.config.json",
+        "component": "reference",
         "valueType": "string",
         "name": "poster",
         "label": "Poster Image (optional)",
@@ -661,8 +659,7 @@
     "id": "article-main-image",
     "fields": [
       {
-        "component": "custom-asset-namespace:custom-asset",
-        "configUrl": "https://develop--inspiration-guide-dev--iberostar-com.aem.page/tools/assets-selector/image.config.json",
+        "component": "reference",
         "valueType": "string",
         "name": "image",
         "label": "Image Override",
@@ -925,8 +922,7 @@
         "value": ""
       },
       {
-        "component": "custom-asset-namespace:custom-asset",
-        "configUrl": "https://develop--inspiration-guide-dev--iberostar-com.aem.page/tools/assets-selector/image.config.json",
+        "component": "reference",
         "valueType": "string",
         "name": "article_image",
         "label": "Image",
@@ -973,8 +969,7 @@
         "value": ""
       },
       {
-        "component": "custom-asset-namespace:custom-asset",
-        "configUrl": "https://develop--inspiration-guide-dev--iberostar-com.aem.page/tools/assets-selector/image.config.json",
+        "component": "reference",
         "valueType": "string",
         "name": "article_authorImage",
         "label": "Author Image",
@@ -1019,8 +1014,7 @@
     "id": "card",
     "fields": [
       {
-        "component": "custom-asset-namespace:custom-asset",
-        "configUrl": "https://develop--inspiration-guide-dev--iberostar-com.aem.page/tools/assets-selector/image.config.json",
+        "component": "reference",
         "valueType": "string",
         "name": "image",
         "label": "Image",
@@ -1079,8 +1073,7 @@
         "value": ""
       },
       {
-        "component": "custom-asset-namespace:custom-asset",
-        "configUrl": "https://develop--inspiration-guide-dev--iberostar-com.aem.page/tools/assets-selector/image.config.json",
+        "component": "reference",
         "valueType": "string",
         "name": "image",
         "label": "Image",
@@ -1484,8 +1477,7 @@
     "id": "editorial-article",
     "fields": [
       {
-        "component": "custom-asset-namespace:custom-asset",
-        "configUrl": "https://develop--inspiration-guide-dev--iberostar-com.aem.page/tools/assets-selector/image.config.json",
+        "component": "reference",
         "valueType": "string",
         "name": "image",
         "label": "Image",
@@ -1808,8 +1800,7 @@
         "value": ""
       },
       {
-        "component": "custom-asset-namespace:custom-asset",
-        "configUrl": "https://develop--inspiration-guide-dev--iberostar-com.aem.page/tools/assets-selector/image.config.json",
+        "component": "reference",
         "valueType": "string",
         "name": "article_image",
         "label": "Image",
@@ -2051,8 +2042,7 @@
     "id": "grid-category-gallery-card",
     "fields": [
       {
-        "component": "custom-asset-namespace:custom-asset",
-        "configUrl": "https://develop--inspiration-guide-dev--iberostar-com.aem.page/tools/assets-selector/image.config.json",
+        "component": "reference",
         "valueType": "string",
         "name": "image",
         "label": "Image",
@@ -2090,16 +2080,14 @@
     "id": "header-brand",
     "fields": [
       {
-        "component": "custom-asset-namespace:custom-asset",
-        "configUrl": "https://develop--inspiration-guide-dev--iberostar-com.aem.page/tools/assets-selector/image.config.json",
+        "component": "reference",
         "valueType": "string",
         "name": "logo",
         "label": "Logo (móvil)",
         "multi": false
       },
       {
-        "component": "custom-asset-namespace:custom-asset",
-        "configUrl": "https://develop--inspiration-guide-dev--iberostar-com.aem.page/tools/assets-selector/image.config.json",
+        "component": "reference",
         "valueType": "string",
         "name": "logoDesktop",
         "label": "Logo (desktop)",
@@ -2136,8 +2124,7 @@
     "id": "hero-blog",
     "fields": [
       {
-        "component": "custom-asset-namespace:custom-asset",
-        "configUrl": "https://develop--inspiration-guide-dev--iberostar-com.aem.page/tools/assets-selector/image.config.json",
+        "component": "reference",
         "valueType": "string",
         "name": "hero_icon",
         "label": "Icon",
@@ -2273,8 +2260,7 @@
         "value": "default"
       },
       {
-        "component": "custom-asset-namespace:custom-asset",
-        "configUrl": "https://develop--inspiration-guide-dev--iberostar-com.aem.page/tools/assets-selector/image.config.json",
+        "component": "reference",
         "valueType": "string",
         "name": "image",
         "label": "Image",
@@ -2374,8 +2360,7 @@
         ]
       },
       {
-        "component": "custom-asset-namespace:custom-asset",
-        "configUrl": "https://develop--inspiration-guide-dev--iberostar-com.aem.page/tools/assets-selector/image.config.json",
+        "component": "reference",
         "valueType": "string",
         "name": "media_image",
         "label": "Image",
@@ -2813,8 +2798,7 @@
         "label": "CTA Link"
       },
       {
-        "component": "custom-asset-namespace:custom-asset",
-        "configUrl": "https://develop--inspiration-guide-dev--iberostar-com.aem.page/tools/assets-selector/image.config.json",
+        "component": "reference",
         "valueType": "string",
         "name": "image",
         "label": "Image",
@@ -3001,8 +2985,7 @@
         "value": ""
       },
       {
-        "component": "custom-asset-namespace:custom-asset",
-        "configUrl": "https://develop--inspiration-guide-dev--iberostar-com.aem.page/tools/assets-selector/image.config.json",
+        "component": "reference",
         "valueType": "string",
         "name": "media_image",
         "label": "Image",

@@ -21,8 +21,7 @@
       "id": "article-content-image",
       "fields": [
         {
-          "component": "custom-asset-namespace:custom-asset",
-          "configUrl": "https://develop--inspiration-guide-dev--iberostar-com.aem.page/tools/assets-selector/image.config.json",
+          "component": "reference",
           "valueType": "string",
           "name": "image",
           "label": "Image",

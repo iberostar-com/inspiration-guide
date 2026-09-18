@@ -21,16 +21,14 @@
       "id": "header-brand",
       "fields": [
         {
-          "component": "custom-asset-namespace:custom-asset",
-          "configUrl": "https://develop--inspiration-guide-dev--iberostar-com.aem.page/tools/assets-selector/image.config.json",
+          "component": "reference",
           "valueType": "string",
           "name": "logo",
           "label": "Logo (móvil)",
           "multi": false
         },
         {
-          "component": "custom-asset-namespace:custom-asset",
-          "configUrl": "https://develop--inspiration-guide-dev--iberostar-com.aem.page/tools/assets-selector/image.config.json",
+          "component": "reference",
           "valueType": "string",
           "name": "logoDesktop",
           "label": "Logo (desktop)",
