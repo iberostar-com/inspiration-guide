@@ -238,6 +238,7 @@ function extractImageFromDocument(doc) {
     || '';
 
   const imageAlt = getMetaFromDocument(doc, 'article-image-alt')
+    || getMetaFromDocument(doc, 'article-image-auto-alt')
     || getMetaFromDocument(doc, 'og:image:alt')
     || doc.querySelector('main picture img')?.getAttribute('alt')
     || doc.querySelector('picture img')?.getAttribute('alt')

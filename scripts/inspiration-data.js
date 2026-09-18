@@ -557,6 +557,9 @@ function normalizeArticle(raw, index) {
     imageAlt: String(
       firstDefined(
         raw.imageAlt,
+        raw.imageAutoAlt,
+        raw.articleImageAutoAlt,
+        raw['article-image-auto-alt'],
         raw.altEs,
         raw.imageAltEs,
         raw.dcDescription,
@@ -730,7 +733,8 @@ async function fetchArticleMetadata(path) {
       getMetaFromDocument(doc, 'article-image')
       || getMetaFromDocument(doc, 'og:image'),
     ogImage: getMetaFromDocument(doc, 'og:image'),
-    imageAlt: getMetaFromDocument(doc, 'article-image-alt'),
+    imageAlt: getMetaFromDocument(doc, 'article-image-alt')
+      || getMetaFromDocument(doc, 'article-image-auto-alt'),
     authorName: getMetaFromDocument(doc, 'article-author-name'),
     author: getMetaFromDocument(doc, 'article-author'),
     authorImage: getMetaFromDocument(doc, 'article-author-image'),

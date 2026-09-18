@@ -1,4 +1,5 @@
 import { getMetadata } from '../../scripts/aem.js';
+import { getAssetAutoAltFromMetadataApi } from '../../scripts/iberostar/asset-auto-alt.js';
 import { resolveFinalAlt } from '../../scripts/iberostar/image-alt.js';
 import { createResponsiveImage } from '../../scripts/iberostar/media.js';
 
@@ -54,6 +55,25 @@ function createText(tagName, className, text) {
   return element;
 }
 
+function isAemAuthorPage() {
+  return window.location.hostname.startsWith('author-')
+    && window.location.hostname.endsWith('.adobeaemcloud.com')
+    && window.location.pathname.startsWith('/content/');
+}
+
+async function loadAuthorMetadataAlt(imageSrc, media) {
+  if (!isAemAuthorPage() || !imageSrc || media.querySelector('img')?.alt) return;
+
+  try {
+    const automaticAlt = await getAssetAutoAltFromMetadataApi({ value: imageSrc });
+    if (!automaticAlt) return;
+    const img = media.querySelector('img');
+    if (img && !img.alt) img.alt = automaticAlt;
+  } catch (error) {
+    // Author-only preview enhancement; published rendering uses persisted content.
+  }
+}
+
 export default function decorate(block) {
   const existing = block.querySelector(':scope > .article-main-image-content');
   if (existing) {
@@ -93,6 +113,7 @@ export default function decorate(block) {
     eager: true,
     preset: 'article-card-featured',
   }));
+  loadAuthorMetadataAlt(imageSrc, media);
 
   content.append(media);
 
