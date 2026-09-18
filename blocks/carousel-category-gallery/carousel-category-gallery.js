@@ -41,10 +41,23 @@ function readConfig(block, propName, index) {
   return { value: block.getAttribute(`data-${propName}`) || '', source: null };
 }
 
+function getCardImage(cell) {
+  const image = cell?.matches?.('img') ? cell : cell?.querySelector?.('img');
+  const anchor = cell?.matches?.('a[href]') ? cell : cell?.querySelector?.('a[href]');
+
+  return {
+    alt: image?.alt?.trim() || '',
+    src: image?.src
+      || anchor?.getAttribute('href')?.trim()
+      || cell?.textContent?.trim()
+      || '',
+  };
+}
+
 function createCard(row) {
   const cells = [...row.children];
   const icon = cells[0]?.textContent?.trim() || '';
-  const picture = cells[1]?.querySelector('picture');
+  const image = getCardImage(cells[1]);
   const title = cells[2]?.textContent?.trim() || '';
   const link = cells[3]?.textContent?.trim() || '';
 
@@ -56,12 +69,12 @@ function createCard(row) {
   card.className = 'carousel-category-gallery-card';
   if (link) card.href = link;
 
-  if (picture) {
+  if (image.src) {
     const media = document.createElement('div');
     media.className = 'carousel-category-gallery-media';
     media.append(createResponsiveImage(
-      picture.querySelector('img')?.src,
-      title,
+      image.src,
+      image.alt || title,
       { preset: 'category-carousel' },
     ));
     card.append(media);
