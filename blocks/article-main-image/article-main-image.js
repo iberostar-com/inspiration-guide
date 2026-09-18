@@ -66,9 +66,9 @@ export default function decorate(block) {
   const imageSrc = imageOverride || getMetaValue('article-image');
   const imageAlt = imageAltOverride
     || getMetaValue('article-image-alt')
-    || getMetaValue('alt_es')
-    || getMetaValue('jcr:title')
-    || 'Article image';
+    || getMetaValue('dc:alt')
+    || getMetaValue('dc:description')
+    || getMetaValue('jcr:title');
   const imageCaption = captionOverride
     || getMetaValue('article-image-caption')
     || getMetaValue('dc:description');

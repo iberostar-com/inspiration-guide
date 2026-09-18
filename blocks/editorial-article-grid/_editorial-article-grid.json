@@ -17,7 +17,7 @@
       }
     },
     {
-          "configUrl": "https://develop--inspiration-guide-dev--iberostar-com.aem.page/tools/assets-selector/image.config.json",
+      "title": "Article",
       "id": "editorial-article",
       "plugins": {
         "xwalk": {
