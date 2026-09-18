@@ -70,6 +70,15 @@
           "value": ""
         },
         {
+          "component": "text",
+          "valueType": "string",
+          "name": "image_autoalt",
+          "label": "Automatic Alt Text",
+          "value": "",
+          "hidden": true,
+          "readOnly": true
+        },
+        {
           "component": "richtext",
           "name": "text",
           "value": "",

@@ -78,6 +78,15 @@
         {
           "component": "text",
           "valueType": "string",
+          "name": "poster_autoalt",
+          "label": "Poster Automatic Alt Text",
+          "value": "",
+          "hidden": true,
+          "readOnly": true
+        },
+        {
+          "component": "text",
+          "valueType": "string",
           "name": "caption",
           "label": "Caption (optional)",
           "value": ""

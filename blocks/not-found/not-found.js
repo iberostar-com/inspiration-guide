@@ -4,6 +4,7 @@ import {
   createDynamicMediaPicture,
   isDynamicMediaOpenApiUrl,
 } from '../../scripts/iberostar/dynamic-media.js';
+import { resolveFinalAlt } from '../../scripts/iberostar/image-alt.js';
 import { toPageHref } from '../../scripts/iberostar/page-links.js';
 import { getLocaleFromPath, getPlaceholder } from '../../scripts/iberostar/placeholders.js';
 
@@ -264,10 +265,16 @@ export default async function decorate(block) {
     subtitle,
     cta: { href: cta.href || getHomeHref(), text: ctaText },
   });
+  const imageAlt = resolveFinalAlt(
+    getText(authoredFields.imageAlt),
+    getText(authoredFields.image_autoalt)
+      || getText(authoredFields.imageAutoAlt)
+      || (authoredImage ? authoredImage.alt : defaultImageAlt),
+  );
   const media = image
     ? renderMedia(
       image,
-      authoredImage ? authoredImage.alt : defaultImageAlt,
+      imageAlt,
       authoredImage ? authored?.href || window.location.href : window.location.href,
     )
     : null;

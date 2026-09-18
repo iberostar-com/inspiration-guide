@@ -1,3 +1,4 @@
+import { resolveFinalAlt } from '../../scripts/iberostar/image-alt.js';
 import { createResponsiveImage } from '../../scripts/iberostar/media.js';
 
 const ALIGNMENTS = ['left', 'center', 'right'];
@@ -54,10 +55,15 @@ function getImageSrc(block) {
 
 function getImageAlt(block) {
   // In UE mode: authored via data-aue-prop
-  const propEl = getPropEl(block, 'imageAlt');
-  if (propEl) return propEl.textContent?.trim() || '';
+  const authoredAlt = getPropEl(block, 'imageAlt')?.textContent?.trim() || '';
+  const automaticAlt = getPropEl(block, 'image_autoalt')?.textContent?.trim()
+    || getPropEl(block, 'imageAutoAlt')?.textContent?.trim()
+    || getSourceImage(block)?.alt?.trim()
+    || getMetaContent('alt_es');
+  const alt = resolveFinalAlt(authoredAlt, automaticAlt);
+  if (alt) return alt;
   // In publish mode: AEM bakes the alt into the <img> element directly
-  return getSourceImage(block)?.alt?.trim() || getMetaContent('alt_es');
+  return '';
 }
 
 function getCaption(block) {

@@ -1,4 +1,5 @@
 import { createResponsiveImage } from '../../scripts/iberostar/media.js';
+import { resolveFinalAlt } from '../../scripts/iberostar/image-alt.js';
 
 const FIELD_POSITIONS = {
   tag_layout: [0, 0],
@@ -18,6 +19,7 @@ const FIELD_ALIASES = {
   ctaText: ['cta_linkText', 'card_linkText'],
   image: ['media_image', 'card_image'],
   imageAlt: ['media_imageAlt', 'card_imageAlt'],
+  imageAutoAlt: ['media_imageautoalt', 'media_imageAutoAlt', 'card_imageautoalt', 'card_imageAutoAlt'],
   hotelName: ['hotel_hotelName', 'card_hotelName'],
   link: ['cta_link', 'card_link'],
   linkTarget: ['cta_linkTarget', 'card_linkTarget'],
@@ -129,8 +131,12 @@ function getImage(block) {
 
 function getImageAlt(block) {
   const field = getField(block, 'image');
-  return getImageElement(field)?.alt?.trim()
-    || getText(block, 'imageAlt', 'data-image-alt', '');
+  return resolveFinalAlt(
+    getText(block, 'imageAlt', 'data-image-alt', ''),
+    getText(block, 'imageAutoAlt', 'data-image-auto-alt', '')
+      || getImageElement(field)?.alt?.trim()
+      || '',
+  );
 }
 
 function normalizeVariant(value) {

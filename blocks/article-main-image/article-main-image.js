@@ -1,4 +1,5 @@
 import { getMetadata } from '../../scripts/aem.js';
+import { resolveFinalAlt } from '../../scripts/iberostar/image-alt.js';
 import { createResponsiveImage } from '../../scripts/iberostar/media.js';
 
 function getSourceRows(block) {
@@ -61,14 +62,18 @@ export default function decorate(block) {
 
   const imageOverride = getFieldImage(block, 'image');
   const imageAltOverride = getFieldText(block, 'imageAlt');
+  const imageAutoAltOverride = getFieldText(block, 'image_autoalt') || getFieldText(block, 'imageAutoAlt');
   const captionOverride = getFieldText(block, 'caption');
 
   const imageSrc = imageOverride || getMetaValue('article-image');
-  const imageAlt = imageAltOverride
-    || getMetaValue('article-image-alt')
-    || getMetaValue('dc:alt')
-    || getMetaValue('dc:description')
-    || getMetaValue('jcr:title');
+  const imageAlt = resolveFinalAlt(
+    imageAltOverride || getMetaValue('article-image-alt'),
+    imageAutoAltOverride
+      || getMetaValue('article-image-auto-alt')
+      || getMetaValue('dc:alt')
+      || getMetaValue('dc:description')
+      || getMetaValue('jcr:title'),
+  );
   const imageCaption = captionOverride
     || getMetaValue('article-image-caption')
     || getMetaValue('dc:description');

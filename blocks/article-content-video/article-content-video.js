@@ -1,5 +1,6 @@
 import { createResponsiveImage, resolveAssetUrl } from '../../scripts/iberostar/media.js';
 import { getTranslation } from '../../scripts/iberostar/i18n.js';
+import { resolveFinalAlt } from '../../scripts/iberostar/image-alt.js';
 
 const VIDEO_EXTENSIONS = /\.(mp4|webm|ogg|mov)(\?.*)?$/i;
 const ALIGNMENTS = ['left', 'center', 'right'];
@@ -257,9 +258,11 @@ function getPosterSrc(block) {
 
 function getPosterAlt(block) {
   const altField = getPropElementByNames(block, ['posterAlt', 'videoAlt']);
-  return altField?.textContent?.trim()
-    || getPosterImage(block)?.alt?.trim()
-    || '';
+  const autoAltField = getPropElementByNames(block, ['poster_autoalt', 'posterAutoAlt', 'videoAutoAlt']);
+  return resolveFinalAlt(
+    altField?.textContent?.trim() || '',
+    autoAltField?.textContent?.trim() || getPosterImage(block)?.alt?.trim() || '',
+  );
 }
 
 function getCaption(block) {

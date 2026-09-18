@@ -57,6 +57,14 @@
           "valueType": "string",
           "name": "imageAlt",
           "label": "Image Alt"
+        },
+        {
+          "component": "text",
+          "valueType": "string",
+          "name": "image_autoalt",
+          "label": "Automatic Image Alt",
+          "hidden": true,
+          "readOnly": true
         }
       ]
     }

@@ -1,4 +1,5 @@
 import { createResponsiveImage } from '../../scripts/iberostar/media.js';
+import { resolveFinalAlt } from '../../scripts/iberostar/image-alt.js';
 import { moveInstrumentation } from '../../scripts/scripts.js';
 
 const DEFAULT_MAX_ITEMS = 9;
@@ -41,6 +42,16 @@ function readConfig(block, propName, index) {
   return { value: block.getAttribute(`data-${propName}`) || '', source: null };
 }
 
+function getPropElement(root, propName) {
+  const selector = `[data-aue-prop="${propName}"]`;
+  if (root?.matches?.(selector)) return root;
+  return root?.querySelector?.(selector) || null;
+}
+
+function getTextFromElement(element) {
+  return element?.textContent?.trim() || '';
+}
+
 function getCardImage(cell) {
   const image = cell?.matches?.('img') ? cell : cell?.querySelector?.('img');
   const anchor = cell?.matches?.('a[href]') ? cell : cell?.querySelector?.('a[href]');
@@ -56,10 +67,13 @@ function getCardImage(cell) {
 
 function createCard(row) {
   const cells = [...row.children];
-  const icon = cells[0]?.textContent?.trim() || '';
-  const image = getCardImage(cells[1]);
-  const title = cells[2]?.textContent?.trim() || '';
-  const link = cells[3]?.textContent?.trim() || '';
+  const icon = getTextFromElement(getPropElement(row, 'icon')) || getTextFromElement(cells[0]);
+  const imageField = getPropElement(row, 'image') || cells[1];
+  const imageAltField = getPropElement(row, 'imageAlt');
+  const imageAutoAltField = getPropElement(row, 'image_autoalt');
+  const image = getCardImage(imageField);
+  const title = getTextFromElement(getPropElement(row, 'title')) || getTextFromElement(cells[2]);
+  const link = getTextFromElement(getPropElement(row, 'link')) || getTextFromElement(cells[3]);
 
   const li = document.createElement('li');
   li.className = 'carousel-category-gallery-item';
@@ -74,7 +88,10 @@ function createCard(row) {
     media.className = 'carousel-category-gallery-media';
     media.append(createResponsiveImage(
       image.src,
-      image.alt || title,
+      resolveFinalAlt(
+        getTextFromElement(imageAltField),
+        getTextFromElement(imageAutoAltField) || image.alt || title,
+      ),
       { preset: 'category-carousel' },
     ));
     card.append(media);

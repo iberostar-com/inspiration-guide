@@ -155,6 +155,22 @@
       {
         "component": "text",
         "valueType": "string",
+        "name": "article-image-auto-alt",
+        "label": "Article Image Automatic Alt",
+        "hidden": true,
+        "readOnly": true,
+        "condition": {
+          "==": [
+            {
+              "var": "page-type"
+            },
+            "article"
+          ]
+        }
+      },
+      {
+        "component": "text",
+        "valueType": "string",
         "name": "article-author-name",
         "label": "Article Author Name",
         "condition": {
@@ -308,6 +324,13 @@
         "component": "text",
         "name": "imageAlt",
         "label": "Alt Text"
+      },
+      {
+        "component": "text",
+        "name": "image_autoalt",
+        "label": "Automatic Alt Text",
+        "hidden": true,
+        "readOnly": true
       }
     ]
   },
@@ -441,6 +464,15 @@
         "name": "imageAlt",
         "label": "Alt Text (optional)",
         "value": ""
+      },
+      {
+        "component": "text",
+        "valueType": "string",
+        "name": "image_autoalt",
+        "label": "Automatic Alt Text",
+        "value": "",
+        "hidden": true,
+        "readOnly": true
       },
       {
         "component": "text",
@@ -628,6 +660,15 @@
       {
         "component": "text",
         "valueType": "string",
+        "name": "poster_autoalt",
+        "label": "Poster Automatic Alt Text",
+        "value": "",
+        "hidden": true,
+        "readOnly": true
+      },
+      {
+        "component": "text",
+        "valueType": "string",
         "name": "caption",
         "label": "Caption (optional)",
         "value": ""
@@ -671,6 +712,15 @@
         "name": "imageAlt",
         "label": "Alt Text Override (optional)",
         "value": ""
+      },
+      {
+        "component": "text",
+        "valueType": "string",
+        "name": "image_autoalt",
+        "label": "Automatic Alt Text",
+        "value": "",
+        "hidden": true,
+        "readOnly": true
       },
       {
         "component": "text",
@@ -938,6 +988,15 @@
       {
         "component": "text",
         "valueType": "string",
+        "name": "article_imageautoalt",
+        "label": "Automatic Image Alt",
+        "value": "",
+        "hidden": true,
+        "readOnly": true
+      },
+      {
+        "component": "text",
+        "valueType": "string",
         "name": "article_category",
         "label": "Category",
         "value": ""
@@ -1021,6 +1080,22 @@
         "multi": false
       },
       {
+        "component": "text",
+        "valueType": "string",
+        "name": "imageAlt",
+        "label": "Alt Text (optional)",
+        "value": ""
+      },
+      {
+        "component": "text",
+        "valueType": "string",
+        "name": "image_autoalt",
+        "label": "Automatic Alt Text",
+        "value": "",
+        "hidden": true,
+        "readOnly": true
+      },
+      {
         "component": "richtext",
         "name": "text",
         "value": "",
@@ -1078,6 +1153,22 @@
         "name": "image",
         "label": "Image",
         "multi": false
+      },
+      {
+        "component": "text",
+        "valueType": "string",
+        "name": "imageAlt",
+        "label": "Image Alt (optional)",
+        "value": ""
+      },
+      {
+        "component": "text",
+        "valueType": "string",
+        "name": "image_autoalt",
+        "label": "Automatic Image Alt",
+        "value": "",
+        "hidden": true,
+        "readOnly": true
       },
       {
         "component": "text",
@@ -1816,6 +1907,15 @@
       {
         "component": "text",
         "valueType": "string",
+        "name": "article_imageautoalt",
+        "label": "Automatic Image Alt",
+        "value": "",
+        "hidden": true,
+        "readOnly": true
+      },
+      {
+        "component": "text",
+        "valueType": "string",
         "name": "article_category",
         "label": "Category",
         "value": ""
@@ -2058,6 +2158,15 @@
       {
         "component": "text",
         "valueType": "string",
+        "name": "image_autoalt",
+        "label": "Automatic Image Alt",
+        "value": "",
+        "hidden": true,
+        "readOnly": true
+      },
+      {
+        "component": "text",
+        "valueType": "string",
         "name": "title",
         "label": "Pretitle",
         "value": ""
@@ -2099,6 +2208,15 @@
         "name": "logoAlt",
         "label": "Logo Alt",
         "value": "Inspiration Guide"
+      },
+      {
+        "component": "text",
+        "valueType": "string",
+        "name": "logo_autoalt",
+        "label": "Automatic Logo Alt",
+        "value": "",
+        "hidden": true,
+        "readOnly": true
       },
       {
         "component": "text",
@@ -2274,6 +2392,15 @@
         "value": ""
       },
       {
+        "component": "text",
+        "valueType": "string",
+        "name": "image_autoalt",
+        "label": "Automatic Alt Text",
+        "value": "",
+        "hidden": true,
+        "readOnly": true
+      },
+      {
         "component": "richtext",
         "name": "text",
         "value": "",
@@ -2372,6 +2499,15 @@
         "name": "media_imageAlt",
         "label": "Image Alt",
         "value": ""
+      },
+      {
+        "component": "text",
+        "valueType": "string",
+        "name": "media_imageautoalt",
+        "label": "Automatic Image Alt",
+        "value": "",
+        "hidden": true,
+        "readOnly": true
       },
       {
         "component": "text",
@@ -2809,6 +2945,14 @@
         "valueType": "string",
         "name": "imageAlt",
         "label": "Image Alt"
+      },
+      {
+        "component": "text",
+        "valueType": "string",
+        "name": "image_autoalt",
+        "label": "Automatic Image Alt",
+        "hidden": true,
+        "readOnly": true
       }
     ]
   },
@@ -2997,6 +3141,15 @@
         "name": "media_imageAlt",
         "label": "Image Alt",
         "value": ""
+      },
+      {
+        "component": "text",
+        "valueType": "string",
+        "name": "media_imageautoalt",
+        "label": "Automatic Image Alt",
+        "value": "",
+        "hidden": true,
+        "readOnly": true
       },
       {
         "component": "text",

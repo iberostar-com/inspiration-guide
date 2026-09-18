@@ -1,4 +1,5 @@
 import { createResponsiveImage } from '../../scripts/iberostar/media.js';
+import { resolveFinalAlt } from '../../scripts/iberostar/image-alt.js';
 import formatLocalizedDate, { hasValidDate } from '../../scripts/iberostar/date-format.js';
 import { getPlaceholder } from '../../scripts/iberostar/placeholders.js';
 import { getTranslation } from '../../scripts/iberostar/i18n.js';
@@ -60,6 +61,8 @@ const FIELD_SELECTORS = {
   description: 'article_description',
   image: 'article_image',
   imageAlt: 'article_imageAlt',
+  imageAutoAlt: 'article_imageautoalt',
+  imageAutoAltLegacy: 'article_imageAutoAlt',
   placement: 'article_placement',
   publicationDate: 'article_publicationDate',
   readTime: 'article_readTime',
@@ -231,6 +234,10 @@ function getImageFromElement(el) {
     || el.querySelector('a[href]')?.getAttribute('href')?.trim()
     || el.textContent?.trim()
     || '';
+}
+
+function getImageAltFromElement(el) {
+  return el?.querySelector('img')?.alt?.trim() || '';
 }
 
 function normalizeList(value) {
@@ -461,6 +468,9 @@ function fromManualRows(block) {
       const descriptionField = getManualField(row, FIELD_SELECTORS.description, cells, 2);
       const imageField = getManualField(row, FIELD_SELECTORS.image, cells, 3);
       const imageAltField = getManualField(row, FIELD_SELECTORS.imageAlt, cells, 4);
+      const imageAutoAltField = getPropElement(row, FIELD_SELECTORS.imageAutoAlt)
+        || getPropElement(row, FIELD_SELECTORS.imageAutoAltLegacy);
+      const imageSourceField = cells.length <= 4 ? cells[0] : imageField;
       const publicationDateField = getManualField(row, FIELD_SELECTORS.publicationDate, cells, 7);
       const readTimeField = getManualField(row, FIELD_SELECTORS.readTime, cells, 8);
       const titleField = getManualField(row, FIELD_SELECTORS.title, cells, 1);
@@ -471,8 +481,11 @@ function fromManualRows(block) {
         category: categoryField?.textContent?.trim() || '',
         categoryUrl: getHrefFromElement(categoryUrlField),
         description: descriptionField?.textContent?.trim() || '',
-        image: getImageFromElement(cells.length <= 4 ? cells[0] : imageField),
-        imageAlt: imageAltField?.textContent?.trim() || '',
+        image: getImageFromElement(imageSourceField),
+        imageAlt: resolveFinalAlt(
+          imageAltField?.textContent?.trim() || '',
+          imageAutoAltField?.textContent?.trim() || getImageAltFromElement(imageSourceField) || '',
+        ),
         publicationDate: publicationDateField?.textContent?.trim() || '',
         readTime: readTimeField?.textContent?.trim() || '',
         title: titleField?.textContent?.trim() || '',
