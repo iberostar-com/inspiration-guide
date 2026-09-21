@@ -6,6 +6,29 @@ const VIDEO_EXTENSIONS = /\.(mp4|webm|ogg|mov)(\?.*)?$/i;
 const ALIGNMENTS = ['left', 'center', 'right'];
 const YOUTUBE_ID_REGEX = /^[A-Za-z0-9_-]{11}$/;
 
+function cleanUrl(value = '') {
+  return `${value || ''}`
+    .trim()
+    .replace(/&amp;/g, '&');
+}
+
+function getUrlFromSrcset(value = '') {
+  return cleanUrl(value).split(',')[0]?.trim().split(/\s+/)[0] || '';
+}
+
+function getUrlFromText(value = '') {
+  return cleanUrl(value).match(/https?:\/\/[^\s<>"')]+|\/content\/dam\/[^\s<>"')]+|\/adobe\/assets\/[^\s<>"')]+/i)?.[0] || '';
+}
+
+function isUrlLike(value = '') {
+  return Boolean(getUrlFromText(value)) || /^https?:\/\//i.test(cleanUrl(value));
+}
+
+function getContentText(element) {
+  const text = element?.textContent?.trim() || '';
+  return isUrlLike(text) ? '' : text;
+}
+
 function getSourceRows(block) {
   return [...block.children]
     .filter((child) => !child.classList.contains('article-content-video-figure'));
@@ -246,13 +269,24 @@ function getPosterImage(block) {
     || null;
 }
 
+function getPosterPicture(block) {
+  const posterField = getPropElementByNames(block, ['poster', 'posterImage']);
+  return posterField?.querySelector('picture')
+    || getSourceRows(block).map((row) => row.querySelector('picture')).find(Boolean)
+    || null;
+}
+
 function getPosterSrc(block) {
   const posterField = getPropElementByNames(block, ['poster', 'posterImage']);
-  return getPosterImage(block)?.src
-    || posterField?.querySelector('a[href]')?.getAttribute('href')?.trim()
-    || posterField?.dataset?.src
-    || posterField?.dataset?.assetReference
-    || posterField?.textContent?.trim()
+  const posterImage = getPosterImage(block);
+  const posterSource = posterField?.querySelector('source[srcset]')
+    || getPosterPicture(block)?.querySelector('source[srcset]');
+  return cleanUrl(posterImage?.getAttribute('src') || posterImage?.src)
+    || getUrlFromSrcset(posterSource?.getAttribute('srcset'))
+    || cleanUrl(posterField?.querySelector('a[href]')?.getAttribute('href'))
+    || cleanUrl(posterField?.dataset?.src)
+    || cleanUrl(posterField?.dataset?.assetReference)
+    || getUrlFromText(posterField?.textContent || '')
     || '';
 }
 
@@ -260,19 +294,21 @@ function getPosterAlt(block) {
   const altField = getPropElementByNames(block, ['posterAlt', 'videoAlt']);
   const autoAltField = getPropElementByNames(block, ['poster_autoalt', 'posterAutoAlt', 'videoAutoAlt']);
   return resolveFinalAlt(
-    altField?.textContent?.trim() || '',
-    autoAltField?.textContent?.trim() || getPosterImage(block)?.alt?.trim() || '',
+    getContentText(altField),
+    getContentText(autoAltField) || getContentText({ textContent: getPosterImage(block)?.alt || '' }),
   );
 }
 
 function getCaption(block) {
   const captionField = getPropElement(block, 'caption');
-  if (captionField) return captionField.textContent?.trim() || '';
+  if (captionField) return getContentText(captionField);
 
   const textRows = getSourceRows(block).filter((row) => (
     !row.querySelector('img, picture, video, source, a[href]')
+    && !['poster', 'posterImage', 'posterAlt', 'poster_autoalt', 'posterAutoAlt', 'videoAutoAlt'].includes(row.dataset?.aueProp)
+    && !getUrlFromText(row.textContent || '')
   )).filter((row) => !ALIGNMENTS.includes(row.textContent?.trim()));
-  return textRows.at(-1)?.textContent?.trim() || '';
+  return getContentText(textRows.at(-1));
 }
 
 function getAlignment(block) {
@@ -303,6 +339,19 @@ function createPlayButton(label) {
 
   button.append(icon);
   return button;
+}
+
+function createPictureFromSource(sourcePicture, alt) {
+  if (!sourcePicture) return null;
+
+  const picture = sourcePicture.cloneNode(true);
+  const img = picture.querySelector('img');
+  if (img) {
+    img.alt = alt;
+    img.loading = 'lazy';
+    img.decoding = 'async';
+  }
+  return picture;
 }
 
 function activateVideo(figure, videoUrl) {
@@ -348,6 +397,7 @@ export default async function decorate(block) {
   const videoUrl = youtubeId ? '' : await resolveVideoUrl(videoRef);
   const posterSrc = getPosterSrc(block);
   const posterAlt = getPosterAlt(block);
+  const posterPicture = getPosterPicture(block);
   const caption = getCaption(block);
   const alignment = getAlignment(block);
 
@@ -360,21 +410,23 @@ export default async function decorate(block) {
   ALIGNMENTS.forEach((a) => block.classList.remove(`article-content-video-${a}`));
   block.classList.add(`article-content-video-${alignment}`);
 
-  if (!videoRef && !videoUrl && !posterSrc && !caption) return;
+  if (!videoRef && !videoUrl && !posterSrc && !posterPicture && !caption) return;
 
   const figure = document.createElement('figure');
   figure.className = 'article-content-video-figure';
 
-  if (videoUrl || posterSrc) {
+  if (videoUrl || posterSrc || posterPicture) {
     const poster = document.createElement('div');
     poster.className = 'article-content-video-poster';
-    if (posterSrc) {
-      poster.append(createResponsiveImage(posterSrc, posterAlt, {
-        breakpoints: [
-          { width: '768' },
-          { media: '(min-width: 900px)', width: '1200' },
-        ],
-      }));
+    if (posterPicture || posterSrc) {
+      const picture = createPictureFromSource(posterPicture, posterAlt)
+        || createResponsiveImage(posterSrc, posterAlt, {
+          breakpoints: [
+            { width: '768' },
+            { media: '(min-width: 900px)', width: '1200' },
+          ],
+        });
+      poster.append(picture);
     }
 
     if (videoUrl || videoRef) {
