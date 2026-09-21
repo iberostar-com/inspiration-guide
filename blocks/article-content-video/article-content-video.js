@@ -29,6 +29,35 @@ function getContentText(element) {
   return isUrlLike(text) ? '' : text;
 }
 
+function getReferenceUrl(element) {
+  if (!element) return '';
+
+  const source = element.querySelector?.('source[src]')?.getAttribute('src')
+    || element.querySelector?.('video[src]')?.getAttribute('src')
+    || element.querySelector?.('img[src]')?.getAttribute('src')
+    || element.querySelector?.('source[srcset]')?.getAttribute('srcset')
+    || '';
+  const sourceUrl = source.includes(' ') ? getUrlFromSrcset(source) : cleanUrl(source);
+  if (sourceUrl) return sourceUrl;
+
+  const attrs = [
+    'href',
+    'src',
+    'data-href',
+    'data-src',
+    'data-video-src',
+    'data-asset-reference',
+    'data-repo-resolve-url',
+  ];
+  const attrUrl = attrs
+    .map((attr) => cleanUrl(element.getAttribute?.(attr)))
+    .find(Boolean);
+  if (attrUrl) return attrUrl;
+
+  const link = element.querySelector?.('a[href]')?.getAttribute('href') || '';
+  return cleanUrl(link) || getUrlFromText(element.textContent || '');
+}
+
 function getSourceRows(block) {
   return [...block.children]
     .filter((child) => !child.classList.contains('article-content-video-figure'));
@@ -50,6 +79,9 @@ function getPropElementByNames(block, propNames) {
 function getRowValue(row) {
   if (!row) return '';
 
+  const referenceUrl = getReferenceUrl(row);
+  if (referenceUrl) return referenceUrl;
+
   const directSource = row.querySelector('source[src]')?.getAttribute('src')
     || row.querySelector('video[src]')?.getAttribute('src');
   if (directSource) return directSource;
@@ -64,11 +96,14 @@ function getRowValue(row) {
   const link = row.querySelector('a[href]')?.getAttribute('href');
   if (link) return link;
 
-  return row.textContent?.trim() || '';
+  return getContentText(row);
 }
 
 function getVideoUrl(block) {
   const videoField = getPropElementByNames(block, ['videoDam', 'youtubeVideoId', 'videoCf', 'video']);
+  const referenceUrl = getReferenceUrl(videoField);
+  if (referenceUrl) return referenceUrl;
+
   const directSource = videoField?.querySelector('source[src]')?.getAttribute('src')
     || videoField?.querySelector('video[src]')?.getAttribute('src');
   if (directSource) return directSource;
@@ -80,7 +115,7 @@ function getVideoUrl(block) {
     || videoField?.getAttribute('data-video-src');
   if (datasetSource) return datasetSource;
 
-  const textSource = videoField?.textContent?.trim();
+  const textSource = getContentText(videoField);
   if (textSource) {
     return textSource;
   }
@@ -115,6 +150,9 @@ function getFieldValue(block, propNames) {
   const field = getPropElementByNames(block, propNames);
   if (!field) return '';
 
+  const referenceUrl = getReferenceUrl(field);
+  if (referenceUrl) return referenceUrl;
+
   const directSource = field.querySelector('source[src]')?.getAttribute('src')
     || field.querySelector('video[src]')?.getAttribute('src');
   if (directSource) return directSource;
@@ -129,7 +167,7 @@ function getFieldValue(block, propNames) {
   const links = [...field.querySelectorAll('a[href]')].map((link) => link.getAttribute('href'));
   if (links[0]) return links[0];
 
-  return field.textContent?.trim() || '';
+  return getContentText(field);
 }
 
 function getVideoReference(block) {
@@ -278,6 +316,9 @@ function getPosterPicture(block) {
 
 function getPosterSrc(block) {
   const posterField = getPropElementByNames(block, ['poster', 'posterImage']);
+  const referenceUrl = getReferenceUrl(posterField);
+  if (referenceUrl) return referenceUrl;
+
   const posterImage = getPosterImage(block);
   const posterSource = posterField?.querySelector('source[srcset]')
     || getPosterPicture(block)?.querySelector('source[srcset]');
