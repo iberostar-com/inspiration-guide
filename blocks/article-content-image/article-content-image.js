@@ -25,6 +25,31 @@ function getElement(root, selector) {
   return root?.querySelector?.(selector) || null;
 }
 
+function cleanUrl(value = '') {
+  return `${value || ''}`
+    .trim()
+    .replace(/&amp;/g, '&');
+}
+
+function getUrlFromSrcset(value = '') {
+  return cleanUrl(value).split(',')[0]?.trim().split(/\s+/)[0] || '';
+}
+
+function getUrlFromText(value = '') {
+  return cleanUrl(value).match(/https?:\/\/[^\s<>"')]+|\/content\/dam\/[^\s<>"')]+|\/adobe\/assets\/[^\s<>"')]+/i)?.[0] || '';
+}
+
+function getImageUrlFromElement(root) {
+  const img = getElement(root, 'img');
+  const source = getElement(root, 'source[srcset]');
+  const link = getElement(root, 'a[href]');
+
+  return cleanUrl(img?.getAttribute('src') || img?.src)
+    || getUrlFromSrcset(source?.getAttribute('srcset'))
+    || cleanUrl(link?.getAttribute('href'))
+    || getUrlFromText(root?.textContent || '');
+}
+
 function getSourceImage(block) {
   return getSourceRows(block)
     .map((row) => getElement(row, 'img'))
@@ -45,12 +70,11 @@ function getTextRows(block) {
 function getImageSrc(block) {
   const propEl = getPropEl(block, 'image');
   if (propEl) {
-    return getElement(propEl, 'img')?.src
-      || getElement(propEl, 'a[href]')?.getAttribute('href')?.trim()
-      || propEl.textContent?.trim()
-      || '';
+    return getImageUrlFromElement(propEl);
   }
-  return getSourceImage(block)?.src || '';
+  return getSourceRows(block)
+    .map((row) => getImageUrlFromElement(row))
+    .find(Boolean) || '';
 }
 
 function getImageAlt(block) {
