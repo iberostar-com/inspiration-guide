@@ -32,11 +32,12 @@
           ]
         },
         {
-          "component": "aem-content",
+          "component": "reference",
           "valueType": "string",
           "name": "videoDam",
           "label": "Video DAM",
           "description": "Select an AEM DAM video reference or contribute a direct video URL.",
+          "multi": false,
           "condition": {
             "==": [
               {
