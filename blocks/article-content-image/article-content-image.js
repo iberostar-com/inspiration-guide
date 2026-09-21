@@ -39,6 +39,15 @@ function getUrlFromText(value = '') {
   return cleanUrl(value).match(/https?:\/\/[^\s<>"')]+|\/content\/dam\/[^\s<>"')]+|\/adobe\/assets\/[^\s<>"')]+/i)?.[0] || '';
 }
 
+function isUrlLike(value = '') {
+  return Boolean(getUrlFromText(value)) || /^https?:\/\//i.test(cleanUrl(value));
+}
+
+function getContentText(element) {
+  const text = element?.textContent?.trim() || '';
+  return isUrlLike(text) ? '' : text;
+}
+
 function getImageUrlFromElement(root) {
   const img = getElement(root, 'img');
   const source = getElement(root, 'source[srcset]');
@@ -56,6 +65,16 @@ function getSourceImage(block) {
     .find(Boolean) || null;
 }
 
+function getSourcePicture(block) {
+  const imageField = getPropEl(block, 'image');
+  const fromImageField = getElement(imageField, 'picture');
+  if (fromImageField) return fromImageField;
+
+  return getSourceRows(block)
+    .map((row) => getElement(row, 'picture'))
+    .find(Boolean) || null;
+}
+
 // In publish mode AEM bakes the imageAlt field value directly into <img alt="">.
 // Caption and alignment appear as plain text rows (indices 1 and 2).
 // We detect them by content: if a text row matches an alignment keyword → alignment,
@@ -63,7 +82,11 @@ function getSourceImage(block) {
 
 function getTextRows(block) {
   return getSourceRows(block).filter(
-    (row) => !getElement(row, 'picture') && !getElement(row, 'img'),
+    (row) => !getElement(row, 'picture')
+      && !getElement(row, 'img')
+      && !getElement(row, 'a[href]')
+      && !['image', 'imageAlt', 'image_autoalt', 'imageAutoAlt'].includes(row.dataset?.aueProp)
+      && !getUrlFromText(row.textContent || ''),
   );
 }
 
@@ -79,10 +102,10 @@ function getImageSrc(block) {
 
 function getImageAlt(block) {
   // In UE mode: authored via data-aue-prop
-  const authoredAlt = getPropEl(block, 'imageAlt')?.textContent?.trim() || '';
-  const automaticAlt = getPropEl(block, 'image_autoalt')?.textContent?.trim()
-    || getPropEl(block, 'imageAutoAlt')?.textContent?.trim()
-    || getSourceImage(block)?.alt?.trim()
+  const authoredAlt = getContentText(getPropEl(block, 'imageAlt'));
+  const automaticAlt = getContentText(getPropEl(block, 'image_autoalt'))
+    || getContentText(getPropEl(block, 'imageAutoAlt'))
+    || getContentText({ textContent: getSourceImage(block)?.alt || '' })
     || getMetaContent('alt_es');
   const alt = resolveFinalAlt(authoredAlt, automaticAlt);
   if (alt) return alt;
@@ -93,12 +116,12 @@ function getImageAlt(block) {
 function getCaption(block) {
   // UE mode
   const propEl = getPropEl(block, 'caption');
-  if (propEl) return propEl.textContent?.trim() || '';
+  if (propEl) return getContentText(propEl);
   // Publish mode: find a text row whose content is NOT an alignment keyword
   const captionRow = getTextRows(block).find(
     (row) => !ALIGNMENTS.includes(row.textContent?.trim()),
   );
-  return captionRow?.textContent?.trim() || getMetaContent('dc:description');
+  return getContentText(captionRow) || getMetaContent('dc:description');
 }
 
 function getAlignment(block) {
@@ -118,6 +141,19 @@ function getAlignment(block) {
   return ALIGNMENTS.includes(val) ? val : 'center';
 }
 
+function createPictureFromSource(sourcePicture, alt) {
+  if (!sourcePicture) return null;
+
+  const picture = sourcePicture.cloneNode(true);
+  const img = picture.querySelector('img');
+  if (img) {
+    img.alt = alt;
+    img.loading = 'lazy';
+    img.decoding = 'async';
+  }
+  return picture;
+}
+
 // --- Main decorator ---
 
 export default function decorate(block) {
@@ -125,6 +161,7 @@ export default function decorate(block) {
   const alt = getImageAlt(block);
   const caption = getCaption(block);
   const alignment = getAlignment(block);
+  const sourcePicture = getSourcePicture(block);
 
   // Hide source rows (preserves UE instrumentation)
   getSourceRows(block).forEach((row) => {
@@ -136,7 +173,7 @@ export default function decorate(block) {
   block.querySelector('.article-content-image-figure')?.remove();
 
   ALIGNMENTS.forEach((a) => block.classList.remove(`article-content-image-${a}`));
-  if (!src) return;
+  if (!src && !sourcePicture) return;
 
   // Apply the alignment selected in the latest UE update.
   block.classList.add(`article-content-image-${alignment}`);
@@ -144,7 +181,7 @@ export default function decorate(block) {
   const figure = document.createElement('figure');
   figure.className = 'article-content-image-figure';
 
-  const picture = createResponsiveImage(src, alt, {
+  const picture = createPictureFromSource(sourcePicture, alt) || createResponsiveImage(src, alt, {
     eager: false,
     breakpoints: [
       { width: '750' },
