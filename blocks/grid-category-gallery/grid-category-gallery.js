@@ -292,6 +292,10 @@ function buildCarouselControls(list, items) {
   list.addEventListener('scroll', update, { passive: true });
   window.addEventListener('resize', update);
 
+  const observer = new ResizeObserver(update);
+  observer.observe(list);
+  if (items[0]) observer.observe(items[0]);
+
   controls.append(prev, dots, next);
   requestAnimationFrame(update);
   return controls;
