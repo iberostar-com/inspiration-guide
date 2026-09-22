@@ -24,6 +24,14 @@ function isUrlLike(value = '') {
   return Boolean(getUrlFromText(value)) || /^https?:\/\//i.test(cleanUrl(value));
 }
 
+// Universal Editor renders an unresolved `reference` as a localized label
+// ("Recurso remoto"), which must never be used as an asset reference.
+function isAssetReference(value = '') {
+  const url = cleanUrl(value);
+  if (!url) return false;
+  return /^https?:\/\//i.test(url) || url.startsWith('/');
+}
+
 function getContentText(element) {
   const text = element?.textContent?.trim() || '';
   return isUrlLike(text) ? '' : text;
@@ -170,20 +178,57 @@ function getFieldValue(block, propNames) {
   return getContentText(field);
 }
 
+function getYoutubeId(input) {
+  const value = (input || '').trim();
+  if (!value) return '';
+  if (YOUTUBE_ID_REGEX.test(value)) return value;
+
+  try {
+    const parsed = new URL(value);
+    const host = parsed.hostname.toLowerCase();
+
+    if (host.endsWith('youtu.be')) {
+      const candidate = parsed.pathname.split('/').filter(Boolean)[0] || '';
+      return YOUTUBE_ID_REGEX.test(candidate) ? candidate : '';
+    }
+
+    if (host.includes('youtube.com')) {
+      const queryId = parsed.searchParams.get('v') || '';
+      if (YOUTUBE_ID_REGEX.test(queryId)) return queryId;
+
+      const pathParts = parsed.pathname.split('/').filter(Boolean);
+      const embedIndex = pathParts.findIndex((part) => ['embed', 'shorts', 'live'].includes(part));
+      if (embedIndex >= 0) {
+        const candidate = pathParts[embedIndex + 1] || '';
+        return YOUTUBE_ID_REGEX.test(candidate) ? candidate : '';
+      }
+    }
+  } catch (e) {
+    // Non-URL values may still be valid IDs.
+  }
+
+  const match = value.match(/(?:v=|youtu\.be\/|youtube\.com\/(?:embed|shorts|live)\/)([A-Za-z0-9_-]{11})/);
+  return match?.[1] || '';
+}
+
 function getVideoReference(block) {
   const videoType = getVideoType(block);
   const fromProps = videoType === 'youtube'
     ? getFieldValue(block, ['youtubeVideoId', 'videoCf', 'video'])
     : getFieldValue(block, ['videoDam', 'videoCf', 'video']);
 
-  if (fromProps) return fromProps;
+  const isValidRef = (value) => (videoType === 'youtube'
+    ? Boolean(getYoutubeId(value))
+    : isAssetReference(value));
+
+  if (isValidRef(fromProps)) return fromProps;
 
   const sourceRows = getSourceRows(block);
-  if (videoType === 'youtube') {
-    return getRowValue(sourceRows[2]) || getRowValue(sourceRows[1]);
-  }
+  const positional = videoType === 'youtube'
+    ? [getRowValue(sourceRows[2]), getRowValue(sourceRows[1])]
+    : [getRowValue(sourceRows[1]), getRowValue(sourceRows[2])];
 
-  return getRowValue(sourceRows[1]) || getRowValue(sourceRows[2]);
+  return positional.find(isValidRef) || '';
 }
 
 function isLikelyVideoUrl(url) {
@@ -257,39 +302,6 @@ async function resolveVideoUrl(videoRef) {
   return resolutions.find(Boolean) || '';
 }
 
-function getYoutubeId(input) {
-  const value = (input || '').trim();
-  if (!value) return '';
-  if (YOUTUBE_ID_REGEX.test(value)) return value;
-
-  try {
-    const parsed = new URL(value);
-    const host = parsed.hostname.toLowerCase();
-
-    if (host.endsWith('youtu.be')) {
-      const candidate = parsed.pathname.split('/').filter(Boolean)[0] || '';
-      return YOUTUBE_ID_REGEX.test(candidate) ? candidate : '';
-    }
-
-    if (host.includes('youtube.com')) {
-      const queryId = parsed.searchParams.get('v') || '';
-      if (YOUTUBE_ID_REGEX.test(queryId)) return queryId;
-
-      const pathParts = parsed.pathname.split('/').filter(Boolean);
-      const embedIndex = pathParts.findIndex((part) => ['embed', 'shorts', 'live'].includes(part));
-      if (embedIndex >= 0) {
-        const candidate = pathParts[embedIndex + 1] || '';
-        return YOUTUBE_ID_REGEX.test(candidate) ? candidate : '';
-      }
-    }
-  } catch (e) {
-    // Non-URL values may still be valid IDs.
-  }
-
-  const match = value.match(/(?:v=|youtu\.be\/|youtube\.com\/(?:embed|shorts|live)\/)([A-Za-z0-9_-]{11})/);
-  return match?.[1] || '';
-}
-
 function createYoutubeEmbedUrl(videoId, autoplay = false) {
   const params = new URLSearchParams({
     rel: '0',
@@ -316,19 +328,22 @@ function getPosterPicture(block) {
 
 function getPosterSrc(block) {
   const posterField = getPropElementByNames(block, ['poster', 'posterImage']);
-  const referenceUrl = getReferenceUrl(posterField);
-  if (referenceUrl) return referenceUrl;
+  const roots = posterField ? [posterField] : getSourceRows(block);
 
-  const posterImage = getPosterImage(block);
-  const posterSource = posterField?.querySelector('source[srcset]')
-    || getPosterPicture(block)?.querySelector('source[srcset]');
-  return cleanUrl(posterImage?.getAttribute('src') || posterImage?.src)
-    || getUrlFromSrcset(posterSource?.getAttribute('srcset'))
-    || cleanUrl(posterField?.querySelector('a[href]')?.getAttribute('href'))
-    || cleanUrl(posterField?.dataset?.src)
-    || cleanUrl(posterField?.dataset?.assetReference)
-    || getUrlFromText(posterField?.textContent || '')
-    || '';
+  return roots
+    .map((root) => {
+      const img = root.querySelector?.('img');
+      const source = root.querySelector?.('source[srcset]');
+      const link = root.querySelector?.('a[href]');
+
+      return cleanUrl(img?.getAttribute('src') || img?.src)
+        || getUrlFromSrcset(source?.getAttribute('srcset'))
+        || cleanUrl(link?.getAttribute('href'))
+        || cleanUrl(root.dataset?.src)
+        || cleanUrl(root.dataset?.assetReference)
+        || getUrlFromText(root.textContent || '');
+    })
+    .find(Boolean) || '';
 }
 
 function getPosterAlt(block) {
@@ -346,7 +361,10 @@ function getCaption(block) {
 
   const textRows = getSourceRows(block).filter((row) => (
     !row.querySelector('img, picture, video, source, a[href]')
-    && !['poster', 'posterImage', 'posterAlt', 'poster_autoalt', 'posterAutoAlt', 'videoAutoAlt'].includes(row.dataset?.aueProp)
+    && ![
+      'videoType', 'videoDam', 'youtubeVideoId', 'alignment',
+      'poster', 'posterImage', 'posterAlt', 'poster_autoalt', 'posterAutoAlt', 'videoAutoAlt',
+    ].includes(row.dataset?.aueProp)
     && !getUrlFromText(row.textContent || '')
   )).filter((row) => !ALIGNMENTS.includes(row.textContent?.trim()));
   return getContentText(textRows.at(-1));
@@ -433,9 +451,11 @@ function activateYoutube(figure, youtubeId) {
 }
 
 export default async function decorate(block) {
-  const videoRef = getVideoReference(block) || getVideoUrl(block);
-  const youtubeId = getYoutubeId(videoRef);
-  const videoUrl = youtubeId ? '' : await resolveVideoUrl(videoRef);
+  const videoCandidate = getVideoReference(block) || getVideoUrl(block);
+  const youtubeId = getYoutubeId(videoCandidate);
+  const videoRef = youtubeId || isAssetReference(videoCandidate) ? videoCandidate : '';
+  // Resolution stays lazy (on play) so the poster never waits on a network round-trip.
+  const videoUrl = !youtubeId && isLikelyVideoUrl(videoRef) ? videoRef : '';
   const posterSrc = getPosterSrc(block);
   const posterAlt = getPosterAlt(block);
   const posterPicture = getPosterPicture(block);
@@ -451,12 +471,12 @@ export default async function decorate(block) {
   ALIGNMENTS.forEach((a) => block.classList.remove(`article-content-video-${a}`));
   block.classList.add(`article-content-video-${alignment}`);
 
-  if (!videoRef && !videoUrl && !posterSrc && !posterPicture && !caption) return;
+  if (!videoRef && !posterSrc && !posterPicture && !caption) return;
 
   const figure = document.createElement('figure');
   figure.className = 'article-content-video-figure';
 
-  if (videoUrl || posterSrc || posterPicture) {
+  if (videoRef || posterSrc || posterPicture) {
     const poster = document.createElement('div');
     poster.className = 'article-content-video-poster';
     if (posterPicture || posterSrc) {
@@ -470,7 +490,7 @@ export default async function decorate(block) {
       poster.append(picture);
     }
 
-    if (videoUrl || videoRef) {
+    if (videoRef) {
       const playLabel = await getTranslation('playVideo', 'Play video');
       const playButton = createPlayButton(playLabel);
       playButton.addEventListener('click', async () => {
