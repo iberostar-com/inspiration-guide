@@ -136,10 +136,17 @@ main .recommended-hotels-grid .recommended-hotels-next {
   cursor: pointer;
 }
 
+main .recommended-hotels-grid .recommended-hotels-prev span,
+main .recommended-hotels-grid .recommended-hotels-next span {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
 main .recommended-hotels-grid .recommended-hotels-prev span::before,
 main .recommended-hotels-grid .recommended-hotels-next span::before {
   font-family: ibh-icons, sans-serif;
-  font-size: 20px;
+  font-size: 16px;
   font-weight: 400;
   line-height: 1;
 }

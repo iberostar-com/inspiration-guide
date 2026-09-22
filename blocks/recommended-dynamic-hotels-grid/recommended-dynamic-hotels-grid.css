@@ -135,10 +135,17 @@ main .recommended-dynamic-hotels-grid .recommended-dynamic-hotels-next {
   cursor: pointer;
 }
 
+main .recommended-dynamic-hotels-grid .recommended-dynamic-hotels-prev span,
+main .recommended-dynamic-hotels-grid .recommended-dynamic-hotels-next span {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
 main .recommended-dynamic-hotels-grid .recommended-dynamic-hotels-prev span::before,
 main .recommended-dynamic-hotels-grid .recommended-dynamic-hotels-next span::before {
   font-family: ibh-icons, sans-serif;
-  font-size: 20px;
+  font-size: 16px;
   font-weight: 400;
   line-height: 1;
 }
