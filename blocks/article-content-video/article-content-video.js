@@ -3,6 +3,7 @@ import { getTranslation } from '../../scripts/iberostar/i18n.js';
 import { resolveFinalAlt } from '../../scripts/iberostar/image-alt.js';
 
 const VIDEO_EXTENSIONS = /\.(mp4|webm|ogg|mov)(\?.*)?$/i;
+const IMAGE_EXTENSIONS = /\.(avif|gif|jpe?g|png|svg|webp)(\?.*)?$/i;
 const ALIGNMENTS = ['left', 'center', 'right'];
 const YOUTUBE_ID_REGEX = /^[A-Za-z0-9_-]{11}$/;
 
@@ -237,6 +238,25 @@ function isLikelyVideoUrl(url) {
   return /\/content\/dam\//.test(url) && !/\.(json|html?|md|txt)(\?.*)?$/i.test(url);
 }
 
+// Dynamic Media exposes videos as a player page (`/play`) meant to be iframed,
+// not as a directly playable media file.
+function isDynamicMediaPlayerUrl(url = '') {
+  const value = cleanUrl(url);
+  if (!/^https?:\/\//i.test(value)) return false;
+
+  try {
+    return /\/adobe\/assets\/.+\/play$/.test(new URL(value).pathname);
+  } catch (e) {
+    return false;
+  }
+}
+
+function isVideoLikeUrl(url = '') {
+  return isLikelyVideoUrl(url)
+    || isDynamicMediaPlayerUrl(url)
+    || Boolean(getYoutubeId(url));
+}
+
 function parseJsonForVideo(value) {
   if (typeof value === 'string') {
     if (VIDEO_EXTENSIONS.test(value)) return value;
@@ -326,24 +346,31 @@ function getPosterPicture(block) {
     || null;
 }
 
-function getPosterSrc(block) {
+function getAssetUrlFromRoot(root) {
+  const img = root?.querySelector?.('img');
+  const source = root?.querySelector?.('source[srcset]');
+  const link = root?.querySelector?.('a[href]');
+
+  return cleanUrl(img?.getAttribute('src') || img?.src)
+    || getUrlFromSrcset(source?.getAttribute('srcset'))
+    || cleanUrl(link?.getAttribute('href'))
+    || cleanUrl(root?.dataset?.src)
+    || cleanUrl(root?.dataset?.assetReference)
+    || getUrlFromText(root?.textContent || '');
+}
+
+function getPosterSrc(block, excludeUrl = '') {
   const posterField = getPropElementByNames(block, ['poster', 'posterImage']);
-  const roots = posterField ? [posterField] : getSourceRows(block);
+  if (posterField) return getAssetUrlFromRoot(posterField);
 
-  return roots
-    .map((root) => {
-      const img = root.querySelector?.('img');
-      const source = root.querySelector?.('source[srcset]');
-      const link = root.querySelector?.('a[href]');
+  // Without `data-aue-prop` every row looks alike, so discard the video rows
+  // and prefer a URL that actually looks like an image.
+  const candidates = getSourceRows(block)
+    .map((row) => getAssetUrlFromRoot(row))
+    .filter(Boolean)
+    .filter((url) => url !== excludeUrl && !isVideoLikeUrl(url));
 
-      return cleanUrl(img?.getAttribute('src') || img?.src)
-        || getUrlFromSrcset(source?.getAttribute('srcset'))
-        || cleanUrl(link?.getAttribute('href'))
-        || cleanUrl(root.dataset?.src)
-        || cleanUrl(root.dataset?.assetReference)
-        || getUrlFromText(root.textContent || '');
-    })
-    .find(Boolean) || '';
+  return candidates.find((url) => IMAGE_EXTENSIONS.test(url)) || candidates[0] || '';
 }
 
 function getPosterAlt(block) {
@@ -436,14 +463,14 @@ function activateVideo(figure, videoUrl) {
   });
 }
 
-function activateYoutube(figure, youtubeId) {
+function activateEmbed(figure, src, title) {
   const poster = figure.querySelector('.article-content-video-poster');
-  if (!poster || !youtubeId) return;
+  if (!poster || !src) return;
 
   const iframe = document.createElement('iframe');
-  iframe.src = createYoutubeEmbedUrl(youtubeId, true);
+  iframe.src = src;
   iframe.className = 'article-content-video-embed';
-  iframe.title = 'YouTube video player';
+  iframe.title = title;
   iframe.loading = 'lazy';
   iframe.allow = 'accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share';
   iframe.allowFullscreen = true;
@@ -456,7 +483,9 @@ export default async function decorate(block) {
   const videoRef = youtubeId || isAssetReference(videoCandidate) ? videoCandidate : '';
   // Resolution stays lazy (on play) so the poster never waits on a network round-trip.
   const videoUrl = !youtubeId && isLikelyVideoUrl(videoRef) ? videoRef : '';
-  const posterSrc = getPosterSrc(block);
+  // Dynamic Media serves videos as an embeddable player page.
+  const embedUrl = isDynamicMediaPlayerUrl(videoRef) ? videoRef : '';
+  const posterSrc = getPosterSrc(block, videoRef);
   const posterAlt = getPosterAlt(block);
   const posterPicture = getPosterPicture(block);
   const caption = getCaption(block);
@@ -495,7 +524,12 @@ export default async function decorate(block) {
       const playButton = createPlayButton(playLabel);
       playButton.addEventListener('click', async () => {
         if (youtubeId) {
-          activateYoutube(figure, youtubeId);
+          activateEmbed(figure, createYoutubeEmbedUrl(youtubeId, true), 'YouTube video player');
+          return;
+        }
+
+        if (embedUrl) {
+          activateEmbed(figure, embedUrl, caption || 'Video player');
           return;
         }
 
