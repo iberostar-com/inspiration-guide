@@ -1,3 +1,4 @@
+import { loadCSS, loadScript } from '../../scripts/aem.js';
 import { createResponsiveImage, resolveAssetUrl } from '../../scripts/iberostar/media.js';
 import { getTranslation } from '../../scripts/iberostar/i18n.js';
 import { resolveFinalAlt } from '../../scripts/iberostar/image-alt.js';
@@ -251,6 +252,36 @@ function isDynamicMediaPlayerUrl(url = '') {
   }
 }
 
+function getDynamicMediaBaseUrl(playerUrl = '') {
+  const value = cleanUrl(playerUrl);
+  if (!isDynamicMediaPlayerUrl(value)) return '';
+
+  try {
+    const url = new URL(value);
+    url.pathname = url.pathname.replace(/\/play$/, '');
+    return url.toString();
+  } catch (e) {
+    return '';
+  }
+}
+
+async function loadDynamicMediaPlayer(playerUrl = '') {
+  const value = cleanUrl(playerUrl);
+  if (!isDynamicMediaPlayerUrl(value)) return null;
+
+  try {
+    const { origin } = new URL(value);
+    await Promise.all([
+      loadCSS(`${origin}/adobe/assets/urn:aaid:aem:dmviewers-html5-css/as/core-player.css`),
+      loadScript(`${origin}/adobe/assets/urn:aaid:aem:dmviewers-html5/as/VideoPlayer.js`),
+    ]);
+    await loadScript(`${origin}/adobe/assets/urn:aaid:aem:dmviewers-html5/as/CorePlayer.js`);
+    return window.dmViewers || null;
+  } catch (e) {
+    return null;
+  }
+}
+
 function isVideoLikeUrl(url = '') {
   return isLikelyVideoUrl(url)
     || isDynamicMediaPlayerUrl(url)
@@ -382,6 +413,26 @@ function getPosterAlt(block) {
   );
 }
 
+function isBooleanText(value = '') {
+  return ['true', 'false', 'yes', 'no', '1', '0'].includes(`${value}`.trim().toLowerCase());
+}
+
+function getAutoplay(block) {
+  const fieldValue = getFieldValue(block, ['autoplay']);
+  if (isBooleanText(fieldValue)) {
+    return ['true', 'yes', '1'].includes(fieldValue.trim().toLowerCase());
+  }
+
+  const rowValue = getSourceRows(block)
+    .map((row) => getRowValue(row))
+    .find((value) => isBooleanText(value));
+  if (isBooleanText(rowValue)) {
+    return ['true', 'yes', '1'].includes(rowValue.trim().toLowerCase());
+  }
+
+  return true;
+}
+
 function getCaption(block) {
   const captionField = getPropElement(block, 'caption');
   if (captionField) return getContentText(captionField);
@@ -389,10 +440,11 @@ function getCaption(block) {
   const textRows = getSourceRows(block).filter((row) => (
     !row.querySelector('img, picture, video, source, a[href]')
     && ![
-      'videoType', 'videoDam', 'youtubeVideoId', 'alignment',
+      'videoType', 'videoDam', 'youtubeVideoId', 'alignment', 'autoplay',
       'poster', 'posterImage', 'posterAlt', 'poster_autoalt', 'posterAutoAlt', 'videoAutoAlt',
     ].includes(row.dataset?.aueProp)
     && !getUrlFromText(row.textContent || '')
+    && !isBooleanText(row.textContent)
   )).filter((row) => !ALIGNMENTS.includes(row.textContent?.trim()));
   return getContentText(textRows.at(-1));
 }
@@ -440,14 +492,14 @@ function createPictureFromSource(sourcePicture, alt) {
   return picture;
 }
 
-function activateVideo(figure, videoUrl) {
+function activateVideo(figure, videoUrl, autoplay = true) {
   const poster = figure.querySelector('.article-content-video-poster');
   if (!poster) return;
 
   const video = document.createElement('video');
   video.src = videoUrl;
   video.controls = true;
-  video.autoplay = true;
+  video.autoplay = autoplay;
   video.playsInline = true;
   video.muted = false;
   video.className = 'article-content-video-player';
@@ -458,12 +510,14 @@ function activateVideo(figure, videoUrl) {
   }, { once: true });
 
   poster.replaceWith(video);
-  video.play().catch(() => {
-    // Native controls remain available when the browser blocks autoplay.
-  });
+  if (autoplay) {
+    video.play().catch(() => {
+      // Native controls remain available when the browser blocks autoplay.
+    });
+  }
 }
 
-function activateEmbed(figure, src, title) {
+function activateEmbed(figure, src, title, autoplay = false) {
   const poster = figure.querySelector('.article-content-video-poster');
   if (!poster || !src) return;
 
@@ -473,8 +527,50 @@ function activateEmbed(figure, src, title) {
   iframe.title = title;
   iframe.loading = 'lazy';
   iframe.allow = 'accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share';
+  if (autoplay && !/[?&]autoplay=/.test(src)) {
+    iframe.src = `${src}${src.includes('?') ? '&' : '?'}autoplay=1`;
+  }
   iframe.allowFullscreen = true;
   poster.replaceWith(iframe);
+}
+
+async function activateDynamicMediaPlayer(figure, playerUrl, title, autoplay = true) {
+  const poster = figure.querySelector('.article-content-video-poster');
+  const baseUrl = getDynamicMediaBaseUrl(playerUrl);
+  if (!poster || !baseUrl) return;
+
+  const container = document.createElement('div');
+  const playerId = `article-content-video-player-${Date.now()}-${Math.random().toString(36).slice(2)}`;
+  container.id = playerId;
+  container.className = 'article-content-video-embed';
+  container.setAttribute('role', 'region');
+  container.setAttribute('aria-label', title);
+  poster.replaceWith(container);
+
+  const dmViewers = await loadDynamicMediaPlayer(playerUrl);
+  if (!dmViewers?.VideoPlayer || !dmViewers?.CorePlayer) {
+    container.replaceWith(poster);
+    activateEmbed(figure, playerUrl, title, autoplay);
+    return;
+  }
+
+  try {
+    const player = await dmViewers.VideoPlayer.init(playerId, {
+      sources: {
+        DASH: `${baseUrl}/manifest.mpd`,
+        HLS: `${baseUrl}/manifest.m3u8`,
+      },
+      posterImage: `${baseUrl}/as/thumbnail.jpeg?width=${window.innerWidth}&height=${window.innerHeight}`,
+      solution: 'polaris',
+      autoplay,
+      controls: true,
+      isLetterBoxed: false,
+    });
+    player.setupPlayer(dmViewers.CorePlayer);
+  } catch (e) {
+    container.replaceWith(poster);
+    activateEmbed(figure, playerUrl, title, autoplay);
+  }
 }
 
 export default async function decorate(block) {
@@ -490,6 +586,7 @@ export default async function decorate(block) {
   const posterPicture = getPosterPicture(block);
   const caption = getCaption(block);
   const alignment = getAlignment(block);
+  const autoplay = getAutoplay(block);
 
   getSourceRows(block).forEach((row) => {
     row.classList.add('article-content-video-source');
@@ -524,18 +621,18 @@ export default async function decorate(block) {
       const playButton = createPlayButton(playLabel);
       playButton.addEventListener('click', async () => {
         if (youtubeId) {
-          activateEmbed(figure, createYoutubeEmbedUrl(youtubeId, true), 'YouTube video player');
+          activateEmbed(figure, createYoutubeEmbedUrl(youtubeId, autoplay), 'YouTube video player');
           return;
         }
 
         if (embedUrl) {
-          activateEmbed(figure, embedUrl, caption || 'Video player');
+          await activateDynamicMediaPlayer(figure, embedUrl, caption || 'Video player', autoplay);
           return;
         }
 
         const resolvedUrl = videoUrl || await resolveVideoUrl(videoRef);
         if (!resolvedUrl) return;
-        activateVideo(figure, resolveAssetUrl(resolvedUrl));
+        activateVideo(figure, resolveAssetUrl(resolvedUrl), autoplay);
       });
       poster.append(playButton);
     }

@@ -86,6 +86,13 @@
           "readOnly": true
         },
         {
+          "component": "boolean",
+          "valueType": "boolean",
+          "name": "autoplay",
+          "label": "Autoplay after play button click",
+          "value": true
+        },
+        {
           "component": "text",
           "valueType": "string",
           "name": "caption",
