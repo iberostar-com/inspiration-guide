@@ -44,10 +44,12 @@ export default function decorate(block) {
 
   const attribution = getAttribution(block);
   if (attribution) {
-    const footer = document.createElement('footer');
-    footer.className = 'article-content-quote-attribution';
-    footer.textContent = attribution;
-    blockquote.append(footer);
+    // Se usa  (no <footer>) para evitar que doc.querySelector('footer')
+    // en scripts.js confunda este elemento con el footer global del layout.
+    const attributionEl = document.createElement('cite');
+    attributionEl.className = 'article-content-quote-attribution';
+    attributionEl.textContent = attribution;
+    blockquote.append(attributionEl);
   }
 
   block.append(blockquote);
