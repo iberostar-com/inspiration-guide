@@ -230,6 +230,12 @@ main .grid-category-gallery .grid-category-gallery-next {
   cursor: pointer;
 }
 
+main .grid-category-gallery .grid-category-gallery-prev:disabled,
+main .grid-category-gallery .grid-category-gallery-next:disabled {
+  color: #dedede;
+  cursor: default;
+}
+
 main .grid-category-gallery .grid-category-gallery-prev:focus-visible,
 main .grid-category-gallery .grid-category-gallery-next:focus-visible {
   outline: 2px solid #1b2828;

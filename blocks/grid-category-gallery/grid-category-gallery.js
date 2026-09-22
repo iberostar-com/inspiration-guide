@@ -278,6 +278,9 @@ function buildCarouselControls(list, items) {
 
   const update = () => {
     const index = currentIndex();
+    const maxScroll = list.scrollWidth - list.clientWidth;
+    prev.disabled = list.scrollLeft <= 1;
+    next.disabled = list.scrollLeft >= maxScroll - 1;
     dotEls.forEach((dot, i) => dot.classList.toggle('is-active', i === index));
   };
 
