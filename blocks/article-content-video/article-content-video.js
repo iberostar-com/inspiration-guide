@@ -7,6 +7,15 @@ const VIDEO_EXTENSIONS = /\.(mp4|webm|ogg|mov)(\?.*)?$/i;
 const IMAGE_EXTENSIONS = /\.(avif|gif|jpe?g|png|svg|webp)(\?.*)?$/i;
 const ALIGNMENTS = ['left', 'center', 'right'];
 const YOUTUBE_ID_REGEX = /^[A-Za-z0-9_-]{11}$/;
+let playerIdCounter = 0;
+
+function createPlayerId() {
+  playerIdCounter += 1;
+  const cryptoValues = new Uint32Array(1);
+  window.crypto?.getRandomValues?.(cryptoValues);
+  const suffix = cryptoValues[0] ? cryptoValues[0].toString(36) : `${Date.now()}-${playerIdCounter}`;
+  return `article-content-video-player-${suffix}`;
+}
 
 function cleanUrl(value = '') {
   return `${value || ''}`
@@ -540,7 +549,7 @@ async function activateDynamicMediaPlayer(figure, playerUrl, title, autoplay = t
   if (!poster || !baseUrl) return;
 
   const container = document.createElement('div');
-  const playerId = `article-content-video-player-${Date.now()}-${Math.random().toString(36).slice(2)}`;
+  const playerId = createPlayerId();
   container.id = playerId;
   container.className = 'article-content-video-embed';
   container.setAttribute('role', 'region');
