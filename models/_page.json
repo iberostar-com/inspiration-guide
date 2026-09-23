@@ -156,6 +156,22 @@
         {
           "component": "text",
           "valueType": "string",
+          "name": "article-image-auto-alt",
+          "label": "Article Image Automatic Alt",
+          "hidden": true,
+          "readOnly": true,
+          "condition": {
+            "==": [
+              {
+                "var": "page-type"
+              },
+              "article"
+            ]
+          }
+        },
+        {
+          "component": "text",
+          "valueType": "string",
           "name": "article-author-name",
           "label": "Article Author Name",
           "condition": {

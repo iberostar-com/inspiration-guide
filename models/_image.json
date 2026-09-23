@@ -27,6 +27,13 @@
           "component": "text",
           "name": "imageAlt",
           "label": "Alt Text"
+        },
+        {
+          "component": "text",
+          "name": "image_autoalt",
+          "label": "Automatic Alt Text",
+          "hidden": true,
+          "readOnly": true
         }
       ]
     }

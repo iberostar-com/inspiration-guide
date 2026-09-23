@@ -1,4 +1,5 @@
 import { createResponsiveImage } from '../../scripts/iberostar/media.js';
+import { resolveFinalAlt } from '../../scripts/iberostar/image-alt.js';
 import { moveInstrumentation } from '../../scripts/scripts.js';
 
 const MAX_CARDS = 4;
@@ -145,6 +146,7 @@ function getCardData(row) {
   const cells = getCells(row);
   const imageField = getPropElement(row, 'image') || cells[0];
   const imageAltField = getPropElement(row, 'imageAlt');
+  const imageAutoAltField = getPropElement(row, 'image_autoalt') || getPropElement(row, 'imageAutoAlt');
   const pretitleField = getPropElement(row, 'pretitle');
   const titleField = getPropElement(row, 'title');
   const legacySubtitleField = getPropElement(row, 'subtitle');
@@ -165,7 +167,10 @@ function getCardData(row) {
   const linkField = getPropElement(row, 'link') || cells[3 + positionalOffset];
 
   return {
-    imageAlt: imageAltField?.textContent?.trim() || image.alt || title,
+    imageAlt: resolveFinalAlt(
+      imageAltField?.textContent?.trim() || '',
+      imageAutoAltField?.textContent?.trim() || image.alt || title,
+    ),
     imageSrc: image.src,
     link: getCardLink(linkField),
     pretitle,

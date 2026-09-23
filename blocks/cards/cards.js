@@ -1,18 +1,30 @@
-import { applyImagePreset, createResponsiveImage } from '../../scripts/iberostar/media.js';
+import { createResponsiveImage } from '../../scripts/iberostar/media.js';
+import { resolveFinalAlt } from '../../scripts/iberostar/image-alt.js';
 import { moveInstrumentation } from '../../scripts/scripts.js';
 import { getArticles } from '../../scripts/inspiration-data.js';
+
+function getPropElement(root, propName) {
+  const selector = `[data-aue-prop="${propName}"]`;
+  if (root?.matches?.(selector)) return root;
+  return root?.querySelector?.(selector) || null;
+}
+
+function getPropText(root, propName) {
+  return getPropElement(root, propName)?.textContent?.trim() || '';
+}
 
 /**
  * Optimize images
  */
-function optimizeImage(container, preset) {
-  container.querySelectorAll('picture').forEach((picture) => {
-    const source = picture.querySelector('img');
-    const optimized = applyImagePreset(picture, { preset });
-    if (optimized === picture) return;
-
-    const image = optimized.querySelector('img');
-    if (source && image) moveInstrumentation(source, image);
+function optimizeImage(container, fallbackAlt = '') {
+  container.querySelectorAll('picture > img').forEach((img) => {
+    const optimizedImage = createResponsiveImage(
+      img.src,
+      resolveFinalAlt(img.alt, fallbackAlt),
+      { preset: 'cards-highlight' },
+    );
+    moveInstrumentation(img, optimizedImage.querySelector?.('img') || optimizedImage);
+    img.closest('picture').replaceWith(optimizedImage);
   });
 }
 
@@ -33,6 +45,7 @@ function decorateHighlight(block) {
     const card = document.createElement('div');
     card.className = 'cards-card';
     moveInstrumentation(row, li);
+    const automaticAlt = getPropText(row, 'image_autoalt');
 
     // Process children (image + text + optional link)
     const children = [...row.children];
@@ -41,6 +54,8 @@ function decorateHighlight(block) {
     let linkDiv = null;
 
     children.forEach((div, idx) => {
+      const prop = div.getAttribute('data-aue-prop') || div.querySelector('[data-aue-prop]')?.getAttribute('data-aue-prop');
+      if (['imageAlt', 'image_autoalt'].includes(prop)) return;
       const picture = div.querySelector('picture');
       if (picture && !imageDiv) {
         imageDiv = div;
@@ -55,7 +70,7 @@ function decorateHighlight(block) {
 
     if (imageDiv) {
       card.appendChild(imageDiv);
-      optimizeImage(imageDiv, 'cards-highlight');
+      optimizeImage(imageDiv, automaticAlt);
     }
     if (textDiv) {
       card.appendChild(textDiv);
@@ -132,6 +147,7 @@ function decorateOverlay(block) {
     const card = document.createElement('div');
     card.className = 'cards-card overlay';
     moveInstrumentation(row, li);
+    const automaticAlt = getPropText(row, 'image_autoalt');
 
     // Extract image and text
     const picture = row.querySelector('picture');
@@ -142,7 +158,7 @@ function decorateOverlay(block) {
       picWrapper.className = 'cards-card-image';
       picWrapper.appendChild(picture.cloneNode(true));
       card.appendChild(picWrapper);
-      optimizeImage(picWrapper, 'cards-overlay');
+      optimizeImage(picWrapper, automaticAlt);
 
       // Overlay text
       if (textContent) {
@@ -172,6 +188,7 @@ function decorateBanner(block) {
     const card = document.createElement('div');
     card.className = 'cards-card banner';
     moveInstrumentation(row, li);
+    const automaticAlt = getPropText(row, 'image_autoalt');
 
     const imageDiv = document.createElement('div');
     imageDiv.className = 'cards-card-image';
@@ -184,7 +201,7 @@ function decorateBanner(block) {
       const picture = div.querySelector('picture');
       if (picture) {
         imageDiv.appendChild(picture.cloneNode(true));
-        optimizeImage(imageDiv, 'cards-banner');
+        optimizeImage(imageDiv, automaticAlt);
       } else if (div.textContent?.trim()) {
         bodyDiv.innerHTML += div.innerHTML;
       }

@@ -1,9 +1,5 @@
 import { createResponsiveImage } from '../../scripts/iberostar/media.js';
-
-const VARIANT_IMAGE_PRESETS = {
-  horizontal: 'hotel-mini-card-horizontal',
-  vertical: 'hotel-mini-card-vertical',
-};
+import { resolveFinalAlt } from '../../scripts/iberostar/image-alt.js';
 
 const FIELD_POSITIONS = {
   tag_layout: [0, 0],
@@ -23,6 +19,7 @@ const FIELD_ALIASES = {
   ctaText: ['cta_linkText', 'card_linkText'],
   image: ['media_image', 'card_image'],
   imageAlt: ['media_imageAlt', 'card_imageAlt'],
+  imageAutoAlt: ['media_imageautoalt', 'media_imageAutoAlt', 'card_imageautoalt', 'card_imageAutoAlt'],
   hotelName: ['hotel_hotelName', 'card_hotelName'],
   link: ['cta_link', 'card_link'],
   linkTarget: ['cta_linkTarget', 'card_linkTarget'],
@@ -134,8 +131,12 @@ function getImage(block) {
 
 function getImageAlt(block) {
   const field = getField(block, 'image');
-  return getImageElement(field)?.alt?.trim()
-    || getText(block, 'imageAlt', 'data-image-alt', '');
+  return resolveFinalAlt(
+    getText(block, 'imageAlt', 'data-image-alt', ''),
+    getText(block, 'imageAutoAlt', 'data-image-auto-alt', '')
+      || getImageElement(field)?.alt?.trim()
+      || '',
+  );
 }
 
 function normalizeVariant(value) {
@@ -238,11 +239,7 @@ export function readHotelData(block, variant = 'horizontal') {
   };
 }
 
-function getImagePresetName(variant, preset) {
-  return preset || VARIANT_IMAGE_PRESETS[variant] || VARIANT_IMAGE_PRESETS.horizontal;
-}
-
-export function createHotelMiniCard(hotel, variant = 'horizontal', options = {}) {
+export function createHotelMiniCard(hotel, variant = 'horizontal') {
   const article = document.createElement('article');
   article.className = `hotel-mini-card hotel-mini-card-${variant}`;
 
@@ -250,7 +247,7 @@ export function createHotelMiniCard(hotel, variant = 'horizontal', options = {})
     const media = document.createElement('div');
     media.className = 'hotel-mini-card-media';
     media.append(createResponsiveImage(hotel.image, hotel.imageAlt || hotel.name, {
-      preset: getImagePresetName(variant, options.preset),
+      preset: variant === 'vertical' ? 'hotel-mini-card-vertical' : 'hotel-mini-card-horizontal',
     }));
     article.append(media);
   }

@@ -44,6 +44,15 @@
         {
           "component": "text",
           "valueType": "string",
+          "name": "logo_autoalt",
+          "label": "Automatic Logo Alt",
+          "value": "",
+          "hidden": true,
+          "readOnly": true
+        },
+        {
+          "component": "text",
+          "valueType": "string",
           "name": "link",
           "label": "Link URL",
           "value": "/inspiration-guide/home"

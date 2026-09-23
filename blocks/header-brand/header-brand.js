@@ -1,3 +1,5 @@
+import { resolveFinalAlt } from '../../scripts/iberostar/image-alt.js';
+
 const FIELD_INDEX = {
   logo: 0,
   logoDesktop: 1,
@@ -123,7 +125,12 @@ export default function decorate(block) {
 
   const linkUrl = getLinkUrl(block, '/');
   const label = getText(block, 'label', 'Inspiration Guide');
-  const logoAlt = block.querySelector('[data-aue-prop="logoAlt"]')?.textContent?.trim() || label;
+  const logoAlt = resolveFinalAlt(
+    block.querySelector('[data-aue-prop="logoAlt"]')?.textContent?.trim() || label,
+    block.querySelector('[data-aue-prop="logo_autoalt"]')?.textContent?.trim()
+      || block.querySelector('[data-aue-prop="logoAutoAlt"]')?.textContent?.trim()
+      || '',
+  );
   const authoredMobile = getLogo(block, 'logo');
   const authoredDesktop = getLogo(block, 'logoDesktop');
   const mobileLogo = authoredMobile || authoredDesktop?.cloneNode(true);

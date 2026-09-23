@@ -67,6 +67,15 @@
         {
           "component": "text",
           "valueType": "string",
+          "name": "media_imageautoalt",
+          "label": "Automatic Image Alt",
+          "value": "",
+          "hidden": true,
+          "readOnly": true
+        },
+        {
+          "component": "text",
+          "valueType": "string",
           "name": "hotel_hotelName",
           "label": "Hotel Name",
           "value": ""

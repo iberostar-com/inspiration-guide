@@ -1,4 +1,6 @@
 import { getMetadata } from '../../scripts/aem.js';
+import { getAssetAutoAltFromMetadataApi } from '../../scripts/iberostar/asset-auto-alt.js';
+import { resolveFinalAlt } from '../../scripts/iberostar/image-alt.js';
 import { createResponsiveImage } from '../../scripts/iberostar/media.js';
 
 function getSourceRows(block) {
@@ -53,6 +55,25 @@ function createText(tagName, className, text) {
   return element;
 }
 
+function isAemAuthorPage() {
+  return window.location.hostname.startsWith('author-')
+    && window.location.hostname.endsWith('.adobeaemcloud.com')
+    && window.location.pathname.startsWith('/content/');
+}
+
+async function loadAuthorMetadataAlt(imageSrc, media) {
+  if (!isAemAuthorPage() || !imageSrc || media.querySelector('img')?.alt) return;
+
+  try {
+    const automaticAlt = await getAssetAutoAltFromMetadataApi({ value: imageSrc });
+    if (!automaticAlt) return;
+    const img = media.querySelector('img');
+    if (img && !img.alt) img.alt = automaticAlt;
+  } catch (error) {
+    // Author-only preview enhancement; published rendering uses persisted content.
+  }
+}
+
 export default function decorate(block) {
   const existing = block.querySelector(':scope > .article-main-image-content');
   if (existing) {
@@ -61,14 +82,18 @@ export default function decorate(block) {
 
   const imageOverride = getFieldImage(block, 'image');
   const imageAltOverride = getFieldText(block, 'imageAlt');
+  const imageAutoAltOverride = getFieldText(block, 'image_autoalt') || getFieldText(block, 'imageAutoAlt');
   const captionOverride = getFieldText(block, 'caption');
 
   const imageSrc = imageOverride || getMetaValue('article-image');
-  const imageAlt = imageAltOverride
-    || getMetaValue('article-image-alt')
-    || getMetaValue('alt_es')
-    || getMetaValue('jcr:title')
-    || 'Article image';
+  const imageAlt = resolveFinalAlt(
+    imageAltOverride || getMetaValue('article-image-alt'),
+    imageAutoAltOverride
+      || getMetaValue('article-image-auto-alt')
+      || getMetaValue('dc:alt')
+      || getMetaValue('dc:description')
+      || getMetaValue('jcr:title'),
+  );
   const imageCaption = captionOverride
     || getMetaValue('article-image-caption')
     || getMetaValue('dc:description');
@@ -86,8 +111,9 @@ export default function decorate(block) {
   media.className = 'article-main-image-media';
   media.append(createResponsiveImage(imageSrc, imageAlt, {
     eager: true,
-    preset: 'article-main-image',
+    preset: 'article-card-featured',
   }));
+  loadAuthorMetadataAlt(imageSrc, media);
 
   content.append(media);
 

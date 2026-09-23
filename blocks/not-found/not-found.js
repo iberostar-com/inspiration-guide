@@ -1,5 +1,10 @@
-import { createResponsiveImage } from '../../scripts/iberostar/media.js';
+import { createOptimizedPicture } from '../../scripts/aem.js';
 import { moveInstrumentation } from '../../scripts/scripts.js';
+import {
+  createDynamicMediaPicture,
+  isDynamicMediaOpenApiUrl,
+} from '../../scripts/iberostar/dynamic-media.js';
+import { resolveFinalAlt } from '../../scripts/iberostar/image-alt.js';
 import { toPageHref } from '../../scripts/iberostar/page-links.js';
 import { getLocaleFromPath, getPlaceholder } from '../../scripts/iberostar/placeholders.js';
 
@@ -15,7 +20,7 @@ const NOT_FOUND_PAGE_NAME = '404';
 const DEFAULT_LOCALE = 'en-us';
 const TEXT_FIELDS = ['title', 'subtitle'];
 const RENDERED_SELECTOR = ':scope > .not-found-content, :scope > .not-found-media';
-const IMAGE_PRESET = 'not-found-media';
+const IMAGE_BREAKPOINTS = [{ media: '(min-width: 820px)', width: '1040' }, { width: '750' }];
 
 function getText(element) {
   return element?.textContent?.trim() || '';
@@ -172,6 +177,26 @@ function createPicture(img, alt, baseHref) {
   const src = new URL(img.getAttribute('src') || '', baseHref);
   const original = img.closest('picture') || img;
 
+  if (isDynamicMediaOpenApiUrl(src.href)) {
+    const media = createDynamicMediaPicture({
+      url: src.href,
+      alt,
+      eager: true,
+      fetchpriority: 'high',
+      preset: 'not-found-media',
+    });
+    const optimizedImg = media.querySelector('img');
+    if (optimizedImg) {
+      ['width', 'height'].forEach((attr) => {
+        const value = img.getAttribute(attr);
+        if (value) optimizedImg.setAttribute(attr, value);
+      });
+      moveInstrumentation(img, optimizedImg);
+    }
+    original.remove();
+    return media;
+  }
+
   // Imagen por defecto de 404.html, ya optimizada en blocks/not-found: se reutiliza tal cual.
   // Va con loading="lazy" en el HTML para no descargarla cuando hay imagen contribuida.
   if (!isHelixMedia(src)) {
@@ -181,23 +206,16 @@ function createPicture(img, alt, baseHref) {
     return original;
   }
 
-  const media = createResponsiveImage(src.pathname, alt, {
-    eager: true,
-    preset: IMAGE_PRESET,
+  const picture = createOptimizedPicture(src.href, alt, true, IMAGE_BREAKPOINTS);
+  const optimizedImg = picture.querySelector('img');
+  optimizedImg.setAttribute('fetchpriority', 'high');
+  ['width', 'height'].forEach((attr) => {
+    const value = img.getAttribute(attr);
+    if (value) optimizedImg.setAttribute(attr, value);
   });
-  const optimizedImg = media.tagName === 'IMG' ? media : media.querySelector('img');
-
-  if (optimizedImg) {
-    optimizedImg.setAttribute('fetchpriority', 'high');
-    ['width', 'height'].forEach((attr) => {
-      const value = img.getAttribute(attr);
-      if (value) optimizedImg.setAttribute(attr, value);
-    });
-    moveInstrumentation(img, optimizedImg);
-  }
-
+  moveInstrumentation(img, optimizedImg);
   original.remove();
-  return media;
+  return picture;
 }
 
 function renderMedia(img, alt, baseHref) {
@@ -247,10 +265,16 @@ export default async function decorate(block) {
     subtitle,
     cta: { href: cta.href || getHomeHref(), text: ctaText },
   });
+  const imageAlt = resolveFinalAlt(
+    getText(authoredFields.imageAlt),
+    getText(authoredFields.image_autoalt)
+      || getText(authoredFields.imageAutoAlt)
+      || (authoredImage ? authoredImage.alt : defaultImageAlt),
+  );
   const media = image
     ? renderMedia(
       image,
-      authoredImage ? authoredImage.alt : defaultImageAlt,
+      imageAlt,
       authoredImage ? authored?.href || window.location.href : window.location.href,
     )
     : null;

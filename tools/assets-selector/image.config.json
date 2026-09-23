@@ -1,0 +1,38 @@
+{
+  "repoNames": [
+    "author-p179213-e1886364.adobeaemcloud.com",
+    "delivery-p179213-e1886364.adobeaemcloud.com",
+    "author-p179213-e1898096.adobeaemcloud.com",
+    "delivery-p179213-e1898096.adobeaemcloud.com",
+    "author-p179213-e1898042.adobeaemcloud.com",
+    "delivery-p179213-e1898042.adobeaemcloud.com"
+  ],
+  "aemTierType": [
+    "author",
+    "delivery"
+  ],
+  "alwaysUseDMDelivery": true,
+  "rootPath": "/content/dam/iberostar-com",
+  "filterSchema": [
+    {
+      "groupKey": "FileTypeGroup",
+      "header": "File Type",
+      "fields": [
+        {
+          "element": "checkbox",
+          "name": "type",
+          "defaultValue": [
+            "image/*"
+          ],
+          "options": [
+            {
+              "label": "Image",
+              "value": "image/*",
+              "readOnly": true
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

@@ -1,4 +1,5 @@
 import { createArticleCard } from '../../scripts/iberostar/article-card.js';
+import { resolveFinalAlt } from '../../scripts/iberostar/image-alt.js';
 import { moveInstrumentation } from '../../scripts/scripts.js';
 
 const HEADING_TAGS = new Set(['h2', 'h3', 'h4', 'h5', 'h6']);
@@ -78,7 +79,10 @@ function parseArticle(row, index) {
     ctaText: textByProp(row, 'article_cta'),
     description: textByProp(row, 'article_description'),
     image: img?.src || '',
-    imageAlt: textByProp(row, 'article_imageAlt') || img?.alt || '',
+    imageAlt: resolveFinalAlt(
+      textByProp(row, 'article_imageAlt'),
+      textByProp(row, 'article_imageautoalt') || textByProp(row, 'article_imageAutoAlt') || img?.alt || '',
+    ),
     publicationDate: textByProp(row, 'article_publicationDate'),
     readTime: textByProp(row, 'article_readTime'),
     title: textByProp(row, 'article_title'),
@@ -128,7 +132,6 @@ export default function decorate(block) {
       eagerImage: true,
       featured: true,
       headingTag: config.articleTitleHeading,
-      preset: 'featured-articles-featured',
     });
     moveInstrumentation(featuredArticle.row, card);
     featuredSection.append(card);
@@ -150,7 +153,6 @@ export default function decorate(block) {
     latestArticles.forEach((item) => {
       const card = createArticleCard(item.article, {
         headingTag: config.articleTitleHeading,
-        preset: 'featured-articles-latest',
       });
       moveInstrumentation(item.row, card);
       list.append(card);

@@ -1,4 +1,4 @@
-import { applyImagePreset } from '../../scripts/iberostar/media.js';
+import { resolveFinalAlt } from '../../scripts/iberostar/image-alt.js';
 
 /**
  * Decorate hero block with semantic HTML
@@ -17,14 +17,17 @@ function decorateDefaultHero(block) {
 
   // Extract image and alt
   const img = cells[0]?.querySelector('img');
+  let textCell = cells[2];
   if (img && cells[1]) {
-    img.alt = cells[1].textContent?.trim() || img.alt || '';
+    const autoAltCell = ['image_autoalt', 'imageAutoAlt'].includes(cells[2]?.dataset?.aueProp) ? cells[2] : null;
+    img.alt = resolveFinalAlt(cells[1].textContent?.trim() || '', autoAltCell?.textContent?.trim() || img.alt || '');
     cells[1].remove();
+    autoAltCell?.remove();
+    textCell = autoAltCell ? cells[3] : cells[2];
   }
 
   // Ensure text is wrapped in semantic heading
-  if (cells[2]) {
-    const textCell = cells[2];
+  if (textCell) {
     let h1 = textCell.querySelector('h1');
     if (!h1) {
       h1 = document.createElement('h1');
@@ -39,10 +42,6 @@ function decorateDefaultHero(block) {
   });
 
   block.classList.add('hero-default');
-
-  if (cells[0]) {
-    applyImagePreset(cells[0], { preset: 'hero-background' });
-  }
 }
 
 /**
@@ -84,13 +83,12 @@ function decorateArticleHero(block) {
   wrapper.className = 'hero hero-article';
 
   // Image (featured)
-  const media = cells[0]?.querySelector('picture, img');
-  let imageBox = null;
-  if (media) {
-    imageBox = document.createElement('div');
-    imageBox.className = 'hero-image';
-    imageBox.appendChild(media);
-    wrapper.appendChild(imageBox);
+  const img = cells[0]?.querySelector('img');
+  if (img) {
+    const imgWrapper = document.createElement('div');
+    imgWrapper.className = 'hero-image';
+    imgWrapper.appendChild(img);
+    wrapper.appendChild(imgWrapper);
   }
 
   // Metadata
@@ -116,10 +114,6 @@ function decorateArticleHero(block) {
   }
 
   block.replaceChildren(wrapper);
-
-  if (imageBox) {
-    applyImagePreset(imageBox, { preset: 'hero-article-image' });
-  }
 }
 
 /**
@@ -135,13 +129,12 @@ function decorateBlogHero(block) {
   wrapper.className = 'hero hero-blog';
 
   // Image
-  const media = cells[0]?.querySelector('picture, img');
-  let imageBox = null;
-  if (media) {
-    imageBox = document.createElement('div');
-    imageBox.className = 'hero-image';
-    imageBox.appendChild(media);
-    wrapper.appendChild(imageBox);
+  const img = cells[0]?.querySelector('img');
+  if (img) {
+    const imgWrapper = document.createElement('div');
+    imgWrapper.className = 'hero-image';
+    imgWrapper.appendChild(img);
+    wrapper.appendChild(imgWrapper);
   }
 
   // Title
@@ -170,10 +163,6 @@ function decorateBlogHero(block) {
   }
 
   block.replaceChildren(wrapper);
-
-  if (imageBox) {
-    applyImagePreset(imageBox, { preset: 'hero-blog-image' });
-  }
 }
 
 export default async function decorate(block) {

@@ -1,5 +1,9 @@
 import { createOptimizedPicture } from '../aem.js';
 import DYNAMIC_MEDIA_CONFIG from './dynamic-media-config.js';
+import {
+  createDynamicMediaPicture as createOpenApiPicture,
+  isDynamicMediaOpenApiUrl,
+} from './dynamic-media.js';
 import getEnvironmentConfig from './environment-config.js';
 import getImagePreset from './image-presets.js';
 
@@ -7,7 +11,6 @@ const DEFAULT_BREAKPOINTS = [{ width: '750' }];
 const DAM_EXTENSION_REGEXP = /\.[a-z0-9]+$/i;
 const DAM_PATH_PREFIX = '/content/dam/';
 const DYNAMIC_MEDIA_PATH_SEGMENT = '/is/image/';
-const MEDIA_RESOLUTION_CACHE = new Map();
 
 export function isRemoteImage(src = '') {
   return /^https?:\/\//.test(src);
@@ -26,13 +29,14 @@ function normalizeImageOptions(eagerOrOptions, breakpoints) {
   if (eagerOrOptions && typeof eagerOrOptions === 'object' && !Array.isArray(eagerOrOptions)) {
     return {
       eager: false,
+      breakpoints: DEFAULT_BREAKPOINTS,
       ...eagerOrOptions,
     };
   }
 
   return {
     eager: Boolean(eagerOrOptions),
-    breakpoints,
+    breakpoints: breakpoints || DEFAULT_BREAKPOINTS,
   };
 }
 
@@ -48,28 +52,6 @@ function normalizeSource(src = '') {
   const value = `${src || ''}`.trim();
   if (!value || value.toLowerCase() === 'undefined') return '';
   return value;
-}
-
-function isCrossOriginImage(src = '') {
-  if (!isRemoteImage(src)) return false;
-
-  try {
-    return new URL(src, window.location).origin !== window.location.origin;
-  } catch (error) {
-    return true;
-  }
-}
-
-function isVectorImage(src = '') {
-  const normalized = `${src || ''}`.trim().toLowerCase();
-  if (!normalized) return false;
-  if (normalized.startsWith('data:image/svg')) return true;
-
-  try {
-    return new URL(normalized, window.location).pathname.endsWith('.svg');
-  } catch (error) {
-    return normalized.split('?')[0].endsWith('.svg');
-  }
 }
 
 function isDamAssetPath(src = '') {
@@ -126,10 +108,6 @@ function getDynamicMediaConfig(options = {}) {
         environmentDynamicMedia.enabled ?? DYNAMIC_MEDIA_CONFIG.enabled,
       ),
     ),
-    resolverEndpoint: getMetaContent('dynamic-media-resolver-endpoint')
-      || window.hlx?.dynamicMediaResolverEndpoint
-      || environmentDynamicMedia.resolverEndpoint
-      || '',
     imageServer: getMetaContent('dynamic-media-image-server')
       || window.hlx?.dynamicMediaImageServer
       || environmentDynamicMedia.imageServer
@@ -154,59 +132,6 @@ function getDynamicMediaConfig(options = {}) {
       || environmentDynamicMedia.assetHost
       || '',
   };
-}
-
-function getMediaResolverUrl(src, config) {
-  if (!config.resolverEndpoint || !isDamAssetPath(src)) return '';
-
-  try {
-    const url = new URL(config.resolverEndpoint, window.location);
-    const sourceUrl = new URL(src, window.location);
-    url.searchParams.set('path', sourceUrl.pathname);
-    return url.toString();
-  } catch (error) {
-    return '';
-  }
-}
-
-function getResolvedMediaMetadata(src, config) {
-  const requestUrl = getMediaResolverUrl(src, config);
-  if (!requestUrl) return Promise.resolve({});
-
-  if (MEDIA_RESOLUTION_CACHE.has(requestUrl)) {
-    return MEDIA_RESOLUTION_CACHE.get(requestUrl);
-  }
-
-  const request = fetch(requestUrl, {
-    headers: { Accept: 'application/json' },
-    credentials: 'omit',
-  })
-    .then((response) => (response.ok ? response.json() : null))
-    .then((payload) => payload || {})
-    .catch(() => ({}));
-
-  MEDIA_RESOLUTION_CACHE.set(requestUrl, request);
-  return request;
-}
-
-export function resolveImageAlt(explicitAlt = '', metadata = {}) {
-  const providedAlt = `${explicitAlt || ''}`.trim();
-  if (providedAlt) return providedAlt;
-
-  const alt = `${metadata?.alt || ''}`.trim();
-  if (alt) return alt;
-
-  const title = `${metadata?.title || ''}`.trim();
-  if (title) return title;
-
-  const description = `${metadata?.description || ''}`.trim();
-  if (description) return description;
-
-  return '';
-}
-
-function resolveImageAltFromMetadata(metadata = {}) {
-  return resolveImageAlt('', metadata);
 }
 
 function resolveDamAssetUrl(src, config) {
@@ -384,34 +309,9 @@ function createDynamicMediaPicture(src, alt, options, preset, config) {
   return createDynamicMediaPictureFromValidUrl(dynamicMediaUrl, alt, options, preset);
 }
 
-function replacePictureContent(picture, dynamicMediaPicture) {
-  picture.replaceChildren(...dynamicMediaPicture.childNodes);
-  picture.dataset.dynamicMediaResolved = 'true';
-}
-
-function resolvePictureFromDamPath(picture, src, alt, options, preset, config) {
-  getResolvedMediaMetadata(src, config).then((metadata) => {
-    const resolvedUrl = metadata?.delivery?.url || metadata?.url || '';
-    if (!resolvedUrl || !isDynamicMediaImage(resolvedUrl)) return;
-    if (!picture.isConnected || picture.dataset.dynamicMediaResolved === 'true') return;
-
-    const fallbackAlt = resolveImageAltFromMetadata(metadata);
-    const resolvedAlt = alt && alt.trim() ? alt : fallbackAlt;
-    const dynamicMediaPicture = createDynamicMediaPictureFromValidUrl(
-      resolvedUrl,
-      resolvedAlt,
-      options,
-      preset,
-    );
-    if (dynamicMediaPicture?.tagName === 'PICTURE') {
-      replacePictureContent(picture, dynamicMediaPicture);
-    }
-  });
-}
-
 export function createResponsiveImage(src, alt, eagerOrOptions, breakpoints) {
   const normalizedSrc = normalizeSource(src);
-  const imageAlt = resolveImageAlt(alt);
+  const imageAlt = alt || '';
   const options = normalizeImageOptions(eagerOrOptions, breakpoints);
   const preset = getImagePreset(options.preset);
   const fallbackBreakpoints = options.breakpoints
@@ -425,42 +325,33 @@ export function createResponsiveImage(src, alt, eagerOrOptions, breakpoints) {
     return placeholder;
   }
 
-  if (isVectorImage(normalizedSrc)) {
-    return createImage(normalizedSrc, imageAlt, options.eager);
+  if (isDynamicMediaOpenApiUrl(normalizedSrc)) {
+    return createOpenApiPicture({
+      url: normalizedSrc,
+      alt: imageAlt,
+      eager: options.eager,
+      preset: options.preset,
+      fetchpriority: options.fetchpriority,
+    });
   }
 
-  if (isDynamicMediaImage(normalizedSrc)) {
-    return createDynamicMediaPicture(
+  if (dynamicMediaConfig.enabled) {
+    const dynamicMediaPicture = createDynamicMediaPicture(
       normalizedSrc,
       imageAlt,
       options,
       preset,
       dynamicMediaConfig,
     );
+    if (dynamicMediaPicture) {
+      return dynamicMediaPicture;
+    }
   }
 
   // For non-Dynamic Media images, resolve DAM asset URLs
   const resolvedSrc = resolveDamAssetUrl(normalizedSrc, dynamicMediaConfig);
 
-  if (isDamAssetPath(normalizedSrc)) {
-    const fallbackPicture = createOptimizedPicture(
-      resolvedSrc,
-      imageAlt,
-      options.eager,
-      fallbackBreakpoints,
-    );
-    resolvePictureFromDamPath(
-      fallbackPicture,
-      normalizedSrc,
-      imageAlt,
-      options,
-      preset,
-      dynamicMediaConfig,
-    );
-    return fallbackPicture;
-  }
-
-  if (isCrossOriginImage(resolvedSrc)) {
+  if (isRemoteImage(resolvedSrc) || isDamAssetPath(resolvedSrc)) {
     const image = createImage(resolvedSrc, imageAlt, options.eager);
     attachImageFallback(image, '');
     return image;
@@ -488,29 +379,4 @@ export function createResponsiveImage(src, alt, eagerOrOptions, breakpoints) {
   }
 
   return optimizedPicture;
-}
-
-function getPictureElement(element) {
-  if (element?.tagName === 'PICTURE') return element;
-  return element?.querySelector?.('picture') || null;
-}
-
-export function applyImagePreset(element, options = {}) {
-  const picture = getPictureElement(element);
-  const image = picture?.querySelector('img');
-  if (!picture || !image) return element;
-
-  const src = image.getAttribute('src') || '';
-  if (!src || isVectorImage(src)) return picture;
-
-  const alt = image.getAttribute('alt') || '';
-  const rebuilt = createResponsiveImage(src, alt, options);
-  if (rebuilt?.tagName !== 'PICTURE') return picture;
-
-  [...picture.attributes].forEach((attribute) => {
-    rebuilt.setAttribute(attribute.name, attribute.value);
-  });
-  picture.replaceWith(rebuilt);
-
-  return rebuilt;
 }

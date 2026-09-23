@@ -32,11 +32,12 @@
           ]
         },
         {
-          "component": "aem-content",
+          "component": "reference",
           "valueType": "string",
           "name": "videoDam",
           "label": "Video DAM",
           "description": "Select an AEM DAM video reference or contribute a direct video URL.",
+          "multi": false,
           "condition": {
             "==": [
               {
@@ -74,6 +75,22 @@
           "name": "posterAlt",
           "label": "Poster Alt Text (optional)",
           "value": ""
+        },
+        {
+          "component": "text",
+          "valueType": "string",
+          "name": "poster_autoalt",
+          "label": "Poster Automatic Alt Text",
+          "value": "",
+          "hidden": true,
+          "readOnly": true
+        },
+        {
+          "component": "boolean",
+          "valueType": "boolean",
+          "name": "autoplay",
+          "label": "Autoplay after play button click",
+          "value": true
         },
         {
           "component": "text",

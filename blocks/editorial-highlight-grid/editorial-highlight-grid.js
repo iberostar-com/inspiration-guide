@@ -236,11 +236,7 @@ function createCard(item) {
   if (item.image) {
     const media = document.createElement('div');
     media.className = 'editorial-highlight-media';
-    media.append(createResponsiveImage(
-      item.image,
-      item.title,
-      { preset: 'editorial-highlight-grid-default' },
-    ));
+    media.append(createResponsiveImage(item.image, item.imageAlt || item.title, { preset: 'article-card' }));
     article.append(media);
   }
 
@@ -413,10 +409,7 @@ function renderManualGrid(block, all, labels) {
     moveInstrumentation(row, li);
 
     if (article) {
-      const card = createArticleCard(toCardData(article, labels), {
-        headingTag: cardHeading,
-        preset: 'editorial-highlight-grid-home',
-      });
+      const card = createArticleCard(toCardData(article, labels), { headingTag: cardHeading });
       enhanceCard(card);
       li.append(card);
     } else {
@@ -542,10 +535,7 @@ function buildFeed(block, matched, pageSize, labels) {
     const items = sortArticles(matched, state.order).slice(0, state.shown).map((article) => {
       const li = document.createElement('li');
       li.className = 'editorial-highlight-grid-item';
-      const card = createArticleCard(toCardData(article, labels), {
-        headingTag: cardHeading,
-        preset: 'editorial-highlight-grid-home',
-      });
+      const card = createArticleCard(toCardData(article, labels), { headingTag: cardHeading });
       enhanceCard(card);
       li.append(card);
       return li;

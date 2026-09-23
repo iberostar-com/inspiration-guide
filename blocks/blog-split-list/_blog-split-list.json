@@ -191,6 +191,15 @@
         {
           "component": "text",
           "valueType": "string",
+          "name": "article_imageautoalt",
+          "label": "Automatic Image Alt",
+          "value": "",
+          "hidden": true,
+          "readOnly": true
+        },
+        {
+          "component": "text",
+          "valueType": "string",
           "name": "article_category",
           "label": "Category",
           "value": ""
