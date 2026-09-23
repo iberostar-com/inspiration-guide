@@ -43,6 +43,18 @@ function getFieldImage(block, propName) {
     || '';
 }
 
+function getTextRows(block) {
+  return getSourceRows(block).filter((row) => !row.querySelector?.('img'));
+}
+
+function getFieldCaption(block) {
+  const propEl = getFieldByProp(block, 'caption');
+  if (propEl) return propEl.textContent?.trim() || '';
+
+  const captionRow = getTextRows(block).find((row) => row.textContent?.trim());
+  return captionRow?.textContent?.trim() || '';
+}
+
 function getMetaValue(name, fallback = '') {
   const value = getMetadata(name)?.trim();
   return value || fallback;
@@ -83,7 +95,7 @@ export default function decorate(block) {
   const imageOverride = getFieldImage(block, 'image');
   const imageAltOverride = getFieldText(block, 'imageAlt');
   const imageAutoAltOverride = getFieldText(block, 'image_autoalt') || getFieldText(block, 'imageAutoAlt');
-  const captionOverride = getFieldText(block, 'caption');
+  const captionOverride = getFieldCaption(block);
 
   const imageSrc = imageOverride || getMetaValue('article-image');
   const imageAlt = resolveFinalAlt(
@@ -111,7 +123,7 @@ export default function decorate(block) {
   media.className = 'article-main-image-media';
   media.append(createResponsiveImage(imageSrc, imageAlt, {
     eager: true,
-    preset: 'article-card-featured',
+    preset: 'article-main-image',
   }));
   loadAuthorMetadataAlt(imageSrc, media);
 
