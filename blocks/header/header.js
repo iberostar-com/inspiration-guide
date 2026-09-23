@@ -3,6 +3,7 @@ import { loadFragment } from '../fragment/fragment.js';
 
 const DEFAULT_NAV_PATH = '/nav';
 const DESKTOP = window.matchMedia('(width >= 1440px)');
+const SCROLL_HYSTERESIS_PX = 12;
 
 const LOGO_MOBILE = `<svg class="nav-logo-mark" width="21" height="17" viewBox="0 0 21 17" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
 <path d="M20.5714 11.0215V9.58425H9.52165V11.0215H20.5714Z" fill="#3AA496"/>
@@ -179,6 +180,88 @@ function buildItem(section, showRoot) {
   item.append(panel);
 
   return { item, trigger, panel };
+}
+
+function setupHideOnScroll(navWrapper, nav) {
+  if (document.querySelector('[data-aue-resource]')) return;
+
+  const root = document.documentElement;
+  const state = {
+    mode: '', lastY: 0, direction: 0, accumulated: 0, ticking: false,
+  };
+
+  const headerHeight = () => {
+    const { height } = navWrapper.getBoundingClientRect();
+    return height > 0 ? height : 0;
+  };
+
+  const isFrozen = () => document.body.classList.contains('nav-open')
+    || nav.getAttribute('aria-expanded') === 'true'
+    || Boolean(nav.querySelector('.nav-item.is-open'));
+
+  const publish = () => {
+    root.classList.toggle('is-header-docked', state.mode === 'docked');
+    root.classList.toggle('is-header-hidden', state.mode === 'hidden');
+    root.classList.toggle('is-header-floating', state.mode === 'floating');
+    root.style.setProperty(
+      '--header-visible-height',
+      state.mode === 'hidden' ? '0px' : `${Math.round(headerHeight())}px`,
+    );
+  };
+
+  const resolve = (mode, force) => {
+    if (mode === state.mode && !force) return;
+    state.mode = mode;
+    publish();
+  };
+
+  const onFrame = () => {
+    const maxY = Math.max(root.scrollHeight - window.innerHeight, 0);
+    const y = Math.min(Math.max(window.scrollY, 0), maxY);
+    const delta = y - state.lastY;
+    state.lastY = y;
+    if (isFrozen()) return;
+    if ((delta > 0 && state.accumulated < 0) || (delta < 0 && state.accumulated > 0)) {
+      state.accumulated = 0;
+    }
+    state.accumulated += delta;
+    if (Math.abs(state.accumulated) >= SCROLL_HYSTERESIS_PX) {
+      state.direction = state.accumulated > 0 ? 1 : -1;
+    }
+    let { mode } = state;
+    if (y <= headerHeight()) mode = 'docked';
+    else if (state.direction < 0) mode = 'floating';
+    else if (state.direction > 0) mode = 'hidden';
+    resolve(mode, false);
+  };
+
+  const schedule = () => {
+    if (state.ticking) return;
+    state.ticking = true;
+    window.requestAnimationFrame(() => {
+      state.ticking = false;
+      onFrame();
+    });
+  };
+
+  navWrapper.addEventListener('focusin', () => {
+    if (state.mode === 'hidden') resolve('floating', false);
+  });
+
+  window.addEventListener('resize', () => {
+    resolve(state.mode, true);
+    schedule();
+  }, { passive: true });
+
+  root.classList.add('is-scroll-init');
+  state.lastY = Math.max(window.scrollY, 0);
+  state.direction = state.lastY > 0 ? 1 : 0;
+  resolve(state.lastY <= headerHeight() ? 'docked' : 'hidden', true);
+  window.requestAnimationFrame(() => {
+    window.requestAnimationFrame(() => root.classList.remove('is-scroll-init'));
+  });
+
+  window.addEventListener('scroll', schedule, { passive: true });
 }
 
 export default async function decorate(block) {
@@ -372,4 +455,6 @@ export default async function decorate(block) {
   navWrapper.className = 'nav-wrapper';
   navWrapper.append(backdrop, nav);
   block.append(navWrapper);
+
+  setupHideOnScroll(navWrapper, nav);
 }

@@ -3,6 +3,29 @@ header .nav-wrapper {
   top: 0;
   z-index: 20;
   background: #fff;
+  transition:
+    transform 0.3s ease,
+    visibility 0.3s ease;
+}
+
+html.is-header-hidden header .nav-wrapper {
+  transform: translateY(-100%);
+  visibility: hidden;
+}
+
+html.is-scroll-init header .nav-wrapper {
+  transition: none;
+}
+
+html body.nav-open header .nav-wrapper {
+  transform: none;
+  visibility: visible;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  header .nav-wrapper {
+    transition: none;
+  }
 }
 
 header .nav-backdrop {
