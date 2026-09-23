@@ -26,6 +26,12 @@ const PAGE_PLATFORM = 'web';
 const PAGE_SITE_ORIGIN = 'iberostar';
 const PAGE_TYPE_HOME = 'home inspiration guide';
 const PAGE_TYPE_DEFAULT = 'inspiration channel';
+const CATEGORY_PAGE_TYPES = {
+  destinos: 'destinations',
+  gastronomia: 'gastronomy',
+  sostenibilidad: 'sustainability',
+  'tipo-de-viaje': 'travel type',
+};
 const ERROR_SECTION = 'error';
 const AME_COUNTRIES = new Set([
   'ag', 'ai', 'ar', 'aw', 'bb', 'bl', 'bo', 'bq', 'br', 'bs', 'bz', 'ca', 'cl', 'co', 'cr', 'cu',
@@ -238,6 +244,11 @@ function isMicrositeRoot() {
   return path.split('/').filter(Boolean).length <= 1;
 }
 
+function toPageType(slug) {
+  const clean = sanitizeValue(slug);
+  return CATEGORY_PAGE_TYPES[clean] || clean;
+}
+
 function getContentGroup() {
   if (window.isErrorPage) {
     const code = sanitizeValue(`error ${window.errorCode || 404}`);
@@ -259,7 +270,7 @@ function getContentGroup() {
     const [category] = getTaxonomyParts(getMeta('article-category'));
     return {
       section: PAGE_SECTION,
-      pageType: sanitizeValue(category) || PAGE_TYPE_DEFAULT,
+      pageType: toPageType(category) || PAGE_TYPE_DEFAULT,
       pageCategory: getContentTitle() || PAGE_CATEGORY_DEFAULT,
     };
   }
@@ -275,7 +286,7 @@ function getContentGroup() {
     }
     return {
       section: PAGE_SECTION,
-      pageType: sanitizeValue(category),
+      pageType: toPageType(category),
       pageCategory: sanitizeValue(subcategory) || CATEGORY_VIEW_ALL,
     };
   }
@@ -807,7 +818,7 @@ function handleHeroViewHotels(actionable) {
   trackLink({
     tealium_event: 'inspiration_guide_module',
     event_cat: 'inspiration guide module',
-    event_act: 'click',
+    event_act: '',
     event_lbl: normalize('view hotels'),
     event_purpose: 'inspiration',
     event_structure: 'body',
