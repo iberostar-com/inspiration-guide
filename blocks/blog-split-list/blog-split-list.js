@@ -851,6 +851,7 @@ export default async function decorate(block) {
   const ctaLabel = getTextValue(block, 'ctaLabel', '')
     || await getTranslation('readArticle', 'Leer artículo')
     || await getPlaceholder('readArticle', 'Leer artículo');
+  const latestPublications = await getTranslation('latestColumnTitle', 'Últimas publicaciones');
   const featuredReference = getFeaturedReference(block);
   let items = mode === 'manual'
     ? splitManualItems(fromManualRows(block), maxItems, featuredReference)
@@ -896,7 +897,11 @@ export default async function decorate(block) {
     items.slice(1).forEach((item) => {
       list.append(createListItem(item, ctaLabel, latestArticleTitleTag));
     });
+    const latestPublicationItem = document.createElement('div');
+    latestPublicationItem.className = 'blog-split-list-eyebrow';
+    latestPublicationItem.textContent = latestPublications;
 
+    latestColumn.append(latestPublicationItem);
     latestColumn.append(list);
     wrapper.append(latestColumn);
   }
