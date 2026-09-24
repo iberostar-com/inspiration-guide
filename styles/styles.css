@@ -423,6 +423,27 @@ body.page-article main.article-layout-author > .section > div {
   }
 }
 
+/* Bug 175393 — Figma Ready for dev XL (24254:40371): el articulo crece a 862px
+   y la columna lateral (banner) a 351px, con 89px entre ambas */
+@media (width >= 1920px) {
+  body.page-article main > .article-layout-shell {
+    grid-template-columns: minmax(0, 862px) 351px;
+    gap: 89px;
+    max-width: 1302px;
+  }
+
+  body.page-article main > .article-layout-shell.article-layout-single {
+    grid-template-columns: minmax(0, 862px);
+    max-width: 862px;
+  }
+
+  body.page-article main.article-layout-author {
+    grid-template-columns: minmax(0, 862px) 351px;
+    gap: 40px 89px;
+    max-width: 1302px;
+  }
+}
+
 /* section metadata */
 main .section.light,
 main .section.highlight {
