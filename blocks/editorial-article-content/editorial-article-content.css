@@ -17,10 +17,11 @@ main .editorial-article-content .editorial-article-content-rendered > * {
   margin: 0;
 }
 
+/* Bug 175393 — el cuerpo del articulo es 16px en xs y s; desde m sube a 18px */
 main .editorial-article-content .editorial-article-content-rendered p,
 main .editorial-article-content .editorial-article-content-rendered li {
   color: #1b2828;
-  font-size: 18px;
+  font-size: 16px;
   font-style: normal;
   font-weight: 400;
   line-height: 1.4;
@@ -65,4 +66,11 @@ main .editorial-article-content .editorial-article-content-rendered a {
 main .editorial-article-content .editorial-article-content-rendered a:hover,
 main .editorial-article-content .editorial-article-content-rendered a:focus-visible {
   color: #000;
+}
+
+@media (width >= 820px) {
+  main .editorial-article-content .editorial-article-content-rendered p,
+  main .editorial-article-content .editorial-article-content-rendered li {
+    font-size: 18px;
+  }
 }

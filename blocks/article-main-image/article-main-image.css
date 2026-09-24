@@ -16,17 +16,37 @@
   margin: 0;
 }
 
+/* Bug 175393 — Figma Ready for dev: la imagen de cabecera mide 328x223 (xs),
+   528x223 (s), 547x321 (m), 805x473 (l) y 862x506 (xl); de m en adelante la
+   proporcion es la misma (1,70). La caja fija esa proporcion y la imagen la
+   rellena. Nodos 24254:40935, 24254:41089, 24254:40701, 24254:40550, 24254:40374 */
 .article-main-image .article-main-image-media {
   width: 100%;
+  aspect-ratio: 328 / 223;
   overflow: hidden;
-  border-radius: 4px;
+  border-radius: 0;
 }
 
 .article-main-image .article-main-image-media picture,
 .article-main-image .article-main-image-media img {
   display: block;
   width: 100%;
-  height: auto;
+  height: 100%;
+  object-fit: cover;
+}
+
+@media (width >= 576px) {
+  .article-main-image .article-main-image-media {
+    aspect-ratio: 528 / 223;
+  }
+}
+
+/* Bug 175393 — en xs y s la imagen va a sangre sin radio; desde m recupera los 4px */
+@media (width >= 820px) {
+  .article-main-image .article-main-image-media {
+    aspect-ratio: 805 / 473;
+    border-radius: 4px;
+  }
 }
 
 .article-main-image .article-main-image-caption {
