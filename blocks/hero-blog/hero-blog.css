@@ -1,3 +1,7 @@
+.section.hero-blog-container {
+  margin: 0;
+}
+
 .hero-blog-container .hero-blog-wrapper {
   max-width: unset;
   padding: 0;
