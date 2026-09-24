@@ -31,11 +31,11 @@ const IMAGE_CROPS = {
     xl: { w: 660, ar: '16x9' },
   },
   'article-main-image': {
-    xs: { w: 543 },
-    s: { w: 787 },
-    m: { w: 805 },
-    l: { w: 805 },
-    xl: { w: 805 },
+    xs: { w: 543, ar: '3x2' },
+    s: { w: 787, ar: '2x1' },
+    m: { w: 805, ar: '16x9' },
+    l: { w: 805, ar: '16x9' },
+    xl: { w: 862, ar: '16x9' },
   },
   'article-author': {
     xs: { w: 40, ar: '1x1' },
