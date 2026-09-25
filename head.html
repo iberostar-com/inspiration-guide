@@ -4,34 +4,52 @@
   move-to-http-header="true"
 >
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
-<meta name="description" content=""/>
-<meta property="og:title" content=""/>
-<meta property="og:description" content=""/>
 <meta property="og:type" content="website"/>
-<meta property="twitter:card" content="summary_large_image"/>
-<meta property="twitter:title" content=""/>
-<meta property="twitter:description" content=""/>
 <script nonce="aem">
-  // Inject SEO metadata from page properties
+  // Inject SEO metadata from page properties.
+  // No se declaran aqui description/og:title/og:description/twitter:*: el backend ya los
+  // renderiza y duplicarlos vacios rompe a getMetadata(), que une todos los metas con ", ".
   (function setSeoMetadata() {
-    const metaTitle = document.querySelector('meta[name="meta-title"]')?.content || 
-                      document.querySelector('meta[property="og:title"]')?.content ||
-                      document.querySelector('meta[name="jcr:title"]')?.content || 
-                      '';
-    const metaDesc = document.querySelector('meta[name="meta-description"]')?.content || 
-                     document.querySelector('meta[name="jcr:description"]')?.content || 
-                     '';
+    const readMeta = (selector) => document.querySelector(selector)?.content?.trim() || '';
+
+    const writeMeta = (attr, name, content) => {
+      const nodes = [...document.head.querySelectorAll(`meta[${attr}="${name}"]`)];
+
+      if (!nodes.length) {
+        const meta = document.createElement('meta');
+        meta.setAttribute(attr, name);
+        meta.setAttribute('content', content);
+        document.head.append(meta);
+        return;
+      }
+
+      nodes.forEach((node, index) => {
+        if (index === 0) node.setAttribute('content', content);
+        else node.remove();
+      });
+    };
+
+    const metaTitle = readMeta('meta[name="meta-title"]')
+      || readMeta('meta[property="og:title"]')
+      || readMeta('meta[name="jcr:title"]');
+    const metaDesc = readMeta('meta[name="meta-description"]')
+      || readMeta('meta[name="description"]')
+      || readMeta('meta[name="jcr:description"]');
 
     if (metaTitle) {
       document.title = metaTitle;
-      document.querySelector('meta[property="og:title"]').setAttribute('content', metaTitle);
-      document.querySelector('meta[property="twitter:title"]').setAttribute('content', metaTitle);
+      writeMeta('property', 'og:title', metaTitle);
+      writeMeta('name', 'twitter:title', metaTitle);
     }
 
     if (metaDesc) {
-      document.querySelector('meta[name="description"]').setAttribute('content', metaDesc);
-      document.querySelector('meta[property="og:description"]').setAttribute('content', metaDesc);
-      document.querySelector('meta[property="twitter:description"]').setAttribute('content', metaDesc);
+      writeMeta('name', 'description', metaDesc);
+      writeMeta('property', 'og:description', metaDesc);
+      writeMeta('name', 'twitter:description', metaDesc);
+    }
+
+    if (!document.head.querySelector('meta[name="twitter:card"], meta[property="twitter:card"]')) {
+      writeMeta('name', 'twitter:card', 'summary_large_image');
     }
   })();
 </script>
