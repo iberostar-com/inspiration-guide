@@ -9,8 +9,8 @@ main .hotel-graphql-mini-card .hotel-graphql-mini-card-rendered {
 }
 
 main .hotel-graphql-mini-card .hotel-mini-card-horizontal {
-  gap: 16px;
-  padding: 0;
+  column-gap: 16px;
+  padding: 16px 0;
 }
 
 main .hotel-graphql-mini-card .hotel-mini-card-horizontal .hotel-mini-card-body {
@@ -25,7 +25,7 @@ main .hotel-graphql-mini-card .hotel-mini-card-stars {
 }
 
 main .hotel-graphql-mini-card .hotel-mini-card-stars .ibh-icon-star {
-  font-size: 12px;
+  font-size: 20px; 
 }
 
 main .hotel-graphql-mini-card .hotel-graphql-mini-card-empty {
@@ -36,7 +36,16 @@ main .hotel-graphql-mini-card .hotel-graphql-mini-card-empty {
   font-style: italic;
 }
 
-@media (width >= 576px) {
+main .editorial-article-content-wrapper:has(.editorial-article-content-rendered > :is(blockquote, .editorial-article-content-table-scroll):last-child) + .hotel-graphql-mini-card-wrapper .hotel-mini-card-horizontal {
+  padding-top: 24px;
+}
+
+
+main .hotel-graphql-mini-card-wrapper:has(+ .editorial-article-content-wrapper .editorial-article-content-rendered > :is(blockquote, .editorial-article-content-table-scroll):first-child) .hotel-mini-card-horizontal {
+  padding-bottom: 24px;
+}
+
+@media (width >= 820px) {
   main .hotel-graphql-mini-card .hotel-mini-card-horizontal {
     gap: 24px;
   }

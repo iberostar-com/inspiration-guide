@@ -44,6 +44,20 @@ function hideSource(block) {
   });
 }
 
+/**
+ * Wraps each table in a horizontal scroll container so that only the table
+ * scrolls on narrow viewports and the preceding heading stays in place.
+ * @param {Element} article The rendered article element
+ */
+function wrapTables(article) {
+  article.querySelectorAll('table').forEach((table) => {
+    const scroller = document.createElement('div');
+    scroller.className = 'editorial-article-content-table-scroll';
+    table.before(scroller);
+    scroller.append(table);
+  });
+}
+
 export default function decorate(block) {
   block.querySelector(':scope > .editorial-article-content-rendered')?.remove();
 
@@ -53,6 +67,8 @@ export default function decorate(block) {
   getSourceRows(block).forEach((row) => {
     renderTextRow(row, article);
   });
+
+  wrapTables(article);
 
   if (!article.children.length) return;
 
