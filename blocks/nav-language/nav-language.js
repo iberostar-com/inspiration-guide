@@ -1,5 +1,6 @@
 import { getTranslation } from '../../scripts/iberostar/i18n.js';
 import { getLocaleFromPath } from '../../scripts/iberostar/placeholders.js';
+import { localeAlternates } from '../../scripts/iberostar/hreflang.js';
 import {
   CURRENCY_CHANGE_EVENT,
   getCurrencyDisplayName,
@@ -68,6 +69,15 @@ function normalizePathname(value) {
   }
 }
 
+function optionLocale(value) {
+  const raw = (value || '').trim();
+  if (!raw) return '';
+  if (LOCALE_CODE.test(raw)) return raw.toLowerCase();
+
+  const locale = getLocaleFromPath(normalizePathname(raw)) || '';
+  return LOCALE_CODE.test(locale) ? locale.toLowerCase() : '';
+}
+
 /**
  * Resolves an authored option value into a navigable URL.
  * A bare locale code (e.g. "es-es") is expanded to the locale-first
@@ -96,10 +106,13 @@ function createOptionData(row) {
   const target = normalizeTarget(getTextFromField(targetField) || getTextFromField(cells[2]) || '_self');
 
   label = label?.trim() || '';
-  url = resolveOptionUrl(url?.trim());
+  const authored = url?.trim();
+  url = resolveOptionUrl(authored);
 
   if (!label) return null;
-  return { label, url, target };
+  return {
+    label, url, target, locale: optionLocale(authored),
+  };
 }
 
 /**
@@ -235,10 +248,21 @@ function buildCurrencyOption(code, displayName, selectedCurrency) {
  * Language / Currency tabs (aligned with iberostar.com behavior).
  * @param {Element} block The nav-language block element
  */
+function pointToTranslations(links) {
+  if (!links.length) return;
+  localeAlternates().then((alternates) => {
+    links.forEach(({ locale, anchor }) => {
+      const path = alternates.get(locale);
+      if (path) anchor.setAttribute('href', path);
+    });
+  });
+}
+
 export default async function decorate(block) {
   instanceCounter += 1;
   const instanceId = instanceCounter;
 
+  const localeLinks = [];
   const optionRows = getOptionsRows(block);
   const options = optionRows.map(createOptionData).filter(Boolean);
   const activeOption = findActiveOption(options);
@@ -304,6 +328,7 @@ export default async function decorate(block) {
     const triggerLink = document.createElement('a');
     triggerLink.className = 'nav-language-trigger nav-language-trigger-link';
     triggerLink.href = onlyOption?.url || '#';
+    if (onlyOption?.locale) localeLinks.push({ locale: onlyOption.locale, anchor: triggerLink });
     if (onlyOption?.target === '_blank') {
       triggerLink.target = '_blank';
       triggerLink.rel = 'noopener';
@@ -353,6 +378,7 @@ export default async function decorate(block) {
   options.forEach((option) => {
     const optionLink = document.createElement('a');
     optionLink.href = option.url;
+    if (option.locale) localeLinks.push({ locale: option.locale, anchor: optionLink });
     if (option.target === '_blank') {
       optionLink.target = '_blank';
       optionLink.rel = 'noopener';
@@ -521,4 +547,6 @@ export default async function decorate(block) {
 
   rendered.append(trigger);
   document.body.append(backdrop);
+
+  pointToTranslations(localeLinks);
 }

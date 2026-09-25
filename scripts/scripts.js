@@ -12,6 +12,7 @@ import {
 } from './aem.js';
 import { decorateRichtext } from './editor-support-rte.js';
 import { decoratePageLinks } from './iberostar/page-links.js';
+import decorateHreflang from './iberostar/hreflang.js';
 import { getContentLocale } from './iberostar/date-format.js';
 
 /**
@@ -342,6 +343,8 @@ async function loadLazy(doc) {
     const footer = doc.querySelector('footer');
     loadFooter(footer).then(() => decoratePageLinks(footer));
   }
+
+  if (!isFragmentPage) decorateHreflang();
 
   loadCSS(`${window.hlx.codeBasePath}/styles/lazy-styles.css`);
   loadCSS(`${window.hlx.codeBasePath}/styles/ibh-icons.css`);
