@@ -1,5 +1,7 @@
 const HEADING_TAGS = ['h2', 'h3'];
 
+let titleCount = 0;
+
 function getSourceRows(block) {
   return [...block.children]
     .filter((child) => !child.classList.contains('article-content-table-rendered'));
@@ -73,15 +75,14 @@ function normalizeTable(table) {
   }
 }
 
-function addCaption(table, title, headingType) {
-  if (!title) return;
-
-  table.querySelector(':scope > caption')?.remove();
-  const caption = document.createElement('caption');
+function createTitle(title, headingType) {
+  if (!title) return null;
+  titleCount += 1;
   const heading = document.createElement(headingType);
+  heading.className = 'article-content-table-title';
+  heading.id = `article-content-table-title-${titleCount}`;
   heading.textContent = title;
-  caption.append(heading);
-  table.prepend(caption);
+  return heading;
 }
 
 export default function decorate(block) {
@@ -99,10 +100,21 @@ export default function decorate(block) {
 
   const table = sourceTable.cloneNode(true);
   normalizeTable(table);
-  addCaption(table, getTitle(block), getHeadingType(block));
+  table.querySelector(':scope > caption')?.remove();
 
   const rendered = document.createElement('div');
   rendered.className = 'article-content-table-rendered';
-  rendered.append(table);
+
+  const heading = createTitle(getTitle(block), getHeadingType(block));
+  if (heading) {
+    table.setAttribute('aria-labelledby', heading.id);
+    rendered.append(heading);
+  }
+
+  const scroll = document.createElement('div');
+  scroll.className = 'article-content-table-scroll';
+  scroll.append(table);
+  rendered.append(scroll);
+
   block.append(rendered);
 }

@@ -4,7 +4,7 @@
   display: none;
 }
 
-main .article-content-table .article-content-table-rendered {
+main .article-content-table .article-content-table-scroll {
   width: 100%;
   overflow-x: auto;
   -webkit-overflow-scrolling: touch;
@@ -18,15 +18,8 @@ main .article-content-table table {
   font-family: var(--body-font-family);
 }
 
-main .article-content-table caption {
-  margin-block-end: 24px;
-  caption-side: top;
-  text-align: left;
-}
-
-main .article-content-table caption h2,
-main .article-content-table caption h3 {
-  margin: 0;
+main .article-content-table .article-content-table-title {
+  margin: 0 0 24px;
   color: #1b2828;
   font-family: var(--heading-font-family);
   font-size: 24px;
@@ -102,8 +95,7 @@ main .article-content-table blockquote {
 }
 
 @media (width >= 820px) {
-  main .article-content-table caption h2,
-  main .article-content-table caption h3 {
+  main .article-content-table .article-content-table-title {
     font-size: 28px;
     line-height: 38px;
   }
