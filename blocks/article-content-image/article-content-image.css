@@ -7,6 +7,10 @@
   display: none;
 }
 
+main .article-content-image {
+  margin-block: 24px;
+}
+
 main .article-content-image .article-content-image-figure {
   margin: 0;
   width: 100%;
@@ -57,3 +61,18 @@ main .article-content-image .article-content-image-caption {
     margin: 0 0 0 auto;
   }
 }
+
+@media (width >= 820px) {
+  main .article-content-image {
+    margin-block: 32px;
+    margin-inline: 24px; 
+  }
+}
+
+@media (width >= 1440px) {
+  main .article-content-image {
+    margin-inline: 155px;
+  }
+}
+
+

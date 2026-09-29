@@ -17,11 +17,10 @@ main .editorial-article-content .editorial-article-content-rendered > * {
   margin: 0;
 }
 
-/* Bug 175393 — el cuerpo del articulo es 16px en xs y s; desde m sube a 18px */
 main .editorial-article-content .editorial-article-content-rendered p,
 main .editorial-article-content .editorial-article-content-rendered li {
   color: #1b2828;
-  font-size: 16px;
+  font-size: var(--body-font-size-m);
   font-style: normal;
   font-weight: 400;
   line-height: 1.4;
@@ -36,17 +35,45 @@ main .editorial-article-content .editorial-article-content-rendered b {
 main .editorial-article-content .editorial-article-content-rendered h2 {
   color: #1b2828;
   font-family: var(--heading-font-family);
-  font-size: 32px;
+  font-size: 28px;
   font-weight: 400;
-  line-height: 42px;
+  line-height: 38px;
+}
+
+main .editorial-article-content .editorial-article-content-rendered h2:not(:first-child) {
+  margin-top: 16px;
 }
 
 main .editorial-article-content .editorial-article-content-rendered h3 {
   color: #1b2828;
+  font-family: var(--body-font-family);
+  font-size: var(--heading-font-size-s);
+  font-weight: 500;
+  line-height: 1.4;
+}
+
+main .editorial-article-content .editorial-article-content-rendered blockquote {
+  margin-block: 16px;
+  padding-left: 16px;
+  border-left: 1px solid #dedede;
+}
+
+main .editorial-article-content .editorial-article-content-rendered blockquote p {
+  margin: 0;
+  color: #636363;
   font-family: var(--heading-font-family);
-  font-size: 24px;
-  font-weight: 400;
-  line-height: 32px;
+  font-size: 20px;
+  font-style: italic;
+  line-height: 32.5px;
+}
+
+main .editorial-article-content .editorial-article-content-rendered .editorial-article-content-table-scroll {
+  margin-block: 16px;
+  overflow-x: auto;
+}
+
+main .editorial-article-content .editorial-article-content-rendered :is(blockquote, .editorial-article-content-table-scroll) + :is(blockquote, .editorial-article-content-table-scroll) {
+  margin-top: 0;
 }
 
 main .editorial-article-content .editorial-article-content-rendered ul,
@@ -66,11 +93,4 @@ main .editorial-article-content .editorial-article-content-rendered a {
 main .editorial-article-content .editorial-article-content-rendered a:hover,
 main .editorial-article-content .editorial-article-content-rendered a:focus-visible {
   color: #000;
-}
-
-@media (width >= 820px) {
-  main .editorial-article-content .editorial-article-content-rendered p,
-  main .editorial-article-content .editorial-article-content-rendered li {
-    font-size: 18px;
-  }
 }

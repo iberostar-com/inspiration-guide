@@ -216,7 +216,7 @@ const SIDEBAR_ANCHOR_SELECTOR = '.article-main-image, .article-content-image';
  * @param {Element} shell The article layout shell
  */
 function updateArticleSidebarOffset(container, anchorSelector) {
-  const isTwoColumn = window.matchMedia('(width >= 1440px)').matches;
+  const isTwoColumn = window.matchMedia('(width >= 820px)').matches;
   const anchor = container.querySelector(anchorSelector);
 
   if (!isTwoColumn || !anchor) {

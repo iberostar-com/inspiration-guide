@@ -41,6 +41,9 @@
   --nav-height: 64px;
   --scrollbar-width: 0px;
   --full-bleed-width: calc(100vw - var(--scrollbar-width));
+
+  /* article */
+  --article-module-gap: 40px;
 }
 
 /* fallback fonts */
@@ -363,30 +366,34 @@ body.page-article main.article-layout-author > .section > div {
   padding: 0;
 }
 
-@media (width >= 1440px) {
+@media (width >= 576px) {
+  body.page-article main > .article-layout-shell,
+  body.page-article main.article-layout-author {
+    margin-inline: 24px;
+  }
+}
+
+@media (width >= 820px) {
   body.page-article main > .article-layout-shell {
-    grid-template-columns: minmax(0, 805px) 277px;
-    gap: 76px;
+    grid-template-columns: minmax(0, 1fr) 209px;
+    gap: 16px;
     align-items: start;
-    max-width: 1158px;
-    margin: 24px auto 40px;
   }
 
   body.page-article main > .article-layout-shell.article-layout-single {
-    grid-template-columns: minmax(0, 805px);
-    max-width: 805px;
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  body.page-article main > .article-layout-shell .article-layout-sidebar {
+    align-content: start;
+    align-self: stretch;
+    padding-top: var(--article-sidebar-offset, 0);
   }
 
   body.page-article main.article-layout-author {
-    grid-template-columns: minmax(0, 805px) 277px;
-    gap: 40px 76px;
+    grid-template-columns: minmax(0, 1fr) 209px;
+    gap: 40px 16px;
     align-items: start;
-    max-width: 1158px;
-    margin: 24px auto 40px;
-  }
-
-  body.page-article main.article-layout-author > .section {
-    min-width: 0;
   }
 
   body.page-article main.article-layout-author > .section.article-main {
@@ -403,13 +410,6 @@ body.page-article main.article-layout-author > .section > div {
     grid-column: 1 / -1;
   }
 
-  /* the sidebar starts aligned with the article image and sticks from there down */
-  body.page-article main > .article-layout-shell .article-layout-sidebar {
-    align-content: start;
-    align-self: stretch;
-    padding-top: var(--article-sidebar-offset, 0);
-  }
-
   body.page-article main > .article-layout-shell .article-layout-sidebar > .section {
     position: sticky;
     top: calc(var(--header-visible-height, 0px) + 24px);
@@ -420,6 +420,27 @@ body.page-article main.article-layout-author > .section > div {
     body.page-article main > .article-layout-shell .article-layout-sidebar > .section {
       transition: none;
     }
+  }
+}
+
+@media (width >= 1440px) {
+  body.page-article main > .article-layout-shell {
+    grid-template-columns: minmax(0, 805px) 277px;
+    gap: 76px;
+    max-width: 1158px;
+    margin: 24px auto 40px;
+  }
+
+  body.page-article main > .article-layout-shell.article-layout-single {
+    grid-template-columns: minmax(0, 805px);
+    max-width: 805px;
+  }
+
+  body.page-article main.article-layout-author {
+    grid-template-columns: minmax(0, 805px) 277px;
+    gap: 40px 76px;
+    max-width: 1158px;
+    margin: 24px auto 40px;
   }
 }
 
@@ -450,4 +471,46 @@ main .section.highlight {
   background-color: var(--light-color);
   margin: 0;
   padding: 40px 0;
+}
+
+body.page-article .article-main :is(
+  .article-content-image-wrapper,
+  .article-content-table-wrapper,
+  .article-content-quote-wrapper
+) + :is(
+  .article-content-image-wrapper,
+  .article-content-table-wrapper,
+  .article-content-quote-wrapper
+),
+body.page-article .article-main :is(
+  .article-content-table-wrapper,
+  .article-content-quote-wrapper
+) + .editorial-article-content-wrapper {
+  margin-top: var(--article-module-gap);
+}
+
+body.page-article .article-main :is(
+  .article-content-image-wrapper,
+  .article-content-table-wrapper,
+  .article-content-quote-wrapper
+) + .hotel-graphql-mini-card-wrapper,
+body.page-article .article-main .hotel-graphql-mini-card-wrapper + :is(
+  .article-content-image-wrapper,
+  .article-content-table-wrapper,
+  .article-content-quote-wrapper,
+  .editorial-article-content-wrapper
+) {
+  margin-top: calc(var(--article-module-gap) - 16px);
+}
+
+body.page-article .article-main .hotel-graphql-mini-card-wrapper + .hotel-graphql-mini-card-wrapper {
+  margin-top: calc(var(--article-module-gap) - 32px);
+}
+
+body.page-article .article-main .article-content-image-wrapper:has(+ .hotel-graphql-mini-card-wrapper) .article-content-image {
+  margin-bottom: 0;
+}
+
+body.page-article .article-main .hotel-graphql-mini-card-wrapper + .article-content-image-wrapper .article-content-image {
+  margin-top: 0;
 }
