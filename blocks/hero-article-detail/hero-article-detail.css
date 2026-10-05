@@ -8,7 +8,7 @@
   flex-direction: column;
   align-items: center;
   gap: 40px;
-  padding: 64px 0 32px;
+  padding: 40px 0 32px;
   background: #fff;
   color: #1b2828;
   width: 100%;
@@ -18,9 +18,6 @@
   display: none;
 }
 
-/* Bug 175393 — xs/s: parrafo->autor 32px, autor->datos 32px, datos con 16px de gap
-   y el boton de compartir debajo de la linea divisoria; desde m (Figma L 24254:40526)
-   vuelven 40/56/24 y compartir en la fila de datos */
 .hero-article-detail .hero-article-detail-content {
   display: grid;
   gap: 32px;
@@ -205,6 +202,10 @@
 }
 
 @media (width >= 820px) {
+  .hero-article-detail {
+    padding-top: 64px;
+  }
+
   .hero-article-detail .hero-article-detail-content {
     gap: 40px;
   }
@@ -229,7 +230,6 @@
   }
 }
 
-/* Bug 175393 — titulo 32px en xs y s, 40px en m y 48px desde l */
 @media (width >= 820px) {
   .hero-article-detail .hero-article-detail-title {
     font-size: 40px;
