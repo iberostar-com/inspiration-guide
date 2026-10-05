@@ -82,3 +82,13 @@ main .editorial-article-banner .editorial-article-banner-link:focus-visible {
   outline: 2px solid #1b2828;
   outline-offset: 2px;
 }
+
+main .article-sidebar .editorial-article-banner .editorial-article-banner-rendered {
+  margin-inline: 16px;
+}
+
+@media (width >= 820px) {
+  main .article-sidebar .editorial-article-banner .editorial-article-banner-rendered {
+    margin-inline: 0;
+  }
+}
