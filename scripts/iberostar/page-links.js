@@ -1,6 +1,7 @@
 const AEM_AUTHOR_HOST_PATTERN = /^author-p\d+-e\d+\.adobeaemcloud\.com$/i;
 const DEFAULT_CONTENT_ROOT = '/content/inspiration-guide';
 const PUBLIC_PAGE_PATTERN = /^\/[a-z]{2}-[a-z]{2}(?:\/|$)/i;
+const INSPIRATION_GUIDE_ARTICLE_ROUTE_PATTERN = /^\/([a-z]{2}-[a-z]{2})\/inspiration-guide\/articles?\/(.+)$/i;
 
 function getAemContentRoot() {
   const pathMatch = window.location.pathname.match(/^\/content\/[^/]+/);
@@ -14,7 +15,8 @@ function getAemContentRoot() {
 }
 
 function isAuthorEnvironment() {
-  return AEM_AUTHOR_HOST_PATTERN.test(window.location.hostname);
+  return AEM_AUTHOR_HOST_PATTERN.test(window.location.hostname)
+    || window.location.pathname.startsWith('/content/');
 }
 
 function isExternalUrl(url) {
@@ -52,12 +54,23 @@ export function toPublicPagePath(value) {
   return `${pathname.replace(/\.html$/, '')}${url.search}${url.hash}`;
 }
 
+function toPrettyInspirationGuidePath(value) {
+  const url = parsePageUrl(value);
+  if (!url || !PUBLIC_PAGE_PATTERN.test(url.pathname)) return value;
+
+  const match = url.pathname.replace(/\.html$/i, '').match(INSPIRATION_GUIDE_ARTICLE_ROUTE_PATTERN);
+  if (!match) return value;
+
+  const [, locale, slugPath] = match;
+  return `/${locale}/inspiration-guide/${slugPath}${url.search}${url.hash}`;
+}
+
 export function toPageHref(value) {
   const publicPath = toPublicPagePath(value);
   const url = parsePageUrl(publicPath);
 
   if (!isAuthorEnvironment() || !url || !PUBLIC_PAGE_PATTERN.test(url.pathname)) {
-    return publicPath;
+    return toPrettyInspirationGuidePath(publicPath);
   }
 
   const pathname = url.pathname.replace(/\.html$/, '');
