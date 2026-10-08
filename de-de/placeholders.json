@@ -1,6 +1,6 @@
 {
   "data": [
-    { "Key": "readArticle", "Text": "Artikel lesen" },
+    { "Key": "readArticle", "Text": "Den Artikel lesen" },
     { "Key": "viewMoreArticles", "Text": "Weitere Artikel anzeigen" },
     { "Key": "sortOrder", "Text": "Sortierung:" },
     { "Key": "sortMostRecent", "Text": "Neueste" },
