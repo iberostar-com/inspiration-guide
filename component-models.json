@@ -1508,8 +1508,7 @@
         "component": "text",
         "valueType": "string",
         "name": "cardCtaLabel",
-        "label": "Article CTA Text",
-        "value": "Leer artículo"
+        "label": "Article CTA Text"
       },
       {
         "component": "select",

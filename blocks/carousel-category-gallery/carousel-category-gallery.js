@@ -1,5 +1,6 @@
 import { createResponsiveImage } from '../../scripts/iberostar/media.js';
 import { resolveFinalAlt } from '../../scripts/iberostar/image-alt.js';
+import { getTranslation } from '../../scripts/iberostar/i18n.js';
 import { moveInstrumentation } from '../../scripts/scripts.js';
 
 const DEFAULT_MAX_ITEMS = 9;
@@ -192,7 +193,7 @@ function buildArrow(className, label, direction) {
   return button;
 }
 
-function buildControls(list, count) {
+function buildControls(list, count, labels) {
   const nav = document.createElement('div');
   nav.className = 'carousel-category-gallery-nav';
 
@@ -200,15 +201,15 @@ function buildControls(list, count) {
   counter.className = 'carousel-category-gallery-counter';
   counter.setAttribute('aria-live', 'polite');
 
-  const prev = buildArrow('carousel-category-gallery-prev', 'Previous', -1);
-  const next = buildArrow('carousel-category-gallery-next', 'Next', 1);
+  const prev = buildArrow('carousel-category-gallery-prev', labels.previous, -1);
+  const next = buildArrow('carousel-category-gallery-next', labels.next, 1);
   nav.append(counter, prev, next);
 
   const dotsBar = document.createElement('div');
   dotsBar.className = 'carousel-category-gallery-dots-bar';
 
-  const prevArrow = buildArrow('carousel-category-gallery-arrow carousel-category-gallery-arrow-prev', 'Previous', -1);
-  const nextArrow = buildArrow('carousel-category-gallery-arrow carousel-category-gallery-arrow-next', 'Next', 1);
+  const prevArrow = buildArrow('carousel-category-gallery-arrow carousel-category-gallery-arrow-prev', labels.previous, -1);
+  const nextArrow = buildArrow('carousel-category-gallery-arrow carousel-category-gallery-arrow-next', labels.next, 1);
 
   const dots = document.createElement('div');
   dots.className = 'carousel-category-gallery-dots';
@@ -217,7 +218,7 @@ function buildControls(list, count) {
     const dot = document.createElement('button');
     dot.type = 'button';
     dot.className = 'carousel-category-gallery-dot';
-    dot.setAttribute('aria-label', `Go to slide ${i + 1}`);
+    dot.setAttribute('aria-label', `${labels.goToSlide} ${i + 1}`);
     dot.dataset.index = i;
     dots.append(dot);
     return dot;
@@ -268,12 +269,17 @@ function buildControls(list, count) {
   return { nav, dotsBar, update };
 }
 
-export default function decorate(block) {
+export default async function decorate(block) {
   const eyebrow = readConfig(block, 'eyebrow', 0);
   const title = readConfig(block, 'title', 1);
   const maxItems = Number.parseInt(readConfig(block, 'maxItems', 2).value, 10) || DEFAULT_MAX_ITEMS;
 
   const cardRows = getCardRows(block).slice(0, maxItems);
+  const labels = {
+    goToSlide: await getTranslation('carouselCategoryGalleryGoToSlide', 'Go to slide'),
+    next: await getTranslation('categoryGalleryNext', 'Next destinations'),
+    previous: await getTranslation('categoryGalleryPrevious', 'Previous destinations'),
+  };
 
   const wrapper = document.createElement('div');
   wrapper.className = 'carousel-category-gallery';
@@ -312,7 +318,7 @@ export default function decorate(block) {
     header.append(headings);
 
     if (showNav) {
-      controls = buildControls(list, cardRows.length);
+      controls = buildControls(list, cardRows.length, labels);
       header.append(controls.nav);
     }
 

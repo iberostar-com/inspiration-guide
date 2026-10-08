@@ -2,6 +2,8 @@ import { tagTitle } from './tag-label.js';
 
 const REQUEST_CACHE = new Map();
 let taxonomyPromise = null;
+const CATEGORY_ID_ROOT_PATTERN = /^(?:category|categories|categoria|categorias|categorías)(\/|$)/i;
+const TAG_ID_ROOT_PATTERN = /^(?:tag|tags)(\/|$)/i;
 
 function localeSegment() {
   const segment = window.location.pathname
@@ -39,9 +41,9 @@ function keyFromId(id) {
   const body = raw.includes(':') ? raw.slice(raw.indexOf(':') + 1) : raw;
   if (!body) return '';
 
-  if (/^categor[ií]as?(\/|$)/i.test(body)) {
+  if (CATEGORY_ID_ROOT_PATTERN.test(body)) {
     const rest = body
-      .replace(/^categor[ií]as?\/?/i, '')
+      .replace(CATEGORY_ID_ROOT_PATTERN, '')
       .split('/')
       .map(slugifySegment)
       .filter(Boolean)
@@ -49,7 +51,7 @@ function keyFromId(id) {
     return rest ? `/category/${rest}` : '';
   }
 
-  const leaf = body.replace(/^tags?\/?/i, '').split('/').filter(Boolean).pop();
+  const leaf = body.replace(TAG_ID_ROOT_PATTERN, '').split('/').filter(Boolean).pop();
   const slug = slugifySegment(leaf);
   return slug ? `/tag/${slug}` : '';
 }

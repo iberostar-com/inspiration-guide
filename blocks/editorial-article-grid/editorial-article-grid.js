@@ -1,11 +1,11 @@
 import { createResponsiveImage } from '../../scripts/iberostar/media.js';
 import { tagTitle } from '../../scripts/iberostar/tag-label.js';
 import { taxonomyTitle } from '../../scripts/iberostar/taxonomy.js';
+import { getTranslation } from '../../scripts/iberostar/i18n.js';
 import { getArticles, normalizeArticlePath } from '../../scripts/inspiration-data.js';
 import { moveInstrumentation } from '../../scripts/scripts.js';
 
 const MAX_ITEMS = 3;
-const CTA_COPY = 'Leer artículo';
 const MODE_VALUES = new Set(['manual', 'auto-tag', 'auto-category']);
 const HEADING_TAGS = new Set(['p', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6']);
 const LINK_TARGETS = new Set(['_self', '_blank']);
@@ -666,14 +666,16 @@ function createCard(item, config) {
   return article;
 }
 
-function readConfig(block) {
+async function readConfig(block) {
+  const fallbackCtaText = await getTranslation('readArticle', 'Leer artículo');
+
   return {
     eyebrow: textByProp(block, 'eyebrow', ''),
     eyebrowHeading: sanitizeHeadingTag(textByProp(block, 'eyebrowHeading', 'h2'), 'h2'),
     title: textByProp(block, 'title', ''),
     titleHeading: sanitizeHeadingTag(textByProp(block, 'titleHeading', 'p'), 'p'),
     mode: sanitizeMode(textByProp(block, 'mode', block.getAttribute('data-mode') || 'manual')),
-    ctaText: textByProp(block, 'cardCtaLabel', CTA_COPY),
+    ctaText: textByProp(block, 'cardCtaLabel', fallbackCtaText),
     ctaTarget: sanitizeLinkTarget(textByProp(block, 'ctaTarget', '_self')),
   };
 }
@@ -755,7 +757,7 @@ function markInstrumentation(items, rendered) {
 export default async function decorate(block) {
   removePreviousRender(block);
 
-  const config = readConfig(block);
+  const config = await readConfig(block);
   const items = config.mode === 'manual'
     ? await getManualItems(block)
     : await getAutoArticles(config.mode);

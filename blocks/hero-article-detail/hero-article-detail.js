@@ -139,6 +139,7 @@ export default async function decorate(block) {
   const category = await toCategoryLabel(getMetaValue('article-category'));
   const publicationDate = toDisplayDate(getMetaValue('article-publication-date'));
   const readTime = getMetaValue('article-read-time').toUpperCase();
+  const shareLabel = await getTranslation('shareArticle', 'Compartir artículo');
 
   hideSourceRows(block);
 
@@ -165,7 +166,7 @@ export default async function decorate(block) {
     if (authorImage) {
       const authorMedia = createResponsiveImage(
         authorImage,
-        authorName ? `Foto de ${authorName}` : '',
+        authorName,
         {
           eager: true,
           breakpoints: [{ width: '96' }],
@@ -219,7 +220,7 @@ export default async function decorate(block) {
   const shareButton = document.createElement('button');
   shareButton.type = 'button';
   shareButton.className = 'hero-article-detail-share';
-  shareButton.setAttribute('aria-label', 'Compartir articulo');
+  shareButton.setAttribute('aria-label', shareLabel);
   shareButton.append(createShareIcon());
   shareButton.addEventListener('click', async () => {
     const shareData = {

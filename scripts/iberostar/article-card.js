@@ -97,7 +97,9 @@ export function createArticleCard(
       const imageLink = document.createElement('a');
       imageLink.className = 'article-card-image-link';
       imageLink.href = data.url;
-      imageLink.setAttribute('aria-label', data.title || 'Read article');
+      if (data.title || data.ctaText) {
+        imageLink.setAttribute('aria-label', data.title || data.ctaText);
+      }
       imageLink.append(picture);
       media.append(imageLink);
     } else {

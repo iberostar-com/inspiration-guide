@@ -1,5 +1,6 @@
 import { createResponsiveImage } from '../../scripts/iberostar/media.js';
 import { resolveFinalAlt } from '../../scripts/iberostar/image-alt.js';
+import { getTranslation } from '../../scripts/iberostar/i18n.js';
 import { moveInstrumentation } from '../../scripts/scripts.js';
 
 const MAX_CARDS = 4;
@@ -178,7 +179,7 @@ function getCardData(row) {
   };
 }
 
-function createCard(row) {
+function createCard(row, labels) {
   const {
     imageAlt,
     imageSrc,
@@ -199,7 +200,7 @@ function createCard(row) {
   card.classList.toggle('has-image', Boolean(imageSrc));
   if (link) {
     card.href = link;
-    card.setAttribute('aria-label', title || pretitle || 'View destination');
+    card.setAttribute('aria-label', title || pretitle || labels.viewDestination);
   }
 
   if (imageSrc) {
@@ -237,19 +238,19 @@ function createCard(row) {
   return li;
 }
 
-function buildCarouselControls(list, items) {
+function buildCarouselControls(list, items, labels) {
   const controls = document.createElement('div');
   controls.className = 'grid-category-gallery-controls';
 
   const prev = document.createElement('button');
   prev.type = 'button';
   prev.className = 'grid-category-gallery-prev';
-  prev.setAttribute('aria-label', 'Previous destinations');
+  prev.setAttribute('aria-label', labels.previous);
 
   const next = document.createElement('button');
   next.type = 'button';
   next.className = 'grid-category-gallery-next';
-  next.setAttribute('aria-label', 'Next destinations');
+  next.setAttribute('aria-label', labels.next);
 
   const dots = document.createElement('div');
   dots.className = 'grid-category-gallery-dots';
@@ -257,7 +258,7 @@ function buildCarouselControls(list, items) {
     const dot = document.createElement('button');
     dot.type = 'button';
     dot.className = 'grid-category-gallery-dot';
-    dot.setAttribute('aria-label', `Go to destination ${index + 1}`);
+    dot.setAttribute('aria-label', `${labels.goToDestination} ${index + 1}`);
     dot.dataset.index = index;
     dots.append(dot);
     return dot;
@@ -313,7 +314,7 @@ function hideConfigRows(rows) {
   });
 }
 
-export default function decorate(block) {
+export default async function decorate(block) {
   restoreSourceRows(block);
 
   const title = getConfigText(block, 'title', 'data-title');
@@ -328,6 +329,12 @@ export default function decorate(block) {
       ? instrumentedCardRows
       : sourceRows.filter((row) => !configRows.has(row))
   ).slice(0, MAX_CARDS);
+  const labels = {
+    goToDestination: await getTranslation('categoryGalleryGoToDestination', 'Go to destination'),
+    next: await getTranslation('categoryGalleryNext', 'Next destinations'),
+    previous: await getTranslation('categoryGalleryPrevious', 'Previous destinations'),
+    viewDestination: await getTranslation('categoryGalleryViewDestination', 'View destination'),
+  };
 
   const rendered = document.createElement('div');
   rendered.className = 'grid-category-gallery-rendered';
@@ -373,13 +380,13 @@ export default function decorate(block) {
   list.className = 'grid-category-gallery-list';
 
   const items = cardRows.map((row) => {
-    const item = createCard(row);
+    const item = createCard(row, labels);
     list.append(item);
     return item;
   });
 
   rendered.append(list);
-  if (items.length > 1) rendered.append(buildCarouselControls(list, items));
+  if (items.length > 1) rendered.append(buildCarouselControls(list, items, labels));
 
   hideConfigRows(sourceRows.filter((row) => configRows.has(row) || !cardRows.includes(row)));
   block.append(rendered);
