@@ -19,6 +19,14 @@ function isAuthorEnvironment() {
     || window.location.pathname.startsWith('/content/');
 }
 
+function isCdnManagedPublishEnvironment() {
+  const { hostname } = window.location;
+  return !hostname.endsWith('.aem.live')
+    && !hostname.endsWith('.aem.page')
+    && hostname !== 'localhost'
+    && hostname !== '127.0.0.1';
+}
+
 function isExternalUrl(url) {
   return url.origin !== window.location.origin
     && !url.hostname.endsWith('.adobeaemcloud.com');
@@ -70,6 +78,7 @@ export function toPageHref(value) {
   const url = parsePageUrl(publicPath);
 
   if (!isAuthorEnvironment() || !url || !PUBLIC_PAGE_PATTERN.test(url.pathname)) {
+    if (!isCdnManagedPublishEnvironment()) return publicPath;
     return toPrettyInspirationGuidePath(publicPath);
   }
 
