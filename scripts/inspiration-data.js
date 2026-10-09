@@ -722,7 +722,8 @@ async function fetchArticleMetadata(path) {
     path: articlePath,
     url: articlePath,
     title:
-      getMetaFromDocument(doc, 'jcr:title')
+      doc.querySelector('h1')?.textContent?.trim()
+      || getMetaFromDocument(doc, 'jcr:title')
       || getMetaFromDocument(doc, 'og:title')
       || doc.querySelector('title')?.textContent?.trim(),
     description:

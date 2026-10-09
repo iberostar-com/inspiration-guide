@@ -414,9 +414,9 @@ async function fetchArticleCardItem(refPath) {
           href,
           image,
           imageAlt,
-          title: getMetaFromDocument(doc, 'jcr:title')
+          title: doc.querySelector('h1')?.textContent?.trim()
+            || getMetaFromDocument(doc, 'jcr:title')
             || getMetaFromDocument(doc, 'og:title')
-            || doc.querySelector('h1')?.textContent?.trim()
             || doc.querySelector('title')?.textContent?.trim()
             || '',
           category: getLeafCategoryLabel(category),

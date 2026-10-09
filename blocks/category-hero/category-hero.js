@@ -48,8 +48,8 @@ function labelFromHref(href) {
 }
 
 function getTitleFallback() {
-  return getMetadata('og:title')
-    || document.querySelector('h1')?.textContent?.trim()
+  return document.querySelector('h1')?.textContent?.trim()
+    || getMetadata('og:title')
     || document.title?.split('|')?.[0]?.trim()
     || '';
 }

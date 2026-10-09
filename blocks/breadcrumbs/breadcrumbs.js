@@ -106,8 +106,8 @@ function toLabel(segment) {
 function getTitleFallback() {
   return getMetadata(BREADCRUMB_TITLE_META)
     || getMetadata(NAVIGATION_TITLE_META)
-    || getMetadata('og:title')
     || document.querySelector('h1')?.textContent?.trim()
+    || getMetadata('og:title')
     || document.title?.split('|')?.[0]?.trim()
     || '';
 }
@@ -169,8 +169,8 @@ async function fetchPageBreadcrumbData(path) {
       return {
         title: getMetaFromDocument(doc, BREADCRUMB_TITLE_META)
           || getMetaFromDocument(doc, NAVIGATION_TITLE_META)
-          || getMetaFromDocument(doc, 'og:title')
           || doc.querySelector('h1')?.textContent?.trim()
+          || getMetaFromDocument(doc, 'og:title')
           || doc.title?.split('|')?.[0]?.trim()
           || '',
         visible: !isFalseValue(getMetaFromDocument(doc, BREADCRUMB_VISIBLE_META)),
