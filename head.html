@@ -29,12 +29,26 @@
       });
     };
 
+    const contentTitle = readMeta('meta[property="og:title"]')
+      || readMeta('meta[name="jcr:title"]')
+      || document.title?.trim();
+    const contentDesc = readMeta('meta[name="description"]')
+      || readMeta('meta[property="og:description"]')
+      || readMeta('meta[name="jcr:description"]');
     const metaTitle = readMeta('meta[name="meta-title"]')
       || readMeta('meta[property="og:title"]')
       || readMeta('meta[name="jcr:title"]');
     const metaDesc = readMeta('meta[name="meta-description"]')
       || readMeta('meta[name="description"]')
       || readMeta('meta[name="jcr:description"]');
+
+    if (contentTitle) {
+      writeMeta('name', 'content-title', contentTitle);
+    }
+
+    if (contentDesc) {
+      writeMeta('name', 'content-description', contentDesc);
+    }
 
     if (metaTitle) {
       document.title = metaTitle;

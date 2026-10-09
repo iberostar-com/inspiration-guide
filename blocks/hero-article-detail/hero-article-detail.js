@@ -124,10 +124,12 @@ export default async function decorate(block) {
   const fields = getSourceFields(block);
 
   const title = fields[2]?.textContent?.trim()
+    || getMetaValue('content-title')
     || getMetaValue('jcr:title')
     || getMetaValue('og:title')
     || 'Article';
   const subtitle = fields[3]?.textContent?.trim()
+    || getMetaValue('content-description')
     || getMetaValue('jcr:description')
     || getMetaValue('description')
     || getMetaValue('og:description')

@@ -49,6 +49,7 @@ function labelFromHref(href) {
 
 function getTitleFallback() {
   return document.querySelector('h1')?.textContent?.trim()
+    || getMetadata('content-title')
     || getMetadata('og:title')
     || document.title?.split('|')?.[0]?.trim()
     || '';

@@ -107,6 +107,7 @@ function getTitleFallback() {
   return getMetadata(BREADCRUMB_TITLE_META)
     || getMetadata(NAVIGATION_TITLE_META)
     || document.querySelector('h1')?.textContent?.trim()
+    || getMetadata('content-title')
     || getMetadata('og:title')
     || document.title?.split('|')?.[0]?.trim()
     || '';
