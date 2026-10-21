@@ -750,13 +750,21 @@ async function fetchArticleMetadata(path) {
   };
 }
 
-async function getArticlesFromPageIndex() {
-  const payload = await fetchJson(resolvePageIndexUrl());
-  const articleRows = getIndexRows(payload).filter((row) => isArticlePath(row.path));
-  const articles = await Promise.all(
-    articleRows.map((row) => fetchArticleMetadata(row.path)),
-  );
-  return articles;
+// The generic page index has no article metadata (image, tags...), so its rows
+// have to be enriched by fetching each article page. That is only acceptable as
+// an authoring fallback and must stay bounded to the current locale.
+const MAX_PAGE_INDEX_ENRICHMENTS = 24;
+
+function isCurrentLocalePath(path) {
+  const root = getCurrentLanguageRoot();
+  return !root || normalizePagePath(path).startsWith(`${root}/`);
+}
+
+function getPageIndexArticleRows(payload) {
+  return getIndexRows(payload)
+    .filter((row) => isArticlePath(row.path) && isCurrentLocalePath(row.path))
+    .sort((a, b) => (Number(b.lastModified) || 0) - (Number(a.lastModified) || 0))
+    .slice(0, MAX_PAGE_INDEX_ENRICHMENTS);
 }
 
 function buildTagFrequency(articles) {
@@ -810,10 +818,12 @@ async function enrichSparseArticles(articles = [], options = {}) {
 async function getAemArticles() {
   const primaryUrl = resolveAemDataUrl();
   const isAuthor = isAuthorContext();
+  // Dedicated per-locale article indexes carry all listing metadata and must be
+  // tried first. The generic page index is an authoring-only last resort.
   const urlsToTry = [
     primaryUrl,
-    resolvePageIndexUrl(),
     ...(isAuthor ? [] : getDefaultArticleIndexUrls()),
+    ...(isAuthor ? [resolvePageIndexUrl()] : []),
   ].filter(Boolean);
 
   const tryLoadArticles = async (urls) => {
@@ -822,16 +832,17 @@ async function getAemArticles() {
 
     try {
       const payload = await fetchJson(currentUrl);
-      const collection = isPageIndexUrl(currentUrl)
-        ? getIndexRows(payload).filter((row) => isArticlePath(row.path))
+      const fromPageIndex = isPageIndexUrl(currentUrl);
+      const collection = fromPageIndex
+        ? getPageIndexArticleRows(payload)
         : pickArticlesCollection(payload);
       const normalized = collection
         .map((article, index) => normalizeArticle(article, index))
         .filter((article) => article.id && article.visible);
 
-      const enriched = await enrichSparseArticles(normalized, {
-        discardUnresolved: isPageIndexUrl(currentUrl),
-      });
+      const enriched = fromPageIndex
+        ? await enrichSparseArticles(normalized, { discardUnresolved: true })
+        : normalized;
       const results = enriched.filter(isCompleteArticle);
 
       if (results.length > 0) {
@@ -855,20 +866,9 @@ async function getAemArticles() {
   const articles = await tryLoadArticles(urlsToTry);
   if (articles) return articles;
 
-  try {
-    const collection = await getArticlesFromPageIndex();
-
-    return collection
-      .map((article, index) => normalizeArticle(article, index))
-      .filter(isCompleteArticle);
-  } catch (error) {
-    // eslint-disable-next-line no-console
-    console.warn(
-      '[inspiration-data] Failed to load fallback article data:',
-      error,
-    );
-    return [];
-  }
+  // eslint-disable-next-line no-console
+  console.warn('[inspiration-data] No article data could be loaded');
+  return [];
 }
 
 export function getDataMode() {
@@ -904,13 +904,26 @@ async function withCategoryTitles(articles) {
   }));
 }
 
-export async function getArticles() {
+let articlesPromise = null;
+
+async function loadArticles() {
   const mode = getDataMode();
   const articles = mode === 'aem'
     ? await getAemArticles()
     : MOCK_ARTICLES.map((article, index) => normalizeArticle(article, index));
 
   return withCategoryTitles(articles);
+}
+
+// Several blocks on the same page request the article list; share one load.
+export async function getArticles() {
+  if (!articlesPromise) {
+    articlesPromise = loadArticles().catch((error) => {
+      articlesPromise = null;
+      throw error;
+    });
+  }
+  return (await articlesPromise).slice();
 }
 
 export async function getTagCloud(strategy = 'frequency', limit = 20) {
