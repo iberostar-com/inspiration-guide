@@ -3,6 +3,7 @@ import { tagTitle } from '../../scripts/iberostar/tag-label.js';
 import { taxonomyTitle } from '../../scripts/iberostar/taxonomy.js';
 import { getTranslation } from '../../scripts/iberostar/i18n.js';
 import { getArticles, normalizeArticlePath } from '../../scripts/inspiration-data.js';
+import { toPageHref } from '../../scripts/iberostar/page-links.js';
 import { moveInstrumentation } from '../../scripts/scripts.js';
 
 const MAX_ITEMS = 3;
@@ -380,7 +381,7 @@ function matchesCategoryTree(currentTree, article) {
 
 function toResolvedCardItem(article) {
   return {
-    href: normalizePath(article.href || article.path || ''),
+    href: toPageHref(article.href || article.path || ''),
     image: article.image || article.ogImage || '',
     imageAlt: article.imageAlt || '',
     title: article.title || '',
@@ -390,7 +391,7 @@ function toResolvedCardItem(article) {
 }
 
 async function fetchArticleCardItem(refPath) {
-  const href = normalizePath(refPath);
+  const href = toPageHref(normalizeArticlePath(refPath));
   if (!href) return null;
   if (ARTICLE_CARD_CACHE.has(href)) return ARTICLE_CARD_CACHE.get(href);
 

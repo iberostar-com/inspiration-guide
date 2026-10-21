@@ -10,6 +10,9 @@ indices:
       - '/**/404'
     target: /query-index.json
     properties:
+      pageType:
+        select: head > meta[name="page-type"]
+        value: attribute(el, "content")
       path:
         select: none
         value: path
@@ -28,13 +31,15 @@ indices:
 
   inspirationArticlesEs:
     include:
-      - '/es-es/inspiration-guide/articles/**'
-      - '/es-es/inspiration-guide/article/**'
+      - '/es-es/inspiration-guide/**'
     exclude:
       - '/**.json'
       - '/**/*.json'
     target: /es-es/inspiration-guide/articles-index.json
     properties:
+      pageType:
+        select: head > meta[name="page-type"]
+        value: attribute(el, "content")
       path:
         select: none
         value: path
@@ -107,13 +112,15 @@ indices:
 
   inspirationArticlesEnUs:
     include:
-      - '/en-us/inspiration-guide/articles/**'
-      - '/en-us/inspiration-guide/article/**'
+      - '/en-us/inspiration-guide/**'
     exclude:
       - '/**.json'
       - '/**/*.json'
     target: /en-us/inspiration-guide/articles-index.json
     properties:
+      pageType:
+        select: head > meta[name="page-type"]
+        value: attribute(el, "content")
       path:
         select: none
         value: path
@@ -186,13 +193,15 @@ indices:
 
   inspirationArticlesEnGb:
     include:
-      - '/en-gb/inspiration-guide/articles/**'
-      - '/en-gb/inspiration-guide/article/**'
+      - '/en-gb/inspiration-guide/**'
     exclude:
       - '/**.json'
       - '/**/*.json'
     target: /en-gb/inspiration-guide/articles-index.json
     properties:
+      pageType:
+        select: head > meta[name="page-type"]
+        value: attribute(el, "content")
       path:
         select: none
         value: path
@@ -265,13 +274,15 @@ indices:
 
   inspirationArticlesFrFr:
     include:
-      - '/fr-fr/inspiration-guide/articles/**'
-      - '/fr-fr/inspiration-guide/article/**'
+      - '/fr-fr/inspiration-guide/**'
     exclude:
       - '/**.json'
       - '/**/*.json'
     target: /fr-fr/inspiration-guide/articles-index.json
     properties:
+      pageType:
+        select: head > meta[name="page-type"]
+        value: attribute(el, "content")
       path:
         select: none
         value: path
@@ -344,13 +355,15 @@ indices:
 
   inspirationArticlesDeDe:
     include:
-      - '/de-de/inspiration-guide/articles/**'
-      - '/de-de/inspiration-guide/article/**'
+      - '/de-de/inspiration-guide/**'
     exclude:
       - '/**.json'
       - '/**/*.json'
     target: /de-de/inspiration-guide/articles-index.json
     properties:
+      pageType:
+        select: head > meta[name="page-type"]
+        value: attribute(el, "content")
       path:
         select: none
         value: path
@@ -423,13 +436,15 @@ indices:
 
   inspirationArticlesPtBr:
     include:
-      - '/pt-br/inspiration-guide/articles/**'
-      - '/pt-br/inspiration-guide/article/**'
+      - '/pt-br/inspiration-guide/**'
     exclude:
       - '/**.json'
       - '/**/*.json'
     target: /pt-br/inspiration-guide/articles-index.json
     properties:
+      pageType:
+        select: head > meta[name="page-type"]
+        value: attribute(el, "content")
       path:
         select: none
         value: path

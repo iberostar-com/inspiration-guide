@@ -91,9 +91,17 @@ async function loadTaxonomy() {
       const path = `${row.path || ''}`;
       if (localePrefix && !localePrefix.test(path)) return;
 
-      const key = keyFromPath(path);
+      const pageType = `${row.pageType || ''}`.trim().toLowerCase();
+      const landing = path.match(/^\/[a-z]{2}-[a-z]{2}\/inspiration-guide\/(.+?)\/?$/i);
+      const key = keyFromPath(path)
+        || (landing && ['category', 'tag'].includes(pageType)
+          ? `/${pageType}/${landing[1]}`
+          : '');
       const title = `${row.title || ''}`.trim();
-      if (key && title && !map.has(key)) map.set(key, title);
+      if (key && title) {
+        if (!map.has(key)) map.set(key, title);
+        map.set(path.replace(/\/$/, ''), title);
+      }
     });
 
     return map;
@@ -106,10 +114,9 @@ async function loadTaxonomy() {
 // page does not exist. Callers pair it with their own slug-derived fallback.
 export async function taxonomyTitle(value) {
   const key = taxonomyKey(value);
-  if (!key) return '';
-
   const map = await loadTaxonomy();
-  return map.get(key) || '';
+  const path = `${value || ''}`.split(/[?#]/)[0].replace(/\.html$/, '').replace(/\/$/, '');
+  return map.get(path) || map.get(key) || '';
 }
 
 // Landing Title when it exists, otherwise the slug-derived label.

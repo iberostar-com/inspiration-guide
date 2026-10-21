@@ -279,7 +279,7 @@ export function normalizeArticlePath(article) {
       return '';
     }
 
-    return `${localeRoot}/inspiration-guide/articles/${fallbackSlug}`;
+    return `${localeRoot}/inspiration-guide/${fallbackSlug}`;
   }
 
   if (/^\/[a-z]{2}-[a-z]{2}\/inspiration-guide\//i.test(resolvedPath)) {
@@ -292,7 +292,7 @@ export function normalizeArticlePath(article) {
 
   if (/^[^/]+$/.test(resolvedPath.replace(/^\//, ''))) {
     const slug = resolvedPath.replace(/^\//, '');
-    return `${localeRoot}/inspiration-guide/articles/${slug}`;
+    return `${localeRoot}/inspiration-guide/${slug}`;
   }
 
   return resolvedPath;
@@ -497,7 +497,7 @@ function normalizeArticle(raw, index) {
     raw.categoryUrl,
     raw.categoryPath,
     categorySlug
-      ? `${getCurrentLanguageRoot()}/inspiration-guide/category/${categorySlug}`
+      ? `${getCurrentLanguageRoot()}/inspiration-guide/${categorySlug}`
       : '',
   );
   const categoryPath = firstDefined(
@@ -546,7 +546,7 @@ function normalizeArticle(raw, index) {
     path: rawPath,
     slug: raw.slug,
     url: raw.url,
-  }) || `${getCurrentLanguageRoot()}/inspiration-guide/article/${id}`;
+  });
 
   return {
     id: String(id),
@@ -633,6 +633,11 @@ function normalizePagePath(path) {
 
 function isArticlePath(path) {
   return /\/inspiration-guide\/articles?\//.test(normalizePagePath(path));
+}
+
+function isArticleRow(row) {
+  const pageType = `${row.pageType || ''}`.trim().toLowerCase();
+  return pageType ? pageType === 'article' : isArticlePath(row.path);
 }
 
 function isAuthorContext() {
@@ -762,7 +767,7 @@ function isCurrentLocalePath(path) {
 
 function getPageIndexArticleRows(payload) {
   return getIndexRows(payload)
-    .filter((row) => isArticlePath(row.path) && isCurrentLocalePath(row.path))
+    .filter((row) => isArticleRow(row) && isCurrentLocalePath(row.path))
     .sort((a, b) => (Number(b.lastModified) || 0) - (Number(a.lastModified) || 0))
     .slice(0, MAX_PAGE_INDEX_ENRICHMENTS);
 }
@@ -833,9 +838,13 @@ async function getAemArticles() {
     try {
       const payload = await fetchJson(currentUrl);
       const fromPageIndex = isPageIndexUrl(currentUrl);
+      const fromArticleIndex = getDefaultArticleIndexUrls()
+        .includes(new URL(currentUrl, window.location.origin).pathname);
       const collection = fromPageIndex
         ? getPageIndexArticleRows(payload)
-        : pickArticlesCollection(payload);
+        : pickArticlesCollection(payload).filter((row) => (
+          !fromArticleIndex || isArticleRow(row)
+        ));
       const normalized = collection
         .map((article, index) => normalizeArticle(article, index))
         .filter((article) => article.id && article.visible);

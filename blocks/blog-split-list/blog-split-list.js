@@ -428,7 +428,7 @@ function getManualField(row, propName, cells, index) {
 function normalizeArticle(article = {}, index = 0) {
   const rawUrl = normalizeValue(article.url || article.href || article.path);
   const rawPath = normalizeValue(article.path) || rawUrl;
-  const href = toPublicContentPath(rawUrl) || '#';
+  const href = toPageHref(rawUrl) || '#';
   const path = toPublicContentPath(rawPath) || href;
   const title = normalizeValue(article.title);
   const description = normalizeValue(article.description || article.summary);
@@ -442,7 +442,7 @@ function normalizeArticle(article = {}, index = 0) {
     category,
     categoryPath: normalizeValue(article.categoryPath),
     categorySlug,
-    categoryUrl: normalizeValue(article.categoryUrl) || (categorySlug ? `/inspiration-guide/category/${categorySlug}` : ''),
+    categoryUrl: normalizeValue(article.categoryUrl) || (categorySlug ? `/${getCurrentLocale()}/inspiration-guide/${categorySlug}` : ''),
     description,
     href,
     image: normalizeValue(article.image),
