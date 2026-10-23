@@ -161,7 +161,7 @@ export default async function decorate(block) {
 
   const languageRoot = getLanguageRoot();
   const tagParentPage = getTagParentPage(block)
-    || `${languageRoot}/inspiration-guide/tag`;
+    || `${languageRoot}/inspiration-guide`;
   const rendered = document.createElement('div');
   rendered.className = 'topic-tag-cloud-rendered';
 

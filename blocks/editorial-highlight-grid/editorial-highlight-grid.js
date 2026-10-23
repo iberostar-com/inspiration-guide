@@ -5,7 +5,7 @@ import {
   getPageCategoryPath,
 } from '../../scripts/inspiration-data.js';
 import { createArticleCard } from '../../scripts/iberostar/article-card.js';
-import { toPublicPagePath } from '../../scripts/iberostar/page-links.js';
+import { toPageHref, toPublicPagePath } from '../../scripts/iberostar/page-links.js';
 import { getTranslation } from '../../scripts/iberostar/i18n.js';
 import { moveInstrumentation } from '../../scripts/scripts.js';
 
@@ -345,7 +345,7 @@ function toCardData(article, labels) {
     categoryUrl: article.categoryUrl,
     publicationDate: article.publicationDate || article.publishDate || '',
     readTime: article.readTime || '',
-    url: toPublicPagePath(article.url || article.path || '') || '',
+    url: toPageHref(article.url || article.path || '') || '',
     ctaText: labels.readArticle,
   };
 }

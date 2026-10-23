@@ -201,9 +201,10 @@ async function enrichBreadcrumbItem(item, isCurrent = false) {
 }
 
 async function buildArticleCategoryItems(categorySegments, guideRoot) {
+  const categoryRoot = getAuthorContentPrefix() ? `${guideRoot}/category` : guideRoot;
   const itemPromises = categorySegments.map((segment, index) => enrichBreadcrumbItem({
     label: toLabel(segment),
-    url: `${guideRoot}/category/${categorySegments.slice(0, index + 1).join('/')}`,
+    url: `${categoryRoot}/${categorySegments.slice(0, index + 1).join('/')}`,
   }));
   const items = await Promise.all(itemPromises);
   return items.filter(Boolean);
@@ -290,7 +291,7 @@ function getBackLink(items) {
 function renderBackLink(back) {
   const link = document.createElement('a');
   link.className = 'breadcrumbs-back';
-  link.href = back.url;
+  link.href = toBreadcrumbDataFetchPath(back.url);
 
   const icon = document.createElement('i');
   icon.className = 'ibh-icon-arrow-back';
@@ -317,7 +318,7 @@ function createBreadcrumbItem(item, isLast) {
   }
 
   const link = document.createElement('a');
-  link.href = item.url;
+  link.href = toBreadcrumbDataFetchPath(item.url);
   link.textContent = item.label;
   li.append(link);
   return li;

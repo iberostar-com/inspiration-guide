@@ -1,7 +1,6 @@
 const AEM_AUTHOR_HOST_PATTERN = /^author-p\d+-e\d+\.adobeaemcloud\.com$/i;
 const DEFAULT_CONTENT_ROOT = '/content/inspiration-guide';
 const PUBLIC_PAGE_PATTERN = /^\/[a-z]{2}-[a-z]{2}(?:\/|$)/i;
-const INSPIRATION_GUIDE_ARTICLE_ROUTE_PATTERN = /^\/([a-z]{2}-[a-z]{2})\/inspiration-guide\/articles?\/(.+)$/i;
 
 function getAemContentRoot() {
   const pathMatch = window.location.pathname.match(/^\/content\/[^/]+/);
@@ -17,14 +16,6 @@ function getAemContentRoot() {
 function isAuthorEnvironment() {
   return AEM_AUTHOR_HOST_PATTERN.test(window.location.hostname)
     || window.location.pathname.startsWith('/content/');
-}
-
-function isCdnManagedPublishEnvironment() {
-  const { hostname } = window.location;
-  return !hostname.endsWith('.aem.live')
-    && !hostname.endsWith('.aem.page')
-    && hostname !== 'localhost'
-    && hostname !== '127.0.0.1';
 }
 
 function isExternalUrl(url) {
@@ -62,32 +53,21 @@ export function toPublicPagePath(value) {
   return `${pathname.replace(/\.html$/, '')}${url.search}${url.hash}`;
 }
 
-function toPrettyInspirationGuidePath(value) {
-  const url = parsePageUrl(value);
-  if (!url || !PUBLIC_PAGE_PATTERN.test(url.pathname)) return value;
-
-  const match = url.pathname.replace(/\.html$/i, '').match(INSPIRATION_GUIDE_ARTICLE_ROUTE_PATTERN);
-  if (!match) return value;
-
-  const [, locale, slugPath] = match;
-  return `/${locale}/inspiration-guide/${slugPath}${url.search}${url.hash}`;
-}
-
 export function toPageHref(value) {
-  const publicPath = toPublicPagePath(value);
-  const url = parsePageUrl(publicPath);
+  const url = parsePageUrl(value);
 
-  if (!isAuthorEnvironment() || !url || !PUBLIC_PAGE_PATTERN.test(url.pathname)) {
-    if (!isCdnManagedPublishEnvironment()) return publicPath;
-    return toPrettyInspirationGuidePath(publicPath);
+  // Only explicit Author references identify the real content path. A mapped
+  // public path cannot be inverted by prepending the content root.
+  if (isAuthorEnvironment() && url?.pathname.startsWith(`${getAemContentRoot()}/`)) {
+    const pathname = url.pathname.replace(/\.html$/, '');
+    return `${pathname}.html${url.search}${url.hash}`;
   }
 
-  const pathname = url.pathname.replace(/\.html$/, '');
-  return `${getAemContentRoot()}${pathname}.html${url.search}${url.hash}`;
+  return toPublicPagePath(value);
 }
 
 export function appendPageSegment(parentPage, segment) {
-  const parentPath = toPublicPagePath(parentPage);
+  const parentPath = toPageHref(parentPage);
   const normalizedSegment = `${segment || ''}`.trim();
   const isAbsolute = /^https?:\/\//i.test(parentPath);
 
