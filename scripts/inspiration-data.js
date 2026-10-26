@@ -588,6 +588,7 @@ function normalizeArticle(raw, index) {
     readTime,
     tags,
     path: String(normalizedPath),
+    resourcePath: String(firstDefined(raw.resourcePath, '')),
     href: String(normalizedPath),
     url: String(normalizedPath),
     robots: String(firstDefined(raw.robots, '')),

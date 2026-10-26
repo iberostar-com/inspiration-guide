@@ -1,6 +1,7 @@
 import { getMetadata } from '../../scripts/aem.js';
 import { tagTitle } from '../../scripts/iberostar/tag-label.js';
 import { getTranslation } from '../../scripts/iberostar/i18n.js';
+import { toPageHref } from '../../scripts/iberostar/page-links.js';
 
 const LOCALE_PATTERN = /^[a-z]{2}-[a-z]{2}$/i;
 const CONTENT_PREFIX_PATTERN = /^\/content\/[^/]+/;
@@ -39,22 +40,6 @@ function normalizePath(path) {
     .replace(/(\.plain)?\.html$/, '')
     .replace(/\/index$/, '')
     .replace(/\/$/, '') || '/';
-}
-
-function getAuthorContentPrefix() {
-  const { pathname } = new URL(window.location.pathname, window.location);
-  return pathname.match(CONTENT_PREFIX_PATTERN)?.[0] || '';
-}
-
-function toBreadcrumbDataFetchPath(path) {
-  const normalizedPath = normalizePath(path);
-  const authorContentPrefix = getAuthorContentPrefix();
-
-  if (authorContentPrefix) {
-    return `${authorContentPrefix}${normalizedPath}.html`;
-  }
-
-  return normalizedPath;
 }
 
 function getSourceRows(block) {
@@ -138,9 +123,9 @@ function normalizeTaxonomySegments(value = '') {
     const path = normalizePath(taxonomyPath);
     const segments = path.split('/').filter(Boolean);
     const categoryIndex = segments.indexOf('category');
-    taxonomyPath = categoryIndex > -1
-      ? segments.slice(categoryIndex + 1).join('/')
-      : segments.join('/');
+    const guideIndex = segments.indexOf(GUIDE_SEGMENT);
+    const taxonomyIndex = categoryIndex > -1 ? categoryIndex : guideIndex;
+    taxonomyPath = segments.slice(taxonomyIndex + 1).join('/');
   }
 
   return taxonomyPath
@@ -157,7 +142,7 @@ function getArticleCategorySegments() {
 }
 
 async function fetchPageBreadcrumbData(path) {
-  const fetchPath = toBreadcrumbDataFetchPath(path);
+  const fetchPath = toPageHref(path);
   if (pageBreadcrumbCache.has(fetchPath)) {
     return pageBreadcrumbCache.get(fetchPath);
   }
@@ -201,10 +186,9 @@ async function enrichBreadcrumbItem(item, isCurrent = false) {
 }
 
 async function buildArticleCategoryItems(categorySegments, guideRoot) {
-  const categoryRoot = getAuthorContentPrefix() ? `${guideRoot}/category` : guideRoot;
   const itemPromises = categorySegments.map((segment, index) => enrichBreadcrumbItem({
     label: toLabel(segment),
-    url: `${categoryRoot}/${categorySegments.slice(0, index + 1).join('/')}`,
+    url: toPageHref(`${guideRoot}/${categorySegments.slice(0, index + 1).join('/')}`, { pageType: 'category' }),
   }));
   const items = await Promise.all(itemPromises);
   return items.filter(Boolean);
@@ -272,7 +256,7 @@ async function buildAutoItems(block) {
 
     return enrichBreadcrumbItem({
       label: labels[index] || toLabel(segment),
-      url: `${basePath}/${visibleSegments.slice(0, index + 1).join('/')}`,
+      url: toPageHref(`${basePath}/${visibleSegments.slice(0, index + 1).join('/')}`, { pageType }),
     }, index === lastIndex);
   }));
 
@@ -291,7 +275,7 @@ function getBackLink(items) {
 function renderBackLink(back) {
   const link = document.createElement('a');
   link.className = 'breadcrumbs-back';
-  link.href = toBreadcrumbDataFetchPath(back.url);
+  link.href = toPageHref(back.url);
 
   const icon = document.createElement('i');
   icon.className = 'ibh-icon-arrow-back';
@@ -318,7 +302,7 @@ function createBreadcrumbItem(item, isLast) {
   }
 
   const link = document.createElement('a');
-  link.href = toBreadcrumbDataFetchPath(item.url);
+  link.href = toPageHref(item.url);
   link.textContent = item.label;
   li.append(link);
   return li;

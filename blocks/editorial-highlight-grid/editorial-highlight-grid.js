@@ -245,7 +245,7 @@ function createCard(item) {
 
   const h3 = document.createElement('h3');
   const link = document.createElement('a');
-  link.href = item.href || '#';
+  link.href = toPageHref(item.href, { pageType: 'article', resourcePath: item.resourcePath }) || '#';
   link.textContent = item.title;
   h3.append(link);
   body.append(h3);
@@ -345,7 +345,7 @@ function toCardData(article, labels) {
     categoryUrl: article.categoryUrl,
     publicationDate: article.publicationDate || article.publishDate || '',
     readTime: article.readTime || '',
-    url: toPageHref(article.url || article.path || '') || '',
+    url: toPageHref(article.url || article.path || '', { pageType: 'article', resourcePath: article.resourcePath }) || '',
     ctaText: labels.readArticle,
   };
 }

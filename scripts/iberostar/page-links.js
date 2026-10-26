@@ -1,6 +1,11 @@
 const AEM_AUTHOR_HOST_PATTERN = /^author-p\d+-e\d+\.adobeaemcloud\.com$/i;
 const DEFAULT_CONTENT_ROOT = '/content/inspiration-guide';
 const PUBLIC_PAGE_PATTERN = /^\/[a-z]{2}-[a-z]{2}(?:\/|$)/i;
+const AUTHOR_PAGE_SEGMENTS = {
+  article: 'articles',
+  category: 'category',
+  tag: 'tag',
+};
 
 function getAemContentRoot() {
   const pathMatch = window.location.pathname.match(/^\/content\/[^/]+/);
@@ -53,21 +58,39 @@ export function toPublicPagePath(value) {
   return `${pathname.replace(/\.html$/, '')}${url.search}${url.hash}`;
 }
 
-export function toPageHref(value) {
+export function toPageHref(value, { pageType = '', resourcePath = '' } = {}) {
   const url = parsePageUrl(value);
 
-  // Only explicit Author references identify the real content path. A mapped
-  // public path cannot be inverted by prepending the content root.
-  if (isAuthorEnvironment() && url?.pathname.startsWith(`${getAemContentRoot()}/`)) {
-    const pathname = url.pathname.replace(/\.html$/, '');
-    return `${pathname}.html${url.search}${url.hash}`;
+  if (isAuthorEnvironment() && url && isInternalPagePath(url.pathname)) {
+    const contentRoot = getAemContentRoot();
+    const resource = parsePageUrl(`${resourcePath || ''}`.replace(/^urn:aemconnection:/, ''));
+    let pathname = url.pathname.replace(/\.html$/i, '');
+
+    if (resource?.pathname.startsWith(`${contentRoot}/`)) {
+      pathname = resource.pathname.replace(/\/jcr:content(?:\/.*)?$/, '').replace(/\.html$/i, '');
+    } else if (!pathname.startsWith(`${contentRoot}/`)) {
+      const guide = pathname.match(/^(\/[a-z]{2}-[a-z]{2}\/inspiration-guide)(?:\/(.+?))?\/?$/i);
+      const segment = Object.hasOwn(AUTHOR_PAGE_SEGMENTS, pageType)
+        ? AUTHOR_PAGE_SEGMENTS[pageType] : '';
+      if (guide && segment && guide[2]) {
+        // The caller knows the destination type; never classify a flattened slug.
+        const suffix = guide[2].startsWith(`${segment}/`) ? guide[2] : `${segment}/${guide[2]}`;
+        pathname = `${contentRoot}${guide[1]}/${suffix}`;
+      } else if ((guide && !guide[2]) || /^\/[a-z]{2}-[a-z]{2}\/?$/i.test(pathname)) {
+        pathname = `${contentRoot}${pathname.replace(/\/$/, '')}`;
+      }
+    }
+
+    if (pathname.startsWith(`${contentRoot}/`)) {
+      return `${pathname}.html${url.search}${url.hash}`;
+    }
   }
 
   return toPublicPagePath(value);
 }
 
-export function appendPageSegment(parentPage, segment) {
-  const parentPath = toPageHref(parentPage);
+export function appendPageSegment(parentPage, segment, options) {
+  const parentPath = `${parentPage || ''}`.trim();
   const normalizedSegment = `${segment || ''}`.trim();
   const isAbsolute = /^https?:\/\//i.test(parentPath);
 
@@ -82,8 +105,8 @@ export function appendPageSegment(parentPage, segment) {
     const childPathname = `${parentPathname}/${encodeURIComponent(normalizedSegment)}${hasHtmlExtension ? '.html' : ''}`;
     const childHref = `${childPathname}${url.search}${url.hash}`;
 
-    if (isAbsolute) return `${url.origin}${childHref}`;
-    return toPageHref(childHref);
+    if (isAbsolute) return toPageHref(`${url.origin}${childHref}`, options);
+    return toPageHref(childHref, options);
   } catch {
     return '';
   }
