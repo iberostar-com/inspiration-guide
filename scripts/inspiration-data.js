@@ -642,6 +642,22 @@ function isArticleRow(row) {
   return pageType ? pageType === 'article' : isArticlePath(row.path);
 }
 
+function uniqueArticleRows(rows) {
+  const byIdentity = new Map();
+  rows.forEach((row) => {
+    // Compare legacy and mapped index entries without rewriting their hrefs.
+    const identity = row.resourcePath
+      || normalizePathString(toPathname(row.path || row.url || row.href))
+        .replace(/(\/inspiration-guide)\/articles?\//, '$1/');
+    if (!identity) return;
+    const existing = byIdentity.get(identity);
+    if (!existing || (!existing.pageType && row.pageType === 'article')) {
+      byIdentity.set(identity, row);
+    }
+  });
+  return [...byIdentity.values()];
+}
+
 function isAuthorContext() {
   return (
     window.location.hostname?.includes('author-')
@@ -842,11 +858,12 @@ async function getAemArticles() {
       const fromPageIndex = isPageIndexUrl(currentUrl);
       const fromArticleIndex = getDefaultArticleIndexUrls()
         .includes(new URL(currentUrl, window.location.origin).pathname);
-      const collection = fromPageIndex
+      const rows = fromPageIndex
         ? getPageIndexArticleRows(payload)
         : pickArticlesCollection(payload).filter((row) => (
           !fromArticleIndex || isArticleRow(row)
         ));
+      const collection = fromPageIndex || fromArticleIndex ? uniqueArticleRows(rows) : rows;
       const normalized = collection
         .map((article, index) => normalizeArticle(article, index))
         .filter((article) => article.id && article.visible);
