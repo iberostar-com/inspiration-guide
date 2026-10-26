@@ -428,7 +428,7 @@ function getManualField(row, propName, cells, index) {
 function normalizeArticle(article = {}, index = 0) {
   const rawUrl = normalizeValue(article.url || article.href || article.path);
   const rawPath = normalizeValue(article.path) || rawUrl;
-  const href = toPageHref(rawUrl) || '#';
+  const href = toPageHref(rawUrl, { pageType: 'article', resourcePath: article.resourcePath }) || '#';
   const path = toPublicContentPath(rawPath) || href;
   const title = normalizeValue(article.title);
   const description = normalizeValue(article.description || article.summary);
@@ -676,7 +676,7 @@ function appendMeta(parent, item, includeDate = false) {
     const category = item.categoryUrl ? document.createElement('a') : document.createElement('span');
     category.className = 'blog-split-category';
     category.textContent = item.category;
-    if (item.categoryUrl) category.href = toPageHref(item.categoryUrl);
+    if (item.categoryUrl) category.href = toPageHref(item.categoryUrl, { pageType: 'category' });
     meta.append(category);
   }
 

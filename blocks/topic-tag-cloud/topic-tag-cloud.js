@@ -125,7 +125,7 @@ function buildChips(tags, tagParentPage) {
     const label = await tagDisplayTitle(tagPath);
     const chip = document.createElement('a');
     chip.className = 'topic-tag-cloud-chip';
-    chip.href = appendPageSegment(tagParentPage, tagSlug(tagPath));
+    chip.href = appendPageSegment(tagParentPage, tagSlug(tagPath), { pageType: 'tag' });
     chip.textContent = label;
     chip.setAttribute('rel', 'tag');
 

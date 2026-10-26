@@ -1,6 +1,7 @@
 import { formatDate, hasValidDate } from './date-format.js';
 import { createResponsiveImage } from './media.js';
 import { buildUrl } from './url-builder.js';
+import { toPageHref } from './page-links.js';
 
 const ALLOWED_HEADING_TAGS = new Set(['h2', 'h3', 'h4', 'h5', 'h6']);
 
@@ -56,12 +57,12 @@ export function normalizeArticleData(article = {}) {
     image: article.image?.trim() || '',
     imageAlt: article.imageAlt?.trim() || '',
     category: article.category?.trim() || '',
-    categoryUrl: buildUrl(article.categoryUrl),
+    categoryUrl: buildUrl(toPageHref(article.categoryUrl, { pageType: 'category' })),
     publicationDate: article.publicationDate?.trim() || '',
     readTime: article.readTime?.trim() || '',
     authorName: article.authorName?.trim() || '',
     authorImage: article.authorImage?.trim() || '',
-    url: buildUrl(article.url),
+    url: buildUrl(toPageHref(article.url, { pageType: 'article', resourcePath: article.resourcePath })),
     ctaText: article.ctaText?.trim() || '',
   };
 }

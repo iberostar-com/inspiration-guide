@@ -381,7 +381,7 @@ function matchesCategoryTree(currentTree, article) {
 
 function toResolvedCardItem(article) {
   return {
-    href: toPageHref(article.href || article.path || ''),
+    href: toPageHref(article.href || article.path || '', { pageType: 'article', resourcePath: article.resourcePath }),
     image: article.image || article.ogImage || '',
     imageAlt: article.imageAlt || '',
     title: article.title || '',
@@ -391,12 +391,12 @@ function toResolvedCardItem(article) {
 }
 
 async function fetchArticleCardItem(refPath) {
-  const href = toPageHref(normalizeArticlePath(refPath));
+  const href = toPageHref(normalizeArticlePath(refPath), { pageType: 'article' });
   if (!href) return null;
   if (ARTICLE_CARD_CACHE.has(href)) return ARTICLE_CARD_CACHE.get(href);
 
   const request = (async () => {
-    const candidates = toFetchCandidates(refPath);
+    const candidates = toFetchCandidates(href);
     const attempts = await Promise.all(candidates.map(async (candidate) => {
       try {
         const response = await fetch(candidate, {
@@ -567,7 +567,7 @@ async function getManualItems(block) {
         const fetchedItem = needsEnrichment
           ? await fetchArticleCardItem(item.refPath)
           : null;
-        const fallbackHref = normalizePath(item.refPath);
+        const fallbackHref = toPageHref(item.refPath, { pageType: 'article' });
         const fallbackTitle = getFallbackTitle(item.sourceProp, item.refPath);
         const href = fetchedItem?.href || indexedItem?.href || fallbackHref;
         const title = fetchedItem?.title || indexedItem?.title || fallbackTitle;
@@ -647,7 +647,7 @@ function createCard(item, config) {
 
   const ctaLink = document.createElement('a');
   ctaLink.className = 'editorial-article-grid-card-cta-link';
-  ctaLink.href = item.href;
+  ctaLink.href = toPageHref(item.href, { pageType: 'article' });
   ctaLink.target = config.ctaTarget;
   if (config.ctaTarget === '_blank') ctaLink.rel = 'noopener noreferrer';
 
