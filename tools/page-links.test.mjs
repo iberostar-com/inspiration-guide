@@ -12,7 +12,9 @@ const LOCALES = ['es-es', 'de-de', 'pt-br', 'en-us', 'en-gb', 'fr-fr'];
 const TYPES = { article: 'articles', category: 'category', tag: 'tag' };
 const SLUG = 'los-mejores-atardeceres-alrededor-del-mundo';
 
-async function load(entry, href, { document = {}, fetch, stubs = {} } = {}) {
+async function load(entry, href, {
+  document = {}, fetch, stubs = {}, DOMParser,
+} = {}) {
   const context = createContext({
     URL,
     URLSearchParams,
@@ -20,6 +22,7 @@ async function load(entry, href, { document = {}, fetch, stubs = {} } = {}) {
     window: { location: new URL(href) },
     document: { querySelector: () => null, ...document },
     fetch,
+    DOMParser,
   });
   const modules = new Map();
   async function loadModule(path) {
@@ -238,6 +241,7 @@ test('Article JSON keeps the real resource path alongside its public URL', async
       }),
     }),
   });
+
   const [article] = await data.getArticles();
   assert.equal(article.url, '/es-es/inspiration-guide/story');
   assert.equal(article.resourcePath, resourcePath);
@@ -246,4 +250,84 @@ test('Article JSON keeps the real resource path alongside its public URL', async
     links.toPageHref(article.url, { pageType: 'article', resourcePath: article.resourcePath }),
     `${resourcePath}.html`,
   );
+});
+
+test('Author loads localized article indexes with tags before trying generic page enrichment', async () => {
+  await Promise.all(LOCALES.map(async (locale) => {
+    const requests = [];
+    const base = `/${locale}/inspiration-guide`;
+    const data = await load('scripts/inspiration-data.js', `${AUTHOR}/content/inspiration-guide${base}/articles/current.html`, {
+      fetch: async (url) => {
+        requests.push(url);
+        assert.equal(url, `${base}/articles-index.json`);
+        return {
+          ok: true,
+          json: async () => ({
+            data: [
+              {
+                path: `${base}/current`, title: 'Current', pageType: 'article', tags: 'inspiration-guide:tags/surf',
+              },
+              {
+                path: `${base}/related`, title: 'Related', pageType: 'article', tags: 'inspiration-guide:tags/surf',
+              },
+              { path: `${base}/category`, title: 'Category', pageType: 'category' },
+            ],
+          }),
+        };
+      },
+    });
+    const articles = await data.getArticles();
+    assert.equal(articles.length, 2);
+    assert.equal(articles[1].path, `${base}/related`);
+    assert.ok(articles[1].tags.includes('inspiration-guide:tags/surf'));
+    assert.deepEqual(requests, [`${base}/articles-index.json`]);
+  }));
+});
+
+test('Author generic-index fallback fetches real article resources when localized indexes fail', async () => {
+  const requests = [];
+  const base = '/pt-br/inspiration-guide';
+  const data = await load('scripts/inspiration-data.js', `${AUTHOR}/content/inspiration-guide${base}/articles/current.html`, {
+    DOMParser: class {
+      constructor() {
+        this.parseFromString = () => ({
+          querySelector: (selector) => {
+            if (selector === 'h1') return { textContent: 'Related' };
+            if (selector === 'meta[name="article-tags"]') {
+              return { content: 'inspiration-guide:tags/surf' };
+            }
+            return null;
+          },
+        });
+      }
+    },
+    fetch: async (url) => {
+      requests.push(url);
+      if (url === '/query-index.json') {
+        return {
+          ok: true,
+          json: async () => ({
+            data: [
+              { path: `${base}/related`, title: 'Related', pageType: 'article' },
+              { path: '/es-es/inspiration-guide/other', title: 'Other', pageType: 'article' },
+            ],
+          }),
+        };
+      }
+      if (url === `/content/inspiration-guide${base}/articles/related.html`) {
+        return { ok: true, text: async () => '<h1>Related</h1>' };
+      }
+      assert.ok(url.endsWith('/articles-index.json'));
+      return { ok: false, status: 404 };
+    },
+  });
+  const articles = await data.getArticles();
+  assert.equal(articles.length, 1);
+  assert.ok(articles[0].tags.includes('inspiration-guide:tags/surf'));
+  assert.deepEqual(requests, [
+    `${base}/articles-index.json`,
+    '/inspiration-guide/articles-index.json',
+    '/query-index.json',
+    `/content/inspiration-guide${base}/articles/related.html`,
+  ]);
 });
