@@ -231,6 +231,25 @@ test('Rendered breadcrumbs and metadata fetches use real categories only in Auth
   }));
 });
 
+test('Localized indexes prefer mapped records over stale article routes without merging titles', async () => {
+  const data = await load('scripts/inspiration-data.js', 'https://www.iberostar.com/pt-br/inspiration-guide/', {
+    fetch: async () => ({
+      ok: true,
+      json: async () => ({
+        data: [
+          { path: '/pt-br/inspiration-guide/articles/story', title: 'Same title', pageType: '' },
+          { path: '/pt-br/inspiration-guide/story', title: 'Same title', pageType: 'article' },
+          { path: '/pt-br/inspiration-guide/different', title: 'Same title', pageType: 'article' },
+        ],
+      }),
+    }),
+  });
+  const articles = await data.getArticles();
+  assert.equal(articles.length, 2);
+  assert.equal(articles[0].url, '/pt-br/inspiration-guide/story');
+  assert.equal(articles[1].url, '/pt-br/inspiration-guide/different');
+});
+
 test('Article JSON keeps the real resource path alongside its public URL', async () => {
   const resourcePath = '/content/inspiration-guide/es-es/inspiration-guide/articles/NombreOriginal';
   const data = await load('scripts/inspiration-data.js', `${AUTHOR}/es-es/inspiration-guide/?aem-data-url=/articles.json`, {
