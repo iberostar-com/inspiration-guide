@@ -1,5 +1,6 @@
 import { tagTitle } from './iberostar/tag-label.js';
 import { taxonomyTitle } from './iberostar/taxonomy.js';
+import { toPageHref } from './iberostar/page-links.js';
 
 const MOCK_ARTICLES = [
   {
@@ -706,7 +707,7 @@ async function fetchJson(url) {
 }
 
 async function fetchArticleMetadata(path) {
-  const articlePath = normalizePagePath(path);
+  const articlePath = toPageHref(normalizePagePath(path), { pageType: 'article' });
   const response = await fetch(articlePath, {
     method: 'GET',
     headers: {
@@ -828,7 +829,7 @@ async function getAemArticles() {
   // tried first. The generic page index is an authoring-only last resort.
   const urlsToTry = [
     primaryUrl,
-    ...(isAuthor ? [] : getDefaultArticleIndexUrls()),
+    ...getDefaultArticleIndexUrls(),
     ...(isAuthor ? [resolvePageIndexUrl()] : []),
   ].filter(Boolean);
 
